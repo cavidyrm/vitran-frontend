@@ -1,0 +1,28 @@
+---
+description: Compose Multiplatform UI conventions for VitranShop shared UI
+globs: "**/*.{kt,kts}"
+alwaysApply: false
+---
+
+# Compose UI Conventions
+
+## Placement
+- Put reusable UI in `shared/src/commonMain/...` (theme, components, screens).
+- Keep platform entry points thin (`androidApp`, `iosApp`, `webApp`, `desktopApp`).
+
+## Style
+- Match shop.app look: light gray backgrounds, white surfaces, strong purple accent, large corner radii, generous spacing.
+- Prefer shared building blocks (`SearchBar`, `ProductCard`, `SectionHeader`, nav) over one-off copies.
+- Use `Arrangement.Start` / `End` (not raw Left/Right) so RTL mirrors correctly.
+
+## Scope
+- One component or one section per change unless the user asks for more.
+- No networking, repositories with real HTTP, or purchase screens in this phase.
+
+## When to use
+- When editing or creating Kotlin/Compose files.
+
+## When to update
+- Package/folder layout becomes stable or changes.
+- Shared component naming conventions settle.
+- Repeated UI mistakes appear (wrong radius, LTR-only layout, duplicated cards).

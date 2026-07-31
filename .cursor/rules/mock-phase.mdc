@@ -1,0 +1,27 @@
+---
+description: UI-first mock-data phase — no API, no purchase flow
+alwaysApply: true
+---
+
+# Mock Data Phase
+
+## Do
+- Drive UI with in-memory / hardcoded mock models.
+- Fake repositories or static sample lists are fine.
+- UI may show prices, ratings, and product info from mocks.
+
+## Do not
+- Add real network clients, API base URLs, or remote auth.
+- Build Cart, Checkout, Payment, or Place-order flows/screens.
+- Block UI work waiting for a backend.
+
+## Product detail note
+- Purchase-looking buttons may exist as **visual placeholders** only.
+- Do not wire a real checkout path.
+
+## When to use
+- Always, until the project explicitly moves to the API phase.
+
+## When to update
+- API integration starts → replace or rewrite this rule as an `api-phase` rule.
+- Purchase flow is added back → update out-of-scope list and `screens.md`.

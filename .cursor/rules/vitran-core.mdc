@@ -1,0 +1,34 @@
+---
+description: Core VitranShop product rules — CMP, Persian RTL, UI-first mock, piece-by-piece UI
+alwaysApply: true
+---
+
+# VitranShop Core
+
+## Product
+- Kotlin **Compose Multiplatform** app (Android, iOS, Web, Desktop).
+- Shared UI and logic live in `shared/` (`commonMain`).
+- Persian (fa-IR), **RTL** by default.
+- No purchase flow yet: no Cart, Checkout, Payment, or Place order.
+- Screen map: `docs/ui-reference/screens.md`.
+
+## UI workflow (important)
+- Screenshots in `docs/ui-reference/` are the source of truth for **colors, spacing, shapes, and section patterns**.
+- Build UI **piece by piece** (one component or one section per task).
+- Do **not** implement an entire screen unless the user explicitly asks for that assembly step.
+
+## Phase
+- Current phase: **UI + mock data only**. No real API calls.
+- Prefer fake/local data so screens look complete.
+
+## Language
+- Code, comments, and Cursor rules/skills: **English**.
+- User-facing strings: **Persian**.
+
+## When to use
+- Always. Applies to every chat in this repo.
+
+## When to update
+- Product decisions change (e.g. purchase flow returns, new platforms, locale rules).
+- Screen map or phase (mock → API) changes.
+- You keep re-explaining the same core constraint to the agent.
