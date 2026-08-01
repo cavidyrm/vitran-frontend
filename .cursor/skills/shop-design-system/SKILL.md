@@ -22,19 +22,32 @@ description: >-
 ## Source of truth
 - Folder: `docs/ui-reference/`
 - Screen list: `docs/ui-reference/screens.md`
+- Theme code: `shared/.../ui/theme/` (`VitranTheme`, `VitranLightColorScheme`, `VitranExtraColors`)
 - Screenshots define **tokens and patterns**, not a mandate to ship a full screen in one go.
 
-## Visual tokens (starting point — refine from screenshots)
-| Token | Approx value | Notes |
-|-------|----------------|-------|
-| Accent purple | `#5A31F4` / `#6039F5` | Primary buttons, active accents |
-| Page background | `#F6F6F6` / `#F9F9F9` | Light gray canvas |
-| Surface | `#FFFFFF` | Cards, main panels |
-| Primary text | near black | Titles |
-| Secondary text | medium gray | Meta, breadcrumbs |
-| Card / image radius | ~12–24 dp | Soft, rounded shop.app look |
+## Locked visual tokens
+| Token | Hex | Notes |
+|-------|-----|-------|
+| Accent purple (`primary`) | `#5A31F4` | Buttons, search action, accents |
+| Purple dark | `#4524DB` | Pressed / hover |
+| Purple soft (`primaryContainer`) | `#DBD1FF` | Soft brand fills |
+| Purple tint | `#EEEAFF` | Light brand tint |
+| Page background | `#F6F6F6` | Canvas |
+| Surface | `#FFFFFF` | Cards, panels |
+| Primary text | `#1A1A1A` | Titles |
+| Secondary text | `#757575` | Meta, breadcrumbs |
+| Outline | `#E5E5E5` | Chip / filter borders |
+| Sale badge | `#000000` | Via `VitranTheme.extraColors.saleBadge` |
+| Star | `#F5A623` | Via `VitranTheme.extraColors.star` |
+| Card / image radius | ~12–20 dp | `VitranShapes` |
 | Search bar | full pill | Purple circular action button |
 | Spacing | generous | Prefer airy gaps over dense packing |
+
+## Modern theme APIs (CMP 1.11)
+- Fonts: `@Composable Font(Res.font…)` + `VitranTypography()` — do not use legacy non-composable font loaders.
+- Extras (sale/star): `LocalVitranExtraColors` / `VitranTheme.extraColors`.
+- RTL: set once in `VitranTheme` via `LocalLayoutDirection.Rtl`.
+- Strings: `composeResources/values` + `stringResource`.
 
 ## Recurring patterns
 - **Search pill**: wide rounded field + purple circular icon button.
@@ -44,12 +57,12 @@ description: >-
 - **Nav**: Home, Explore, Deals, Saved, Account (rail on large, bottom bar on compact).
 
 ## Persian / RTL
-- App content is Persian; layout is RTL.
+- App content is Persian; layout is RTL via `VitranTheme`.
 - Mirror directional icons (chevrons, back, exit) for RTL.
 - Prefer `Start`/`End` alignment APIs.
 
 ## Workflow for one piece
 1. Open the relevant screenshot(s).
 2. Note only tokens needed for **this** piece (color, size, radius, text style).
-3. Implement that piece in `shared` commonMain.
+3. Implement that piece in `shared` commonMain using theme tokens.
 4. Stop. Do not assemble the full screen unless asked.

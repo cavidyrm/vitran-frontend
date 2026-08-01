@@ -1,0 +1,29 @@
+---
+description: After tasks, verify with Gradle using local cache; avoid re-downloading
+alwaysApply: true
+---
+
+# Gradle Verification Builds
+
+## When to use
+- After finishing an implementation task that needs a compile/run check.
+- When confirming shared code still builds for Android, Desktop, Web, and/or iOS-related shared compilation.
+
+## When to update
+- Verification targets or Gradle flags change.
+- The team adopts a different CI/local cache strategy.
+
+## Rules
+1. Prefer the project **Gradle Wrapper** (`./gradlew`), never a freshly installed Gradle unless required.
+2. Always use the real user cache: `export GRADLE_USER_HOME="$HOME/.gradle"` before `./gradlew`. Do not let the agent sandbox redirect Gradle into a empty temp cache (that forces re-downloads and false “plugin not found” errors).
+3. Assume dependencies and the Gradle distribution are **already downloaded**. Rely on the local Gradle user home cache and project caches.
+4. For verification after a task, prefer:
+   - Reusing the Gradle daemon
+   - `--offline` when artifacts are already in `$HOME/.gradle` (put flags **before** task names)
+   - Normal cached runs (do **not** pass `--refresh-dependencies`, `--no-build-cache`, or clean caches unless fixing a real cache corruption)
+5. Do **not** delete `~/.gradle`, `.gradle`, or force full re-downloads “to be safe”.
+6. If `--offline` fails only because a **new** dependency was added, run **one** online resolve for that change, then go back to cached/offline checks.
+7. Prefer targeted compile tasks over full cleans, e.g. `:shared:compileKotlinJvm`, `:androidApp:compileDebugKotlin`, `:desktopApp:compileKotlin`, `:webApp:compileKotlinWasmJs`, `:shared:compileKotlinIosSimulatorArm64` — not `clean` by default.
+
+## Goal
+Confirm the change works across required platforms quickly, using cache, without re-downloading the world each time.

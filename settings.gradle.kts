@@ -2,29 +2,18 @@ rootProject.name = "VitranShop"
 
 pluginManagement {
     repositories {
-        maven(url= "https://maven.myket.ir")
-        google {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
-            }
-        }
-        mavenCentral()
+        // Portal first for Gradle convention plugins; then mirror + Google for AGP/Kotlin.
         gradlePluginPortal()
+        maven(url = "https://maven.myket.ir")
+        google()
+        mavenCentral()
     }
 }
 
 dependencyResolutionManagement {
     repositories {
-        maven(url= "https://maven.myket.ir")
-        google {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
-            }
-        }
+        maven(url = "https://maven.myket.ir")
+        google()
         mavenCentral()
     }
 }
