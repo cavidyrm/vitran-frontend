@@ -2,4 +2,12 @@
 <resources>
     <string name="app_name">ویتران شاپ</string>
     <string name="theme_smoke_title">ویتران شاپ</string>
+    <string name="nav_home">خانه</string>
+    <string name="nav_categories">دسته‌بندی‌ها</string>
+    <string name="nav_offers">پیشنهادها</string>
+    <string name="nav_saved">ذخیره‌ها</string>
+    <string name="nav_sign_in">ورود</string>
+    <string name="nav_account">حساب کاربری</string>
+    <string name="nav_saved_sign_in_a11y">برای مشاهده ذخیره‌ها وارد شوید</string>
+    <string name="home_placeholder">خانه</string>
 </resources>

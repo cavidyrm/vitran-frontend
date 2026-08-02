@@ -1,0 +1,37 @@
+---
+description: Prefer VitranText / VitranIcon primitives; use raw Text/Icon only for true one-offs
+globs: "**/shared/src/**/*.kt"
+alwaysApply: false
+---
+
+# Design Primitives
+
+## Package
+`com.vitran.shop.ui.components` — `VitranText`, `VitranIcon`
+
+## Prefer wrappers
+- Use `VitranText` / `VitranIcon` for app chrome and repeated UI copy/icons.
+- Roles: `VitranTextStyle` (`Headline`, `Title`, `Body`, `Label`) → Material typography slots.
+- Icon defaults: `VitranSize.iconMedium`, tint `onSurface` (override via params).
+
+```kotlin
+// ✅ GOOD
+VitranText(text = title, style = VitranTextStyle.Headline)
+VitranIcon(painter = painter, contentDescription = label)
+
+// ❌ BAD (repeated chrome)
+Text(text = title, style = MaterialTheme.typography.headlineMedium)
+Icon(painter = painter, contentDescription = label, modifier = Modifier.size(24.dp))
+```
+
+## Use raw Text / Icon when the need diverges
+Keep Material `Text` / `Icon` when the wrapper does not fit, for example:
+- Branded logo / asset with `Color.Unspecified` tint
+- Custom `TextStyle` not represented by `VitranTextStyle`
+- Annotated / multi-style strings
+- One-off illustration icons with non-standard sizing/tinting
+
+## Extending
+- Add a `VitranTextStyle` role only when reuse across screens is likely.
+- Prefer `VitranIcon(size = VitranSize.…)` over new icon wrappers for size variants.
+- Do not invent parallel colors/sizes inside primitives — use theme + design tokens.

@@ -2,12 +2,15 @@ package com.vitran.shop.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
-import androidx.compose.ui.unit.dp
 
-val VitranShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp),
-)
+object VitranShapes {
+    val pill = RoundedCornerShape(percent = 50)
+
+    val material = Shapes(
+        extraSmall = RoundedCornerShape(VitranRadius.small),
+        small = RoundedCornerShape(VitranRadius.medium),
+        medium = RoundedCornerShape(VitranRadius.large),
+        large = RoundedCornerShape(VitranRadius.xl),
+        extraLarge = RoundedCornerShape(VitranRadius.extraLarge),
+    )
+}

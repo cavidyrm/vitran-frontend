@@ -19,7 +19,7 @@ fun VitranTheme(
         MaterialTheme(
             colorScheme = VitranLightColorScheme,
             typography = vitranTypography(),
-            shapes = VitranShapes,
+            shapes = VitranShapes.material,
             content = content,
         )
     }

@@ -22,8 +22,13 @@ description: >-
 ## Source of truth
 - Folder: `docs/ui-reference/`
 - Screen list: `docs/ui-reference/screens.md`
-- Theme code: `shared/.../ui/theme/` (`VitranTheme`, `VitranLightColorScheme`, `VitranExtraColors`)
+- Theme code: `shared/.../ui/theme/` (`VitranTheme`, `VitranLightColorScheme`, `VitranExtraColors`, `VitranSpacing`, `VitranSize`, `VitranRadius`, `VitranElevation`)
 - Screenshots define **tokens and patterns**, not a mandate to ship a full screen in one go.
+
+## Spacing / size / radius / elevation
+- Prefer `VitranSpacing`, `VitranSize`, `VitranRadius`, `VitranElevation` over raw `.dp`.
+- Add a new token only when the value is a normal scale step and likely reused across screens.
+- Leave true one-offs as local literals (see rule `design-tokens.mdc`).
 
 ## Locked visual tokens
 | Token | Hex | Notes |
@@ -39,9 +44,9 @@ description: >-
 | Outline | `#E5E5E5` | Chip / filter borders |
 | Sale badge | `#000000` | Via `VitranTheme.extraColors.saleBadge` |
 | Star | `#F5A623` | Via `VitranTheme.extraColors.star` |
-| Card / image radius | ~12–20 dp | `VitranShapes` |
+| Card / image radius | ~12–20 dp | `VitranRadius` / `VitranShapes` |
 | Search bar | full pill | Purple circular action button |
-| Spacing | generous | Prefer airy gaps over dense packing |
+| Spacing | generous | Prefer `VitranSpacing` over dense packing |
 
 ## Modern theme APIs (CMP 1.11)
 - Fonts: `@Composable Font(Res.font…)` + `VitranTypography()` — do not use legacy non-composable font loaders.

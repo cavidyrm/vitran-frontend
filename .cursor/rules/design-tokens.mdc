@@ -1,0 +1,52 @@
+---
+description: Use Vitran design tokens (spacing, size, radius, elevation) instead of magic numbers in Compose UI
+globs: "**/shared/src/**/*.kt"
+alwaysApply: false
+---
+
+# Design Tokens
+
+## Source of truth
+Use tokens from `shared/.../ui/theme/`:
+- `VitranSpacing` — padding, gaps (`xs`…`xxxl`)
+- `VitranSize` — icons, avatars, rails, touch targets, breakpoints
+- `VitranRadius` — corner radii (also wired into `VitranShapes.material`)
+- `VitranShapes.pill` — full-pill shape; `VitranShapes.material` — Material3 slots
+- `VitranElevation` — shadow elevations
+- `VitranOpacity` — alpha for inactive / muted chrome (`INACTIVE`)
+- `VitranAnimation` — motion timings (e.g. `Tooltip.DURATION_MS`, `Tooltip.DISMISS_DELAY_MS`)
+
+## Required
+- Prefer tokens for spacing, icon/avatar sizes, radii, elevations, opacities, and shared layout sizes.
+- Prefer `VitranAnimation` for shared tooltip / hover dismiss timings.
+- Name by role/scale (`lg`, `iconMedium`), never by pixel (`spacing16`).
+
+```kotlin
+// ❌ BAD
+.padding(horizontal = 16.dp, vertical = 12.dp)
+modifier.size(24.dp)
+.shadow(elevation = 8.dp)
+delay(80)
+
+// ✅ GOOD
+.padding(horizontal = VitranSpacing.lg, vertical = VitranSpacing.md)
+modifier.size(VitranSize.iconMedium)
+.shadow(elevation = VitranElevation.medium)
+delay(VitranAnimation.Tooltip.DISMISS_DELAY_MS)
+```
+
+## When to add a new token
+Add to the matching object **only if**:
+1. The value is a normal scale step (or clearly reusable), **and**
+2. You expect it on more than one screen/component.
+
+Do **not** tokenize one-offs (e.g. `13.dp`, a single odd layout tweak, a one-off hover bridge).
+
+## When not to tokenize
+- Unique values used once
+- One-off animation scales / spring params that are not shared
+- Percentage-based shapes already covered by `VitranShapes.pill`
+
+## Related
+- Colors / type / Material shapes: existing `Color.kt`, `Type.kt`, `Shape.kt`, `Theme.kt`
+- Broader look: skill `shop-design-system`

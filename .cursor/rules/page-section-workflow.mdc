@@ -1,0 +1,39 @@
+---
+description: Screen work is section-by-section — component first, then wire into the page
+alwaysApply: true
+---
+
+# Page Section Workflow
+
+## Core rule
+- Build every screen **section by section**, never a full page in one task.
+- For each section: **create the component first**, then use it on the screen.
+- Do not start the next section until the user asks for it.
+
+## Current focus
+- Active screen: **Home**
+- Home section order:
+  1. App navigation (`AppShell` owns breakpoint; `AppSideNav` / `AppBottomNav`)
+  2. Categories
+  3. Shops / products by category (rows)
+  4. Remaining Home blocks as needed
+
+## Placement
+- Reusable pieces: `shared/.../ui/components/`
+- App chrome navigation: `shared/.../ui/navigation/`
+- Screen-specific sections (optional): `shared/.../ui/sections/home/`
+- Screen assembly: `shared/.../ui/screens/HomeScreen.kt`
+- Shell: `shared/.../ui/shell/AppShell.kt`
+
+## Visual reference
+- Use `docs/ui-reference/` screenshots only for the **active** section.
+- Match shop.app look with Persian RTL and `VitranTheme`.
+- Do **not** use Material3 `NavigationBar` / `NavigationRail` for app chrome.
+
+## When to use
+- Always, for any screen/section UI work in this repo.
+
+## When to update
+- Active screen changes (e.g. leave Home for Explore).
+- Home section order changes.
+- Package paths for components/screens settle or move.
