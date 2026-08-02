@@ -11,9 +11,9 @@ import androidx.compose.ui.Modifier
  */
 @Composable
 fun AppNavigation(
-    selected: AppDestination,
+    currentRoute: Route,
     authState: NavAuthUiState,
-    onNavigate: (AppDestination) -> Unit,
+    onNavigate: (Route) -> Unit,
     onLoginRequest: () -> Unit,
     isDesktop: Boolean,
     avatarRenderer: AvatarRenderer = DefaultAvatarRenderer,
@@ -21,7 +21,7 @@ fun AppNavigation(
 ) {
     if (isDesktop) {
         AppSideNav(
-            selected = selected,
+            currentRoute = currentRoute,
             authState = authState,
             onNavigate = onNavigate,
             onLoginRequest = onLoginRequest,
@@ -30,7 +30,7 @@ fun AppNavigation(
         )
     } else {
         AppBottomNav(
-            selected = selected,
+            currentRoute = currentRoute,
             authState = authState,
             onNavigate = onNavigate,
             onLoginRequest = onLoginRequest,

@@ -23,6 +23,7 @@ Use the run configurations provided by the run widget in your IDE's toolbar. You
 - Web app:
   - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
   - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
+  - Path routes (`/offers`, `/categories`, …) need SPA fallback: `webApp/webpack.config.d/spa-history-fallback.js` enables webpack `historyApiFallback` so those URLs serve `index.html` in development. Restart the browser run task after changing it. Production hosts need the same rewrite (`try_files` / `/* → /index.html`).
 - iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
 
 ### Running tests

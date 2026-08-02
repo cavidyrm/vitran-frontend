@@ -51,9 +51,9 @@ import vitranshop.shared.generated.resources.nav_sign_in
 
 @Composable
 fun AppSideNav(
-    selected: AppDestination,
+    currentRoute: Route,
     authState: NavAuthUiState,
-    onNavigate: (AppDestination) -> Unit,
+    onNavigate: (Route) -> Unit,
     onLoginRequest: () -> Unit,
     avatarRenderer: AvatarRenderer,
     modifier: Modifier = Modifier,
@@ -75,7 +75,7 @@ fun AppSideNav(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
-        LogoButton(onClick = { onNavigate(AppDestination.Home) })
+        LogoButton(onClick = { onNavigate(Route.Home) })
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -84,24 +84,24 @@ fun AppSideNav(
             NavItemButton(
                 painter = painterResource(Res.drawable.ic_nav_home),
                 contentDescription = homeLabel,
-                selected = selected is AppDestination.Home,
-                onClick = { onNavigate(AppDestination.Home) },
+                selected = currentRoute == Route.Home,
+                onClick = { onNavigate(Route.Home) },
                 showTooltip = true,
                 tooltipText = homeLabel,
             )
             NavItemButton(
                 painter = painterResource(Res.drawable.ic_nav_categories),
                 contentDescription = categoriesLabel,
-                selected = selected is AppDestination.Categories,
-                onClick = { onNavigate(AppDestination.Categories) },
+                selected = currentRoute == Route.Categories,
+                onClick = { onNavigate(Route.Categories) },
                 showTooltip = true,
                 tooltipText = categoriesLabel,
             )
             NavItemButton(
                 painter = painterResource(Res.drawable.ic_nav_offers),
                 contentDescription = offersLabel,
-                selected = selected is AppDestination.Offers,
-                onClick = { onNavigate(AppDestination.Offers) },
+                selected = currentRoute == Route.Offers,
+                onClick = { onNavigate(Route.Offers) },
                 showTooltip = true,
                 tooltipText = offersLabel,
             )
@@ -119,8 +119,8 @@ fun AppSideNav(
                 NavItemButton(
                     painter = painterResource(Res.drawable.ic_nav_saved),
                     contentDescription = savedLabel,
-                    selected = selected is AppDestination.Saved,
-                    onClick = { onNavigate(AppDestination.Saved) },
+                    selected = currentRoute == Route.Saved,
+                    onClick = { onNavigate(Route.Saved) },
                     showTooltip = true,
                     tooltipText = savedLabel,
                 )
@@ -146,7 +146,7 @@ fun AppSideNav(
                         .clickable(
                             interactionSource = interactionSource,
                             indication = null,
-                            onClick = { onNavigate(AppDestination.Account) },
+                            onClick = { onNavigate(Route.Account) },
                         )
                         .padding(VitranSpacing.sm),
                     contentAlignment = Alignment.Center,

@@ -12,18 +12,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.vitran.shop.ui.navigation.AppBottomNav
-import com.vitran.shop.ui.navigation.AppDestination
 import com.vitran.shop.ui.navigation.AppSideNav
 import com.vitran.shop.ui.navigation.AvatarRenderer
 import com.vitran.shop.ui.navigation.DefaultAvatarRenderer
 import com.vitran.shop.ui.navigation.NavAuthUiState
+import com.vitran.shop.ui.navigation.Route
 import com.vitran.shop.ui.theme.VitranSize
 
 @Composable
 fun AppShell(
-    selected: AppDestination,
+    currentRoute: Route,
     authState: NavAuthUiState,
-    onNavigate: (AppDestination) -> Unit,
+    onNavigate: (Route) -> Unit,
     onLoginRequest: () -> Unit,
     avatarRenderer: AvatarRenderer = DefaultAvatarRenderer,
     modifier: Modifier = Modifier,
@@ -39,7 +39,7 @@ fun AppShell(
             // In RTL, Row Start is on the right — put nav first so the rail sits at Start.
             Row(modifier = Modifier.fillMaxSize()) {
                 AppSideNav(
-                    selected = selected,
+                    currentRoute = currentRoute,
                     authState = authState,
                     onNavigate = onNavigate,
                     onLoginRequest = onLoginRequest,
@@ -56,7 +56,7 @@ fun AppShell(
                 containerColor = MaterialTheme.colorScheme.background,
                 bottomBar = {
                     AppBottomNav(
-                        selected = selected,
+                        currentRoute = currentRoute,
                         authState = authState,
                         onNavigate = onNavigate,
                         onLoginRequest = onLoginRequest,

@@ -1,0 +1,25 @@
+---
+description: SPA path fallback for web (webpack / production hosts) so Navigation 3 path routes load
+globs:
+  - webApp/**
+  - shared/**/ui/navigation/**
+alwaysApply: false
+---
+
+# Web SPA Path Fallback
+
+## Rule
+Browser path routing requires SPA fallback support. During development and production, any unknown HTTP path (for example `/offers`, `/categories`, `/account`) must serve the application entry (`index.html`) instead of returning 404. Navigation 3 can only restore routes after the application has been loaded. The routing layer is responsible only for mapping `window.location.pathname` to `Route`; the web server is responsible for delivering the application for every valid route.
+
+## Development (this repo)
+- Dev server: `:webApp:wasmJsBrowserDevelopmentRun` / `:webApp:jsBrowserDevelopmentRun` (webpack-dev-server).
+- Kotlin 2.4.x `DevServer` DSL has no `historyApiFallback` property.
+- Enable via [`webApp/webpack.config.d/spa-history-fallback.js`](webApp/webpack.config.d/spa-history-fallback.js) (auto-merged by KotlinWebpack `configDirectory`).
+- Restart the browser run task after changing webpack snippets.
+
+## Production
+Configure the host to rewrite app paths to `index.html` (nginx `try_files`, Cloudflare/Netlify/Vercel SPA rewrites). Do not hardcode domains in routing code.
+
+## Do not
+- Treat `Cannot GET /path` 404 as a Navigation 3 bug.
+- Upgrade Kotlin/CMP solely to get a different webpack DSL for this.
