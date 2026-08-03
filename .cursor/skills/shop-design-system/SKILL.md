@@ -37,8 +37,9 @@ description: >-
 | Purple dark | `#4524DB` | Pressed / hover |
 | Purple soft (`primaryContainer`) | `#DBD1FF` | Soft brand fills |
 | Purple tint | `#EEEAFF` | Light brand tint |
-| Page background | `#FCFCFC` | Canvas |
-| Surface | `#FFFFFF` | Cards, panels |
+| Chrome background | `#FCFCFC` | Outer shell / rail canvas (`VitranTheme.extraColors.chrome`) |
+| Page background | `#FBFBFB` | Content container / page-layout (`colorScheme.background`) |
+| Surface | `#FFFFFF` | Cards, panels, omnibox |
 | Primary text | `#1A1A1A` | Titles |
 | Secondary text | `#757575` | Meta, breadcrumbs |
 | Outline | `#E5E5E5` | Chip / filter borders |

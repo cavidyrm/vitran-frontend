@@ -10,7 +10,10 @@ val ShopPurple = Color(0xFF5A31F4)
 val ShopPurpleDark = Color(0xFF4524DB)
 val ShopPurpleSoft = Color(0xFFDBD1FF)
 val ShopPurpleTint = Color(0xFFEEEAFF)
+/** Outer chrome behind the framed content (`lg:bg-[#FCFCFC]` on shop.app). */
 val BackgroundGray = Color(0xFFFCFCFC)
+/** Page content canvas (`bg-[#FBFBFB]` on shop.app page-layout). */
+val PageCanvas = Color(0xFFFBFBFB)
 val SurfaceWhite = Color(0xFFFFFFFF)
 val OnSurfacePrimary = Color(0xFF1A1A1A)
 val OnSurfaceSecondary = Color(0xFF757575)
@@ -30,7 +33,7 @@ val VitranLightColorScheme = lightColorScheme(
     onSecondaryContainer = ShopPurpleDark,
     tertiary = ShopPurple,
     onTertiary = Color.White,
-    background = BackgroundGray,
+    background = PageCanvas,
     onBackground = OnSurfacePrimary,
     surface = SurfaceWhite,
     onSurface = OnSurfacePrimary,
@@ -48,6 +51,8 @@ data class VitranExtraColors(
     val star: Color = StarGold,
     val purpleDark: Color = ShopPurpleDark,
     val purpleTint: Color = ShopPurpleTint,
+    /** Desktop shell / rail canvas (`#FCFCFC`). */
+    val chrome: Color = BackgroundGray,
 )
 
 val LocalVitranExtraColors = staticCompositionLocalOf { VitranExtraColors() }

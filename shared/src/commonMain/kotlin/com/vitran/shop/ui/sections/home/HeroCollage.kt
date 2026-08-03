@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -43,8 +46,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import coil3.compose.AsyncImage
 import com.vitran.shop.ui.components.BrandHeroCard
 import com.vitran.shop.ui.components.ProductHeroCard
+import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.theme.VitranAnimation
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranTheme
@@ -164,7 +169,7 @@ fun HeroCollage(
             .fillMaxWidth()
             .padding(top = HeroCollageTopInset)
             .height(HeroCollageHeight)
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.background)
             .graphicsLayer { clip = false }
             .semantics { contentDescription = a11y },
     ) {
@@ -309,23 +314,39 @@ private fun BoxScope.AnchoredBrandCard(
             ),
         onClick = onClick,
         background = {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(brand.backgroundColor),
+            val placeholder = ColorPainter(brand.backgroundColor)
+            AsyncImage(
+                model = resolveNetworkImageUrl(brand.backgroundImageUrl),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                placeholder = placeholder,
+                error = placeholder,
             )
         },
         logo = {
-            Text(
-                text = brand.logoLabel,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.Center),
-                color = Color.White,
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-            )
+            val logoUrl = brand.logoImageUrl
+            if (logoUrl != null) {
+                AsyncImage(
+                    model = resolveNetworkImageUrl(logoUrl),
+                    contentDescription = brand.logoLabel,
+                    modifier = Modifier
+                        .fillMaxWidth(0.70f)
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Fit,
+                )
+            } else {
+                Text(
+                    text = brand.logoLabel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                )
+            }
         },
     )
 }
@@ -374,10 +395,14 @@ private fun BoxScope.AnchoredProductCard(
             ),
         onClick = onClick,
         image = {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(product.imageColor),
+            val placeholder = ColorPainter(product.imageColor)
+            AsyncImage(
+                model = resolveNetworkImageUrl(product.imageUrl),
+                contentDescription = product.title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                placeholder = placeholder,
+                error = placeholder,
             )
         },
     )

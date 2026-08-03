@@ -2,6 +2,8 @@ package com.vitran.shop
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import coil3.ImageLoader
+import coil3.compose.setSingletonImageLoaderFactory
 import com.vitran.shop.ui.navigation.AppNavHost
 import com.vitran.shop.ui.navigation.BindBrowserNavigation
 import com.vitran.shop.ui.navigation.NavAuthUiState
@@ -14,6 +16,10 @@ import com.vitran.shop.ui.theme.VitranTheme
 @Composable
 @Preview
 fun App() {
+    setSingletonImageLoaderFactory { context ->
+        ImageLoader.Builder(context).build()
+    }
+
     VitranTheme {
         val startRoute = rememberInitialRoute()
         val navState = rememberNavigationState(start = startRoute)

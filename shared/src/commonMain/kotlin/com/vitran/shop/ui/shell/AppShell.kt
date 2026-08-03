@@ -19,6 +19,7 @@ import com.vitran.shop.ui.navigation.DefaultAvatarRenderer
 import com.vitran.shop.ui.navigation.NavAuthUiState
 import com.vitran.shop.ui.navigation.Route
 import com.vitran.shop.ui.theme.VitranSize
+import com.vitran.shop.ui.theme.VitranTheme
 
 @Composable
 fun AppShell(
@@ -30,10 +31,11 @@ fun AppShell(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val chrome = VitranTheme.extraColors.chrome
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(chrome)
             .then(modifier),
     ) {
         val isDesktop = maxWidth >= VitranSize.desktopBreakpoint

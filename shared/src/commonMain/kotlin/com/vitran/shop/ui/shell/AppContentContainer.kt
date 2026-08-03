@@ -27,7 +27,9 @@ private val ContentFrameBorder = Color(0xFFEBEBEB)
  * [framed] must follow the **viewport** breakpoint (same as [AppShell]), not the
  * content column width — the rail already consumes horizontal space.
  *
- * - `framed = true` (desktop): inset white card, 28.dp radius, `#EBEBEB` border, soft shadow.
+ * Fill is page canvas `#FBFBFB` (not card white). Cards / omnibox stay on `surface`.
+ *
+ * - `framed = true` (desktop): inset card, 28.dp radius, `#EBEBEB` border, soft shadow.
  * - `framed = false` (compact): full-bleed, no chrome.
  */
 @Composable
@@ -36,6 +38,7 @@ fun AppContentContainer(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
+    val pageColor = MaterialTheme.colorScheme.background
     if (framed) {
         val shape = RoundedCornerShape(VitranRadius.extraLarge)
         Box(
@@ -57,14 +60,16 @@ fun AppContentContainer(
                         spotColor = Color.Black.copy(alpha = 0.06f),
                     )
                     .clip(shape)
-                    .background(MaterialTheme.colorScheme.surface, shape)
+                    .background(pageColor, shape)
                     .border(width = 1.dp, color = ContentFrameBorder, shape = shape),
                 content = content,
             )
         }
     } else {
         Box(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier
+                .fillMaxSize()
+                .background(pageColor),
             content = content,
         )
     }

@@ -1,29 +1,26 @@
 ---
-description: After tasks, verify with Gradle using local cache; avoid re-downloading
+description: When to run Gradle vs Android Studio Sync; never auto-verify unless asked
 alwaysApply: true
 ---
 
-# Gradle Verification Builds
+# Gradle & Dependency Sync
 
-## When to use
-- After finishing an implementation task that needs a compile/run check.
-- When confirming shared code still builds for Android, Desktop, Web, and/or iOS-related shared compilation.
+## Do not run Gradle unless asked
+- After code or config changes, **do not** run `./gradlew` (compile, assemble, dependency resolve, etc.).
+- Run Gradle **only** when the user explicitly asks (e.g. “compile”, “verify build”, “run gradle”).
+- Prefer the wrapper and local cache rules below **when** the user does ask for a Gradle run.
 
-## When to update
-- Verification targets or Gradle flags change.
-- The team adopts a different CI/local cache strategy.
+## New dependencies → Android Studio Sync
+1. After adding or changing libraries in `gradle/libs.versions.toml` and/or module `build.gradle.kts`, **stop and tell the user** to press **Sync Project with Gradle Files** in Android Studio.
+2. Wait for the user to confirm the sync (and dependency download) succeeded.
+3. Only then continue with follow-up code that needs those deps (imports, `AsyncImage`, etc.).
 
-## Rules
-1. Prefer the project **Gradle Wrapper** (`./gradlew`), never a freshly installed Gradle unless required.
-2. Always use the real user cache: `export GRADLE_USER_HOME="$HOME/.gradle"` before `./gradlew`. Do not let the agent sandbox redirect Gradle into a empty temp cache (that forces re-downloads and false “plugin not found” errors).
-3. Assume dependencies and the Gradle distribution are **already downloaded**. Rely on the local Gradle user home cache and project caches.
-4. For verification after a task, prefer:
-   - Reusing the Gradle daemon
-   - `--offline` when artifacts are already in `$HOME/.gradle` (put flags **before** task names)
-   - Normal cached runs (do **not** pass `--refresh-dependencies`, `--no-build-cache`, or clean caches unless fixing a real cache corruption)
-5. Do **not** delete `~/.gradle`, `.gradle`, or force full re-downloads “to be safe”.
-6. If `--offline` fails only because a **new** dependency was added, run **one** online resolve for that change, then go back to cached/offline checks.
-7. Prefer targeted compile tasks over full cleans, e.g. `:shared:compileKotlinJvm`, `:androidApp:compileDebugKotlin`, `:desktopApp:compileKotlin`, `:webApp:compileKotlinWasmJs`, `:shared:compileKotlinIosSimulatorArm64` — not `clean` by default.
+## When the user asks to verify / compile
+1. Prefer `./gradlew` with `export GRADLE_USER_HOME="$HOME/.gradle"`.
+2. Prefer `--offline` when artifacts are already cached (flags before task names).
+3. Do **not** use `--refresh-dependencies`, `--no-build-cache`, or wipe caches unless fixing real corruption.
+4. Prefer targeted tasks: `:shared:compileKotlinJvm`, `:shared:compileKotlinWasmJs`, `:androidApp:compileDebugKotlin`, etc. — not `clean` by default.
+5. If `--offline` fails only because a **new** dep was added, tell the user to Sync in Android Studio first; only run one online resolve if they ask you to.
 
 ## Goal
-Confirm the change works across required platforms quickly, using cache, without re-downloading the world each time.
+User owns Sync/download in Android Studio; the agent writes code and runs Gradle only on request.
