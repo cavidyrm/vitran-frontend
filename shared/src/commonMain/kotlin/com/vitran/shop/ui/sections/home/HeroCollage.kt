@@ -49,6 +49,7 @@ import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import com.vitran.shop.ui.components.BrandHeroCard
 import com.vitran.shop.ui.components.ProductHeroCard
+import com.vitran.shop.ui.media.LoopingNetworkVideo
 import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.theme.VitranAnimation
 import com.vitran.shop.ui.theme.VitranRadius
@@ -183,8 +184,8 @@ fun HeroCollage(
             .coerceAtLeast(96.dp)
         val density = LocalDensity.current.density
 
-        CenterMediaPlaceholder(
-            color = scene.centerMediaColor,
+        CenterMedia(
+            scene = scene,
             progress = progress,
             delayUnits = 0,
             modifier = Modifier
@@ -243,8 +244,8 @@ fun HeroCollage(
 }
 
 @Composable
-private fun CenterMediaPlaceholder(
-    color: Color,
+private fun CenterMedia(
+    scene: HeroCollageScene,
     progress: Float,
     delayUnits: Int,
     modifier: Modifier = Modifier,
@@ -263,13 +264,14 @@ private fun CenterMediaPlaceholder(
                     motion.progress * (-size.width * 0.1f)
             }
             .clip(RoundedCornerShape(VitranRadius.xl))
-            .background(color),
+            .background(scene.centerMediaColor),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = "ویتران",
-            color = Color.White.copy(alpha = 0.45f),
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+        LoopingNetworkVideo(
+            url = scene.centerMediaVideoUrl,
+            posterUrl = scene.centerMediaPosterUrl,
+            modifier = Modifier.fillMaxSize(),
+            contentDescription = null,
         )
     }
 }

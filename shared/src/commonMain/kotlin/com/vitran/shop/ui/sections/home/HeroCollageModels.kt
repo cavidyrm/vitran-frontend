@@ -33,11 +33,16 @@ data class HeroCollageProduct(
  * A single collage scene: center media + 2 brands + 2 products.
  * Slot order matches shop.app delays: brands[0]=delay 3 (right), brands[1]=delay 7 (left);
  * products[0]=delay 1 (right), products[1]=delay 6 (left).
+ *
+ * [centerMediaVideoUrl] is shop.app H.264; [centerMediaPosterUrl] is the WebP poster;
+ * [centerMediaColor] fills while loading / on error.
  */
 @Immutable
 data class HeroCollageScene(
     val id: String,
     val centerMediaColor: Color,
+    val centerMediaVideoUrl: String,
+    val centerMediaPosterUrl: String,
     val brands: List<HeroCollageBrand>,
     val products: List<HeroCollageProduct>,
 ) {
@@ -54,6 +59,8 @@ private const val ShopifyCloudAssets =
 val MockHeroCollageHomeScene = HeroCollageScene(
     id = "home",
     centerMediaColor = Color(0xFFE5E0D8),
+    centerMediaVideoUrl = "$ShopifyCloudAssets/homeTop_h264-DgdjP8ap.mp4",
+    centerMediaPosterUrl = "$ShopifyCloudAssets/homeTop-BjSVEn5E.webp",
     brands = listOf(
         HeroCollageBrand(
             name = "راگبل",
@@ -92,6 +99,8 @@ val MockHeroCollageHomeScene = HeroCollageScene(
 val MockHeroCollageFashionScene = HeroCollageScene(
     id = "fashion",
     centerMediaColor = Color(0xFFD9C9BE),
+    centerMediaVideoUrl = "$ShopifyCloudAssets/fashionTop_h264-3kD1dHp6.mp4",
+    centerMediaPosterUrl = "$ShopifyCloudAssets/fashionTop-DGmyYSrP.webp",
     brands = listOf(
         HeroCollageBrand(
             name = "بگو",
@@ -129,6 +138,8 @@ val MockHeroCollageFashionScene = HeroCollageScene(
 val MockHeroCollageBeautyScene = HeroCollageScene(
     id = "beauty",
     centerMediaColor = Color(0xFFE8D5D8),
+    centerMediaVideoUrl = "$ShopifyCloudAssets/beautyTop_h264-BwwYU9Bi.mp4",
+    centerMediaPosterUrl = "$ShopifyCloudAssets/beautyTop-YXoRh_vA.webp",
     brands = listOf(
         HeroCollageBrand(
             name = "سالت‌استون",
@@ -166,6 +177,8 @@ val MockHeroCollageBeautyScene = HeroCollageScene(
 val MockHeroCollageFoodScene = HeroCollageScene(
     id = "food",
     centerMediaColor = Color(0xFFE8DFC8),
+    centerMediaVideoUrl = "$ShopifyCloudAssets/foodTop_h264-6bLVgcNH.mp4",
+    centerMediaPosterUrl = "$ShopifyCloudAssets/foodTop-B7un5DBn.webp",
     brands = listOf(
         HeroCollageBrand(
             name = "تراف",
