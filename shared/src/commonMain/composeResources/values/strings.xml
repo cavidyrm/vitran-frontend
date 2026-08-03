@@ -13,4 +13,14 @@
     <string name="download_app_banner_primary">اپ ویتران را دانلود کنید.</string>
     <string name="download_app_banner_secondary">موجود برای iOS و Android</string>
     <string name="download_app_banner_a11y">اپ ویتران را دانلود کنید. موجود برای iOS و Android</string>
+    <string name="product_hero_card_a11y">%1$s، امتیاز %2$s از ۵، %3$s نظر</string>
+    <string name="brand_hero_card_a11y">فروشگاه %1$s</string>
+    <string name="hero_collage_a11y">نمایش محصولات و فروشگاه‌های منتخب</string>
+    <string name="hero_wordmark">ویتران</string>
+    <string name="hero_wordmark_a11y">ویتران</string>
+    <string name="hero_omnibox_placeholder">امروز دنبال چی می‌گردی؟</string>
+    <string name="hero_omnibox_a11y">جستجوی محصولات و فروشگاه‌ها</string>
+    <string name="hero_omnibox_submit_a11y">جستجو</string>
+    <string name="hero_omnibox_clear_a11y">پاک کردن جستجو</string>
 </resources>
+
