@@ -20,9 +20,11 @@ description: >-
 ## Home section order
 1. App navigation (`AppShell` breakpoint + `AppSideNav` / `AppBottomNav`)
 2. Content container (`AppContentContainer` — empty shop.app frame)
-3. Categories
-4. Shops / products by category (horizontal rows)
-5. Other Home blocks (only when requested)
+3. Download app banner (`DownloadAppBanner`)
+4. HomeHero (collage / wordmark / omnibox — when requested)
+5. Categories
+6. Shops / products by category (horizontal rows)
+7. Other Home blocks (only when requested)
 
 Do **one** section per task unless the user asks for more.
 
@@ -75,4 +77,5 @@ Home section progress:
 - App navigation: `shared/.../ui/navigation/AppNavigation.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`
 - Content frame: `shared/.../ui/shell/AppContentContainer.kt`
+- Download banner: `shared/.../ui/components/DownloadAppBanner.kt`
 - Home host: `shared/.../ui/screens/HomeScreen.kt`

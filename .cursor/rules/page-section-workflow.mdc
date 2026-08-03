@@ -15,9 +15,11 @@ alwaysApply: true
 - Home section order:
   1. App navigation (`AppShell` owns breakpoint; `AppSideNav` / `AppBottomNav`)
   2. Content container (`AppContentContainer` in shell — empty frame for page content)
-  3. Categories
-  4. Shops / products by category (rows)
-  5. Remaining Home blocks as needed
+  3. Download app banner (`DownloadAppBanner`)
+  4. HomeHero (collage / wordmark / omnibox — when requested)
+  5. Categories
+  6. Shops / products by category (rows)
+  7. Remaining Home blocks as needed
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`

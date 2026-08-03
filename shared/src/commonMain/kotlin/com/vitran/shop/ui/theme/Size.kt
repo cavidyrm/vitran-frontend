@@ -21,6 +21,7 @@ object VitranSize {
     val sideRailWidth = 72.dp
     val bottomBarHeight = 72.dp
     val profileItemHeight = 54.dp
+    val downloadBannerHeight = 40.dp
 
     val borderHairline = 0.5.dp
 

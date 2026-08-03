@@ -10,4 +10,7 @@
     <string name="nav_account">حساب کاربری</string>
     <string name="nav_saved_sign_in_a11y">برای مشاهده ذخیره‌ها وارد شوید</string>
     <string name="home_placeholder">خانه</string>
+    <string name="download_app_banner_primary">اپ ویتران را دانلود کنید.</string>
+    <string name="download_app_banner_secondary">موجود برای iOS و Android</string>
+    <string name="download_app_banner_a11y">اپ ویتران را دانلود کنید. موجود برای iOS و Android</string>
 </resources>
