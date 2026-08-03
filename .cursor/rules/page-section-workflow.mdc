@@ -14,16 +14,17 @@ alwaysApply: true
 - Active screen: **Home**
 - Home section order:
   1. App navigation (`AppShell` owns breakpoint; `AppSideNav` / `AppBottomNav`)
-  2. Categories
-  3. Shops / products by category (rows)
-  4. Remaining Home blocks as needed
+  2. Content container (`AppContentContainer` in shell — empty frame for page content)
+  3. Categories
+  4. Shops / products by category (rows)
+  5. Remaining Home blocks as needed
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`
 - App chrome navigation: `shared/.../ui/navigation/`
 - Screen-specific sections (optional): `shared/.../ui/sections/home/`
 - Screen assembly: `shared/.../ui/screens/HomeScreen.kt`
-- Shell: `shared/.../ui/shell/AppShell.kt`
+- Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference
 - Use `docs/ui-reference/` screenshots only for the **active** section.

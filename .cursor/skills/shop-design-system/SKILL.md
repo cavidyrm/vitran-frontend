@@ -37,7 +37,7 @@ description: >-
 | Purple dark | `#4524DB` | Pressed / hover |
 | Purple soft (`primaryContainer`) | `#DBD1FF` | Soft brand fills |
 | Purple tint | `#EEEAFF` | Light brand tint |
-| Page background | `#F6F6F6` | Canvas |
+| Page background | `#FCFCFC` | Canvas |
 | Surface | `#FFFFFF` | Cards, panels |
 | Primary text | `#1A1A1A` | Titles |
 | Secondary text | `#757575` | Meta, breadcrumbs |

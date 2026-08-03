@@ -1,5 +1,6 @@
 package com.vitran.shop.ui.shell
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
@@ -32,6 +33,7 @@ fun AppShell(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .then(modifier),
     ) {
         val isDesktop = maxWidth >= VitranSize.desktopBreakpoint
@@ -46,7 +48,10 @@ fun AppShell(
                     avatarRenderer = avatarRenderer,
                     modifier = Modifier.fillMaxHeight(),
                 )
-                Box(modifier = Modifier.weight(1f)) {
+                AppContentContainer(
+                    framed = true,
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                ) {
                     content()
                 }
             }
@@ -65,7 +70,8 @@ fun AppShell(
                     )
                 },
             ) { innerPadding ->
-                Box(
+                AppContentContainer(
+                    framed = false,
                     modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxSize(),
