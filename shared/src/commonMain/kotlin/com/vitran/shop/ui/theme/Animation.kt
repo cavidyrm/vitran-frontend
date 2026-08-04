@@ -79,4 +79,15 @@ object VitranAnimation {
         const val MOBILE_SEARCH_ENTER_MS = 400
         const val MOBILE_SEARCH_ENTER_OFFSET_DP = 100
     }
+
+    /**
+     * Home category mosaic tiles — shop.app
+     * `transition-transform duration-150 ease-out` + `hover:scale-110` on the image.
+     */
+    object CategoryMosaic {
+        const val TILE_HOVER_MS = 150
+        const val TILE_HOVER_SCALE = 1.1f
+        /** Tailwind `ease-out` ≈ `cubic-bezier(0, 0, 0.2, 1)`. */
+        val TileHoverEasing = CubicBezierEasing(0f, 0f, 0.2f, 1f)
+    }
 }

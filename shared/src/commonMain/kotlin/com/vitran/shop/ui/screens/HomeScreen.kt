@@ -28,8 +28,10 @@ import com.vitran.shop.ui.components.DownloadAppBanner
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
 import com.vitran.shop.ui.sections.home.HomeCategoriesRow
+import com.vitran.shop.ui.sections.home.HomeCategoryMosaicsRow
 import com.vitran.shop.ui.sections.home.HomeHero
 import com.vitran.shop.ui.sections.home.rememberMockHomeCategories
+import com.vitran.shop.ui.sections.home.rememberMockHomeCategoryMosaics
 import com.vitran.shop.ui.shell.LocalDesktopLayout
 
 /** shop.app mobile overlay `backdrop-blur-[10px]` — blur content under the sheet. */
@@ -132,6 +134,12 @@ fun HomeScreen(
             HomeCategoriesRow(
                 categories = rememberMockHomeCategories(),
                 onCategoryClick = { /* mock — category landing not wired yet */ },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            HomeCategoryMosaicsRow(
+                mosaics = rememberMockHomeCategoryMosaics(),
+                onCategoryClick = { /* mock — category landing not wired yet */ },
+                onTileClick = { _, _ -> /* mock — subcategory landing not wired yet */ },
                 modifier = Modifier.fillMaxWidth(),
             )
         }

@@ -39,5 +39,35 @@
     <string name="home_category_food">غذا و نوشیدنی</string>
     <string name="home_categories_scroll_prev_a11y">دسته‌بندی قبلی</string>
     <string name="home_categories_scroll_next_a11y">دسته‌بندی بعدی</string>
+    <string name="home_category_mosaics_scroll_prev_a11y">کارت دسته‌بندی قبلی</string>
+    <string name="home_category_mosaics_scroll_next_a11y">کارت دسته‌بندی بعدی</string>
+    <string name="home_category_mosaic_open_a11y">مشاهده %1$s</string>
+    <!-- L2 mosaic tile labels (shop.app subcategory titles) -->
+    <string name="home_mosaic_dresses">پیراهن</string>
+    <string name="home_mosaic_shirts">شومیز</string>
+    <string name="home_mosaic_sneakers">کفش ورزشی</string>
+    <string name="home_mosaic_pants">شلوار</string>
+    <string name="home_mosaic_hoodies">هودی</string>
+    <string name="home_mosaic_tshirts">تی‌شرت</string>
+    <string name="home_mosaic_lotion">لوسیون و مرطوب‌کننده</string>
+    <string name="home_mosaic_hair_styling">محصولات استایل مو</string>
+    <string name="home_mosaic_anti_aging">کیت ضدپیری</string>
+    <string name="home_mosaic_perfume">عطر و ادکلن</string>
+    <string name="home_mosaic_blankets">پتو</string>
+    <string name="home_mosaic_rugs">فرش و قالیچه</string>
+    <string name="home_mosaic_home_fragrances">رایحهٔ خانه</string>
+    <string name="home_mosaic_appliances">لوازم خانگی</string>
+    <string name="home_mosaic_exercise">تجهیزات ورزشی</string>
+    <string name="home_mosaic_supplements">مکمل‌ها</string>
+    <string name="home_mosaic_vitamins">ویتامین‌ها</string>
+    <string name="home_mosaic_drinks_shakes">نوشیدنی و شیک</string>
+    <string name="home_mosaic_formula">شیر خشک</string>
+    <string name="home_mosaic_strollers">کالسکه و سفر</string>
+    <string name="home_mosaic_diapers">پوشک</string>
+    <string name="home_mosaic_outfits">لباس کودک</string>
+    <string name="home_mosaic_coffee">قهوه</string>
+    <string name="home_mosaic_tea">چای</string>
+    <string name="home_mosaic_candy">شیرینی و شکلات</string>
+    <string name="home_mosaic_snacks">تنقلات</string>
 </resources>
 
