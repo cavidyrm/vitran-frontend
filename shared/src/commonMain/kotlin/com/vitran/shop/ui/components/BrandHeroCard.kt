@@ -1,7 +1,8 @@
 package com.vitran.shop.ui.components
 
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -88,9 +89,9 @@ private const val BrandHeroShadowAlpha = 0.06f
 /**
  * Floating brand / shop card used in the desktop Home hero collage.
  *
- * Matches shop.app square brand `hero-card`: soft blur shadow (flat, constant),
- * hover/press scale, and 5% background parallax. Face stays orthographic so
- * rounded corners survive on Compose Web (3D tilt crops clips under Skia).
+ * Matches shop.app square brand `hero-card`: soft blur shadow, hover/press scale,
+ * and eased 5% background parallax. Face stays orthographic so rounded corners
+ * survive on Compose Web (3D tilt crops clips under Skia).
  */
 @Composable
 fun BrandHeroCard(
@@ -120,21 +121,39 @@ fun BrandHeroCard(
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
     val pressed by interactionSource.collectIsPressedAsState()
+    // Soft spring ≈ shop.app `transition-transform duration-200` ease (no snap).
     val interactionScale by animateFloatAsState(
         targetValue = when {
             pressed -> VitranAnimation.HeroCollage.CARD_PRESS_SCALE
             hovered -> VitranAnimation.HeroCollage.CARD_HOVER_SCALE
             else -> 1f
         },
-        animationSpec = tween(
-            durationMillis = VitranAnimation.HeroCollage.CARD_INTERACTION_MS,
-            easing = VitranAnimation.HeroCollage.CardInteractionEasing,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow,
         ),
         label = "brandHeroInteractionScale",
     )
 
-    var mouseX by remember { mutableFloatStateOf(BrandHeroMouseRest) }
-    var mouseY by remember { mutableFloatStateOf(BrandHeroMouseRest) }
+    var pointerX by remember { mutableFloatStateOf(BrandHeroMouseRest) }
+    var pointerY by remember { mutableFloatStateOf(BrandHeroMouseRest) }
+    // Ease parallax toward the pointer so enter / move / exit never jump.
+    val mouseX by animateFloatAsState(
+        targetValue = pointerX,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow,
+        ),
+        label = "brandHeroMouseX",
+    )
+    val mouseY by animateFloatAsState(
+        targetValue = pointerY,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow,
+        ),
+        label = "brandHeroMouseY",
+    )
     val faceOpacity = stageOpacity.coerceIn(0f, 1f)
 
     BoxWithConstraints(
@@ -173,16 +192,23 @@ fun BrandHeroCard(
                                     val pos = event.changes.firstOrNull()?.position ?: continue
                                     val w = size.width.coerceAtLeast(1).toFloat()
                                     val h = size.height.coerceAtLeast(1).toFloat()
-                                    mouseX = ((pos.x / w) - 0.5f) * 2f
-                                    mouseY = ((pos.y / h) - 0.5f) * 2f
+                                    pointerX = ((pos.x / w) - 0.5f) * 2f
+                                    pointerY = ((pos.y / h) - 0.5f) * 2f
                                 }
                                 PointerEventType.Exit -> {
-                                    mouseX = BrandHeroMouseRest
-                                    mouseY = BrandHeroMouseRest
+                                    pointerX = BrandHeroMouseRest
+                                    pointerY = BrandHeroMouseRest
                                 }
                             }
                         }
                     }
+                }
+                // Scale shadow + face together (shop.app transforms the whole card).
+                .graphicsLayer {
+                    scaleX = interactionScale
+                    scaleY = interactionScale
+                    transformOrigin = TransformOrigin(0.5f, 0.5f)
+                    clip = false
                 },
         ) {
             // shop.app `.hero-card-shadow:after` — flat soft blob; constant strength.
@@ -208,11 +234,8 @@ fun BrandHeroCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        scaleX = interactionScale
-                        scaleY = interactionScale
                         alpha = faceOpacity
                         // stageRotationY intentionally unused (see kdoc on parameter).
-                        transformOrigin = TransformOrigin(0.5f, 0.5f)
                     }
                     .clip(cardShape)
                     .border(
