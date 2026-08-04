@@ -1,90 +1,376 @@
 package com.vitran.shop.ui.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.vitran.shop.ui.media.resolveNetworkImageUrl
+import com.vitran.shop.ui.shell.LocalDesktopLayout
+import com.vitran.shop.ui.shell.LocalShellViewportHeight
+import com.vitran.shop.ui.theme.VitranAnimation
 import com.vitran.shop.ui.theme.VitranElevation
-import com.vitran.shop.ui.theme.VitranShapes
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.hero_omnibox_a11y
 import vitranshop.shared.generated.resources.hero_omnibox_clear_a11y
 import vitranshop.shared.generated.resources.hero_omnibox_placeholder
+import vitranshop.shared.generated.resources.hero_omnibox_privacy
 import vitranshop.shared.generated.resources.hero_omnibox_submit_a11y
+import vitranshop.shared.generated.resources.hero_omnibox_suggestions_title
 import vitranshop.shared.generated.resources.ic_arrow_right
 import vitranshop.shared.generated.resources.ic_close
+import vitranshop.shared.generated.resources.ic_search
+import vitranshop.shared.generated.resources.ic_star_filled
 
-/** shop.app omnibox max content width. */
-private val OmniboxMaxWidth = 584.dp
+/** shop.app omnibox `md:max-w-[600px]`. */
+private val OmniboxMaxWidth = 600.dp
+
+/** shop.app `rounded-[32px]`. */
+private val OmniboxCorner = 32.dp
+private val OmniboxShape = RoundedCornerShape(OmniboxCorner)
+
 private val OmniboxActionSize = 40.dp
 
+/** shop.app typeahead icon render size (`width:20px`). */
+private val SuggestionIconSize = 20.dp
+
+/** shop.app rating star next to shop score. */
+private val RatingStarSize = 12.dp
+
 /**
- * Home hero search pill matching shop.app Omnibox.
+ * shop.app expanded shell padding (`lg:p-space-8`).
+ * Compact collapsed uses `p-space-4`.
+ */
+private val GlassShellPadding = VitranSpacing.sm
+private val CompactShellPadding = VitranSpacing.xs
+
+/** shop.app `0 0 0 4.5px rgba(0,0,0,0.03)` — drawn outside, not as inset border. */
+private val OmniboxRingWidth = 4.5.dp
+private val OmniboxRingColor = Color.Black.copy(alpha = 0.03f)
+
+private val OmniboxShellFill = Color.White
+
+private val SuggestionHover = Color.Black.copy(alpha = 0.04f)
+private val ShopLogoFallback = Color.Black.copy(alpha = 0.08f)
+/** shop.app shop-rating chip fill (soft gray pill behind score + star). */
+private val ShopRatingPillBackground = Color.Black.copy(alpha = 0.06f)
+private const val SuggestionIconAlpha = 0.6f
+private const val PlaceholderAlpha = 0.6f
+
+/**
+ * shop.app typeahead: container `max-h-[45dvh]`; list `max-h: calc(45dvh - 88px)`
+ * with `overflow-y: auto` and `overscroll-behavior: contain`.
+ */
+private const val TypeaheadViewportFraction = 0.45f
+/** Input row + shell padding; title/privacy scroll inside the list. */
+private val TypeaheadChromeOffset = 72.dp
+private val ShellBottomGap = 12.dp
+private val TypeaheadMinHeight = 120.dp
+
+/**
+ * Consumes leftover vertical scroll after the typeahead list so the parent
+ * page scroll does not move (shop.app `overscroll-behavior: contain`).
+ */
+private val TypeaheadNestedScrollConnection = object : NestedScrollConnection {
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource,
+    ): Offset = Offset(0f, available.y)
+
+    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity =
+        Velocity(0f, available.y)
+}
+
+/**
+ * Home hero search omnibox matching shop.app:
+ * collapsed pill + expandable typeahead (shops then keyword autocomplete).
  * Mock-only: [onSubmit] does not navigate yet.
+ *
+ * [expanded] is controlled by the parent so outside-tap can collapse immediately
+ * without waiting for focus loss (unreliable on web/desktop).
+ *
+ * @param onBoundsInRoot Omnibox hit rect in root coordinates (for outside-tap).
  */
 @Composable
 fun HeroOmnibox(
     query: String,
     onQueryChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    onBoundsInRoot: (Rect) -> Unit = {},
 ) {
+    val isDesktop = LocalDesktopLayout.current
     val placeholder = stringResource(Res.string.hero_omnibox_placeholder)
     val a11y = stringResource(Res.string.hero_omnibox_a11y)
     val submitA11y = stringResource(Res.string.hero_omnibox_submit_a11y)
     val clearA11y = stringResource(Res.string.hero_omnibox_clear_a11y)
+    val suggestionsTitle = stringResource(Res.string.hero_omnibox_suggestions_title)
+    val privacy = stringResource(Res.string.hero_omnibox_privacy)
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val purpleDark = VitranTheme.extraColors.purpleDark
+    val focusManager = LocalFocusManager.current
+    val density = LocalDensity.current
+    val viewportHeight = LocalShellViewportHeight.current
 
-    BasicTextField(
-        value = query,
-        onValueChange = onQueryChange,
+    val results = remember(query) { mockOmniboxResults(query) }
+
+    var textFieldFocused by remember { mutableStateOf(false) }
+    // Remaining space under omnibox top → avoid clipping at the content-frame bottom.
+    var maxShellHeight by remember { mutableStateOf(viewportHeight * TypeaheadViewportFraction) }
+
+    val latestOnExpandedChange by rememberUpdatedState(onExpandedChange)
+    val latestOnBoundsInRoot by rememberUpdatedState(onBoundsInRoot)
+    val latestOnQueryChange by rememberUpdatedState(onQueryChange)
+    val latestExpanded by rememberUpdatedState(expanded)
+
+    fun dismissToInitial() {
+        latestOnQueryChange("")
+        latestOnExpandedChange(false)
+        focusManager.clearFocus()
+    }
+
+    LaunchedEffect(textFieldFocused) {
+        if (textFieldFocused) {
+            latestOnExpandedChange(true)
+        } else {
+            delay(VitranAnimation.Omnibox.COLLAPSE_DELAY_MS)
+            // Blur: collapse + reset only if still expanded (outside-tap may already have dismissed).
+            if (!textFieldFocused && latestExpanded) {
+                latestOnQueryChange("")
+                latestOnExpandedChange(false)
+            }
+        }
+    }
+
+    val onResultClick: (OmniboxResult) -> Unit = { result ->
+        val text = when (result) {
+            is OmniboxResult.Shop -> result.name
+            is OmniboxResult.Keyword -> result.fullText
+        }
+        latestOnQueryChange(text)
+        onSubmit()
+        dismissToInitial()
+    }
+
+    // Cap list so the expanded shell fits in remaining viewport (and ≤ 45dvh).
+    val typeaheadMaxHeight = (maxShellHeight - TypeaheadChromeOffset)
+        .coerceAtLeast(TypeaheadMinHeight)
+
+    // ONE stable shell tree — never swap Compact vs Glass around the TextField
+    // (that remount lost focus on compact and caused open/close flicker).
+    val shellPadding = when {
+        isDesktop || expanded -> GlassShellPadding
+        else -> CompactShellPadding
+    }
+    val showRingAndGlass = isDesktop || expanded
+
+    Column(
         modifier = modifier
             .widthIn(max = OmniboxMaxWidth)
             .fillMaxWidth()
-            .height(VitranSize.touchTarget)
-            .shadow(
-                elevation = VitranElevation.medium,
-                shape = VitranShapes.pill,
-                clip = false,
-            )
-            .clip(VitranShapes.pill)
-            .background(MaterialTheme.colorScheme.surface)
+            .onGloballyPositioned { coords ->
+                latestOnBoundsInRoot(coords.boundsInRoot())
+                val root = coords.findRootCoordinates()
+                val top = coords.boundsInRoot().top
+                val remainingPx = (root.size.height - top).coerceAtLeast(0f)
+                val remainingDp = with(density) { remainingPx.toDp() } - ShellBottomGap
+                val cap = viewportHeight * TypeaheadViewportFraction
+                maxShellHeight = minOf(cap, remainingDp).coerceAtLeast(
+                    TypeaheadMinHeight + TypeaheadChromeOffset,
+                )
+            }
             .semantics { contentDescription = a11y },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (showRingAndGlass) {
+                        Modifier.omniboxGlassChrome(
+                            ringWidth = OmniboxRingWidth,
+                            ringColor = OmniboxRingColor,
+                            corner = OmniboxCorner,
+                        )
+                    } else {
+                        Modifier
+                            .shadow(
+                                elevation = VitranElevation.large,
+                                shape = OmniboxShape,
+                                clip = false,
+                            )
+                            .clip(OmniboxShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                    },
+                )
+                .then(
+                    if (expanded) {
+                        Modifier.heightIn(max = maxShellHeight)
+                    } else {
+                        Modifier
+                    },
+                )
+                .animateContentSize(
+                    animationSpec = tween(
+                        durationMillis = VitranAnimation.Omnibox.EXPAND_MS,
+                        easing = VitranAnimation.Omnibox.ExpandEasing,
+                    ),
+                )
+                .padding(shellPadding),
+        ) {
+            OmniboxSearchRow(
+                query = query,
+                onQueryChange = onQueryChange,
+                onSubmit = onSubmit,
+                placeholder = placeholder,
+                submitA11y = submitA11y,
+                clearA11y = clearA11y,
+                isRtl = isRtl,
+                purpleDark = purpleDark,
+                onFocusChanged = { textFieldFocused = it },
+            )
+            if (expanded) {
+                OmniboxTypeahead(
+                    title = suggestionsTitle,
+                    showTitle = query.isBlank(),
+                    results = results,
+                    privacy = privacy,
+                    maxListHeight = typeaheadMaxHeight,
+                    onResultClick = onResultClick,
+                )
+            }
+        }
+    }
+}
+
+private fun Modifier.omniboxGlassChrome(
+    ringWidth: Dp,
+    ringColor: Color,
+    corner: Dp,
+): Modifier = this
+    .drawBehind {
+        val ringPx = ringWidth.toPx()
+        val cornerPx = corner.toPx()
+        val stroke = Stroke(width = ringPx)
+        val inset = ringPx / 2f
+        drawRoundRect(
+            color = ringColor,
+            topLeft = Offset(-inset, -inset),
+            size = Size(size.width + ringPx, size.height + ringPx),
+            cornerRadius = CornerRadius(cornerPx + inset),
+            style = stroke,
+        )
+    }
+    .shadow(
+        elevation = VitranElevation.large,
+        shape = OmniboxShape,
+        clip = false,
+    )
+    .clip(OmniboxShape)
+    .background(OmniboxShellFill)
+
+@Composable
+private fun OmniboxSearchRow(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+    placeholder: String,
+    submitA11y: String,
+    clearA11y: String,
+    isRtl: Boolean,
+    purpleDark: Color,
+    onFocusChanged: (Boolean) -> Unit,
+) {
+    BasicTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(VitranSize.touchTarget)
+            .onFocusChanged { onFocusChanged(it.isFocused) },
         singleLine = true,
         textStyle = MaterialTheme.typography.bodyLarge.copy(
             color = MaterialTheme.colorScheme.onSurface,
+            textAlign = if (query.isEmpty()) TextAlign.Center else TextAlign.Start,
         ),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -93,30 +379,46 @@ fun HeroOmnibox(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = VitranSpacing.lg, end = VitranSpacing.xs),
+                    .padding(start = VitranSpacing.xl, end = VitranSpacing.xs),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = VitranSpacing.sm),
-                    contentAlignment = Alignment.CenterStart,
+                    contentAlignment = if (query.isEmpty()) {
+                        Alignment.Center
+                    } else {
+                        Alignment.CenterStart
+                    },
                 ) {
                     if (query.isEmpty()) {
                         Text(
                             text = placeholder,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = PlaceholderAlpha),
                             style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
                             maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
-                    innerTextField()
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = if (query.isEmpty()) {
+                            Alignment.Center
+                        } else {
+                            Alignment.CenterStart
+                        },
+                    ) {
+                        innerTextField()
+                    }
                 }
 
                 if (query.isNotEmpty()) {
                     Box(
                         modifier = Modifier
-                            .size(VitranSize.touchTarget)
+                            .size(OmniboxActionSize)
                             .clip(CircleShape)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
@@ -139,9 +441,11 @@ fun HeroOmnibox(
                     modifier = Modifier
                         .size(OmniboxActionSize)
                         .shadow(
-                            elevation = VitranElevation.small,
+                            elevation = VitranElevation.large,
                             shape = CircleShape,
                             clip = false,
+                            ambientColor = purpleDark.copy(alpha = 0.34f),
+                            spotColor = purpleDark.copy(alpha = 0.34f),
                         )
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary)
@@ -157,13 +461,244 @@ fun HeroOmnibox(
                         painter = painterResource(Res.drawable.ic_arrow_right),
                         contentDescription = null,
                         modifier = Modifier.graphicsLayer { scaleX = if (isRtl) -1f else 1f },
-                        size = VitranSize.iconMedium,
+                        size = SuggestionIconSize,
                         tint = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
             }
         },
     )
+}
+
+@Composable
+private fun OmniboxTypeahead(
+    title: String,
+    showTitle: Boolean,
+    results: List<OmniboxResult>,
+    privacy: String,
+    maxListHeight: Dp,
+    onResultClick: (OmniboxResult) -> Unit,
+) {
+    // Title + rows + privacy share one scrollport so shell max-height never crops the panel.
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = VitranSpacing.xs)
+            .heightIn(max = maxListHeight)
+            .nestedScroll(TypeaheadNestedScrollConnection)
+            .padding(horizontal = VitranSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
+        contentPadding = PaddingValues(bottom = VitranSpacing.xs),
+    ) {
+        if (showTitle) {
+            item(key = "title") {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(
+                        horizontal = VitranSpacing.sm,
+                        vertical = VitranSpacing.xs,
+                    ),
+                )
+            }
+        }
+        items(
+            items = results,
+            key = { it.id },
+        ) { result ->
+            when (result) {
+                is OmniboxResult.Shop -> OmniboxShopRow(
+                    shop = result,
+                    onClick = { onResultClick(result) },
+                )
+                is OmniboxResult.Keyword -> OmniboxKeywordRow(
+                    keyword = result,
+                    onClick = { onResultClick(result) },
+                )
+            }
+        }
+        item(key = "privacy") {
+            Text(
+                text = privacy,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(
+                    horizontal = VitranSpacing.sm,
+                    vertical = VitranSpacing.sm,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun OmniboxShopRow(
+    shop: OmniboxResult.Shop,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hovered by interactionSource.collectIsHoveredAsState()
+    // shop.app: [avatar] [name][rating pill] clustered at start — rating is NOT end-aligned.
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(CircleShape)
+            .background(if (pressed || hovered) SuggestionHover else Color.Transparent)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(VitranSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(VitranSpacing.lg),
+    ) {
+        ShopLogoAvatar(name = shop.name, logoUrl = shop.logoUrl)
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
+        ) {
+            Text(
+                text = shop.name,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            shop.rating?.let { rating ->
+                ShopRatingPill(rating = rating)
+            }
+        }
+    }
+}
+
+/** shop.app typeahead shop rating chip: light gray pill, `4.8` + star (LTR numerals). */
+@Composable
+private fun ShopRatingPill(rating: Float) {
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(ShopRatingPillBackground)
+                .padding(horizontal = 8.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = formatShopRating(rating),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+            )
+            VitranIcon(
+                painter = painterResource(Res.drawable.ic_star_filled),
+                contentDescription = null,
+                size = RatingStarSize,
+                tint = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShopLogoAvatar(
+    name: String,
+    logoUrl: String?,
+) {
+    val letter = name.trim().firstOrNull()?.toString().orEmpty()
+    Box(
+        modifier = Modifier
+            .size(VitranSize.avatarMedium)
+            .clip(CircleShape)
+            .background(ShopLogoFallback),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (logoUrl != null) {
+            AsyncImage(
+                model = resolveNetworkImageUrl(logoUrl),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                placeholder = ColorPainter(ShopLogoFallback),
+                error = ColorPainter(ShopLogoFallback),
+            )
+        } else if (letter.isNotEmpty()) {
+            Text(
+                text = letter,
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+@Composable
+private fun OmniboxKeywordRow(
+    keyword: OmniboxResult.Keyword,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val label = remember(keyword.matchedPrefix, keyword.completion, onSurface) {
+        buildAnnotatedString {
+            if (keyword.matchedPrefix.isNotEmpty()) {
+                withStyle(SpanStyle(fontWeight = FontWeight.Normal, color = onSurface)) {
+                    append(keyword.matchedPrefix)
+                }
+            }
+            if (keyword.completion.isNotEmpty()) {
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = onSurface)) {
+                    append(keyword.completion)
+                }
+            }
+        }
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(CircleShape)
+            .background(if (pressed || hovered) SuggestionHover else Color.Transparent)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(VitranSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(VitranSpacing.lg),
+    ) {
+        Box(
+            modifier = Modifier.size(VitranSize.avatarMedium),
+            contentAlignment = Alignment.Center,
+        ) {
+            VitranIcon(
+                painter = painterResource(Res.drawable.ic_search),
+                contentDescription = null,
+                size = SuggestionIconSize,
+                tint = onSurface.copy(alpha = SuggestionIconAlpha),
+            )
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = VitranSpacing.sm),
+        )
+    }
+}
+
+private fun formatShopRating(rating: Float): String {
+    val tenths = (rating * 10f).toInt().coerceAtLeast(0)
+    return "${tenths / 10}.${tenths % 10}"
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFBFBFB, widthDp = 640)
@@ -175,21 +710,61 @@ private fun HeroOmniboxEmptyPreview() {
                 query = "",
                 onQueryChange = {},
                 onSubmit = {},
+                expanded = false,
+                onExpandedChange = {},
             )
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFBFBFB, widthDp = 640)
+@Preview(showBackground = true, backgroundColor = 0xFFFBFBFB, widthDp = 640, heightDp = 520)
 @Composable
-private fun HeroOmniboxFilledPreview() {
+private fun HeroOmniboxQueryExpandedPreview() {
+    VitranTheme {
+        CompositionLocalProvider(LocalDesktopLayout provides true) {
+            Box(modifier = Modifier.padding(VitranSpacing.xl)) {
+                HeroOmnibox(
+                    query = "زن",
+                    onQueryChange = {},
+                    onSubmit = {},
+                    expanded = true,
+                    onExpandedChange = {},
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFFBFBFB, widthDp = 640, heightDp = 420)
+@Composable
+private fun HeroOmniboxExpandedPreview() {
     VitranTheme {
         Box(modifier = Modifier.padding(VitranSpacing.xl)) {
             HeroOmnibox(
-                query = "کفش ورزشی",
+                query = "",
                 onQueryChange = {},
                 onSubmit = {},
+                expanded = true,
+                onExpandedChange = {},
             )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFFBFBFB, widthDp = 640, heightDp = 420)
+@Composable
+private fun HeroOmniboxExpandedDesktopPreview() {
+    VitranTheme {
+        CompositionLocalProvider(LocalDesktopLayout provides true) {
+            Box(modifier = Modifier.padding(VitranSpacing.xl)) {
+                HeroOmnibox(
+                    query = "",
+                    onQueryChange = {},
+                    onSubmit = {},
+                    expanded = true,
+                    onExpandedChange = {},
+                )
+            }
         }
     }
 }

@@ -54,4 +54,16 @@ object VitranAnimation {
         /** shop.app brand bg parallax: `translate(mouse * 5%)` on 150% image. */
         const val BRAND_BG_PARALLAX_FRACTION = 0.05f
     }
+
+    /**
+     * Home hero omnibox expand/collapse — shop.app
+     * `lg:duration-[320ms] lg:ease-[cubic-bezier(.2,0,0,1)]`.
+     */
+    object Omnibox {
+        const val EXPAND_MS = 320
+        val ExpandEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+
+        /** Brief delay so suggestion taps register before focus-loss collapse. */
+        const val COLLAPSE_DELAY_MS = 150L
+    }
 }

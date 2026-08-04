@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -59,7 +58,8 @@ fun AppContentContainer(
                         ambientColor = Color.Black.copy(alpha = 0.06f),
                         spotColor = Color.Black.copy(alpha = 0.06f),
                     )
-                    .clip(shape)
+                    // Do not clip children — expanded omnibox / overlays must paint past
+                    // the frame edge (shop.app absolute typeahead). Shape still paints bg/border.
                     .background(pageColor, shape)
                     .border(width = 1.dp, color = ContentFrameBorder, shape = shape),
                 content = content,

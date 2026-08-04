@@ -39,7 +39,10 @@ fun AppShell(
             .then(modifier),
     ) {
         val isDesktop = maxWidth >= VitranSize.desktopBreakpoint
-        CompositionLocalProvider(LocalDesktopLayout provides isDesktop) {
+        CompositionLocalProvider(
+            LocalDesktopLayout provides isDesktop,
+            LocalShellViewportHeight provides maxHeight,
+        ) {
             if (isDesktop) {
                 // In RTL, Row Start is on the right — put nav first so the rail sits at Start.
                 Row(modifier = Modifier.fillMaxSize()) {
