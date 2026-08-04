@@ -24,7 +24,8 @@ description: >-
 4. HomeHero (collage / wordmark / omnibox — when requested)
 5. Categories
 6. Shops / products by category (horizontal rows)
-7. Other Home blocks (only when requested)
+7. Site footer (`SiteFooter`)
+8. Other Home blocks (only when requested)
 
 Do **one** section per task unless the user asks for more.
 
@@ -78,4 +79,5 @@ Home section progress:
 - Shell: `shared/.../ui/shell/AppShell.kt`
 - Content frame: `shared/.../ui/shell/AppContentContainer.kt`
 - Download banner: `shared/.../ui/components/DownloadAppBanner.kt`
+- Site footer: `shared/.../ui/components/SiteFooter.kt`
 - Home host: `shared/.../ui/screens/HomeScreen.kt`

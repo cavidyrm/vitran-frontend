@@ -19,7 +19,8 @@ alwaysApply: true
   4. HomeHero (collage / wordmark / omnibox — when requested)
   5. Categories
   6. Shops / products by category (rows)
-  7. Remaining Home blocks as needed
+  7. Site footer (`SiteFooter`)
+  8. Remaining Home blocks as needed
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`

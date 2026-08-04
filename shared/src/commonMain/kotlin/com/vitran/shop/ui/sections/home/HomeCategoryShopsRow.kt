@@ -116,12 +116,10 @@ fun HomeCategoryShopsFeed(
 ) {
     val isDesktop = LocalDesktopLayout.current
     val sectionGap = if (isDesktop) 64.dp else 40.dp
-    val bottomPad = if (isDesktop) 48.dp else VitranSpacing.xxxl
+    // Bottom spacing owned by SiteFooter top padding — avoid double gap.
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(bottom = bottomPad),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(sectionGap),
     ) {
         sections.forEach { section ->
