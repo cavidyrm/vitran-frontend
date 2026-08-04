@@ -384,6 +384,9 @@ private fun BoxScope.AnchoredProductCard(
         title = product.title,
         rating = product.rating,
         reviewCountLabel = product.reviewCountLabel,
+        // Face gets flip + fade; soft shadow stays flat at constant strength.
+        stageRotationY = motion.progressInOut * -90f,
+        stageOpacity = motion.opacity,
         modifier = Modifier
             .zIndex(2f)
             .align(TopLeft)
@@ -394,6 +397,8 @@ private fun BoxScope.AnchoredProductCard(
                 xPx = xPx,
                 yPx = yPx,
                 idleOffsetY = idleOffsetY,
+                applyRotationY = false,
+                applyAlpha = false,
             ),
         onClick = onClick,
         image = {
@@ -462,6 +467,9 @@ private fun rememberHeroIdleOffsetY(amplitudePx: Float): Float {
  *
  * CSS equivalent:
  * `translate3d(-50% + progressInOut*-100% + progress*-20%, -50%, z) rotateY(progressInOut*-90deg)`
+ *
+ * For product cards, set [applyRotationY] / [applyAlpha] false and pass those into the
+ * card face so the soft blur shadow stays flat and at constant strength.
  */
 private fun Modifier.heroStageLayer(
     motion: HeroSlotMotion,
@@ -469,12 +477,18 @@ private fun Modifier.heroStageLayer(
     xPx: Float,
     yPx: Float,
     idleOffsetY: Float,
+    applyRotationY: Boolean = true,
+    applyAlpha: Boolean = true,
 ): Modifier = graphicsLayer {
     val swing = motion.progressInOut * (-size.width) + motion.progress * (-size.width * 0.20f)
     translationX = xPx + swing
     translationY = yPx + idleOffsetY * motion.opacity
-    alpha = motion.opacity
-    rotationY = motion.progressInOut * -90f
+    if (applyAlpha) {
+        alpha = motion.opacity
+    }
+    if (applyRotationY) {
+        rotationY = motion.progressInOut * -90f
+    }
     cameraDistance = 18f * cameraDensity
     transformOrigin = TransformOrigin(0.5f, 0.5f)
     clip = false

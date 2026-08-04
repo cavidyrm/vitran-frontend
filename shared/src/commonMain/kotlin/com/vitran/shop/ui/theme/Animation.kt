@@ -1,5 +1,7 @@
 package com.vitran.shop.ui.theme
 
+import androidx.compose.animation.core.CubicBezierEasing
+
 /**
  * Motion timings for recurring UI chrome.
  * Prefer these over hard-coded millis in tooltip / hover affordances.
@@ -25,5 +27,25 @@ object VitranAnimation {
         /** shop.app `card-idle`: 4s ease-in-out infinite alternate, translateY 5%. */
         const val IDLE_DURATION_MS = 4_000
         const val IDLE_TRANSLATE_FRACTION = 0.05f
+
+        /**
+         * shop.app `.hero-card`:
+         * `transition-transform duration-200` + `hover:scale-[1.025]` / `active:scale-[0.98]`.
+         */
+        const val CARD_INTERACTION_MS = 200
+        const val CARD_HOVER_SCALE = 1.025f
+        const val CARD_PRESS_SCALE = 0.98f
+
+        /** Tailwind `ease` ≈ `cubic-bezier(0.4, 0, 0.2, 1)`. */
+        val CardInteractionEasing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
+
+        /** shop.app mouse tilt: `rotateX(mouseY*-10deg) rotateY(mouseX*10deg)`. */
+        const val CARD_TILT_DEG = 10f
+
+        /** shop.app shadow chase: `translate(mouse * -3em)`. */
+        const val CARD_SHADOW_TRANSLATE_EM = 3f
+
+        /** shop.app gradient chase: `translate(mouse * 25%)`. */
+        const val CARD_GRADIENT_TRANSLATE_FRACTION = 0.25f
     }
 }
