@@ -69,5 +69,11 @@
     <string name="home_mosaic_tea">چای</string>
     <string name="home_mosaic_candy">شیرینی و شکلات</string>
     <string name="home_mosaic_snacks">تنقلات</string>
+    <!-- Home category shop rows (merchant spotlight carousels) -->
+    <string name="home_category_shops_scroll_prev_a11y">فروشگاه قبلی</string>
+    <string name="home_category_shops_scroll_next_a11y">فروشگاه بعدی</string>
+    <string name="home_category_shops_section_open_a11y">مشاهده %1$s</string>
+    <string name="home_merchant_card_a11y">فروشگاه %1$s، امتیاز %2$s</string>
+    <string name="home_merchant_product_peek_a11y">محصول از %1$s</string>
 </resources>
 

@@ -90,4 +90,20 @@ object VitranAnimation {
         /** Tailwind `ease-out` ≈ `cubic-bezier(0, 0, 0.2, 1)`. */
         val TileHoverEasing = CubicBezierEasing(0f, 0f, 0.2f, 1f)
     }
+
+    /**
+     * Home merchant spotlight cards — shop.app `large-product-focused-merchant-card`.
+     */
+    object MerchantSpotlight {
+        /** Cover image: `duration-500 ease-out` + `group-hover:scale-105`. */
+        const val COVER_HOVER_MS = 500
+        const val COVER_HOVER_SCALE = 1.05f
+
+        /** Wordmark + product peeks: `duration-150 ease-out` + `scale-110`. */
+        const val LOGO_HOVER_MS = 150
+        const val LOGO_HOVER_SCALE = 1.1f
+        const val PEEK_HOVER_SCALE = 1.1f
+
+        val HoverEasing = CubicBezierEasing(0f, 0f, 0.2f, 1f)
+    }
 }
