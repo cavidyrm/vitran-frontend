@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -26,7 +27,11 @@ import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 
-/** Soft pull of wordmark/omnibox into collage (shop.app `lg:-mb-space-64`). */
+/**
+ * Soft pull of wordmark/omnibox into collage (shop.app `lg:-mb-space-64`).
+ * Negative value: visual offset up. Magnitude is also subtracted from layout
+ * height so following content (categories) is not left with a 64dp empty gap.
+ */
 private val DesktopHeroOverlap = (-64).dp
 
 /** shop.app desktop logo→omnibox gap (comfortable space under wordmark). */
@@ -92,12 +97,30 @@ fun HomeHero(
             modifier = Modifier
                 .fillMaxWidth()
                 .zIndex(3f)
-                .offset(y = if (isDesktop) DesktopHeroOverlap else 0.dp)
+                .then(
+                    if (isDesktop) {
+                        // Visual pull into collage + shrink layout height (CSS -mb-space-64).
+                        Modifier
+                            .offset(y = DesktopHeroOverlap)
+                            .layout { measurable, constraints ->
+                                val placeable = measurable.measure(constraints)
+                                val overlapPx = (-DesktopHeroOverlap).roundToPx()
+                                layout(
+                                    width = placeable.width,
+                                    height = (placeable.height - overlapPx).coerceAtLeast(0),
+                                ) {
+                                    placeable.placeRelative(0, 0)
+                                }
+                            }
+                    } else {
+                        Modifier
+                    },
+                )
                 .padding(
                     start = VitranSpacing.lg,
                     end = VitranSpacing.lg,
                     top = if (isDesktop) VitranSpacing.md else CompactTopBelowBanner,
-                    bottom = VitranSpacing.xl,
+                    bottom = 0.dp,
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,

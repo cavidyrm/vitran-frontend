@@ -30,5 +30,14 @@
     <string name="hero_omnibox_suggestion_3">دکوراسیون اتاق خواب</string>
     <string name="hero_omnibox_suggestion_4">کاپشن ضدآب</string>
     <string name="hero_omnibox_suggestion_5">هودی</string>
+    <string name="home_category_women">زنانه</string>
+    <string name="home_category_men">مردانه</string>
+    <string name="home_category_beauty">زیبایی</string>
+    <string name="home_category_home">خانه</string>
+    <string name="home_category_fitness">تناسب‌اندام و تغذیه</string>
+    <string name="home_category_baby">نوزاد و کودک</string>
+    <string name="home_category_food">غذا و نوشیدنی</string>
+    <string name="home_categories_scroll_prev_a11y">دسته‌بندی قبلی</string>
+    <string name="home_categories_scroll_next_a11y">دسته‌بندی بعدی</string>
 </resources>
 

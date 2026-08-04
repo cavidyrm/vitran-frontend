@@ -101,6 +101,7 @@ import vitranshop.shared.generated.resources.ic_arrow_right
 import vitranshop.shared.generated.resources.ic_close
 import vitranshop.shared.generated.resources.ic_search
 import vitranshop.shared.generated.resources.ic_star_filled
+import kotlin.time.Duration.Companion.milliseconds
 
 /** shop.app omnibox `md:max-w-[600px]`. */
 private val OmniboxMaxWidth = 600.dp
@@ -225,7 +226,7 @@ fun HeroOmnibox(
         if (textFieldFocused) {
             latestOnExpandedChange(true)
         } else if (isDesktop) {
-            delay(VitranAnimation.Omnibox.COLLAPSE_DELAY_MS)
+            delay(VitranAnimation.Omnibox.COLLAPSE_DELAY_MS.milliseconds)
             // Desktop blur / outside click: collapse + reset.
             if (!textFieldFocused && latestExpanded) {
                 latestOnQueryChange("")
@@ -307,7 +308,16 @@ fun HeroOmnibox(
                     ),
                 )
                 .padding(
-                    if (isDesktop) GlassShellPadding else CompactShellPadding,
+                    // Expanded desktop glass keeps uniform padding for typeahead.
+                    // Collapsed desktop must hug the field — bottom/side shell pad
+                    // was reading as empty gap above the categories row.
+                    if (isDesktop && showDesktopTypeahead) {
+                        PaddingValues(GlassShellPadding)
+                    } else if (isDesktop) {
+                        PaddingValues(0.dp)
+                    } else {
+                        PaddingValues(CompactShellPadding)
+                    },
                 ),
         ) {
             // shop.app: recessed pill chrome only while the desktop field is active.
