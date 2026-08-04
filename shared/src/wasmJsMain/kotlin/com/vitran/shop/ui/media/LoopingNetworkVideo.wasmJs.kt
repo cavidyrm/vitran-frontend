@@ -10,6 +10,8 @@ import coil3.compose.AsyncImage
  * Wasm/JS Skia canvas cannot layer a DOM `<video>` under Compose floating cards.
  * Use the shop.app poster (proxied via [resolveNetworkImageUrl]) so z-order and
  * `graphicsLayer` motion stay correct. Android/iOS play the real H.264 stream.
+ *
+ * [ContentScale.Fit] matches shop.app `object-fit: contain`.
  */
 @Composable
 actual fun LoopingNetworkVideo(
@@ -25,6 +27,6 @@ actual fun LoopingNetworkVideo(
         model = resolveNetworkImageUrl(posterUrl),
         contentDescription = contentDescription,
         modifier = modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Fit,
     )
 }

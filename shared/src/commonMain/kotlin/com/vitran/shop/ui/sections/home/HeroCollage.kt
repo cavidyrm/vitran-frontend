@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +30,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -52,7 +50,6 @@ import com.vitran.shop.ui.components.ProductHeroCard
 import com.vitran.shop.ui.media.LoopingNetworkVideo
 import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.theme.VitranAnimation
-import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranTheme
 import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.stringResource
@@ -251,20 +248,25 @@ private fun CenterMedia(
     modifier: Modifier = Modifier,
 ) {
     val motion = rememberHeroSlotMotion(progress = progress, delayUnits = delayUnits)
+    val density = LocalDensity.current
+    // shop.app `.video`: sharp corners, contain fit, no card chrome.
+    // CSS also uses translateZ(-100px); GraphicsLayerScope has no Z translation in CMP,
+    // so depth vs floating cards is handled by zIndex(0) on the caller.
     Box(
         modifier = modifier
             .aspectRatio(CenterMediaAspectRatio)
             .graphicsLayer {
                 alpha = motion.opacity
-                // shop.app video: scale(.8 + cos * .2) + lateral swing.
+                // scale(.8 + progress-in-out-cos * .2) + lateral swing.
                 val s = 0.8f + 0.2f * motion.opacity
                 scaleX = s
                 scaleY = s
                 translationX = motion.progressInOut * (-size.width * 0.5f) +
                     motion.progress * (-size.width * 0.1f)
-            }
-            .clip(RoundedCornerShape(VitranRadius.xl))
-            .background(scene.centerMediaColor),
+                cameraDistance = 18f * density.density
+                transformOrigin = TransformOrigin(0.5f, 0.5f)
+                clip = false
+            },
         contentAlignment = Alignment.Center,
     ) {
         LoopingNetworkVideo(

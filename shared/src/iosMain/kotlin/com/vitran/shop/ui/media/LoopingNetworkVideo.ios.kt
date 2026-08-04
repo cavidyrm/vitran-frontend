@@ -11,7 +11,7 @@ import androidx.compose.ui.viewinterop.UIKitView
 import coil3.compose.AsyncImage
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.readValue
-import platform.AVFoundation.AVLayerVideoGravityResizeAspectFill
+import platform.AVFoundation.AVLayerVideoGravityResizeAspect
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVPlayerItemDidPlayToEndTimeNotification
@@ -66,7 +66,7 @@ actual fun LoopingNetworkVideo(
             model = resolveNetworkImageUrl(posterUrl),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
         )
         UIKitView(
             factory = { HeroVideoUIView(player) },
@@ -82,7 +82,7 @@ private class HeroVideoUIView(
 ) : UIView(frame = CGRectZero.readValue()) {
     private val playerLayer: AVPlayerLayer =
         AVPlayerLayer.playerLayerWithPlayer(player).also {
-            it.videoGravity = AVLayerVideoGravityResizeAspectFill
+            it.videoGravity = AVLayerVideoGravityResizeAspect
             layer.addSublayer(it)
         }
 

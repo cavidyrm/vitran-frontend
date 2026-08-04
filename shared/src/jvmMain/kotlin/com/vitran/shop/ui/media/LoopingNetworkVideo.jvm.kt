@@ -8,6 +8,7 @@ import coil3.compose.AsyncImage
 
 /**
  * Desktop JVM: poster only for this mock phase (no bundled native video engine).
+ * [ContentScale.Fit] matches shop.app `object-fit: contain`.
  */
 @Composable
 actual fun LoopingNetworkVideo(
@@ -22,6 +23,6 @@ actual fun LoopingNetworkVideo(
         model = resolveNetworkImageUrl(posterUrl),
         contentDescription = contentDescription,
         modifier = modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Fit,
     )
 }

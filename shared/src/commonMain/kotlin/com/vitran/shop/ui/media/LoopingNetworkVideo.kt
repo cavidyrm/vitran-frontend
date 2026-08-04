@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
  * Muted, looping, autoplay network video for the hero collage center slot
  * (shop.app `hero-video` behavior). [posterUrl] is shown while loading / on
  * platforms without a native player (JVM) or as a web fallback.
+ *
+ * Content uses shop.app `object-fit: contain` (no crop).
  */
 @Composable
 expect fun LoopingNetworkVideo(
