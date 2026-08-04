@@ -12,15 +12,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -49,30 +44,22 @@ private val CompactTopBelowBanner = VitranSize.downloadBannerHeight + 20.dp
 /**
  * Home hero block: desktop collage + brand wordmark + search omnibox.
  * Collage is gated by [LocalDesktopLayout] (shell viewport breakpoint).
+ *
+ * Omnibox query/expanded state is owned by [HomeScreen] so the compact mobile
+ * sheet can render above the scroll container.
  */
 @Composable
 fun HomeHero(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    omniboxExpanded: Boolean,
+    onOmniboxExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     scenes: List<HeroCollageScene> = MockHeroCollageScenes,
-    onOmniboxExpandedChange: (Boolean) -> Unit = {},
     onOmniboxBoundsInRoot: (Rect) -> Unit = {},
-    onOmniboxDismissHandlerReady: ((() -> Unit) -> Unit) = {},
+    onOmniboxDismiss: () -> Unit = {},
 ) {
     val isDesktop = LocalDesktopLayout.current
-    val focusManager = LocalFocusManager.current
-    var query by remember { mutableStateOf("") }
-    var omniboxExpanded by remember { mutableStateOf(false) }
-
-    fun dismissOmnibox() {
-        query = ""
-        omniboxExpanded = false
-        onOmniboxExpandedChange(false)
-        focusManager.clearFocus()
-    }
-
-    SideEffect {
-        onOmniboxDismissHandlerReady { dismissOmnibox() }
-    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -94,7 +81,7 @@ fun HomeHero(
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = { dismissOmnibox() },
+                                onClick = onOmniboxDismiss,
                             ),
                     )
                 }
@@ -117,14 +104,14 @@ fun HomeHero(
         ) {
             Box {
                 HeroWordmark()
-                if (omniboxExpanded) {
+                if (omniboxExpanded && isDesktop) {
                     Box(
                         modifier = Modifier
                             .matchParentSize()
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = { dismissOmnibox() },
+                                onClick = onOmniboxDismiss,
                             ),
                     )
                 }
@@ -136,13 +123,10 @@ fun HomeHero(
             )
             HeroOmnibox(
                 query = query,
-                onQueryChange = { query = it },
+                onQueryChange = onQueryChange,
                 onSubmit = { /* mock — search screen not wired yet */ },
                 expanded = omniboxExpanded,
-                onExpandedChange = {
-                    omniboxExpanded = it
-                    onOmniboxExpandedChange(it)
-                },
+                onExpandedChange = onOmniboxExpandedChange,
                 onBoundsInRoot = onOmniboxBoundsInRoot,
             )
         }
@@ -153,7 +137,12 @@ fun HomeHero(
 @Composable
 private fun HomeHeroCompactPreview() {
     VitranTheme {
-        HomeHero()
+        HomeHero(
+            query = "",
+            onQueryChange = {},
+            omniboxExpanded = false,
+            onOmniboxExpandedChange = {},
+        )
     }
 }
 
@@ -162,7 +151,12 @@ private fun HomeHeroCompactPreview() {
 private fun HomeHeroDesktopPreview() {
     VitranTheme {
         CompositionLocalProvider(LocalDesktopLayout provides true) {
-            HomeHero()
+            HomeHero(
+                query = "",
+                onQueryChange = {},
+                omniboxExpanded = false,
+                onOmniboxExpandedChange = {},
+            )
         }
     }
 }

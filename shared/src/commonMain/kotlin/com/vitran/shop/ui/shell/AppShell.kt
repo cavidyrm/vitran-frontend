@@ -76,13 +76,17 @@ fun AppShell(
                         )
                     },
                 ) { innerPadding ->
-                    AppContentContainer(
-                        framed = false,
+                    OmniboxOverlayHost(
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize(),
                     ) {
-                        content()
+                        AppContentContainer(
+                            framed = false,
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            content()
+                        }
                     }
                 }
             }

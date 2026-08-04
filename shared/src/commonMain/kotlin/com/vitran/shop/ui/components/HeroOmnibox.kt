@@ -3,6 +3,7 @@ package com.vitran.shop.ui.components
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -41,6 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -125,7 +128,16 @@ private val CompactShellPadding = VitranSpacing.xs
 private val OmniboxRingWidth = 4.5.dp
 private val OmniboxRingColor = Color.Black.copy(alpha = 0.03f)
 
-private val OmniboxShellFill = Color.White
+private val OmniboxShellFill = Color.White.copy(alpha = 0.9f)
+
+/**
+ * shop.app desktop focused search field (`lg:focus:`):
+ * `bg-overlay-fixed-light-75`, `border-border-secondary`, `shadow-s`.
+ */
+private val SearchFieldFocusFill = Color.White.copy(alpha = 0.75f)
+private val SearchFieldFocusBorder = Color(0xFF183B4E).copy(alpha = 0.06f)
+private val SearchFieldFocusShadow = Color.Black.copy(alpha = 0.06f)
+private val SearchFieldFocusShadowElevation = 2.dp
 
 private val SuggestionHover = Color.Black.copy(alpha = 0.04f)
 private val ShopLogoFallback = Color.Black.copy(alpha = 0.08f)
@@ -161,13 +173,13 @@ private val TypeaheadNestedScrollConnection = object : NestedScrollConnection {
 
 /**
  * Home hero search omnibox matching shop.app:
- * collapsed pill + expandable typeahead (shops then keyword autocomplete).
+ * - Desktop: collapsed pill / glass panel with typeahead under the field.
+ * - Compact: collapsed pill; focus opens [OmniboxMobileSearchSheet] above bottom nav.
  * Mock-only: [onSubmit] does not navigate yet.
  *
- * [expanded] is controlled by the parent so outside-tap can collapse immediately
- * without waiting for focus loss (unreliable on web/desktop).
+ * [expanded] is controlled by the parent so outside-tap (desktop) can collapse immediately.
  *
- * @param onBoundsInRoot Omnibox hit rect in root coordinates (for outside-tap).
+ * @param onBoundsInRoot Omnibox hit rect in root coordinates (desktop outside-tap).
  */
 @Composable
 fun HeroOmnibox(
@@ -209,17 +221,18 @@ fun HeroOmnibox(
         focusManager.clearFocus()
     }
 
-    LaunchedEffect(textFieldFocused) {
+    LaunchedEffect(textFieldFocused, isDesktop) {
         if (textFieldFocused) {
             latestOnExpandedChange(true)
-        } else {
+        } else if (isDesktop) {
             delay(VitranAnimation.Omnibox.COLLAPSE_DELAY_MS)
-            // Blur: collapse + reset only if still expanded (outside-tap may already have dismissed).
+            // Desktop blur / outside click: collapse + reset.
             if (!textFieldFocused && latestExpanded) {
                 latestOnQueryChange("")
                 latestOnExpandedChange(false)
             }
         }
+        // Compact: hero-field blur must not dismiss — the mobile sheet owns focus.
     }
 
     val onResultClick: (OmniboxResult) -> Unit = { result ->
@@ -236,13 +249,9 @@ fun HeroOmnibox(
     val typeaheadMaxHeight = (maxShellHeight - TypeaheadChromeOffset)
         .coerceAtLeast(TypeaheadMinHeight)
 
-    // ONE stable shell tree — never swap Compact vs Glass around the TextField
-    // (that remount lost focus on compact and caused open/close flicker).
-    val shellPadding = when {
-        isDesktop || expanded -> GlassShellPadding
-        else -> CompactShellPadding
-    }
-    val showRingAndGlass = isDesktop || expanded
+    // Desktop always glass; compact stays solid pill (typeahead lives in the sheet).
+    val showRingAndGlass = isDesktop
+    val showDesktopTypeahead = isDesktop && expanded
 
     Column(
         modifier = modifier
@@ -250,14 +259,16 @@ fun HeroOmnibox(
             .fillMaxWidth()
             .onGloballyPositioned { coords ->
                 latestOnBoundsInRoot(coords.boundsInRoot())
-                val root = coords.findRootCoordinates()
-                val top = coords.boundsInRoot().top
-                val remainingPx = (root.size.height - top).coerceAtLeast(0f)
-                val remainingDp = with(density) { remainingPx.toDp() } - ShellBottomGap
-                val cap = viewportHeight * TypeaheadViewportFraction
-                maxShellHeight = minOf(cap, remainingDp).coerceAtLeast(
-                    TypeaheadMinHeight + TypeaheadChromeOffset,
-                )
+                if (isDesktop) {
+                    val root = coords.findRootCoordinates()
+                    val top = coords.boundsInRoot().top
+                    val remainingPx = (root.size.height - top).coerceAtLeast(0f)
+                    val remainingDp = with(density) { remainingPx.toDp() } - ShellBottomGap
+                    val cap = viewportHeight * TypeaheadViewportFraction
+                    maxShellHeight = minOf(cap, remainingDp).coerceAtLeast(
+                        TypeaheadMinHeight + TypeaheadChromeOffset,
+                    )
+                }
             }
             .semantics { contentDescription = a11y },
     ) {
@@ -283,7 +294,7 @@ fun HeroOmnibox(
                     },
                 )
                 .then(
-                    if (expanded) {
+                    if (showDesktopTypeahead) {
                         Modifier.heightIn(max = maxShellHeight)
                     } else {
                         Modifier
@@ -295,20 +306,38 @@ fun HeroOmnibox(
                         easing = VitranAnimation.Omnibox.ExpandEasing,
                     ),
                 )
-                .padding(shellPadding),
+                .padding(
+                    if (isDesktop) GlassShellPadding else CompactShellPadding,
+                ),
         ) {
-            OmniboxSearchRow(
-                query = query,
-                onQueryChange = onQueryChange,
-                onSubmit = onSubmit,
-                placeholder = placeholder,
-                submitA11y = submitA11y,
-                clearA11y = clearA11y,
-                isRtl = isRtl,
-                purpleDark = purpleDark,
-                onFocusChanged = { textFieldFocused = it },
-            )
-            if (expanded) {
+            // shop.app: recessed pill chrome only while the desktop field is active.
+            val showDesktopFieldChrome = isDesktop && (expanded || textFieldFocused)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (showDesktopFieldChrome) {
+                            Modifier.omniboxDesktopSearchFieldChrome()
+                        } else {
+                            Modifier
+                        },
+                    ),
+            ) {
+                OmniboxSearchRow(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    onSubmit = onSubmit,
+                    placeholder = placeholder,
+                    submitA11y = submitA11y,
+                    clearA11y = clearA11y,
+                    isRtl = isRtl,
+                    purpleDark = purpleDark,
+                    onFocusChanged = { textFieldFocused = it },
+                    // While the mobile sheet is open, keep the hero field inert.
+                    interactionEnabled = isDesktop || !expanded,
+                )
+            }
+            if (showDesktopTypeahead) {
                 OmniboxTypeahead(
                     title = suggestionsTitle,
                     showTitle = query.isBlank(),
@@ -341,15 +370,38 @@ private fun Modifier.omniboxGlassChrome(
         )
     }
     .shadow(
-        elevation = VitranElevation.large,
+        elevation = VitranElevation.medium,
         shape = OmniboxShape,
         clip = false,
+        ambientColor = Color.Black.copy(alpha = 0.08f),
+        spotColor = Color.Black.copy(alpha = 0.08f),
     )
     .clip(OmniboxShape)
     .background(OmniboxShellFill)
 
+/**
+ * shop.app desktop focused input:
+ * `rounded-radius-max` + `bg rgba(255,255,255,.75)` +
+ * `border 1px rgba(24,59,78,.06)` + `shadow-s` (`0 2px 8px rgba(0,0,0,.06)`).
+ */
+private fun Modifier.omniboxDesktopSearchFieldChrome(): Modifier = this
+    .shadow(
+        elevation = SearchFieldFocusShadowElevation,
+        shape = CircleShape,
+        clip = false,
+        ambientColor = SearchFieldFocusShadow,
+        spotColor = SearchFieldFocusShadow,
+    )
+    .clip(CircleShape)
+    .background(SearchFieldFocusFill)
+    .border(
+        width = 1.dp,
+        color = SearchFieldFocusBorder,
+        shape = CircleShape,
+    )
+
 @Composable
-private fun OmniboxSearchRow(
+internal fun OmniboxSearchRow(
     query: String,
     onQueryChange: (String) -> Unit,
     onSubmit: () -> Unit,
@@ -359,14 +411,25 @@ private fun OmniboxSearchRow(
     isRtl: Boolean,
     purpleDark: Color,
     onFocusChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+                    focusRequester: FocusRequester? = null,
+    interactionEnabled: Boolean = true,
 ) {
     BasicTextField(
         value = query,
-        onValueChange = onQueryChange,
-        modifier = Modifier
+        onValueChange = { if (interactionEnabled) onQueryChange(it) },
+        modifier = modifier
             .fillMaxWidth()
             .height(VitranSize.touchTarget)
+            .then(
+                if (focusRequester != null) {
+                    Modifier.focusRequester(focusRequester)
+                } else {
+                    Modifier
+                },
+            )
             .onFocusChanged { onFocusChanged(it.isFocused) },
+        enabled = interactionEnabled,
         singleLine = true,
         textStyle = MaterialTheme.typography.bodyLarge.copy(
             color = MaterialTheme.colorScheme.onSurface,
@@ -415,7 +478,7 @@ private fun OmniboxSearchRow(
                     }
                 }
 
-                if (query.isNotEmpty()) {
+                if (query.isNotEmpty() && interactionEnabled) {
                     Box(
                         modifier = Modifier
                             .size(OmniboxActionSize)
@@ -450,6 +513,7 @@ private fun OmniboxSearchRow(
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary)
                         .clickable(
+                            enabled = interactionEnabled,
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                             onClick = onSubmit,
@@ -533,7 +597,7 @@ private fun OmniboxTypeahead(
 }
 
 @Composable
-private fun OmniboxShopRow(
+internal fun OmniboxShopRow(
     shop: OmniboxResult.Shop,
     onClick: () -> Unit,
 ) {
@@ -637,7 +701,7 @@ private fun ShopLogoAvatar(
 }
 
 @Composable
-private fun OmniboxKeywordRow(
+internal fun OmniboxKeywordRow(
     keyword: OmniboxResult.Keyword,
     onClick: () -> Unit,
 ) {
@@ -735,17 +799,18 @@ private fun HeroOmniboxQueryExpandedPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFBFBFB, widthDp = 640, heightDp = 420)
+@Preview(showBackground = true, backgroundColor = 0xFFFBFBFB, widthDp = 390, heightDp = 720)
 @Composable
-private fun HeroOmniboxExpandedPreview() {
+private fun HeroOmniboxMobileSheetPreview() {
     VitranTheme {
-        Box(modifier = Modifier.padding(VitranSpacing.xl)) {
-            HeroOmnibox(
-                query = "",
+        CompositionLocalProvider(LocalDesktopLayout provides false) {
+            OmniboxMobileSearchSheet(
+                query = "زن",
                 onQueryChange = {},
                 onSubmit = {},
-                expanded = true,
-                onExpandedChange = {},
+                onDismiss = {},
+                onResultClick = {},
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }

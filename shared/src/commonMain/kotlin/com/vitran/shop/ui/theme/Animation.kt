@@ -65,5 +65,18 @@ object VitranAnimation {
 
         /** Brief delay so suggestion taps register before focus-loss collapse. */
         const val COLLAPSE_DELAY_MS = 150L
+
+        /**
+         * Compact sheet frosted overlay enter — shop.app
+         * `_omniboxFullscreenOverlayEnter`: opacity + translateY(12px) + scale(.985).
+         */
+        const val MOBILE_OVERLAY_ENTER_MS = 320
+
+        /**
+         * Compact search pill enter — shop.app
+         * `_slideDownAndFadeIn_omjax_1`: translateY(100px)→0, 0.4s ease-out.
+         */
+        const val MOBILE_SEARCH_ENTER_MS = 400
+        const val MOBILE_SEARCH_ENTER_OFFSET_DP = 100
     }
 }

@@ -22,6 +22,7 @@
     <string name="hero_omnibox_a11y">جستجوی محصولات و فروشگاه‌ها</string>
     <string name="hero_omnibox_submit_a11y">جستجو</string>
     <string name="hero_omnibox_clear_a11y">پاک کردن جستجو</string>
+    <string name="hero_omnibox_close_a11y">بستن جستجو</string>
     <string name="hero_omnibox_suggestions_title">پیشنهادهای جستجو</string>
     <string name="hero_omnibox_privacy">دربارهٔ نحوهٔ استفاده از داده‌ها برای شخصی‌سازی تجربه و تبلیغات بیشتر بدانید. پیشنهادها فقط جنبهٔ اطلاع‌رسانی دارند.</string>
     <string name="hero_omnibox_suggestion_1">پودر پروتئین گیاهی</string>
