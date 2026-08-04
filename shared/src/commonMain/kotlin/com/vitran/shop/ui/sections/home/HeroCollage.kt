@@ -303,6 +303,9 @@ private fun BoxScope.AnchoredBrandCard(
     }
     BrandHeroCard(
         brandName = brand.name,
+        // Face gets flip + fade; soft shadow stays flat at constant strength.
+        stageRotationY = motion.progressInOut * -90f,
+        stageOpacity = motion.opacity,
         modifier = Modifier
             .zIndex(1f)
             .align(TopLeft)
@@ -313,6 +316,8 @@ private fun BoxScope.AnchoredBrandCard(
                 xPx = xPx,
                 yPx = yPx,
                 idleOffsetY = idleOffsetY,
+                applyRotationY = false,
+                applyAlpha = false,
             ),
         onClick = onClick,
         background = {
@@ -333,7 +338,7 @@ private fun BoxScope.AnchoredBrandCard(
                     model = resolveNetworkImageUrl(logoUrl),
                     contentDescription = brand.logoLabel,
                     modifier = Modifier
-                        .fillMaxWidth(0.70f)
+                        .fillMaxWidth()
                         .align(Alignment.Center),
                     contentScale = ContentScale.Fit,
                 )

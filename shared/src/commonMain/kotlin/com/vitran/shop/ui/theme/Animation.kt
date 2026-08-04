@@ -39,13 +39,19 @@ object VitranAnimation {
         /** Tailwind `ease` ≈ `cubic-bezier(0.4, 0, 0.2, 1)`. */
         val CardInteractionEasing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
 
-        /** shop.app mouse tilt: `rotateX(mouseY*-10deg) rotateY(mouseX*10deg)`. */
+        /** shop.app product mouse tilt: `rotateX/Y(mouse * ±10deg)`. */
         const val CARD_TILT_DEG = 10f
+
+        /** shop.app brand mouse tilt: `rotateX/Y(mouse * ±15deg)`. */
+        const val BRAND_CARD_TILT_DEG = 15f
 
         /** shop.app shadow chase: `translate(mouse * -3em)`. */
         const val CARD_SHADOW_TRANSLATE_EM = 3f
 
-        /** shop.app gradient chase: `translate(mouse * 25%)`. */
+        /** shop.app product gradient chase: `translate(mouse * 25%)`. */
         const val CARD_GRADIENT_TRANSLATE_FRACTION = 0.25f
+
+        /** shop.app brand bg parallax: `translate(mouse * 5%)` on 150% image. */
+        const val BRAND_BG_PARALLAX_FRACTION = 0.05f
     }
 }

@@ -90,10 +90,13 @@ private val ProductHeroMaxWidth = 240.dp
 private val ProductHeroLetterSpacing = (-0.2).sp
 
 /**
- * shop.app default `--mouse-x/-y: -1` so the card face rests with a visible 3D tilt
- * (`rotateX(10deg) rotateY(-10deg)`).
+ * Rest pointer for hover tracking. Face stays flat (no rotationX/Y) because Compose
+ * Web/Skia crops rounded clips under 3D tilt. Shadow uses a separate fixed offset.
  */
-private const val ProductHeroMouseRest = -1f
+private const val ProductHeroMouseRest = 0f
+
+/** Fixed shadow offset equivalent to shop.app `--mouse-x/-y: -1` → `+3em`. */
+private const val ProductHeroShadowMouse = -1f
 
 /**
  * Soft shadow fill — slightly lighter than shop.app `opacity: .1`.
@@ -106,7 +109,8 @@ private const val ProductHeroShadowAlpha = 0.06f
  *
  * Soft shadow matches shop.app `.hero-card-shadow:after` (`blur 1.5em`, low black
  * opacity). Shadow stays flat and at a **constant** alpha — stage opacity / hover
- * scale / press scale apply only to the card face.
+ * scale / press scale apply only to the card face. Face stays orthographic so
+ * rounded corners survive on Compose Web (3D tilt crops clips under Skia).
  */
 @Composable
 fun ProductHeroCard(
@@ -114,7 +118,11 @@ fun ProductHeroCard(
     rating: Float,
     reviewCountLabel: String,
     modifier: Modifier = Modifier,
-    /** Collage Y-flip degrees applied to the face only (not the soft shadow). */
+    /**
+     * Reserved for collage Y-flip. Unused on face for now — any rotationY breaks
+     * rounded corners on Compose Web/Skia. Enter/exit uses [stageOpacity] only.
+     */
+    @Suppress("UNUSED_PARAMETER")
     stageRotationY: Float = 0f,
     /** Collage fade applied to the face only (shadow strength stays constant). */
     stageOpacity: Float = 1f,
@@ -162,15 +170,12 @@ fun ProductHeroCard(
         val density = LocalDensity.current
         val emPx = with(density) { em.toPx() }
         val blurPx = with(density) { blurRadius.toPx() }
-        val cameraDistancePx = 18f * density.density
         val captionStyle = rememberProductHeroCaptionStyle(em)
-        val tiltX = mouseY * -VitranAnimation.HeroCollage.CARD_TILT_DEG
-        val tiltY = mouseX * VitranAnimation.HeroCollage.CARD_TILT_DEG
-        // Rest-pose shadow offset (`mouse = -1` → translate +3em, +3em). Constant.
+        // Shadow offset stays fixed (shop.app rest pose); face is not mouse-tilted.
         val shadowShiftX =
-            ProductHeroMouseRest * -VitranAnimation.HeroCollage.CARD_SHADOW_TRANSLATE_EM * emPx
+            ProductHeroShadowMouse * -VitranAnimation.HeroCollage.CARD_SHADOW_TRANSLATE_EM * emPx
         val shadowShiftY =
-            ProductHeroMouseRest * -VitranAnimation.HeroCollage.CARD_SHADOW_TRANSLATE_EM * emPx
+            ProductHeroShadowMouse * -VitranAnimation.HeroCollage.CARD_SHADOW_TRANSLATE_EM * emPx
 
         Box(
             modifier = Modifier
@@ -216,6 +221,8 @@ fun ProductHeroCard(
                 )
             }
 
+            // Face stays orthographic — Compose Web/Skia crops rounded clips under any
+            // rotationX/Y, so mouse tilt and stage Y-flip are omitted; stage uses opacity.
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -223,11 +230,8 @@ fun ProductHeroCard(
                         scaleX = interactionScale
                         scaleY = interactionScale
                         alpha = faceOpacity
-                        rotationX = tiltX
-                        rotationY = tiltY + stageRotationY
-                        cameraDistance = cameraDistancePx
+                        // stageRotationY intentionally unused (see kdoc on parameter).
                         transformOrigin = TransformOrigin(0.5f, 0.5f)
-                        clip = false
                     }
                     .clip(cardShape)
                     .background(MaterialTheme.colorScheme.surface)
