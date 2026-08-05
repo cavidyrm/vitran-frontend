@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -62,6 +63,7 @@ fun HomeHero(
     modifier: Modifier = Modifier,
     scenes: List<HeroCollageScene> = MockHeroCollageScenes,
     onOmniboxBoundsInRoot: (Rect) -> Unit = {},
+    onOmniboxCollapsedLayoutCoordinates: (LayoutCoordinates) -> Unit = {},
     onOmniboxDismiss: () -> Unit = {},
 ) {
     val isDesktop = LocalDesktopLayout.current
@@ -152,6 +154,7 @@ fun HomeHero(
                 expanded = omniboxExpanded,
                 onExpandedChange = onOmniboxExpandedChange,
                 onBoundsInRoot = onOmniboxBoundsInRoot,
+                onCollapsedLayoutCoordinates = onOmniboxCollapsedLayoutCoordinates,
             )
         }
     }

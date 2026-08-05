@@ -109,11 +109,17 @@ import vitranshop.shared.generated.resources.ic_star_filled
 import kotlin.time.Duration.Companion.milliseconds
 
 /** shop.app omnibox `md:max-w-[600px]`. */
-private val OmniboxMaxWidth = 600.dp
+internal val OmniboxMaxWidth = 600.dp
+
+/** shop.app floating pill slot `h-[66px]`. */
+internal val OmniboxFloatingSlotHeight = 66.dp
+
+/** shop.app floating pill `bottom-space-36`. */
+internal val OmniboxFloatingBottomInset = 36.dp
 
 /** shop.app `rounded-[32px]`. */
-private val OmniboxCorner = 32.dp
-private val OmniboxShape = RoundedCornerShape(OmniboxCorner)
+internal val OmniboxCorner = 32.dp
+internal val OmniboxShape = RoundedCornerShape(OmniboxCorner)
 
 private val OmniboxActionSize = 40.dp
 
@@ -127,17 +133,17 @@ private val RatingStarSize = 12.dp
  * shop.app expanded shell padding (`lg:p-space-8`).
  * Compact collapsed uses `p-space-4`.
  */
-private val GlassShellPadding = VitranSpacing.sm
+internal val GlassShellPadding = VitranSpacing.sm
 private val CompactShellPadding = VitranSpacing.xs
 
 /** shop.app `0 0 0 4.5px rgba(0,0,0,0.03)` — drawn outside, not as inset border. */
-private val OmniboxRingWidth = 4.5.dp
-private val OmniboxRingColor = Color.Black.copy(alpha = 0.03f)
+internal val OmniboxRingWidth = 4.5.dp
+internal val OmniboxRingColor = Color.Black.copy(alpha = 0.03f)
 
-private val OmniboxShellFill = Color.White.copy(alpha = 0.9f)
+internal val OmniboxShellFill = Color.White.copy(alpha = 0.9f)
 
 /** Expanded desktop overlay — solid white so categories do not show through (shop.app). */
-private val OmniboxExpandedShellFill = Color.White
+internal val OmniboxExpandedShellFill = Color.White
 
 /**
  * shop.app desktop focused search field (`lg:focus:`):
@@ -159,17 +165,17 @@ private const val PlaceholderAlpha = 0.6f
  * shop.app typeahead: container `max-h-[45dvh]`; list `max-h: calc(45dvh - 88px)`
  * with `overflow-y: auto` and `overscroll-behavior: contain`.
  */
-private const val TypeaheadViewportFraction = 0.45f
+internal const val TypeaheadViewportFraction = 0.45f
 /** Input row + shell padding; title/privacy scroll inside the list. */
-private val TypeaheadChromeOffset = 72.dp
+internal val TypeaheadChromeOffset = 72.dp
 private val ShellBottomGap = 12.dp
-private val TypeaheadMinHeight = 120.dp
+internal val TypeaheadMinHeight = 120.dp
 
 /**
  * Consumes leftover vertical scroll after the typeahead list so the parent
  * page scroll does not move (shop.app `overscroll-behavior: contain`).
  */
-private val TypeaheadNestedScrollConnection = object : NestedScrollConnection {
+internal val TypeaheadNestedScrollConnection = object : NestedScrollConnection {
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
@@ -191,6 +197,9 @@ private val TypeaheadNestedScrollConnection = object : NestedScrollConnection {
  *
  * @param onBoundsInRoot Omnibox hit rect in root coordinates (desktop outside-tap),
  * including the expanded typeahead panel when open.
+ * @param onCollapsedLayoutCoordinates Collapsed field layout coords (floating-search
+ * visibility). Parent should keep the reference and re-read [LayoutCoordinates.boundsInRoot]
+ * when scroll changes — [onGloballyPositioned] alone may not recompose every frame.
  */
 @Composable
 fun HeroOmnibox(
@@ -201,6 +210,7 @@ fun HeroOmnibox(
     onExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onBoundsInRoot: (Rect) -> Unit = {},
+    onCollapsedLayoutCoordinates: (LayoutCoordinates) -> Unit = {},
 ) {
     val isDesktop = LocalDesktopLayout.current
     val placeholder = stringResource(Res.string.hero_omnibox_placeholder)
@@ -226,6 +236,7 @@ fun HeroOmnibox(
 
     val latestOnExpandedChange by rememberUpdatedState(onExpandedChange)
     val latestOnBoundsInRoot by rememberUpdatedState(onBoundsInRoot)
+    val latestOnCollapsedLayoutCoordinates by rememberUpdatedState(onCollapsedLayoutCoordinates)
     val latestOnQueryChange by rememberUpdatedState(onQueryChange)
     val latestExpanded by rememberUpdatedState(expanded)
 
@@ -331,6 +342,8 @@ fun HeroOmnibox(
                     }
                 }
                 .onGloballyPositioned { coords ->
+                    // Always report collapsed peg — floating search visibility ignores Popup.
+                    latestOnCollapsedLayoutCoordinates(coords)
                     if (!showDesktopTypeahead) {
                         updateShellCap(coords)
                     }
@@ -418,7 +431,7 @@ fun HeroOmnibox(
     }
 }
 
-private fun Modifier.omniboxGlassChrome(
+internal fun Modifier.omniboxGlassChrome(
     ringWidth: Dp,
     ringColor: Color,
     corner: Dp,
@@ -452,7 +465,7 @@ private fun Modifier.omniboxGlassChrome(
  * `rounded-radius-max` + `bg rgba(255,255,255,.75)` +
  * `border 1px rgba(24,59,78,.06)` + `shadow-s` (`0 2px 8px rgba(0,0,0,.06)`).
  */
-private fun Modifier.omniboxDesktopSearchFieldChrome(): Modifier = this
+internal fun Modifier.omniboxDesktopSearchFieldChrome(): Modifier = this
     .shadow(
         elevation = SearchFieldFocusShadowElevation,
         shape = CircleShape,
@@ -602,25 +615,38 @@ internal fun OmniboxSearchRow(
     )
 }
 
+/**
+ * Typeahead list shared by hero Popup and floating bottom omnibox.
+ *
+ * @param resultsAbove When true (floating pill), list sits above the field —
+ * padding is mirrored so spacing still hugs the input.
+ */
 @Composable
-private fun OmniboxTypeahead(
+internal fun OmniboxTypeahead(
     title: String,
     showTitle: Boolean,
     results: List<OmniboxResult>,
     privacy: String,
     maxListHeight: Dp,
     onResultClick: (OmniboxResult) -> Unit,
+    resultsAbove: Boolean = false,
 ) {
     // Title + rows + privacy share one scrollport so shell max-height never crops the panel.
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = VitranSpacing.xs)
+            .padding(
+                top = if (resultsAbove) 0.dp else VitranSpacing.xs,
+                bottom = if (resultsAbove) VitranSpacing.xs else 0.dp,
+            )
             .heightIn(max = maxListHeight)
             .nestedScroll(TypeaheadNestedScrollConnection)
             .padding(horizontal = VitranSpacing.sm),
         verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
-        contentPadding = PaddingValues(bottom = VitranSpacing.xs),
+        contentPadding = PaddingValues(
+            top = if (resultsAbove) VitranSpacing.xs else 0.dp,
+            bottom = if (resultsAbove) 0.dp else VitranSpacing.xs,
+        ),
     ) {
         if (showTitle) {
             item(key = "title") {

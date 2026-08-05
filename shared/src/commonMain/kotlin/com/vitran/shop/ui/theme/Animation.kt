@@ -78,6 +78,20 @@ object VitranAnimation {
          */
         const val MOBILE_SEARCH_ENTER_MS = 400
         const val MOBILE_SEARCH_ENTER_OFFSET_DP = 100
+
+        /**
+         * Floating search chrome (pill / FAB) show-hide — shop.app
+         * `transition-transform duration-300 ease-in-out`
+         * (`cubic-bezier(0.4, 0, 0.2, 1)`).
+         */
+        const val FLOAT_ENTER_MS = 300
+        val FloatEasing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
+
+        /** Desktop floating pill hide: `translate-y-[200%]`. */
+        const val FLOAT_PILL_HIDE_FRACTION = 2f
+
+        /** Mobile FAB hide: `translate-y-[calc(100%+86px)]` extra offset. */
+        const val FLOAT_FAB_HIDE_EXTRA_DP = 86
     }
 
     /**

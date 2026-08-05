@@ -8,7 +8,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -21,12 +23,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.vitran.shop.ui.components.DownloadAppBanner
+import com.vitran.shop.ui.components.FloatingSearchFab
+import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
 import com.vitran.shop.ui.components.SiteFooter
@@ -58,6 +64,32 @@ fun HomeScreen(
     var omniboxExpanded by remember { mutableStateOf(false) }
     var omniboxBoundsInRoot by remember { mutableStateOf(Rect.Zero) }
     var screenOriginInRoot by remember { mutableStateOf(Offset.Zero) }
+    // Live layout coords for the collapsed hero field. Re-read boundsInRoot whenever
+    // scroll changes — onGloballyPositioned alone does not recompose every scroll frame.
+    var omniboxCollapsedCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    // Fallback: bottom of field in scroll-content space (stable if live bounds stall).
+    var omniboxBottomInContentPx by remember { mutableFloatStateOf(Float.NaN) }
+
+    val heroOmniboxOffScreen by remember {
+        derivedStateOf {
+            val scroll = scrollState.value
+            val coords = omniboxCollapsedCoords
+            if (coords != null && coords.isAttached) {
+                val liveBottom = coords.boundsInRoot().bottom
+                if (liveBottom <= screenOriginInRoot.y) return@derivedStateOf true
+            }
+            val contentBottom = omniboxBottomInContentPx
+            if (!contentBottom.isNaN()) {
+                return@derivedStateOf contentBottom - scroll <= 0f
+            }
+            false
+        }
+    }
+    val showFloatingSearch = heroOmniboxOffScreen && !(!isDesktop && omniboxExpanded)
+
+    // When floating chrome owns search, keep the hero field collapsed (no off-screen Popup).
+    val heroOmniboxExpanded = omniboxExpanded && !(isDesktop && showFloatingSearch)
+    val floatingOmniboxExpanded = omniboxExpanded && isDesktop && showFloatingSearch
 
     fun dismissOmnibox() {
         query = ""
@@ -71,7 +103,7 @@ fun HomeScreen(
     val desktopState = rememberUpdatedState(isDesktop)
     val onDismissOmnibox by rememberUpdatedState(newValue = { dismissOmnibox() })
 
-    // Desktop: scrolling the Home page (outside the typeahead Popup) dismisses search.
+    // Desktop: scrolling the Home page (outside the typeahead) dismisses search.
     LaunchedEffect(isDesktop, omniboxExpanded, scrollState) {
         if (!isDesktop || !omniboxExpanded) return@LaunchedEffect
         snapshotFlow { scrollState.isScrollInProgress }
@@ -132,14 +164,29 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     // Desktop typeahead overlays following scroll siblings (categories, etc.).
-                    .zIndex(if (isDesktop && omniboxExpanded) 20f else 0f),
+                    .zIndex(if (isDesktop && heroOmniboxExpanded) 20f else 0f),
             ) {
                 HomeHero(
                     query = query,
                     onQueryChange = { query = it },
-                    omniboxExpanded = omniboxExpanded,
+                    omniboxExpanded = heroOmniboxExpanded,
                     onOmniboxExpandedChange = { omniboxExpanded = it },
-                    onOmniboxBoundsInRoot = { omniboxBoundsInRoot = it },
+                    onOmniboxBoundsInRoot = { bounds ->
+                        if (!(isDesktop && showFloatingSearch)) {
+                            omniboxBoundsInRoot = bounds
+                        }
+                    },
+                    onOmniboxCollapsedLayoutCoordinates = { coords ->
+                        omniboxCollapsedCoords = coords
+                        // Snapshot content-space Y only when not mid-scroll to avoid
+                        // double-counting if bounds omit the scroll offset.
+                        if (!scrollState.isScrollInProgress) {
+                            omniboxBottomInContentPx =
+                                coords.boundsInRoot().bottom -
+                                    screenOriginInRoot.y +
+                                    scrollState.value
+                        }
+                    },
                     onOmniboxDismiss = { dismissOmnibox() },
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -178,6 +225,32 @@ fun HomeScreen(
                 onLanguageClick = { /* mock — language settings not wired yet */ },
                 onDownloadClick = { /* mock — store deep link not wired yet */ },
                 modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        // Desktop: floating pill when hero omnibox scrolls off-screen.
+        if (isDesktop) {
+            FloatingSearchOmnibox(
+                visible = showFloatingSearch,
+                query = query,
+                onQueryChange = { query = it },
+                expanded = floatingOmniboxExpanded,
+                onExpandedChange = { omniboxExpanded = it },
+                onSubmit = { /* mock — search screen not wired yet */ },
+                onDismiss = { dismissOmnibox() },
+                onBoundsInRoot = { omniboxBoundsInRoot = it },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .zIndex(30f),
+            )
+        } else {
+            // Compact: FAB above bottom nav (host already clears nav); tap opens sheet.
+            FloatingSearchFab(
+                visible = showFloatingSearch,
+                onClick = { omniboxExpanded = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .zIndex(100f),
             )
         }
 

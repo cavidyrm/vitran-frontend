@@ -20,6 +20,7 @@
     <string name="hero_wordmark_a11y">ویتران</string>
     <string name="hero_omnibox_placeholder">امروز دنبال چی می‌گردی؟</string>
     <string name="hero_omnibox_a11y">جستجوی محصولات و فروشگاه‌ها</string>
+    <string name="floating_search_fab_a11y">باز کردن جستجو</string>
     <string name="hero_omnibox_submit_a11y">جستجو</string>
     <string name="hero_omnibox_clear_a11y">پاک کردن جستجو</string>
     <string name="hero_omnibox_close_a11y">بستن جستجو</string>
