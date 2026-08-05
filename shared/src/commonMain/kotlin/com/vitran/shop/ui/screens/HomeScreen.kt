@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -36,6 +38,8 @@ import com.vitran.shop.ui.sections.home.rememberMockHomeCategories
 import com.vitran.shop.ui.sections.home.rememberMockHomeCategoryMosaics
 import com.vitran.shop.ui.sections.home.rememberMockHomeCategoryShopSections
 import com.vitran.shop.ui.shell.LocalDesktopLayout
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 
 /** shop.app mobile overlay `backdrop-blur-[10px]` — blur content under the sheet. */
 private val MobileOmniboxBackdropBlur = 10.dp
@@ -65,6 +69,16 @@ fun HomeScreen(
     val boundsState = rememberUpdatedState(omniboxBoundsInRoot)
     val originState = rememberUpdatedState(screenOriginInRoot)
     val desktopState = rememberUpdatedState(isDesktop)
+    val onDismissOmnibox by rememberUpdatedState(newValue = { dismissOmnibox() })
+
+    // Desktop: scrolling the Home page (outside the typeahead Popup) dismisses search.
+    LaunchedEffect(isDesktop, omniboxExpanded, scrollState) {
+        if (!isDesktop || !omniboxExpanded) return@LaunchedEffect
+        snapshotFlow { scrollState.isScrollInProgress }
+            .distinctUntilChanged()
+            .filter { scrolling -> scrolling }
+            .collect { onDismissOmnibox() }
+    }
 
     Box(
         modifier = modifier
@@ -109,10 +123,17 @@ fun HomeScreen(
                 )
                 .verticalScroll(
                     state = scrollState,
-                    enabled = !omniboxExpanded,
+                    // Compact sheet locks the page; desktop keeps page scroll so the wheel
+                    // outside the non-focusable omnibox Popup still moves Home.
+                    enabled = isDesktop || !omniboxExpanded,
                 ),
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // Desktop typeahead overlays following scroll siblings (categories, etc.).
+                    .zIndex(if (isDesktop && omniboxExpanded) 20f else 0f),
+            ) {
                 HomeHero(
                     query = query,
                     onQueryChange = { query = it },

@@ -1,7 +1,5 @@
 package com.vitran.shop.ui.components
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -58,9 +58,11 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -75,9 +77,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import coil3.compose.AsyncImage
 import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.shell.LocalDesktopLayout
@@ -131,6 +136,9 @@ private val OmniboxRingColor = Color.Black.copy(alpha = 0.03f)
 
 private val OmniboxShellFill = Color.White.copy(alpha = 0.9f)
 
+/** Expanded desktop overlay — solid white so categories do not show through (shop.app). */
+private val OmniboxExpandedShellFill = Color.White
+
 /**
  * shop.app desktop focused search field (`lg:focus:`):
  * `bg-overlay-fixed-light-75`, `border-border-secondary`, `shadow-s`.
@@ -174,13 +182,15 @@ private val TypeaheadNestedScrollConnection = object : NestedScrollConnection {
 
 /**
  * Home hero search omnibox matching shop.app:
- * - Desktop: collapsed pill / glass panel with typeahead under the field.
+ * - Desktop: collapsed pill in layout; expanded field+typeahead is one solid Popup panel
+ *   (overlay — does not push Home content).
  * - Compact: collapsed pill; focus opens [OmniboxMobileSearchSheet] above bottom nav.
  * Mock-only: [onSubmit] does not navigate yet.
  *
  * [expanded] is controlled by the parent so outside-tap (desktop) can collapse immediately.
  *
- * @param onBoundsInRoot Omnibox hit rect in root coordinates (desktop outside-tap).
+ * @param onBoundsInRoot Omnibox hit rect in root coordinates (desktop outside-tap),
+ * including the expanded typeahead panel when open.
  */
 @Composable
 fun HeroOmnibox(
@@ -206,10 +216,13 @@ fun HeroOmnibox(
     val viewportHeight = LocalShellViewportHeight.current
 
     val results = remember(query) { mockOmniboxResults(query) }
+    val anchorFocusRequester = remember { FocusRequester() }
 
     var textFieldFocused by remember { mutableStateOf(false) }
     // Remaining space under omnibox top → avoid clipping at the content-frame bottom.
     var maxShellHeight by remember { mutableStateOf(viewportHeight * TypeaheadViewportFraction) }
+    var collapsedWidthPx by remember { mutableIntStateOf(0) }
+    var collapsedHeightPx by remember { mutableIntStateOf(0) }
 
     val latestOnExpandedChange by rememberUpdatedState(onExpandedChange)
     val latestOnBoundsInRoot by rememberUpdatedState(onBoundsInRoot)
@@ -246,42 +259,57 @@ fun HeroOmnibox(
         dismissToInitial()
     }
 
-    // Cap list so the expanded shell fits in remaining viewport (and ≤ 45dvh).
     val typeaheadMaxHeight = (maxShellHeight - TypeaheadChromeOffset)
         .coerceAtLeast(TypeaheadMinHeight)
 
-    // Desktop always glass; compact stays solid pill (typeahead lives in the sheet).
-    val showRingAndGlass = isDesktop
     val showDesktopTypeahead = isDesktop && expanded
+    val collapsedWidth = with(density) {
+        if (collapsedWidthPx > 0) collapsedWidthPx.toDp() else OmniboxMaxWidth
+    }
+    val collapsedHeight = with(density) {
+        if (collapsedHeightPx > 0) collapsedHeightPx.toDp() else VitranSize.touchTarget
+    }
 
-    Column(
+    fun updateShellCap(coords: LayoutCoordinates) {
+        latestOnBoundsInRoot(coords.boundsInRoot())
+        if (isDesktop) {
+            val root = coords.findRootCoordinates()
+            val top = coords.boundsInRoot().top
+            val remainingPx = (root.size.height - top).coerceAtLeast(0f)
+            val remainingDp = with(density) { remainingPx.toDp() } - ShellBottomGap
+            val cap = viewportHeight * TypeaheadViewportFraction
+            maxShellHeight = minOf(cap, remainingDp).coerceAtLeast(
+                TypeaheadMinHeight + TypeaheadChromeOffset,
+            )
+        }
+    }
+
+    Box(
         modifier = modifier
             .widthIn(max = OmniboxMaxWidth)
             .fillMaxWidth()
-            .onGloballyPositioned { coords ->
-                latestOnBoundsInRoot(coords.boundsInRoot())
-                if (isDesktop) {
-                    val root = coords.findRootCoordinates()
-                    val top = coords.boundsInRoot().top
-                    val remainingPx = (root.size.height - top).coerceAtLeast(0f)
-                    val remainingDp = with(density) { remainingPx.toDp() } - ShellBottomGap
-                    val cap = viewportHeight * TypeaheadViewportFraction
-                    maxShellHeight = minOf(cap, remainingDp).coerceAtLeast(
-                        TypeaheadMinHeight + TypeaheadChromeOffset,
-                    )
-                }
-            }
             .semantics { contentDescription = a11y },
     ) {
+        // Layout peg: collapsed pill size only — never grows with typeahead.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(
-                    if (showRingAndGlass) {
+                    if (showDesktopTypeahead) {
+                        Modifier
+                            .width(collapsedWidth)
+                            .height(collapsedHeight)
+                    } else {
+                        Modifier
+                    },
+                )
+                .then(
+                    if (isDesktop) {
                         Modifier.omniboxGlassChrome(
                             ringWidth = OmniboxRingWidth,
                             ringColor = OmniboxRingColor,
                             corner = OmniboxCorner,
+                            fill = OmniboxShellFill,
                         )
                     } else {
                         Modifier
@@ -294,68 +322,97 @@ fun HeroOmnibox(
                             .background(MaterialTheme.colorScheme.surface)
                     },
                 )
-                .then(
-                    if (showDesktopTypeahead) {
-                        Modifier.heightIn(max = maxShellHeight)
-                    } else {
-                        Modifier
-                    },
-                )
-                .animateContentSize(
-                    animationSpec = tween(
-                        durationMillis = VitranAnimation.Omnibox.EXPAND_MS,
-                        easing = VitranAnimation.Omnibox.ExpandEasing,
-                    ),
-                )
-                .padding(
-                    // Expanded desktop glass keeps uniform padding for typeahead.
-                    // Collapsed desktop must hug the field — bottom/side shell pad
-                    // was reading as empty gap above the categories row.
-                    if (isDesktop && showDesktopTypeahead) {
-                        PaddingValues(GlassShellPadding)
-                    } else if (isDesktop) {
-                        PaddingValues(0.dp)
-                    } else {
-                        PaddingValues(CompactShellPadding)
-                    },
-                ),
+                .padding(if (isDesktop) PaddingValues(0.dp) else PaddingValues(CompactShellPadding))
+                .graphicsLayer { alpha = if (showDesktopTypeahead) 0f else 1f }
+                .onSizeChanged { size ->
+                    if (!showDesktopTypeahead) {
+                        collapsedWidthPx = size.width
+                        collapsedHeightPx = size.height
+                    }
+                }
+                .onGloballyPositioned { coords ->
+                    if (!showDesktopTypeahead) {
+                        updateShellCap(coords)
+                    }
+                },
         ) {
-            // shop.app: recessed pill chrome only while the desktop field is active.
-            val showDesktopFieldChrome = isDesktop && (expanded || textFieldFocused)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (showDesktopFieldChrome) {
-                            Modifier.omniboxDesktopSearchFieldChrome()
-                        } else {
-                            Modifier
-                        },
-                    ),
+            // Real input stays in the composition tree (not inside a focusable Popup) so
+            // wheel events outside the overlay still reach the Home page scroll.
+            OmniboxSearchRow(
+                query = query,
+                onQueryChange = onQueryChange,
+                onSubmit = onSubmit,
+                placeholder = placeholder,
+                submitA11y = submitA11y,
+                clearA11y = clearA11y,
+                isRtl = isRtl,
+                purpleDark = purpleDark,
+                onFocusChanged = { textFieldFocused = it },
+                focusRequester = anchorFocusRequester,
+                // Desktop: keep enabled while expanded (hidden under the Popup visual).
+                interactionEnabled = isDesktop || !expanded,
+            )
+        }
+
+        // Visual panel only — focusable=false so it does not steal page wheel scroll.
+        if (showDesktopTypeahead) {
+            Popup(
+                alignment = Alignment.TopCenter,
+                offset = IntOffset.Zero,
+                properties = PopupProperties(
+                    focusable = false,
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true,
+                ),
+                onDismissRequest = { dismissToInitial() },
             ) {
-                OmniboxSearchRow(
-                    query = query,
-                    onQueryChange = onQueryChange,
-                    onSubmit = onSubmit,
-                    placeholder = placeholder,
-                    submitA11y = submitA11y,
-                    clearA11y = clearA11y,
-                    isRtl = isRtl,
-                    purpleDark = purpleDark,
-                    onFocusChanged = { textFieldFocused = it },
-                    // While the mobile sheet is open, keep the hero field inert.
-                    interactionEnabled = isDesktop || !expanded,
-                )
-            }
-            if (showDesktopTypeahead) {
-                OmniboxTypeahead(
-                    title = suggestionsTitle,
-                    showTitle = query.isBlank(),
-                    results = results,
-                    privacy = privacy,
-                    maxListHeight = typeaheadMaxHeight,
-                    onResultClick = onResultClick,
-                )
+                Column(
+                    modifier = Modifier
+                        .width(collapsedWidth)
+                        .widthIn(max = OmniboxMaxWidth)
+                        .omniboxGlassChrome(
+                            ringWidth = OmniboxRingWidth,
+                            ringColor = OmniboxRingColor,
+                            corner = OmniboxCorner,
+                            fill = OmniboxExpandedShellFill,
+                        )
+                        .heightIn(max = maxShellHeight)
+                        .padding(GlassShellPadding)
+                        .onGloballyPositioned { updateShellCap(it) },
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .omniboxDesktopSearchFieldChrome(),
+                    ) {
+                        OmniboxSearchRow(
+                            query = query,
+                            onQueryChange = onQueryChange,
+                            onSubmit = onSubmit,
+                            placeholder = placeholder,
+                            submitA11y = submitA11y,
+                            clearA11y = clearA11y,
+                            isRtl = isRtl,
+                            purpleDark = purpleDark,
+                            // Keep keyboard focus on the in-flow field so the Popup can
+                            // stay non-focusable (page wheel scroll outside still works).
+                            onFocusChanged = { focused ->
+                                if (focused) {
+                                    anchorFocusRequester.requestFocus()
+                                }
+                            },
+                            interactionEnabled = true,
+                        )
+                    }
+                    OmniboxTypeahead(
+                        title = suggestionsTitle,
+                        showTitle = query.isBlank(),
+                        results = results,
+                        privacy = privacy,
+                        maxListHeight = typeaheadMaxHeight,
+                        onResultClick = onResultClick,
+                    )
+                }
             }
         }
     }
@@ -365,6 +422,7 @@ private fun Modifier.omniboxGlassChrome(
     ringWidth: Dp,
     ringColor: Color,
     corner: Dp,
+    fill: Color = OmniboxShellFill,
 ): Modifier = this
     .drawBehind {
         val ringPx = ringWidth.toPx()
@@ -387,7 +445,7 @@ private fun Modifier.omniboxGlassChrome(
         spotColor = Color.Black.copy(alpha = 0.08f),
     )
     .clip(OmniboxShape)
-    .background(OmniboxShellFill)
+    .background(fill)
 
 /**
  * shop.app desktop focused input:
@@ -422,7 +480,7 @@ internal fun OmniboxSearchRow(
     purpleDark: Color,
     onFocusChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-                    focusRequester: FocusRequester? = null,
+    focusRequester: FocusRequester? = null,
     interactionEnabled: Boolean = true,
 ) {
     BasicTextField(

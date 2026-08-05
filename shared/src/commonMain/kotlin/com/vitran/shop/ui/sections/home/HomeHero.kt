@@ -96,7 +96,8 @@ fun HomeHero(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .zIndex(3f)
+                // Absolute typeahead must paint above collage dismiss scrim (zIndex 4).
+                .zIndex(if (omniboxExpanded && isDesktop) 20f else 3f)
                 .then(
                     if (isDesktop) {
                         // Visual pull into collage + shrink layout height (CSS -mb-space-64).
