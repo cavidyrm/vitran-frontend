@@ -3,15 +3,15 @@ name: build-categories-section
 description: >-
   Builds one Categories (Explore) screen section at a time for VitranShop:
   component first, then wire into CategoriesScreen. Use when working on Explore
-  featured, browse categories, product rows, or any other Categories section —
-  not the whole page at once.
+  featured, browse categories, product rows, merchant grids, or any other
+  Categories section — not the whole page at once.
 ---
 
 # Build Categories Section
 
 ## When to use
 - User asks to work on the Categories / Explore screen (`/categories`).
-- Building or refining: Explore featured, Browse categories, product carousels, etc.
+- Building or refining: Explore featured, Browse categories, product carousels, category merchant grids, etc.
 
 ## When to update
 - Categories section order changes.
@@ -23,8 +23,9 @@ description: >-
 2. Explore featured (`CategoriesExploreFeaturedSection` — H1 + editorial cards)
 3. Browse categories
 4. Product rows (Top rated / New in …)
-5. Site footer (`SiteFooter`)
-6. Floating search (only when requested)
+5. Category merchant grids (Women / Men / Beauty / Food & drinks / Baby & toddler)
+6. Site footer (`SiteFooter` — shared with Home)
+7. Floating search (always-on; reuse Home `FloatingSearchOmnibox` / `FloatingSearchFab`)
 
 Do **one** section per task unless the user asks for more.
 
@@ -94,5 +95,9 @@ Categories section progress:
 - Explore featured: `shared/.../ui/sections/categories/CategoriesExploreFeaturedSection.kt`
 - Browse: `shared/.../ui/sections/categories/CategoriesBrowseCategoriesSection.kt`
 - Product rows: `shared/.../ui/sections/categories/CategoriesProductRowsSection.kt`
+- Merchant grids: `shared/.../ui/sections/categories/CategoriesMerchantGridsSection.kt`
+- Merchant card: `shared/.../ui/components/CategoriesMerchantCard.kt`
+- Site footer: `shared/.../ui/components/SiteFooter.kt` (shared with Home)
+- Floating search: wired in `CategoriesScreen` (always-on; same components as Home)
 - Screen host: `shared/.../ui/screens/CategoriesScreen.kt`
 - Route: `Route.Categories` ↔ `/categories`

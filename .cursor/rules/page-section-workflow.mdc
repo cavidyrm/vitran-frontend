@@ -33,8 +33,9 @@ Do **not** mark a section done until responsive sizes and the gap from the secti
   2. Explore featured (`CategoriesExploreFeaturedSection` — H1 + editorial carousel)
   3. Browse categories
   4. Product rows (Top rated / New in …) — `CategoriesProductRowsFeed`
-  5. Site footer (`SiteFooter`)
-  6. Floating search (when requested)
+  5. Category merchant grids (Women / Men / Beauty / …) — `CategoriesMerchantGridsFeed`
+  6. Site footer (`SiteFooter` — shared with Home; done)
+  7. Floating search (always-on `FloatingSearchOmnibox` / `FloatingSearchFab` — done)
 - Categories vertical rhythm: `CategoriesSectionGap` (40dp) between major blocks on `CategoriesScreen`
 
 ## Placement

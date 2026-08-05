@@ -134,5 +134,10 @@
     <string name="categories_product_rows_section_open_a11y">مشاهده %1$s</string>
     <string name="categories_product_card_save_a11y">افزودن به ذخیره‌ها</string>
     <string name="categories_product_card_a11y">%1$s از %2$s، %3$s</string>
+    <!-- Categories / Merchant grids (Women / Men / … — shop.app /categories) -->
+    <string name="categories_merchant_grid_section_open_a11y">مشاهده %1$s</string>
+    <string name="categories_merchant_card_a11y">فروشگاه %1$s، امتیاز %2$s</string>
+    <string name="categories_merchant_image_prev_a11y">تصویر قبلی</string>
+    <string name="categories_merchant_image_next_a11y">تصویر بعدی</string>
 </resources>
 
