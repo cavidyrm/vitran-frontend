@@ -20,10 +20,11 @@ description: >-
 - Screenshots in `docs/ui-reference/` are replaced with better references.
 
 ## Source of truth
-- Folder: `docs/ui-reference/`
+- Live shop.app (open the matching URL/section in the agent browser before extracting tokens)
+- Folder: `docs/ui-reference/` (screenshots supplement live inspection; they do not replace it)
 - Screen list: `docs/ui-reference/screens.md`
 - Theme code: `shared/.../ui/theme/` (`VitranTheme`, `VitranLightColorScheme`, `VitranExtraColors`, `VitranSpacing`, `VitranSize`, `VitranRadius`, `VitranElevation`)
-- Screenshots define **tokens and patterns**, not a mandate to ship a full screen in one go.
+- Live page + screenshots define **tokens and patterns**, not a mandate to ship a full screen in one go.
 
 ## Spacing / size / radius / elevation
 - Prefer `VitranSpacing`, `VitranSize`, `VitranRadius`, `VitranElevation` over raw `.dp`.
@@ -68,7 +69,7 @@ description: >-
 - Prefer `Start`/`End` alignment APIs.
 
 ## Workflow for one piece
-1. Open the relevant screenshot(s).
+1. Open the matching shop.app page/section in the browser; also open the relevant screenshot(s).
 2. Note only tokens needed for **this** piece (color, size, radius, text style).
 3. Implement that piece in `shared` commonMain using theme tokens.
 4. Stop. Do not assemble the full screen unless asked.

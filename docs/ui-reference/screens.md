@@ -7,11 +7,11 @@
 - Place order
 
 ## In scope
-1. Home
-2. Explore
-3. Deals
-4. Saved
-5. Account (Profile hub)
+1. Home (`/` — `HomeScreen`)
+2. Explore / Categories (`/categories` — `CategoriesScreen`; shop.app title “Explore”, nav label «دسته‌بندی‌ها»)
+3. Deals (`/offers`)
+4. Saved (`/saved`)
+5. Account (Profile hub) (`/account`)
 6. Category landing (Women/Men/Beauty/...)
 7. Product list (filters + grid)
 8. Product detail (UI only; no checkout)
@@ -20,7 +20,7 @@
 
 ## Bottom / Side nav tabs
 - Home
-- Explore
+- Explore (route `/categories`, `Route.Categories`)
 - Deals
 - Saved
 - Account

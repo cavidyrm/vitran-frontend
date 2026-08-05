@@ -102,5 +102,20 @@
     <string name="site_footer_google_play_a11y">دانلود از Google Play</string>
     <string name="site_footer_qr_a11y">کد QR دانلود اپ</string>
     <string name="site_footer_wordmark_a11y">ویتران</string>
+    <!-- Categories / Explore featured (shop.app /categories) -->
+    <string name="categories_explore_title">کاوش</string>
+    <string name="categories_explore_scroll_prev_a11y">ویرایش قبلی</string>
+    <string name="categories_explore_scroll_next_a11y">ویرایش بعدی</string>
+    <string name="categories_explore_edit_open_a11y">مشاهده %1$s</string>
+    <string name="categories_explore_edit_mindful_title">مجموعه زندگی آگاهانه</string>
+    <string name="categories_explore_edit_mindful_subtitle">انتخاب‌های پایدار از The Good Trade</string>
+    <string name="categories_explore_edit_living_title">درخشش اتاق نشیمن</string>
+    <string name="categories_explore_edit_living_subtitle">نورپردازی شیک، میزهای کناری و لایه‌های کتان.</string>
+    <string name="categories_explore_edit_hair_title">ترمیم مو</string>
+    <string name="categories_explore_edit_hair_subtitle">سرم‌ها، کرم‌های استایل و محافظ رطوبت.</string>
+    <string name="categories_explore_edit_kitchen_title">آشپزخانه مینیمال</string>
+    <string name="categories_explore_edit_kitchen_subtitle">ظروف، ابزار و نظم‌دهنده‌های ضروری.</string>
+    <string name="categories_explore_edit_fitness_title">شروع تناسب‌اندام</string>
+    <string name="categories_explore_edit_fitness_subtitle">لباس ورزشی، مکمل و تجهیزات خانگی.</string>
 </resources>
 

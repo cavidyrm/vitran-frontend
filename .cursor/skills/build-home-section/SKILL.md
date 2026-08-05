@@ -34,7 +34,7 @@ Copy and track:
 
 ```
 Home section progress:
-- [ ] 1. Name section + screenshot in docs/ui-reference/
+- [ ] 1. Name section + open live shop.app + screenshot in docs/ui-reference/
 - [ ] 2. Design props / mock fields (Persian copy)
 - [ ] 3. Build composable (components/, navigation/, or sections/home/)
 - [ ] 4. Preview / demo with mock data + RTL check
@@ -44,7 +44,7 @@ Home section progress:
 
 ### 1. Name the section
 - Example: `AppNavigation`, `HomeCategoryRow`, `HomeBrandCarousel`
-- Pick the matching Home screenshot(s) under `docs/ui-reference/`.
+- Open the matching shop.app page/section in the browser; pick the matching Home screenshot(s) under `docs/ui-reference/`.
 
 ### 2. Props / mock
 - Keep models UI-only (title, image placeholder, labels).

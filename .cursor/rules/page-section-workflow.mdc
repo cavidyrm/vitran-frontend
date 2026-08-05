@@ -10,27 +10,30 @@ alwaysApply: true
 - For each section: **create the component first**, then use it on the screen.
 - Do not start the next section until the user asks for it.
 
+## Live shop.app reference (required)
+- Screenshots in `docs/ui-reference/` are **not enough**.
+- Before implementing or refining a section, open the matching page on **https://shop.app** in the agent browser (e.g. `/categories` for Categories) and fully inspect that section: layout, spacing, radii, typography, carousel/scroll behavior, and breakpoints.
+- User screenshots complement live inspection; they do **not** replace it.
+
 ## Current focus
-- Active screen: **Home**
-- Home section order:
-  1. App navigation (`AppShell` owns breakpoint; `AppSideNav` / `AppBottomNav`)
-  2. Content container (`AppContentContainer` in shell — empty frame for page content)
-  3. Download app banner (`DownloadAppBanner`)
-  4. HomeHero (collage / wordmark / omnibox — when requested)
-  5. Categories
-  6. Shops / products by category (rows)
-  7. Site footer (`SiteFooter`)
-  8. Remaining Home blocks as needed
+- Active screen: **Categories** (`CategoriesScreen`, route `/categories` ↔ shop.app Explore)
+- Categories section order:
+  1. App chrome (`AppShell` — already done; skip unless changing nav)
+  2. Explore featured (`CategoriesExploreFeaturedSection` — H1 + editorial carousel)
+  3. Browse categories
+  4. Product rows (Top rated / New in …)
+  5. Site footer (`SiteFooter`)
+  6. Floating search (when requested)
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`
 - App chrome navigation: `shared/.../ui/navigation/`
-- Screen-specific sections (optional): `shared/.../ui/sections/home/`
-- Screen assembly: `shared/.../ui/screens/HomeScreen.kt`
+- Screen-specific sections: `shared/.../ui/sections/categories/`
+- Screen assembly: `shared/.../ui/screens/CategoriesScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference
-- Use `docs/ui-reference/` screenshots only for the **active** section.
+- Use `docs/ui-reference/` screenshots for the **active** section **and** live shop.app.
 - Match shop.app look with Persian RTL and `VitranTheme`.
 - Do **not** use Material3 `NavigationBar` / `NavigationRail` for app chrome.
 
@@ -38,6 +41,6 @@ alwaysApply: true
 - Always, for any screen/section UI work in this repo.
 
 ## When to update
-- Active screen changes (e.g. leave Home for Explore).
-- Home section order changes.
+- Active screen changes (e.g. leave Categories for Deals).
+- Categories section order changes.
 - Package paths for components/screens settle or move.

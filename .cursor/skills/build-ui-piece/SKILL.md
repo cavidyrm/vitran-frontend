@@ -21,7 +21,7 @@ description: >-
 
 ## Rules of engagement
 - **One piece per task** unless the user asks for more.
-- Match shop.app using `docs/ui-reference/` for look-and-feel.
+- Match shop.app using **live shop.app in the agent browser** plus `docs/ui-reference/` screenshots. Screenshots alone are not enough.
 - Use mock data only (see mock-phase rule).
 - Read `shop-design-system` skill for tokens when needed.
 
@@ -30,7 +30,7 @@ Copy and track:
 
 ```
 Piece progress:
-- [ ] 1. Name the piece and target screenshot
+- [ ] 1. Name the piece; open live shop.app section + note screenshot
 - [ ] 2. List props / mock fields
 - [ ] 3. Implement composable in shared commonMain
 - [ ] 4. Wire local mock sample for preview/demo
@@ -40,7 +40,7 @@ Piece progress:
 
 ### 1. Name the piece
 - Example: `ShopSearchBar`, `ProductCard`, `SectionHeader`.
-- Note which screenshot file is the visual reference.
+- Open the matching shop.app page/section in the browser; note the screenshot file under `docs/ui-reference/`.
 
 ### 2. Props / mock fields
 - Define a small data class or parameters (title, price, image placeholder, etc.).
