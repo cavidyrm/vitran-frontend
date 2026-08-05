@@ -25,5 +25,12 @@ object VitranSize {
 
     val borderHairline = 0.5.dp
 
+    /** App chrome: side rail vs bottom nav (shop.app lg-ish). */
     val desktopBreakpoint = 1024.dp
+
+    /** shop.app `md` — section titles switch to `text-sectionTitle` (20sp). */
+    val mdBreakpoint = 768.dp
+
+    /** shop.app `xl` — mosaic aspect 374/340 + radius 28 (measured ≥1440). */
+    val xlBreakpoint = 1440.dp
 }

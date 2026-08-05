@@ -111,7 +111,8 @@ fun HomeCategoriesRow(
     val endOverhang = if (isRtl) -CategoryArrowOverhang else CategoryArrowOverhang
     // shop.app measured: desktop search→pill ≈ 38, compact ≈ 30.
     val topPad = if (isDesktop) 36.dp else VitranSpacing.xxxl
-    val bottomPad = 16.dp
+    // shop.app shelf `mb-space-6` compact / `lg:mb-space-20` — contributes to pills→mosaic gap.
+    val bottomPad = if (isDesktop) VitranSpacing.xl else 6.dp
     // Center the 42dp button on the 44dp pill band (below topPad).
     val buttonTopInset =
         topPad + (CategoryPillHeight - CategoryScrollButtonSize) / 2

@@ -62,8 +62,10 @@ import coil3.compose.AsyncImage
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.shell.LocalDesktopLayout
+import com.vitran.shop.ui.shell.LocalShellViewportWidth
 import com.vitran.shop.ui.theme.VitranAnimation
 import com.vitran.shop.ui.theme.VitranRadius
+import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 import kotlinx.coroutines.launch
@@ -108,23 +110,17 @@ private val MosaicScrollStep = MosaicCardWidth + VitranSpacing.lg
 private val MosaicArrowOverhang = VitranSpacing.lg
 
 /**
- * Extra space above mosaics so pills→title ≈ 36dp on desktop
- * (pills LazyRow already contributes 16dp bottom pad).
- */
-private val MosaicSectionTopPad = VitranSpacing.xl
-
-/**
- * shop.app `border-border-image` — `rgba(5, 41, 77, 0.1)`.
- */
-private val MosaicBorder = Color(0x1A05294D)
-
-/**
  * Soft mosaic card shadow — shop.app `shadow-md`:
  * `0 4px 6px -1px / 0 2px 4px -2px` at `rgba(0,0,0,0.1)`.
  * Kept lighter than Material elevation medium.
  */
 private val MosaicCardShadowElevation = 4.dp
 private val MosaicCardShadowColor = Color.Black.copy(alpha = 0.08f)
+
+/**
+ * shop.app `border-border-image` — `rgba(5, 41, 77, 0.1)`.
+ */
+private val MosaicBorder = Color(0x1A05294D)
 
 /**
  * shop.app `shadow-m` on carousel arrows: `0 4px 24px rgba(0,0,0,0.12)`.
@@ -136,13 +132,11 @@ private val ArrowShadowColor = Color.Black.copy(alpha = 0.12f)
  * Horizontal L1 category mosaic carousel under the Home pills (shop.app).
  *
  * Measured tokens (shop.app 2026):
- * - Card width 330; tile gap 2; header↔grid mt 12 compact / 16 desktop
- * - Grid aspect 1:1 compact; 374/340 desktop; radius 20 / 28
+ * - Card width 330 fixed (no mobile downscale)
+ * - Grid aspect 1:1 until viewport xl (1440); then 374/340 + radius 28
+ * - Header↔grid mt 12 / xl 16; title 18/20 Normal (md ≥768 → 20)
  * - Carousel pad 16 compact / 48 desktop; gap 8 / 16
- * - Tile label white, 12sp / 14sp, margin 8 / 12, bottom-start
- * - Header chevron: 16dp gray circle + bold-right-chevron
- * - Tile hover: image scale 1.1 / 150ms; title click has no ripple fill
- * - Card shadow: soft 4dp @ 8% black (shop.app shadow-md)
+ * - Section top after pills: 20 compact / 32 desktop; bottom before merchants 40 / 64
  */
 @Composable
 fun HomeCategoryMosaicsRow(
@@ -152,6 +146,9 @@ fun HomeCategoryMosaicsRow(
     onTileClick: (HomeCategoryMosaic, HomeCategoryMosaicTile) -> Unit = { _, _ -> },
 ) {
     val isDesktop = LocalDesktopLayout.current
+    val viewportWidth = LocalShellViewportWidth.current
+    val isMdUp = viewportWidth >= VitranSize.mdBreakpoint
+    val isXlUp = viewportWidth >= VitranSize.xlBreakpoint
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
@@ -159,20 +156,23 @@ fun HomeCategoryMosaicsRow(
     val horizontalPad = if (isDesktop) VitranSpacing.xxxl + VitranSpacing.lg else VitranSpacing.lg
     // shop.app: compact ~8px (`gap-space-8`); desktop ~16px at typical widths.
     val itemGap = if (isDesktop) VitranSpacing.lg else VitranSpacing.sm
-    val bottomPad = if (isDesktop) 38.dp else VitranSpacing.xxxl
+    // shop.app merchant section `mt` 40 compact / 64 desktop — owned here as trailing pad.
+    val bottomPad = if (isDesktop) 64.dp else 40.dp
+    // shop.app mosaic section `mt` 20 compact / 32 desktop (+ pills shelf mb → total gap).
+    val sectionTopPad = if (isDesktop) VitranSpacing.xxxl else VitranSpacing.xl
     val scrollStepPx = with(density) { MosaicScrollStep.toPx() }
     val endOverhang = if (isRtl) -MosaicArrowOverhang else MosaicArrowOverhang
 
     // shop.app: arrows vertically centered on the mosaic grid band.
-    val headerHeight = 22.dp
-    val gridTopInset = if (isDesktop) VitranSpacing.lg else VitranSpacing.md
-    val gridHeight = if (isDesktop) {
+    val headerHeight = if (isMdUp) 22.dp else 20.dp
+    val gridTopInset = if (isXlUp) VitranSpacing.lg else VitranSpacing.md
+    val gridHeight = if (isXlUp) {
         MosaicCardWidth * (340f / 374f)
     } else {
         MosaicCardWidth
     }
     val buttonTopInset =
-        MosaicSectionTopPad + headerHeight + gridTopInset +
+        sectionTopPad + headerHeight + gridTopInset +
             (gridHeight - MosaicScrollButtonSize) / 2
 
     val showPrev = listState.canScrollBackward
@@ -185,7 +185,7 @@ fun HomeCategoryMosaicsRow(
             contentPadding = PaddingValues(
                 start = horizontalPad,
                 end = horizontalPad,
-                top = MosaicSectionTopPad,
+                top = sectionTopPad,
                 bottom = bottomPad,
             ),
             horizontalArrangement = Arrangement.spacedBy(itemGap),
@@ -196,7 +196,8 @@ fun HomeCategoryMosaicsRow(
             ) { mosaic ->
                 HomeCategoryMosaicCard(
                     mosaic = mosaic,
-                    isDesktop = isDesktop,
+                    isMdUp = isMdUp,
+                    isXlUp = isXlUp,
                     onCategoryClick = { onCategoryClick(mosaic) },
                     onTileClick = { tile -> onTileClick(mosaic, tile) },
                 )
@@ -237,17 +238,32 @@ fun HomeCategoryMosaicsRow(
 @Composable
 private fun HomeCategoryMosaicCard(
     mosaic: HomeCategoryMosaic,
-    isDesktop: Boolean,
+    isMdUp: Boolean,
+    isXlUp: Boolean,
     onCategoryClick: () -> Unit,
     onTileClick: (HomeCategoryMosaicTile) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val gridTop = if (isDesktop) VitranSpacing.lg else VitranSpacing.md
-    val gridRadius = if (isDesktop) VitranRadius.extraLarge else VitranRadius.xl
-    val gridAspect = if (isDesktop) 374f / 340f else 1f
+    val gridTop = if (isXlUp) VitranSpacing.lg else VitranSpacing.md
+    val gridRadius = if (isXlUp) VitranRadius.extraLarge else VitranRadius.xl
+    val gridAspect = if (isXlUp) 374f / 340f else 1f
     val openLabel = stringResource(Res.string.home_category_mosaic_open_a11y, mosaic.title)
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val headerInteraction = remember { MutableInteractionSource() }
+    // shop.app `text-subtitle` (18/20 Normal) / `md:text-sectionTitle` (20/22 Normal).
+    val titleStyle = if (isMdUp) {
+        MaterialTheme.typography.titleMedium.copy(
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Normal,
+            lineHeight = 22.sp,
+        )
+    } else {
+        MaterialTheme.typography.titleMedium.copy(
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Normal,
+            lineHeight = 20.sp,
+        )
+    }
 
     Column(
         modifier = modifier.width(MosaicCardWidth),
@@ -269,19 +285,7 @@ private fun HomeCategoryMosaicCard(
             Text(
                 text = mosaic.title,
                 color = MaterialTheme.colorScheme.onSurface,
-                style = if (isDesktop) {
-                    MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        lineHeight = 24.sp,
-                    )
-                } else {
-                    MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        lineHeight = 22.sp,
-                    )
-                },
+                style = titleStyle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
@@ -332,13 +336,13 @@ private fun HomeCategoryMosaicCard(
                 ) {
                     MosaicTile(
                         tile = mosaic.tiles[0],
-                        isDesktop = isDesktop,
+                        isXlUp = isXlUp,
                         onClick = { onTileClick(mosaic.tiles[0]) },
                         modifier = Modifier.weight(1f),
                     )
                     MosaicTile(
                         tile = mosaic.tiles[1],
-                        isDesktop = isDesktop,
+                        isXlUp = isXlUp,
                         onClick = { onTileClick(mosaic.tiles[1]) },
                         modifier = Modifier.weight(1f),
                     )
@@ -351,13 +355,13 @@ private fun HomeCategoryMosaicCard(
                 ) {
                     MosaicTile(
                         tile = mosaic.tiles[2],
-                        isDesktop = isDesktop,
+                        isXlUp = isXlUp,
                         onClick = { onTileClick(mosaic.tiles[2]) },
                         modifier = Modifier.weight(1f),
                     )
                     MosaicTile(
                         tile = mosaic.tiles[3],
-                        isDesktop = isDesktop,
+                        isXlUp = isXlUp,
                         onClick = { onTileClick(mosaic.tiles[3]) },
                         modifier = Modifier.weight(1f),
                     )
@@ -370,15 +374,16 @@ private fun HomeCategoryMosaicCard(
 @Composable
 private fun MosaicTile(
     tile: HomeCategoryMosaicTile,
-    isDesktop: Boolean,
+    isXlUp: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val labelPad = if (isDesktop) VitranSpacing.md else VitranSpacing.sm
-    val labelStyle = if (isDesktop) {
+    // shop.app captionBold 12 below xl; 14px at xl (xxl uses 16, not mirrored yet).
+    val labelPad = if (isXlUp) VitranSpacing.md else VitranSpacing.sm
+    val labelStyle = if (isXlUp) {
         MaterialTheme.typography.labelLarge.copy(
             fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Normal,
             lineHeight = 18.sp,
             shadow = Shadow(
                 color = Color.Black.copy(alpha = 0.35f),
@@ -389,8 +394,8 @@ private fun MosaicTile(
     } else {
         MaterialTheme.typography.labelMedium.copy(
             fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 14.sp,
+            fontWeight = FontWeight.Normal,
+            lineHeight = 15.sp,
             shadow = Shadow(
                 color = Color.Black.copy(alpha = 0.35f),
                 offset = Offset(0f, 1f),
@@ -503,15 +508,20 @@ private fun MosaicScrollButton(
 @Composable
 private fun HomeCategoryMosaicsRowCompactPreview() {
     VitranTheme {
-        HomeCategoryMosaicsRow(mosaics = rememberMockHomeCategoryMosaics())
+        CompositionLocalProvider(LocalShellViewportWidth provides 390.dp) {
+            HomeCategoryMosaicsRow(mosaics = rememberMockHomeCategoryMosaics())
+        }
     }
 }
 
-@Preview(showBackground = true, widthDp = 1280)
+@Preview(showBackground = true, widthDp = 1440)
 @Composable
 private fun HomeCategoryMosaicsRowDesktopPreview() {
     VitranTheme {
-        CompositionLocalProvider(LocalDesktopLayout provides true) {
+        CompositionLocalProvider(
+            LocalDesktopLayout provides true,
+            LocalShellViewportWidth provides 1440.dp,
+        ) {
             HomeCategoryMosaicsRow(mosaics = rememberMockHomeCategoryMosaics())
         }
     }

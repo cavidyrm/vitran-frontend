@@ -41,6 +41,7 @@ fun AppShell(
         val isDesktop = maxWidth >= VitranSize.desktopBreakpoint
         CompositionLocalProvider(
             LocalDesktopLayout provides isDesktop,
+            LocalShellViewportWidth provides maxWidth,
             LocalShellViewportHeight provides maxHeight,
         ) {
             if (isDesktop) {

@@ -47,6 +47,8 @@ import androidx.compose.ui.zIndex
 import com.vitran.shop.ui.components.HomeMerchantSpotlightCard
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.shell.LocalDesktopLayout
+import com.vitran.shop.ui.shell.LocalShellViewportWidth
+import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 import kotlinx.coroutines.launch
@@ -138,9 +140,9 @@ fun HomeCategoryShopsFeed(
  * One category header + horizontal merchant spotlight carousel.
  *
  * Measured tokens (shop.app 2026):
- * - Card 330×397, radius 28, shadow-md
+ * - Card 330×397 fixed (no mobile downscale), radius 28, shadow-md
  * - Carousel pad 16 compact / 48 desktop; gap 8 / 16
- * - Header↔carousel 16; header 18sp / 20sp
+ * - Header↔carousel 16; title 18/20 Normal (md ≥768 → 20)
  * - Desktop scroll chevrons centered on card band
  */
 @Composable
@@ -152,6 +154,7 @@ fun HomeCategoryShopsRow(
     onProductClick: (HomeShopCard, HomeShopProductPeek) -> Unit = { _, _ -> },
 ) {
     val isDesktop = LocalDesktopLayout.current
+    val isMdUp = LocalShellViewportWidth.current >= VitranSize.mdBreakpoint
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
@@ -161,8 +164,8 @@ fun HomeCategoryShopsRow(
     val scrollStepPx = with(density) { ScrollStep.toPx() }
     val endOverhang = if (isRtl) -ArrowOverhang else ArrowOverhang
 
-    // Header (~22dp) + gap 16 + center of 397dp card − half button.
-    val headerBand = 22.dp
+    // Header band matches title lineHeight (20 compact / 22 md+).
+    val headerBand = if (isMdUp) 22.dp else 20.dp
     val headerToCarousel = VitranSpacing.lg
     val buttonTopInset =
         headerBand + headerToCarousel + (MerchantCardHeight - ScrollButtonSize) / 2
@@ -174,6 +177,20 @@ fun HomeCategoryShopsRow(
         section.title,
     )
     val headerInteraction = remember { MutableInteractionSource() }
+    // shop.app `text-subtitle` / `md:text-sectionTitle`.
+    val titleStyle = if (isMdUp) {
+        MaterialTheme.typography.titleMedium.copy(
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Normal,
+            lineHeight = 22.sp,
+        )
+    } else {
+        MaterialTheme.typography.titleMedium.copy(
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Normal,
+            lineHeight = 20.sp,
+        )
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -194,19 +211,7 @@ fun HomeCategoryShopsRow(
             Text(
                 text = section.title,
                 color = MaterialTheme.colorScheme.onSurface,
-                style = if (isDesktop) {
-                    MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Normal,
-                        lineHeight = 22.sp,
-                    )
-                } else {
-                    MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Normal,
-                        lineHeight = 22.sp,
-                    )
-                },
+                style = titleStyle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
@@ -330,7 +335,10 @@ private fun ShopsScrollButton(
 @Composable
 private fun HomeCategoryShopsRowCompactPreview() {
     VitranTheme {
-        CompositionLocalProvider(LocalDesktopLayout provides false) {
+        CompositionLocalProvider(
+            LocalDesktopLayout provides false,
+            LocalShellViewportWidth provides 390.dp,
+        ) {
             HomeCategoryShopsRow(
                 section = rememberMockHomeCategoryShopSections().first(),
             )
@@ -342,7 +350,10 @@ private fun HomeCategoryShopsRowCompactPreview() {
 @Composable
 private fun HomeCategoryShopsRowDesktopPreview() {
     VitranTheme {
-        CompositionLocalProvider(LocalDesktopLayout provides true) {
+        CompositionLocalProvider(
+            LocalDesktopLayout provides true,
+            LocalShellViewportWidth provides 1200.dp,
+        ) {
             HomeCategoryShopsRow(
                 section = rememberMockHomeCategoryShopSections().first(),
             )
