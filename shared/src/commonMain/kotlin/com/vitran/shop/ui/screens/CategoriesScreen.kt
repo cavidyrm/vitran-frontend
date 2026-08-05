@@ -1,5 +1,6 @@
 package com.vitran.shop.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,12 +10,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.vitran.shop.ui.sections.categories.CategoriesBrowseCategoriesSection
 import com.vitran.shop.ui.sections.categories.CategoriesExploreFeaturedSection
+import com.vitran.shop.ui.sections.categories.CategoriesProductRowsFeed
+import com.vitran.shop.ui.sections.categories.CategoriesSectionGap
 import com.vitran.shop.ui.sections.categories.rememberMockBrowseCategories
+import com.vitran.shop.ui.sections.categories.rememberMockCategoriesProductRows
 import com.vitran.shop.ui.sections.categories.rememberMockExploreEdits
 
 /**
  * Categories (Explore) screen host. Sections are added one at a time.
  * Route: `/categories` ↔ shop.app Explore.
+ *
+ * Vertical rhythm matches shop.app `space-y-space-40` between major blocks.
  */
 @Composable
 fun CategoriesScreen(
@@ -23,11 +29,13 @@ fun CategoriesScreen(
     val scrollState = rememberScrollState()
     val edits = rememberMockExploreEdits()
     val browseCategories = rememberMockBrowseCategories()
+    val productRows = rememberMockCategoriesProductRows()
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(CategoriesSectionGap),
     ) {
         CategoriesExploreFeaturedSection(
             edits = edits,
@@ -38,6 +46,13 @@ fun CategoriesScreen(
             categories = browseCategories,
             modifier = Modifier.fillMaxWidth(),
             onCategoryClick = { /* mock — category landing not wired yet */ },
+        )
+        CategoriesProductRowsFeed(
+            sections = productRows,
+            modifier = Modifier.fillMaxWidth(),
+            onSectionClick = { /* mock — category / collection landing not wired yet */ },
+            onProductClick = { _, _ -> /* mock — product detail not wired yet */ },
+            onSaveClick = { _, _ -> /* mock — saved items not wired yet */ },
         )
     }
 }

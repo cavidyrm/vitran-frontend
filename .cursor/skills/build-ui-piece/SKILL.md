@@ -32,10 +32,11 @@ Copy and track:
 Piece progress:
 - [ ] 1. Name the piece; open live shop.app section + note screenshot
 - [ ] 2. List props / mock fields
-- [ ] 3. Implement composable in shared commonMain
-- [ ] 4. Wire local mock sample for preview/demo
-- [ ] 5. Check RTL + Persian strings
-- [ ] 6. Stop (no full-screen assembly unless asked)
+- [ ] 3. If this is a page section: measure responsive sizing + gap above previous section on live shop.app
+- [ ] 4. Implement composable in shared commonMain
+- [ ] 5. Wire local mock sample for preview/demo
+- [ ] 6. Check RTL + Persian strings
+- [ ] 7. Stop (no full-screen assembly unless asked)
 ```
 
 ### 1. Name the piece
@@ -46,18 +47,23 @@ Piece progress:
 - Define a small data class or parameters (title, price, image placeholder, etc.).
 - Keep it UI-only; no API types.
 
-### 3. Implement
+### 3. Section spacing + responsive (when building a page section)
+- Required by rule `page-section-workflow.mdc`: live-check compact/desktop sizes and the gap from the section above before wiring.
+- Do not use fixed-only layout sizes when shop.app scales with viewport.
+
+### 4. Implement
 - Place under a clear package (e.g. `.../ui/components/` or `.../ui/sections/`).
 - Reuse theme tokens; avoid hardcoding random colors when theme exists.
+- Reuse existing shared UI when the shape matches — see rule `reuse-shared-ui.mdc`.
 
-### 4. Mock sample
+### 5. Mock sample
 - Provide a `@Preview` or a tiny demo state with fake Persian text.
 
-### 5. RTL check
+### 6. RTL check
 - Alignment uses Start/End.
 - Directional icons flip correctly.
 
-### 6. Stop
+### 7. Stop
 - Deliver the piece.
 - Wait for the next piece request (or an explicit “assemble this screen” request).
 
@@ -65,3 +71,4 @@ Piece progress:
 - Building Home / Explore / Account entirely in one shot without being asked.
 - Adding navigation graph + all tabs “while we’re here”.
 - Introducing networking “just for this card”.
+- Skipping responsive or “gap above” checks for a new page section.

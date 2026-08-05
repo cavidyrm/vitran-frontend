@@ -81,10 +81,11 @@ private val TilePlaceholder = Color(0xFFF2F4F5)
  * Categories “Browse categories” grid (shop.app `/categories`).
  *
  * Measured (shop.app 2026 live):
- * - H2: 20/22 semibold, black
- * - Cards: radius 24, pad 16, column gap 16; solid category color
+ * - H2: compact 18/20 Normal; desktop 20/22 Normal
+ * - Cards: radius 24, pad 16; column gap 8 (2-up) / 16 (3+/5-up)
  * - Tiles: 2× aspect-square, radius 16, gap 12, light border
  * - Grid: 5 cols on desktop shell; else 3 cols (≥600 content) / 2 cols
+ * - Section bottom spacing owned by [CategoriesScreen] (`space-y-40`)
  *
  * Refs: `docs/ui-reference/categories-browse-desktop.png`,
  * `docs/ui-reference/categories-browse-compact.png`
@@ -101,15 +102,12 @@ fun CategoriesBrowseCategoriesSection(
     } else {
         VitranSpacing.lg
     }
-    val itemGap = VitranSpacing.lg
-    val sectionBottom = if (isDesktop) VitranSpacing.xxl else VitranSpacing.md
     val title = stringResource(Res.string.categories_browse_title)
 
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = horizontalPad)
-            .padding(bottom = sectionBottom),
+            .padding(horizontal = horizontalPad),
     ) {
         // Desktop viewport → always 5. Content-width only chooses 2 vs 3 below that,
         // so chrome/padding changes at the shell breakpoint cannot bounce column count.
@@ -118,16 +116,18 @@ fun CategoriesBrowseCategoriesSection(
             maxWidth >= BrowseGridThreeColMin -> 3
             else -> 2
         }
-        val rowGap = if (columns >= 3) VitranSpacing.lg else VitranSpacing.sm
+        // shop.app: 2-up uses gap 8; 3+/5-up uses gap 16.
+        val itemGap = if (columns >= 3) VitranSpacing.lg else VitranSpacing.sm
+        val rowGap = itemGap
 
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = title,
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    lineHeight = 22.sp,
+                    fontSize = if (isDesktop) 20.sp else 18.sp,
+                    fontWeight = FontWeight.Normal,
+                    lineHeight = if (isDesktop) 22.sp else 20.sp,
                 ),
             )
 

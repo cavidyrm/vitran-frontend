@@ -1,0 +1,28 @@
+---
+description: Reuse existing shared UI composables and models — never rewrite parallel copies
+alwaysApply: true
+---
+
+# Reuse Shared UI
+
+## Core rule
+- Before creating a new composable or UI model, **search** for an existing one with the same visual/data shape.
+- If a match exists: **reuse it**, or rename/generalize it into `ui/components/` (or a shared section host). Do **not** rewrite a parallel copy per screen or per row.
+- Repeated blocks on one page (e.g. five Top rated / New in rows) = **one** row composable + a list of section models — not five near-duplicate files.
+- Screen-specific wrappers only when props or layout truly diverge.
+- Shared chrome (header + chevron + `LazyRow` + desktop arrows) stays **one** implementation parameterized by content.
+
+## Do
+- Prefer extending or renaming an existing card/row when the next screen needs the same pattern.
+- Pass different mock/title data into the shared composable instead of forking the UI.
+
+## Do not
+- Copy-paste a section file and tweak strings for each category row.
+- Invent a second product/merchant card that duplicates an existing one with only a new name.
+
+## When to use
+- Always, for any new or refined UI component/section in this repo.
+
+## When to update
+- New shared component naming conventions settle.
+- A pattern is generalized out of a screen-specific package into `ui/components/`.

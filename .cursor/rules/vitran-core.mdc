@@ -17,6 +17,7 @@ alwaysApply: true
 - Before implementing a section, open the matching shop.app URL in the agent browser and inspect that section fully. Screenshots alone are not enough.
 - Build UI **piece by piece** (one component or one section per task).
 - Do **not** implement an entire screen unless the user explicitly asks for that assembly step.
+- New sections: always verify **responsive sizing** and the **gap above** the previous section on live shop.app — see rule `page-section-workflow.mdc`.
 
 ## Phase
 - Current phase: **UI + mock data only**. No real API calls.

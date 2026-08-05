@@ -9,11 +9,22 @@ alwaysApply: true
 - Build every screen **section by section**, never a full page in one task.
 - For each section: **create the component first**, then use it on the screen.
 - Do not start the next section until the user asks for it.
+- Reuse shared composables/models when the shape already exists — see rule `reuse-shared-ui.mdc`.
 
 ## Live shop.app reference (required)
 - Screenshots in `docs/ui-reference/` are **not enough**.
 - Before implementing or refining a section, open the matching page on **https://shop.app** in the agent browser (e.g. `/categories` for Categories) and fully inspect that section: layout, spacing, radii, typography, carousel/scroll behavior, and breakpoints.
 - User screenshots complement live inspection; they do **not** replace it.
+
+## Required checks when adding a new section
+Every new (or refined) section **must** include live shop.app verification of:
+
+1. **Responsive sizing** — measure compact and desktop (and mid if the pattern changes). Do not ship fixed card/row widths when shop.app scales with viewport (e.g. carousel `n`-up formulas, grid column counts, gaps). Apply the same behavior in Compose (`BoxWithConstraints` / breakpoint tokens as needed).
+2. **Internal spacing** — title→content, item gaps, padding, radii from live inspection, not guesses.
+3. **Gap above (critical)** — measure the distance from the **previous** section’s bottom content to this section’s top (title or first row). Match shop.app exactly when wiring into the screen. Prefer the page’s shared section gap token when one exists (Categories: `CategoriesSectionGap` = 40dp ↔ shop.app `space-y-space-40`); do not invent a different top/bottom pad that doubles or collapses that rhythm.
+4. **Gap below** — only if this section owns trailing space before the next block; otherwise let the screen / next section own the shared gap.
+
+Do **not** mark a section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code.
 
 ## Current focus
 - Active screen: **Categories** (`CategoriesScreen`, route `/categories` ↔ shop.app Explore)
@@ -21,9 +32,10 @@ alwaysApply: true
   1. App chrome (`AppShell` — already done; skip unless changing nav)
   2. Explore featured (`CategoriesExploreFeaturedSection` — H1 + editorial carousel)
   3. Browse categories
-  4. Product rows (Top rated / New in …)
+  4. Product rows (Top rated / New in …) — `CategoriesProductRowsFeed`
   5. Site footer (`SiteFooter`)
   6. Floating search (when requested)
+- Categories vertical rhythm: `CategoriesSectionGap` (40dp) between major blocks on `CategoriesScreen`
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`
@@ -43,4 +55,5 @@ alwaysApply: true
 ## When to update
 - Active screen changes (e.g. leave Categories for Deals).
 - Categories section order changes.
+- Shared section-gap token or page rhythm changes.
 - Package paths for components/screens settle or move.

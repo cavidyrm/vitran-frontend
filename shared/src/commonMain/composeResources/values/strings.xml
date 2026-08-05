@@ -123,5 +123,16 @@
     <string name="categories_browse_sporting">کالاهای ورزشی</string>
     <string name="categories_browse_toys">اسباب‌بازی و بازی</string>
     <string name="categories_browse_pet">لوازم حیوانات خانگی</string>
+    <!-- Categories / Product rows (Top rated / New in — shop.app /categories) -->
+    <string name="categories_product_row_top_rated_home">برترین‌ها در خانه</string>
+    <string name="categories_product_row_top_rated_menswear">برترین‌ها در پوشاک مردانه</string>
+    <string name="categories_product_row_new_in_beauty">تازه‌ها در زیبایی</string>
+    <string name="categories_product_row_top_rated_womenswear">برترین‌ها در پوشاک زنانه</string>
+    <string name="categories_product_row_top_rated_fitness">برترین‌ها در تناسب اندام و تغذیه</string>
+    <string name="categories_product_rows_scroll_prev_a11y">محصول قبلی</string>
+    <string name="categories_product_rows_scroll_next_a11y">محصول بعدی</string>
+    <string name="categories_product_rows_section_open_a11y">مشاهده %1$s</string>
+    <string name="categories_product_card_save_a11y">افزودن به ذخیره‌ها</string>
+    <string name="categories_product_card_a11y">%1$s از %2$s، %3$s</string>
 </resources>
 

@@ -11,11 +11,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import com.vitran.shop.ui.components.VitranIcon
@@ -78,17 +79,13 @@ import vitranshop.shared.generated.resources.ic_arrow_right
 import vitranshop.shared.generated.resources.ic_chevron_right
 
 /**
- * shop.app featured edit card width on desktop (~392px at 3-up in ~1208 content).
- * Compact uses a narrower card so the next item peeks.
- */
-private val EditCardWidthDesktop = 392.dp
-private val EditCardWidthCompact = 280.dp
-
-/**
  * shop.app `aspect-ratio: 2.35 / 1` — landscape editorial strips
- * (≈392×167 on desktop).
+ * (≈392×167 on desktop). Height floors at [EditCardMinHeight].
  */
 private val EditCardAspect = 2.35f
+
+/** shop.app `min-height: 140px` on edit cards. */
+private val EditCardMinHeight = 140.dp
 
 /** shop.app `rounded-radius-28`. */
 private val EditCardRadius = VitranRadius.extraLarge
@@ -100,9 +97,6 @@ private val EditOverlayPad = VitranSpacing.xl
 private val EditActionButtonSize = 32.dp
 private val EditActionIconSize = 16.dp
 private val EditActionButtonBg = Color.White.copy(alpha = 0.2f)
-
-/** shop.app carousel gap (`gap` 16). */
-private val EditItemGap = VitranSpacing.lg
 
 /** shop.app carousel scroll button (`42×42`). */
 private val EditScrollButtonSize = 42.dp
@@ -120,17 +114,41 @@ private val ArrowShadowColor = Color.Black.copy(alpha = 0.12f)
 /** shop.app `border-border-image` — `rgba(5, 41, 77, 0.1)`. */
 private val ArrowBorder = Color(0x1A05294D)
 
-/** H1 → carousel gap (~36 on shop.app). */
-private val TitleToCarouselGap = 36.dp
+/** Tailwind-ish floors matching shop.app explore `--carousel-items-*`. */
+private val EditCarouselSmMin = 640.dp
+
+/**
+ * shop.app explore visible count: default 1.3 / sm 2 / md+ 3.
+ */
+private fun exploreCarouselVisibleCount(trackWidth: Dp, isDesktop: Boolean): Float = when {
+    isDesktop -> 3f
+    trackWidth >= EditCarouselSmMin -> 2f
+    else -> 1.3f
+}
+
+/**
+ * shop.app `--carousel-gap-default` 8 / `--carousel-gap-sm` 16.
+ */
+private fun exploreCarouselGap(trackWidth: Dp, isDesktop: Boolean): Dp =
+    if (isDesktop || trackWidth >= EditCarouselSmMin) VitranSpacing.lg else VitranSpacing.sm
+
+/**
+ * shop.app `--carousel-item-size` on the padded content track (compact) /
+ * full content track (desktop).
+ */
+private fun exploreCarouselCardWidth(trackWidth: Dp, visibleCount: Float, gap: Dp): Dp =
+    (trackWidth - gap * (visibleCount - 1f)) / visibleCount
 
 /**
  * Categories top section: “Explore” / «کاوش» H1 + editorial edit cards carousel
  * (shop.app `/categories`).
  *
  * Measured (shop.app 2026 live):
- * - H1: mobile 28/30 start; desktop 36/38 centered (`md:text-center text-posterXS`)
- * - Cards: width 392, aspect 2.35/1 (~167 tall), radius 28, min-height 140
- * - Overlay pad 20; in-card arrow 32 @ 20% white; carousel gap 16
+ * - H1: mobile 28/30 start; desktop 36/38 centered
+ * - H1→carousel: 20 compact / 36 desktop
+ * - Cards: width from track `(track - gap*(n-1)) / n` — n = 1.3 / 2 / 3;
+ *   aspect 2.35/1 with min-height 140; radius 28
+ * - Section bottom spacing owned by [CategoriesScreen] (`space-y-40`)
  */
 @Composable
 fun CategoriesExploreFeaturedSection(
@@ -149,93 +167,99 @@ fun CategoriesExploreFeaturedSection(
         VitranSpacing.lg
     }
     val topPad = if (isDesktop) VitranSpacing.xxxl + VitranSpacing.sm else VitranSpacing.xl
-    val cardWidth = if (isDesktop) EditCardWidthDesktop else EditCardWidthCompact
-    val cardHeight = cardWidth / EditCardAspect
-    val scrollStepPx = with(density) { (cardWidth + EditItemGap).toPx() }
+    // shop.app: compact ~20; desktop ~36.
+    val titleToCarouselGap = if (isDesktop) 36.dp else VitranSpacing.xl
     val endOverhang = if (isRtl) -EditArrowOverhang else EditArrowOverhang
     // shop.app: mobile `text-header` 28/30; desktop `text-posterXS` 36/38.
     val titleFontSize = if (isDesktop) 36.sp else 28.sp
     val titleLineHeight = if (isDesktop) 38.sp else 30.sp
     val titleBlockHeight = if (isDesktop) 38.dp else 30.dp
-    val buttonTopInset =
-        topPad + titleBlockHeight + TitleToCarouselGap +
-            (cardHeight - EditScrollButtonSize) / 2
 
     val showPrev = listState.canScrollBackward
     val showNext = listState.canScrollForward
     val title = stringResource(Res.string.categories_explore_title)
 
-    Box(modifier = modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = title,
-                color = MaterialTheme.colorScheme.onSurface,
-                // shop.app: GTStandard-LHeavy @ weight 400 → Vazirmatn Medium keeps similar presence.
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontSize = titleFontSize,
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = titleLineHeight,
-                    letterSpacing = if (isDesktop) (-1).sp else (-0.5).sp,
-                ),
-                textAlign = if (isDesktop) TextAlign.Center else TextAlign.Start,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = horizontalPad)
-                    .padding(top = topPad),
-            )
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        // Compact: shop sizes items against the padded content track.
+        // Desktop: track is the full content width (page margin already outside).
+        val trackWidth = if (isDesktop) maxWidth else maxWidth - horizontalPad * 2
+        val visibleCount = exploreCarouselVisibleCount(trackWidth, isDesktop)
+        val itemGap = exploreCarouselGap(trackWidth, isDesktop)
+        val cardWidth = exploreCarouselCardWidth(trackWidth, visibleCount, itemGap)
+        val cardHeight = max(cardWidth / EditCardAspect, EditCardMinHeight)
+        val scrollStepPx = with(density) { (cardWidth + itemGap).toPx() }
+        val buttonTopInset =
+            topPad + titleBlockHeight + titleToCarouselGap +
+                (cardHeight - EditScrollButtonSize) / 2
 
-            Spacer(modifier = Modifier.height(TitleToCarouselGap))
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = title,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontSize = titleFontSize,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = titleLineHeight,
+                        letterSpacing = if (isDesktop) (-1).sp else (-0.5).sp,
+                    ),
+                    textAlign = if (isDesktop) TextAlign.Center else TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = horizontalPad)
+                        .padding(top = topPad),
+                )
 
-            LazyRow(
-                state = listState,
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(
-                    start = horizontalPad,
-                    end = horizontalPad,
-                    bottom = if (isDesktop) VitranSpacing.xxxl else VitranSpacing.xxl,
-                ),
-                horizontalArrangement = Arrangement.spacedBy(EditItemGap),
-            ) {
-                items(
-                    items = edits,
-                    key = { it.id },
-                ) { edit ->
-                    ExploreEditCard(
-                        edit = edit,
-                        cardWidth = cardWidth,
-                        onClick = { onEditClick(edit) },
-                    )
+                Spacer(modifier = Modifier.height(titleToCarouselGap))
+
+                LazyRow(
+                    state = listState,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = horizontalPad),
+                    horizontalArrangement = Arrangement.spacedBy(itemGap),
+                ) {
+                    items(
+                        items = edits,
+                        key = { it.id },
+                    ) { edit ->
+                        ExploreEditCard(
+                            edit = edit,
+                            cardWidth = cardWidth,
+                            cardHeight = cardHeight,
+                            onClick = { onEditClick(edit) },
+                        )
+                    }
                 }
             }
-        }
 
-        if (showPrev) {
-            ExploreScrollButton(
-                forward = false,
-                isRtl = isRtl,
-                onClick = {
-                    scope.launch { listState.animateScrollBy(-scrollStepPx) }
-                },
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(top = buttonTopInset, start = VitranSpacing.sm)
-                    .offset(x = -endOverhang)
-                    .zIndex(2f),
-            )
-        }
-        if (showNext) {
-            ExploreScrollButton(
-                forward = true,
-                isRtl = isRtl,
-                onClick = {
-                    scope.launch { listState.animateScrollBy(scrollStepPx) }
-                },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = buttonTopInset, end = VitranSpacing.sm)
-                    .offset(x = endOverhang)
-                    .zIndex(2f),
-            )
+            if (showPrev) {
+                ExploreScrollButton(
+                    forward = false,
+                    isRtl = isRtl,
+                    onClick = {
+                        scope.launch { listState.animateScrollBy(-scrollStepPx) }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(top = buttonTopInset, start = VitranSpacing.sm)
+                        .offset(x = -endOverhang)
+                        .zIndex(2f),
+                )
+            }
+            if (showNext) {
+                ExploreScrollButton(
+                    forward = true,
+                    isRtl = isRtl,
+                    onClick = {
+                        scope.launch { listState.animateScrollBy(scrollStepPx) }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = buttonTopInset, end = VitranSpacing.sm)
+                        .offset(x = endOverhang)
+                        .zIndex(2f),
+                )
+            }
         }
     }
 }
@@ -244,6 +268,7 @@ fun CategoriesExploreFeaturedSection(
 private fun ExploreEditCard(
     edit: ExploreEdit,
     cardWidth: Dp,
+    cardHeight: Dp,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -269,7 +294,7 @@ private fun ExploreEditCard(
     Box(
         modifier = modifier
             .width(cardWidth)
-            .aspectRatio(EditCardAspect)
+            .height(cardHeight)
             .clip(shape)
             .background(edit.placeholderColor)
             .hoverable(interaction)
@@ -295,7 +320,6 @@ private fun ExploreEditCard(
                 },
         )
 
-        val cardHeight = cardWidth / EditCardAspect
         Box(
             modifier = Modifier
                 .fillMaxWidth()

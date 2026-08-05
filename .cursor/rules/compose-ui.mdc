@@ -13,6 +13,7 @@ alwaysApply: false
 ## Style
 - Match shop.app look: light gray backgrounds, white surfaces, strong purple accent, large corner radii, generous spacing.
 - Prefer shared building blocks (`SearchBar`, `ProductCard`, `SectionHeader`, nav) over one-off copies.
+- Before adding a new composable/model, search for an existing match and reuse or generalize it — see rule `reuse-shared-ui.mdc`.
 - Use `Arrangement.Start` / `End` (not raw Left/Right) so RTL mirrors correctly.
 - Use design tokens (`VitranSpacing`, `VitranSize`, `VitranRadius`, `VitranElevation`) instead of magic `.dp` numbers — see rule `design-tokens.mdc`.
 - Prefer `VitranText` / `VitranIcon` for repeated UI; use raw `Text` / `Icon` only when the need diverges — see rule `design-primitives.mdc`.
