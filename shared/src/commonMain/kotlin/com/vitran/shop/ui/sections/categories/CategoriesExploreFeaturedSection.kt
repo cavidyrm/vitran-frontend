@@ -1,10 +1,14 @@
 package com.vitran.shop.ui.sections.categories
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -57,6 +62,7 @@ import coil3.compose.AsyncImage
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.shell.LocalDesktopLayout
+import com.vitran.shop.ui.theme.VitranAnimation
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
@@ -246,6 +252,19 @@ private fun ExploreEditCard(
     val placeholder = ColorPainter(edit.placeholderColor)
     val shape = RoundedCornerShape(EditCardRadius)
     val interaction = remember { MutableInteractionSource() }
+    val hovered by interaction.collectIsHoveredAsState()
+    val imageScale by animateFloatAsState(
+        targetValue = if (hovered) {
+            VitranAnimation.CategoriesCard.IMAGE_HOVER_SCALE
+        } else {
+            1f
+        },
+        animationSpec = tween(
+            durationMillis = VitranAnimation.CategoriesCard.IMAGE_HOVER_MS,
+            easing = VitranAnimation.CategoriesCard.ImageHoverEasing,
+        ),
+        label = "exploreEditHover",
+    )
 
     Box(
         modifier = modifier
@@ -253,6 +272,7 @@ private fun ExploreEditCard(
             .aspectRatio(EditCardAspect)
             .clip(shape)
             .background(edit.placeholderColor)
+            .hoverable(interaction)
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -267,7 +287,12 @@ private fun ExploreEditCard(
             contentScale = ContentScale.Crop,
             placeholder = placeholder,
             error = placeholder,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = imageScale
+                    scaleY = imageScale
+                },
         )
 
         val cardHeight = cardWidth / EditCardAspect

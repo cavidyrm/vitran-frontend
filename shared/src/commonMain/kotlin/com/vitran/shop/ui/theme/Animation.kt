@@ -106,6 +106,17 @@ object VitranAnimation {
     }
 
     /**
+     * Categories Explore / Browse cards — shop.app
+     * `transition-transform` (150ms ease) + `group-hover:scale-105` on images.
+     */
+    object CategoriesCard {
+        const val IMAGE_HOVER_MS = 150
+        const val IMAGE_HOVER_SCALE = 1.05f
+        /** Tailwind default `ease` ≈ `cubic-bezier(0.4, 0, 0.2, 1)`. */
+        val ImageHoverEasing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
+    }
+
+    /**
      * Home merchant spotlight cards — shop.app `large-product-focused-merchant-card`.
      */
     object MerchantSpotlight {

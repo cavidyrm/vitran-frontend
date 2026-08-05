@@ -117,5 +117,11 @@
     <string name="categories_explore_edit_kitchen_subtitle">ظروف، ابزار و نظم‌دهنده‌های ضروری.</string>
     <string name="categories_explore_edit_fitness_title">شروع تناسب‌اندام</string>
     <string name="categories_explore_edit_fitness_subtitle">لباس ورزشی، مکمل و تجهیزات خانگی.</string>
+    <!-- Categories / Browse categories grid (shop.app /categories) -->
+    <string name="categories_browse_title">مرور دسته‌بندی‌ها</string>
+    <string name="categories_browse_open_a11y">مشاهده %1$s</string>
+    <string name="categories_browse_sporting">کالاهای ورزشی</string>
+    <string name="categories_browse_toys">اسباب‌بازی و بازی</string>
+    <string name="categories_browse_pet">لوازم حیوانات خانگی</string>
 </resources>
 
