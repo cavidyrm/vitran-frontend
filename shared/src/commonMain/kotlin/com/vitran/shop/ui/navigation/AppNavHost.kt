@@ -29,8 +29,14 @@ fun AppNavHost(
         entryProvider = entryProvider {
             entry<Route.Home> {
                 HomeScreen(
-                    onProductOpen = { id, title, imageUrl ->
-                        val product = MockProductCatalog.resolve(id, title, imageUrl)
+                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
+                        val product = MockProductCatalog.resolve(
+                            id = id,
+                            title = title,
+                            imageUrl = imageUrl,
+                            storeName = storeName,
+                            priceLabel = priceLabel,
+                        )
                         navigator.push(
                             Route.ProductDetail(
                                 productId = product.id,
@@ -42,8 +48,14 @@ fun AppNavHost(
             }
             entry<Route.Categories> {
                 CategoriesScreen(
-                    onProductOpen = { id, title, imageUrl ->
-                        val product = MockProductCatalog.resolve(id, title, imageUrl)
+                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
+                        val product = MockProductCatalog.resolve(
+                            id = id,
+                            title = title,
+                            imageUrl = imageUrl,
+                            storeName = storeName,
+                            priceLabel = priceLabel,
+                        )
                         navigator.push(
                             Route.ProductDetail(
                                 productId = product.id,

@@ -18,6 +18,9 @@ import vitranshop.shared.generated.resources.home_category_food
 data class HomeShopProductPeek(
     val id: String,
     val imageUrl: String,
+    /** Realistic product title for PDP — never a generic stub. */
+    val title: String,
+    val priceLabel: String = "۱٬۸۹۰٬۰۰۰ تومان",
 )
 
 /**
@@ -90,8 +93,47 @@ fun rememberMockHomeCategoryShopSections(): List<HomeCategoryShopSection> {
 
 private fun rgb(r: Int, g: Int, b: Int): Color = Color(r, g, b)
 
+private val PeekPriceCycle = listOf(
+    "۱٬۲۵۰٬۰۰۰ تومان",
+    "۱٬۸۹۰٬۰۰۰ تومان",
+    "۲٬۴۵۰٬۰۰۰ تومان",
+    "۳٬۱۰۰٬۰۰۰ تومان",
+    "۹۸۰٬۰۰۰ تومان",
+)
+
+/** Build three peeks with humanized titles from CDN filenames (never stub «محصول»). */
 private fun peeks(vararg pairs: Pair<String, String>): List<HomeShopProductPeek> =
-    pairs.map { (id, url) -> HomeShopProductPeek(id = id, imageUrl = url) }
+    pairs.mapIndexed { index, (id, url) ->
+        HomeShopProductPeek(
+            id = id,
+            imageUrl = url,
+            title = humanizePeekTitle(url, index),
+            priceLabel = PeekPriceCycle[index % PeekPriceCycle.size],
+        )
+    }
+
+private fun humanizePeekTitle(imageUrl: String, index: Int): String {
+    val raw = imageUrl
+        .substringAfterLast('/')
+        .substringBefore('?')
+        .substringBefore('.')
+        .replace(Regex("(?i)(preview_images|thumbnail|pdp|2048px|01|02|03)"), " ")
+        .replace(Regex("[._\\-]+"), " ")
+        .replace(Regex("\\s+"), " ")
+        .trim()
+    if (raw.length >= 4 && raw.any { it.isLetter() }) {
+        val titled = raw.split(' ')
+            .filter { it.length > 1 && !it.all(Char::isDigit) }
+            .take(5)
+            .joinToString(" ") { word ->
+                word.replaceFirstChar { ch ->
+                    if (ch.isLowerCase()) ch.uppercaseChar() else ch
+                }
+            }
+        if (titled.isNotBlank()) return titled
+    }
+    return "کالای منتخب ${index + 1}"
+}
 
 private fun mockBabyShops(): List<HomeShopCard> = listOf(
     HomeShopCard(
@@ -116,10 +158,25 @@ private fun mockBabyShops(): List<HomeShopCard> = listOf(
         logoUrl = "https://cdn.shopify.com/shop-assets/shopify_brokers/kyte-baby-co.myshopify.com/1725505717/KB_logo_horizontal_white.png?width=640",
         brandColor = rgb(187, 175, 169),
         useLightText = false,
-        products = peeks(
-            "14982433407087" to "https://cdn.shopify.com/s/files/1/0019/7106/0847/files/Monster_Truck_LS_Toddler_PJs_01.jpg?width=384",
-            "15358858133615" to "https://cdn.shopify.com/s/files/1/0019/7106/0847/files/1701MVSM_01.jpg?width=384",
-            "14982216941679" to "https://cdn.shopify.com/s/files/1/0019/7106/0847/files/SakuraIceCream_SSToddlerPJ_01.jpg?width=384",
+        products = listOf(
+            HomeShopProductPeek(
+                id = "14982433407087",
+                imageUrl = "https://cdn.shopify.com/s/files/1/0019/7106/0847/files/Monster_Truck_LS_Toddler_PJs_01.jpg?width=384",
+                title = "پیژامه مانستر تراک",
+                priceLabel = PeekPriceCycle[0],
+            ),
+            HomeShopProductPeek(
+                id = "15358858133615",
+                imageUrl = "https://cdn.shopify.com/s/files/1/0019/7106/0847/files/1701MVSM_01.jpg?width=384",
+                title = "پیژامه اسپایدرمن",
+                priceLabel = PeekPriceCycle[1],
+            ),
+            HomeShopProductPeek(
+                id = "14982216941679",
+                imageUrl = "https://cdn.shopify.com/s/files/1/0019/7106/0847/files/SakuraIceCream_SSToddlerPJ_01.jpg?width=384",
+                title = "پیژامه ساکورا",
+                priceLabel = PeekPriceCycle[2],
+            ),
         ),
     ),
     HomeShopCard(
@@ -363,10 +420,25 @@ private fun mockFoodShops(): List<HomeShopCard> = listOf(
         logoUrl = "https://cdn.shopify.com/shop-assets/shopify_brokers/bones-coffee-company.myshopify.com/1730940233/bonescoffeelogo.png?width=640",
         brandColor = rgb(206, 73, 46),
         useLightText = true,
-        products = peeks(
-            "7229323378740" to "https://cdn.shopify.com/s/files/1/1475/5488/files/BBCBagFront.jpg?width=384",
-            "442784383013" to "https://cdn.shopify.com/s/files/1/1475/5488/files/HIGBagFront.jpg?width=384",
-            "1687514153012" to "https://cdn.shopify.com/s/files/1/1475/5488/files/cinnamon_roll_12oz_front_-_GR.jpg?width=384",
+        products = listOf(
+            HomeShopProductPeek(
+                id = "7229323378740",
+                imageUrl = "https://cdn.shopify.com/s/files/1/1475/5488/files/BBCBagFront.jpg?width=384",
+                title = "بلوبری بلاست کیک | ۱۲ اونس",
+                priceLabel = PeekPriceCycle[0],
+            ),
+            HomeShopProductPeek(
+                id = "442784383013",
+                imageUrl = "https://cdn.shopify.com/s/files/1/1475/5488/files/HIGBagFront.jpg?width=384",
+                title = "قهوه هایلندز",
+                priceLabel = PeekPriceCycle[1],
+            ),
+            HomeShopProductPeek(
+                id = "1687514153012",
+                imageUrl = "https://cdn.shopify.com/s/files/1/1475/5488/files/cinnamon_roll_12oz_front_-_GR.jpg?width=384",
+                title = "دارچین رول | ۱۲ اونس",
+                priceLabel = PeekPriceCycle[2],
+            ),
         ),
     ),
     HomeShopCard(
@@ -413,7 +485,10 @@ private fun mockFoodShops(): List<HomeShopCard> = listOf(
     ),
 )
 
+/** Flat list of all Home merchant cards — used by product-detail catalog. */
+fun allMockHomeShopCards(): List<HomeShopCard> =
+    mockBabyShops() + mockBeautyShops() + mockFitnessShops() + mockFoodShops()
+
 /** Flat list of all Home merchant product peeks — used by product-detail catalog. */
 fun allMockHomeProductPeeks(): List<HomeShopProductPeek> =
-    (mockBabyShops() + mockBeautyShops() + mockFitnessShops() + mockFoodShops())
-        .flatMap { it.products }
+    allMockHomeShopCards().flatMap { it.products }

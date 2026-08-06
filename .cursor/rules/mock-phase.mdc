@@ -16,7 +16,8 @@ alwaysApply: true
 - Block UI work waiting for a backend.
 
 ## Product detail note
-- Purchase-looking buttons may exist as **visual placeholders** only.
+- Do **not** show Add to cart / Buy now (or other purchase CTAs) on PDP.
+- Quantity / Save may exist as **visual placeholders** only — no cart wiring.
 - Do not wire a real checkout path.
 
 ## When to use

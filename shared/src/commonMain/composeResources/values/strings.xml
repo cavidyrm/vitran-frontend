@@ -142,5 +142,36 @@
     <!-- Product detail / media lightbox -->
     <string name="product_detail_media_close_a11y">بستن گالری</string>
     <string name="product_detail_media_open_a11y">بزرگ‌نمایی تصویر</string>
+    <!-- Product detail / buy info -->
+    <string name="product_detail_visit_store">بازدید فروشگاه</string>
+    <string name="product_detail_visit_store_a11y">بازدید فروشگاه %1$s</string>
+    <string name="product_detail_merchant_rating_a11y">امتیاز فروشگاه %1$s از ۵، %2$s</string>
+    <string name="product_detail_save">ذخیره</string>
+    <string name="product_detail_share">اشتراک‌گذاری</string>
+    <string name="product_detail_merchant_more_a11y">گزینه‌های بیشتر فروشگاه</string>
+    <string name="product_detail_quantity">تعداد</string>
+    <string name="product_detail_quantity_decrease_a11y">کاهش تعداد</string>
+    <string name="product_detail_quantity_increase_a11y">افزایش تعداد</string>
+    <string name="product_detail_description">توضیحات</string>
+    <string name="product_detail_view_more">بیشتر</string>
+    <string name="product_detail_description_close_a11y">بستن توضیحات</string>
+    <string name="product_detail_view_less">کمتر</string>
+    <string name="product_detail_option_selected_a11y">%1$s: %2$s انتخاب شد</string>
+    <string name="product_detail_reviews">نظرات</string>
+    <string name="product_detail_read_more_reviews">مشاهده نظرات بیشتر</string>
+    <string name="product_detail_reviews_histogram_a11y">توزیع امتیازها از پنج تا یک ستاره</string>
+    <string name="product_detail_reviews_close_a11y">بستن نظرات</string>
+    <string name="product_detail_reviews_helpful">مفید بود</string>
+    <string name="product_detail_reviews_search_placeholder">جستجو</string>
+    <string name="product_detail_reviews_sort">مرتب‌سازی</string>
+    <string name="product_detail_reviews_rating_filter">امتیاز</string>
+    <string name="product_detail_reviews_more_a11y">گزینه‌های بیشتر نظر</string>
+    <string name="product_detail_reviews_filter_reset">بازنشانی</string>
+    <string name="product_detail_reviews_filter_done">تمام</string>
+    <string name="product_detail_reviews_sort_relevant">مرتبط‌ترین</string>
+    <string name="product_detail_reviews_sort_newest">جدیدترین</string>
+    <string name="product_detail_reviews_sort_oldest">قدیمی‌ترین</string>
+    <string name="product_detail_reviews_sort_rating_asc">امتیاز: کم به زیاد</string>
+    <string name="product_detail_reviews_sort_rating_desc">امتیاز: زیاد به کم</string>
 </resources>
 

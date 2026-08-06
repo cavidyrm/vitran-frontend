@@ -353,9 +353,9 @@ private fun HomeMerchantSpotlightCardPreview() {
                 brandColor = Color(0xFFA5896B),
                 useLightText = true,
                 products = listOf(
-                    HomeShopProductPeek("1", ""),
-                    HomeShopProductPeek("2", ""),
-                    HomeShopProductPeek("3", ""),
+                    HomeShopProductPeek("1", "", title = "Acadian Wrap"),
+                    HomeShopProductPeek("2", "", title = "Desert Lark Wrap"),
+                    HomeShopProductPeek("3", "", title = "Flutter Wrap"),
                 ),
             ),
             modifier = Modifier.padding(VitranSpacing.lg),

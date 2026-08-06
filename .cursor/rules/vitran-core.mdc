@@ -14,7 +14,9 @@ alwaysApply: true
 
 ## UI workflow (important)
 - Screenshots in `docs/ui-reference/` plus **live shop.app** are the source of truth for **colors, spacing, shapes, and section patterns**.
-- Before implementing a section, open the matching shop.app URL in the agent browser and inspect that section fully. Screenshots alone are not enough.
+- **Mandatory live inspection:** Before implementing or refining **any** UI the user asks for, open the **matching shop.app URL/section** in the agent browser and inspect that exact block (layout, spacing, radii, typography, scroll/carousel, breakpoints, interactions). Do not guess from memory or screenshots alone.
+- User screenshots complement live inspection; they do **not** replace it.
+- Do **not** mark a section done until you have opened shop.app for that section and reflected what you measured.
 - Build UI **piece by piece** (one component or one section per task).
 - Do **not** implement an entire screen unless the user explicitly asks for that assembly step.
 - New sections: always verify **responsive sizing** and the **gap above** the previous section on live shop.app — see rule `page-section-workflow.mdc`.
@@ -22,6 +24,7 @@ alwaysApply: true
 ## Phase
 - Current phase: **UI + mock data only**. No real API calls.
 - Prefer fake/local data so screens look complete.
+- Never ship PDP placeholders like title `محصول`, merchant `فروشگاه`, price `—`, or “description coming soon” — use realistic fake copy.
 
 ## Language
 - Code, comments, and Cursor rules/skills: **English**.

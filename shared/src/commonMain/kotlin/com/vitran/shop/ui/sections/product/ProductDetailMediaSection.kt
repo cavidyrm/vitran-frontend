@@ -3,6 +3,7 @@ package com.vitran.shop.ui.sections.product
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -32,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +41,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
@@ -49,9 +54,12 @@ import coil3.compose.AsyncImage
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.shell.LocalShellViewportHeight
+import com.vitran.shop.ui.shell.LocalShellViewportWidth
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
+import kotlin.math.abs
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
@@ -66,8 +74,7 @@ import vitranshop.shared.generated.resources.product_detail_media_open_a11y
  * - Compact (`< md`): horizontal snap carousel (`h-[45vh]`), drag/fling.
  * - Medium (`md`..<`lg`): tall preview on top + horizontal thumbs + always-on
  *   prev/next beside the thumb row (`flex-col`, `block lg:hidden`).
- * - Large (`≥ lg`): vertical thumbs + square preview; hover prev/next on image
- *   (`flex-row-reverse`, `hidden lg:block`).
+ * - Large (`≥ lg`): vertical thumbs + preview frame (`weight(1)` + side inset).
  *
  * Clicking the main image (or a compact slide) opens [ProductDetailMediaLightbox]
  * — shop.app `cursor-zoom-in` fullscreen viewer — on every breakpoint.
@@ -95,13 +102,21 @@ private val MediumNavPairGap = VitranSpacing.xs
 private val DesktopTopInset = 32.dp
 private val DesktopThumbSize = 48.dp
 private val DesktopThumbGap = 6.dp
+/** shop.app `md:gap-space-16` between thumbs and preview. */
 private val DesktopThumbToPreviewGap = VitranSpacing.lg
 private val DesktopThumbRadius = VitranRadius.small
 private val DesktopPreviewRadius = VitranRadius.extraLarge
-private val DesktopPreviewMax = 760.dp
+private val DesktopPreviewMaxHeight = 900.dp
+/** Preview frame uses this fraction of the media slot width (rest stays empty). */
+private val DesktopPreviewWidthFraction = 0.75f
+/** Inset around the preview slot before applying [DesktopPreviewWidthFraction]. */
+private val DesktopPreviewSideInset = VitranSpacing.xxxl
 private val DesktopHorizontalPad = VitranSpacing.xxxl
-/** shop.app `md:h-[65vh]` / `--carousel-height`. */
-private val DesktopPreviewHeightFraction = 0.65f
+/**
+ * shop.app desktop carousel height ≈ `--carousel-height` (~0.84 of viewport
+ * at 900px tall — measured 756px frame).
+ */
+private val DesktopPreviewHeightFraction = 0.84f
 
 private val PreviewShadowElevation = 2.dp
 private val PreviewShadowColor = Color.Black.copy(alpha = 0.06f)
@@ -126,30 +141,42 @@ private enum class GalleryBreakpoint {
 fun ProductDetailMediaSection(
     media: ProductDetailMedia,
     modifier: Modifier = Modifier,
+    /**
+     * When false, medium/desktop galleries skip their own horizontal pad
+     * (parent already applies shop.app `md:px-space-16`).
+     */
+    applyHorizontalInset: Boolean = true,
 ) {
     var selectedIndex by remember(media.imageUrls) { mutableIntStateOf(0) }
     var lightboxOpen by remember(media.imageUrls) { mutableStateOf(false) }
     val safeIndex = selectedIndex.coerceIn(0, media.imageUrls.lastIndex)
 
-    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val breakpoint = when {
-            maxWidth >= VitranSize.desktopBreakpoint -> GalleryBreakpoint.Desktop
-            maxWidth >= VitranSize.mdBreakpoint -> GalleryBreakpoint.Medium
-            else -> GalleryBreakpoint.Compact
-        }
+    // Breakpoint follows shell viewport (shop.app page `md`/`lg`), not the
+    // gallery column width — required when media sits beside the buy column.
+    val viewportWidth = LocalShellViewportWidth.current
+    val breakpoint = when {
+        viewportWidth >= VitranSize.desktopBreakpoint -> GalleryBreakpoint.Desktop
+        viewportWidth >= VitranSize.mdBreakpoint -> GalleryBreakpoint.Medium
+        else -> GalleryBreakpoint.Compact
+    }
 
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         when (breakpoint) {
             GalleryBreakpoint.Desktop -> DesktopMediaGallery(
                 imageUrls = media.imageUrls,
+                imageMode = media.imageMode,
                 selectedIndex = safeIndex,
                 onSelect = { selectedIndex = it },
                 onOpenLightbox = { lightboxOpen = true },
+                applyHorizontalInset = applyHorizontalInset,
             )
             GalleryBreakpoint.Medium -> MediumMediaGallery(
                 imageUrls = media.imageUrls,
+                imageMode = media.imageMode,
                 selectedIndex = safeIndex,
                 onSelect = { selectedIndex = it },
                 onOpenLightbox = { lightboxOpen = true },
+                applyHorizontalInset = applyHorizontalInset,
             )
             GalleryBreakpoint.Compact -> CompactMediaCarousel(
                 imageUrls = media.imageUrls,
@@ -172,9 +199,11 @@ fun ProductDetailMediaSection(
 }
 
 /**
- * Mobile / compact: snap [LazyRow] with peek — works for touch and mouse drag on web.
- * Prefer LazyRow over HorizontalPager so nested vertical page scroll does not eat
- * horizontal drags as easily on Wasm/JS.
+ * Mobile / compact: snap [LazyRow] with peek.
+ *
+ * On Wasm/Desktop, built-in lazy scroll ignores mouse drag and vertical wheel goes
+ * to the page — same fix as Reviews. Horizontal drag is intercepted on
+ * [PointerEventPass.Initial] so slide [clickable] still opens the lightbox on tap.
  */
 @Composable
 private fun CompactMediaCarousel(
@@ -187,6 +216,9 @@ private fun CompactMediaCarousel(
     val listState = rememberLazyListState()
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val openA11y = stringResource(Res.string.product_detail_media_open_a11y)
+    val scope = rememberCoroutineScope()
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val scrollSign = if (isRtl) 1f else -1f
 
     BoxWithConstraints(
         modifier = modifier
@@ -199,14 +231,85 @@ private fun CompactMediaCarousel(
             flingBehavior = flingBehavior,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(galleryHeight),
+                .height(galleryHeight)
+                .pointerInput(listState, isRtl) {
+                    // Wheel → horizontal (RTL-aware); consume so the page LazyColumn
+                    // does not take the gesture.
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Main)
+                            val change = event.changes.firstOrNull() ?: continue
+                            val dx = change.scrollDelta.x
+                            val dy = change.scrollDelta.y
+                            if (dx == 0f && dy == 0f) continue
+                            val amount = if (abs(dx) > abs(dy)) dx else dy
+                            val consumed = listState.dispatchRawDelta(scrollSign * amount)
+                            if (abs(consumed) > 0.5f) {
+                                change.consume()
+                            }
+                        }
+                    }
+                }
+                .pointerInput(listState, isRtl, flingBehavior) {
+                    // Mouse/touch drag before children (clickable slides) see it.
+                    val touchSlop = viewConfiguration.touchSlop
+                    awaitPointerEventScope {
+                        while (true) {
+                            val down = awaitFirstDown(
+                                requireUnconsumed = false,
+                                pass = PointerEventPass.Initial,
+                            )
+                            var dragging = false
+                            var lastPos = down.position
+                            val pointerId = down.id
+                            val velocityTracker = VelocityTracker()
+                            velocityTracker.addPosition(down.uptimeMillis, down.position)
+
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                val change = event.changes.firstOrNull { it.id == pointerId }
+                                    ?: break
+                                if (!change.pressed) {
+                                    if (dragging) {
+                                        val vx = velocityTracker.calculateVelocity().x
+                                        scope.launch {
+                                            listState.scroll {
+                                                with(flingBehavior) {
+                                                    performFling(scrollSign * vx)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    break
+                                }
+                                val delta = change.position - lastPos
+                                lastPos = change.position
+                                velocityTracker.addPosition(change.uptimeMillis, change.position)
+
+                                if (!dragging) {
+                                    if (abs(delta.x) >= touchSlop &&
+                                        abs(delta.x) >= abs(delta.y)
+                                    ) {
+                                        dragging = true
+                                    } else if (abs(delta.y) >= touchSlop) {
+                                        break
+                                    } else {
+                                        continue
+                                    }
+                                }
+                                change.consume()
+                                listState.dispatchRawDelta(scrollSign * delta.x)
+                            }
+                        }
+                    }
+                },
             contentPadding = PaddingValues(
                 start = CompactStartPad,
                 end = CompactEndPeek,
             ),
             horizontalArrangement = Arrangement.spacedBy(CompactPageSpacing),
             verticalAlignment = Alignment.CenterVertically,
-            userScrollEnabled = true,
+            userScrollEnabled = false,
         ) {
             itemsIndexed(
                 items = imageUrls,
@@ -246,10 +349,12 @@ private fun CompactMediaCarousel(
 @Composable
 private fun MediumMediaGallery(
     imageUrls: List<String>,
+    imageMode: ProductImageMode,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
     onOpenLightbox: () -> Unit,
     modifier: Modifier = Modifier,
+    applyHorizontalInset: Boolean = true,
 ) {
     val viewportHeight = LocalShellViewportHeight.current
     val previewHeight = min(
@@ -259,12 +364,14 @@ private fun MediumMediaGallery(
     val thumbsState = rememberLazyListState()
     val previewInteraction = remember { MutableInteractionSource() }
     val openA11y = stringResource(Res.string.product_detail_media_open_a11y)
+    val horizontalPad = if (applyHorizontalInset) MediumHorizontalPad else 0.dp
+    val (contentScale, imageAlignment) = imageMode.toScaleAndAlignment()
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = MediumTopInset)
-            .padding(horizontal = MediumHorizontalPad),
+            .padding(top = if (applyHorizontalInset) MediumTopInset else 0.dp)
+            .padding(horizontal = horizontalPad),
         verticalArrangement = Arrangement.spacedBy(MediumThumbsToPreviewGap),
     ) {
         Box(
@@ -285,7 +392,8 @@ private fun MediumMediaGallery(
                 model = resolveNetworkImageUrl(imageUrls[selectedIndex]),
                 contentDescription = openA11y,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit,
+                contentScale = contentScale,
+                alignment = imageAlignment,
             )
         }
 
@@ -334,70 +442,72 @@ private fun MediumMediaGallery(
 }
 
 /**
- * Large (`≥ lg`): vertical thumbs + square preview sized by width AND ~65vh.
+ * Large (`≥ lg`): vertical thumbs + preview frame at 75% of the media slot width.
  */
 @Composable
 private fun DesktopMediaGallery(
     imageUrls: List<String>,
+    imageMode: ProductImageMode,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
     onOpenLightbox: () -> Unit,
     modifier: Modifier = Modifier,
+    applyHorizontalInset: Boolean = true,
 ) {
     val viewportHeight = LocalShellViewportHeight.current
     val previewInteraction = remember { MutableInteractionSource() }
     val previewHovered by previewInteraction.collectIsHoveredAsState()
     val showNav = previewHovered && imageUrls.size > 1
     val openA11y = stringResource(Res.string.product_detail_media_open_a11y)
+    val horizontalPad = if (applyHorizontalInset) DesktopHorizontalPad else 0.dp
+    val (contentScale, imageAlignment) = imageMode.toScaleAndAlignment()
+    val galleryHeight = min(
+        viewportHeight * DesktopPreviewHeightFraction,
+        DesktopPreviewMaxHeight,
+    )
 
-    BoxWithConstraints(
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = DesktopTopInset)
-            .padding(horizontal = DesktopHorizontalPad),
+            .height(galleryHeight)
+            .padding(top = if (applyHorizontalInset) DesktopTopInset else 0.dp)
+            .padding(horizontal = horizontalPad),
+        horizontalArrangement = Arrangement.spacedBy(DesktopThumbToPreviewGap),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val widthBudget = (maxWidth - DesktopThumbSize - DesktopThumbToPreviewGap)
-            .coerceAtLeast(200.dp)
-        val heightBudget = min(
-            viewportHeight * DesktopPreviewHeightFraction,
-            DesktopPreviewMax,
-        )
-        val previewSize = min(widthBudget, heightBudget)
-
-        Row(
+        LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(previewSize),
-            horizontalArrangement = Arrangement.spacedBy(DesktopThumbToPreviewGap),
-            verticalAlignment = Alignment.CenterVertically,
+                .width(DesktopThumbSize)
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.spacedBy(
+                space = DesktopThumbGap,
+                alignment = Alignment.CenterVertically,
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Fixed height + LazyColumn: strip matches preview and scrolls when
-            // thumbs overflow (page itself is LazyColumn, so nesting is orthogonal).
-            LazyColumn(
-                modifier = Modifier
-                    .width(DesktopThumbSize)
-                    .height(previewSize),
-                verticalArrangement = Arrangement.spacedBy(
-                    space = DesktopThumbGap,
-                    alignment = Alignment.CenterVertically,
-                ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                itemsIndexed(
-                    items = imageUrls,
-                    key = { index, url -> "dt-$index-$url" },
-                ) { index, url ->
-                    GalleryThumbnail(
-                        imageUrl = url,
-                        selected = index == selectedIndex,
-                        onClick = { onSelect(index) },
-                    )
-                }
+            itemsIndexed(
+                items = imageUrls,
+                key = { index, url -> "dt-$index-$url" },
+            ) { index, url ->
+                GalleryThumbnail(
+                    imageUrl = url,
+                    selected = index == selectedIndex,
+                    onClick = { onSelect(index) },
+                )
             }
+        }
 
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .padding(horizontal = DesktopPreviewSideInset),
+            contentAlignment = Alignment.Center,
+        ) {
             Box(
                 modifier = Modifier
-                    .size(previewSize)
+                    .fillMaxWidth(DesktopPreviewWidthFraction)
+                    .fillMaxHeight()
                     .hoverable(previewInteraction)
                     .shadow(
                         elevation = PreviewShadowElevation,
@@ -420,7 +530,8 @@ private fun DesktopMediaGallery(
                             role = Role.Button,
                             onClick = onOpenLightbox,
                         ),
-                    contentScale = ContentScale.Fit,
+                    contentScale = contentScale,
+                    alignment = imageAlignment,
                 )
 
                 if (showNav) {
@@ -445,6 +556,14 @@ private fun DesktopMediaGallery(
         }
     }
 }
+
+private fun ProductImageMode.toScaleAndAlignment(): Pair<ContentScale, Alignment> =
+    when (this) {
+        // shop.app desktop main image: `object-contain` / center
+        ProductImageMode.Fit -> ContentScale.Fit to Alignment.Center
+        // Still contain-like for apparel — Crop was over-zooming in a wide frame.
+        ProductImageMode.Crop -> ContentScale.Fit to Alignment.Center
+    }
 
 @Composable
 private fun GalleryThumbnail(
