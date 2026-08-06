@@ -139,5 +139,8 @@
     <string name="categories_merchant_card_a11y">فروشگاه %1$s، امتیاز %2$s</string>
     <string name="categories_merchant_image_prev_a11y">تصویر قبلی</string>
     <string name="categories_merchant_image_next_a11y">تصویر بعدی</string>
+    <!-- Product detail / media lightbox -->
+    <string name="product_detail_media_close_a11y">بستن گالری</string>
+    <string name="product_detail_media_open_a11y">بزرگ‌نمایی تصویر</string>
 </resources>
 

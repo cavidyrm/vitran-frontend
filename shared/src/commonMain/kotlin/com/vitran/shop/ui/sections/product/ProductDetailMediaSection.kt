@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -57,6 +58,7 @@ import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.categories_merchant_image_next_a11y
 import vitranshop.shared.generated.resources.categories_merchant_image_prev_a11y
 import vitranshop.shared.generated.resources.ic_chevron_right
+import vitranshop.shared.generated.resources.product_detail_media_open_a11y
 
 /**
  * shop.app PDP media gallery — three layouts by width (not chrome only):
@@ -66,6 +68,9 @@ import vitranshop.shared.generated.resources.ic_chevron_right
  *   prev/next beside the thumb row (`flex-col`, `block lg:hidden`).
  * - Large (`≥ lg`): vertical thumbs + square preview; hover prev/next on image
  *   (`flex-row-reverse`, `hidden lg:block`).
+ *
+ * Clicking the main image (or a compact slide) opens [ProductDetailMediaLightbox]
+ * — shop.app `cursor-zoom-in` fullscreen viewer — on every breakpoint.
  *
  * First section on Product Detail — top inset only (no prior section gap).
  */
@@ -123,6 +128,7 @@ fun ProductDetailMediaSection(
     modifier: Modifier = Modifier,
 ) {
     var selectedIndex by remember(media.imageUrls) { mutableIntStateOf(0) }
+    var lightboxOpen by remember(media.imageUrls) { mutableStateOf(false) }
     val safeIndex = selectedIndex.coerceIn(0, media.imageUrls.lastIndex)
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
@@ -137,16 +143,31 @@ fun ProductDetailMediaSection(
                 imageUrls = media.imageUrls,
                 selectedIndex = safeIndex,
                 onSelect = { selectedIndex = it },
+                onOpenLightbox = { lightboxOpen = true },
             )
             GalleryBreakpoint.Medium -> MediumMediaGallery(
                 imageUrls = media.imageUrls,
                 selectedIndex = safeIndex,
                 onSelect = { selectedIndex = it },
+                onOpenLightbox = { lightboxOpen = true },
             )
             GalleryBreakpoint.Compact -> CompactMediaCarousel(
                 imageUrls = media.imageUrls,
+                onOpenLightbox = { index ->
+                    selectedIndex = index
+                    lightboxOpen = true
+                },
             )
         }
+    }
+
+    if (lightboxOpen) {
+        ProductDetailMediaLightbox(
+            imageUrls = media.imageUrls,
+            selectedIndex = safeIndex,
+            onSelect = { selectedIndex = it },
+            onDismiss = { lightboxOpen = false },
+        )
     }
 }
 
@@ -158,12 +179,14 @@ fun ProductDetailMediaSection(
 @Composable
 private fun CompactMediaCarousel(
     imageUrls: List<String>,
+    onOpenLightbox: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewportHeight = LocalShellViewportHeight.current
     val galleryHeight = viewportHeight * CompactGalleryHeightFraction
     val listState = rememberLazyListState()
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+    val openA11y = stringResource(Res.string.product_detail_media_open_a11y)
 
     BoxWithConstraints(
         modifier = modifier
@@ -188,21 +211,27 @@ private fun CompactMediaCarousel(
             itemsIndexed(
                 items = imageUrls,
                 key = { index, url -> "c-$index-$url" },
-            ) { _, url ->
+            ) { index, url ->
+                val interaction = remember(index) { MutableInteractionSource() }
                 Box(
                     modifier = Modifier
                         .width(slideWidth)
                         .fillMaxHeight()
                         .background(MaterialTheme.colorScheme.surface)
-                        .padding(horizontal = CompactSlideInnerPad),
+                        .padding(horizontal = CompactSlideInnerPad)
+                        .clip(RoundedCornerShape(CompactImageRadius))
+                        .clickable(
+                            interactionSource = interaction,
+                            indication = null,
+                            role = Role.Button,
+                            onClick = { onOpenLightbox(index) },
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     AsyncImage(
                         model = resolveNetworkImageUrl(url),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(CompactImageRadius)),
+                        contentDescription = openA11y,
+                        modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
                     )
                 }
@@ -219,6 +248,7 @@ private fun MediumMediaGallery(
     imageUrls: List<String>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
+    onOpenLightbox: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewportHeight = LocalShellViewportHeight.current
@@ -227,6 +257,8 @@ private fun MediumMediaGallery(
         MediumPreviewMaxHeight,
     )
     val thumbsState = rememberLazyListState()
+    val previewInteraction = remember { MutableInteractionSource() }
+    val openA11y = stringResource(Res.string.product_detail_media_open_a11y)
 
     Column(
         modifier = modifier
@@ -240,12 +272,18 @@ private fun MediumMediaGallery(
                 .fillMaxWidth()
                 .height(previewHeight)
                 .clip(RoundedCornerShape(MediumPreviewRadius))
-                .background(PreviewRail),
+                .background(PreviewRail)
+                .clickable(
+                    interactionSource = previewInteraction,
+                    indication = null,
+                    role = Role.Button,
+                    onClick = onOpenLightbox,
+                ),
             contentAlignment = Alignment.Center,
         ) {
             AsyncImage(
                 model = resolveNetworkImageUrl(imageUrls[selectedIndex]),
-                contentDescription = null,
+                contentDescription = openA11y,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit,
             )
@@ -303,12 +341,14 @@ private fun DesktopMediaGallery(
     imageUrls: List<String>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
+    onOpenLightbox: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewportHeight = LocalShellViewportHeight.current
     val previewInteraction = remember { MutableInteractionSource() }
     val previewHovered by previewInteraction.collectIsHoveredAsState()
     val showNav = previewHovered && imageUrls.size > 1
+    val openA11y = stringResource(Res.string.product_detail_media_open_a11y)
 
     BoxWithConstraints(
         modifier = modifier
@@ -371,8 +411,15 @@ private fun DesktopMediaGallery(
             ) {
                 AsyncImage(
                     model = resolveNetworkImageUrl(imageUrls[selectedIndex]),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
+                    contentDescription = openA11y,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            interactionSource = previewInteraction,
+                            indication = null,
+                            role = Role.Button,
+                            onClick = onOpenLightbox,
+                        ),
                     contentScale = ContentScale.Fit,
                 )
 
