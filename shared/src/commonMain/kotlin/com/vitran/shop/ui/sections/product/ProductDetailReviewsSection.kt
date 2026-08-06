@@ -39,8 +39,6 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -57,7 +55,6 @@ import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
-import kotlin.math.abs
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -247,9 +244,9 @@ private fun HistogramRow(
 /**
  * Horizontal review carousel (shop.app Swiper free-mode).
  *
- * On Wasm/Desktop, built-in scrollables ignore mouse drag and only take vertical
- * wheel (which the page [LazyColumn] consumes). Drive [ScrollState] ourselves via
- * [draggable] + wheel→horizontal mapping; keep [horizontalScroll] for offset only.
+ * On Wasm/Desktop, built-in scrollables ignore mouse drag. Drive [ScrollState]
+ * via [draggable] only — mouse wheel is left for the page (no wheel→horizontal).
+ * [horizontalScroll] applies offset only (`enabled = false`).
  */
 @Composable
 private fun ReviewCardsRow(
@@ -259,7 +256,7 @@ private fun ReviewCardsRow(
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-    // Persian RTL: invert drag/wheel so content moves with reading direction.
+    // Persian RTL: invert drag so content moves with reading direction.
     val scrollSign = if (isRtl) 1f else -1f
     val dragState = rememberDraggableState { delta ->
         scope.launch {
@@ -271,29 +268,12 @@ private fun ReviewCardsRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(ReviewCardMinHeight)
-            // Gestures disabled — drag/wheel handled below (CMP web/desktop).
+            // Gestures disabled — drag handled below (CMP web/desktop).
             .horizontalScroll(state = scrollState, enabled = false)
             .draggable(
                 state = dragState,
                 orientation = Orientation.Horizontal,
-            )
-            .pointerInput(scrollState, isRtl) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Main)
-                        val change = event.changes.firstOrNull() ?: continue
-                        val dx = change.scrollDelta.x
-                        val dy = change.scrollDelta.y
-                        if (dx == 0f && dy == 0f) continue
-                        // Prefer native horizontal delta; else map vertical wheel.
-                        val amount = if (abs(dx) > abs(dy)) dx else dy
-                        val consumed = scrollState.dispatchRawDelta(scrollSign * amount)
-                        if (abs(consumed) > 0.5f) {
-                            change.consume()
-                        }
-                    }
-                }
-            },
+            ),
         horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
         verticalAlignment = Alignment.Top,
     ) {

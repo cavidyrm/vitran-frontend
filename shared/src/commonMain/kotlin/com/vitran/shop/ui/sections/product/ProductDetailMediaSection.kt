@@ -201,9 +201,9 @@ fun ProductDetailMediaSection(
 /**
  * Mobile / compact: snap [LazyRow] with peek.
  *
- * On Wasm/Desktop, built-in lazy scroll ignores mouse drag and vertical wheel goes
- * to the page — same fix as Reviews. Horizontal drag is intercepted on
- * [PointerEventPass.Initial] so slide [clickable] still opens the lightbox on tap.
+ * On Wasm/Desktop, built-in lazy scroll ignores mouse drag. Horizontal drag is
+ * intercepted on [PointerEventPass.Initial] so slide [clickable] still opens the
+ * lightbox on tap. Mouse wheel is left for the page (no wheel→horizontal).
  */
 @Composable
 private fun CompactMediaCarousel(
@@ -232,24 +232,6 @@ private fun CompactMediaCarousel(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(galleryHeight)
-                .pointerInput(listState, isRtl) {
-                    // Wheel → horizontal (RTL-aware); consume so the page LazyColumn
-                    // does not take the gesture.
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent(PointerEventPass.Main)
-                            val change = event.changes.firstOrNull() ?: continue
-                            val dx = change.scrollDelta.x
-                            val dy = change.scrollDelta.y
-                            if (dx == 0f && dy == 0f) continue
-                            val amount = if (abs(dx) > abs(dy)) dx else dy
-                            val consumed = listState.dispatchRawDelta(scrollSign * amount)
-                            if (abs(consumed) > 0.5f) {
-                                change.consume()
-                            }
-                        }
-                    }
-                }
                 .pointerInput(listState, isRtl, flingBehavior) {
                     // Mouse/touch drag before children (clickable slides) see it.
                     val touchSlop = viewConfiguration.touchSlop
@@ -407,6 +389,7 @@ private fun MediumMediaGallery(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(DesktopThumbGap),
                 verticalAlignment = Alignment.CenterVertically,
+                userScrollEnabled = false,
             ) {
                 itemsIndexed(
                     items = imageUrls,
