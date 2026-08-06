@@ -13,7 +13,7 @@ alwaysApply: true
 
 ## Live shop.app reference (required)
 - Screenshots in `docs/ui-reference/` are **not enough**.
-- Before implementing or refining a section, open the matching page on **https://shop.app** in the agent browser (e.g. `/categories` for Categories) and fully inspect that section: layout, spacing, radii, typography, carousel/scroll behavior, and breakpoints.
+- Before implementing or refining a section, open the matching page on **https://shop.app** in the agent browser (e.g. `/categories` for Categories, `/products/{id}/{slug}` for Product detail) and fully inspect that section: layout, spacing, radii, typography, carousel/scroll behavior, and breakpoints.
 - User screenshots complement live inspection; they do **not** replace it.
 
 ## Required checks when adding a new section
@@ -27,22 +27,23 @@ Every new (or refined) section **must** include live shop.app verification of:
 Do **not** mark a section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code.
 
 ## Current focus
-- Active screen: **Categories** (`CategoriesScreen`, route `/categories` ↔ shop.app Explore)
-- Categories section order:
-  1. App chrome (`AppShell` — already done; skip unless changing nav)
-  2. Explore featured (`CategoriesExploreFeaturedSection` — H1 + editorial carousel)
-  3. Browse categories
-  4. Product rows (Top rated / New in …) — `CategoriesProductRowsFeed`
-  5. Category merchant grids (Women / Men / Beauty / …) — `CategoriesMerchantGridsFeed`
-  6. Site footer (`SiteFooter` — shared with Home; done)
-  7. Floating search (always-on `FloatingSearchOmnibox` / `FloatingSearchFab` — done)
+- Active screen: **Product detail** (`ProductDetailScreen`, route `/products/{productId}/{slug}` ↔ shop.app PDP)
+- Product detail section order:
+  1. Media gallery (`ProductDetailMediaSection` — horizontal snap/peek carousel) — in progress / done for this pass
+  2. Merchant / visit-store header (later)
+  3. Buy box: rating, options, quantity, CTAs (visual placeholders only; no checkout)
+  4. Description / reviews / delivery (later)
+  5. More from merchant / related (later)
+  6. Site footer (later, reuse `SiteFooter`)
+- Categories screen remains complete for its listed sections; only touch it when wiring product clicks or shared chrome.
 - Categories vertical rhythm: `CategoriesSectionGap` (40dp) between major blocks on `CategoriesScreen`
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`
 - App chrome navigation: `shared/.../ui/navigation/`
-- Screen-specific sections: `shared/.../ui/sections/categories/`
-- Screen assembly: `shared/.../ui/screens/CategoriesScreen.kt`
+- Categories sections: `shared/.../ui/sections/categories/`
+- Product detail sections: `shared/.../ui/sections/product/`
+- Screen assembly: `shared/.../ui/screens/ProductDetailScreen.kt` (active), `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference
@@ -54,7 +55,7 @@ Do **not** mark a section done until responsive sizes and the gap from the secti
 - Always, for any screen/section UI work in this repo.
 
 ## When to update
-- Active screen changes (e.g. leave Categories for Deals).
-- Categories section order changes.
+- Active screen changes (e.g. leave Product detail for Deals).
+- Product detail or Categories section order changes.
 - Shared section-gap token or page rhythm changes.
 - Package paths for components/screens settle or move.

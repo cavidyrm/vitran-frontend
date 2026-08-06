@@ -7,6 +7,7 @@ import coil3.compose.setSingletonImageLoaderFactory
 import com.vitran.shop.ui.navigation.AppNavHost
 import com.vitran.shop.ui.navigation.BindBrowserNavigation
 import com.vitran.shop.ui.navigation.NavAuthUiState
+import com.vitran.shop.ui.navigation.initWebComposeResources
 import com.vitran.shop.ui.navigation.rememberInitialRoute
 import com.vitran.shop.ui.navigation.rememberNavigationState
 import com.vitran.shop.ui.navigation.rememberNavigator
@@ -16,6 +17,9 @@ import com.vitran.shop.ui.theme.VitranTheme
 @Composable
 @Preview
 fun App() {
+    // Once per process: absolute composeResources URLs on web (see expect actual).
+    initWebComposeResources()
+
     setSingletonImageLoaderFactory { context ->
         ImageLoader.Builder(context).build()
     }
@@ -30,7 +34,7 @@ fun App() {
         val authState: NavAuthUiState = NavAuthUiState.SignedOut
 
         AppShell(
-            currentRoute = navState.currentRoute,
+            currentRoute = navState.chromeRoute,
             authState = authState,
             onNavigate = navigator::navigate,
             onLoginRequest = {

@@ -58,9 +58,12 @@ private val MobileOmniboxBackdropBlur = 10.dp
  *
  * Floating search is always on (no hero omnibox to scroll past), matching shop.app
  * `/categories`. Compact FAB hides only while the mobile sheet is open.
+ *
+ * @param onProductOpen product id, title, and image URL from a product-row click.
  */
 @Composable
 fun CategoriesScreen(
+    onProductOpen: (id: String, title: String, imageUrl: String) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val isDesktop = LocalDesktopLayout.current
@@ -161,7 +164,9 @@ fun CategoriesScreen(
                     sections = productRows,
                     modifier = Modifier.fillMaxWidth(),
                     onSectionClick = { /* mock — category / collection landing not wired yet */ },
-                    onProductClick = { _, _ -> /* mock — product detail not wired yet */ },
+                    onProductClick = { _, product ->
+                        onProductOpen(product.id, product.title, product.imageUrl)
+                    },
                     onSaveClick = { _, _ -> /* mock — saved items not wired yet */ },
                 )
                 CategoriesMerchantGridsFeed(

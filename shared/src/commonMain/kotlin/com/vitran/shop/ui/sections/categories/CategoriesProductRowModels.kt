@@ -590,3 +590,11 @@ private val mockTopRatedFitness = listOf(
         reviewCountLabel = "(۶۵۷)",
     ),
 )
+
+/** Flat list of all Categories product-row mocks — used by product-detail catalog. */
+fun allMockCategoriesProducts(): List<CategoriesProduct> =
+    mockTopRatedHome +
+        mockTopRatedMenswear +
+        mockNewInBeauty +
+        mockTopRatedWomenswear +
+        mockTopRatedFitness

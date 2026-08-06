@@ -412,3 +412,8 @@ private fun mockFoodShops(): List<HomeShopCard> = listOf(
         ),
     ),
 )
+
+/** Flat list of all Home merchant product peeks — used by product-detail catalog. */
+fun allMockHomeProductPeeks(): List<HomeShopProductPeek> =
+    (mockBabyShops() + mockBeautyShops() + mockFitnessShops() + mockFoodShops())
+        .flatMap { it.products }

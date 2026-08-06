@@ -44,15 +44,35 @@ actual fun BindBrowserNavigation(
     }
 
     // NavigationState → URL
-    LaunchedEffect(navState.currentRoute) {
+    LaunchedEffect(navState.currentRoute, navState.urlSyncMode) {
         val path = RouteMapper.toPath(navState.currentRoute)
-        if (path == lastWrittenPath) return@LaunchedEffect
         if (applyingFromBrowser) {
             lastWrittenPath = path
             return@LaunchedEffect
         }
-        history.pushState(null, "", path)
-        lastWrittenPath = path
+        when (navState.urlSyncMode) {
+            UrlSyncMode.HistoryBack -> {
+                // Stack already popped; rewind browser History to match.
+                if (location.pathname != path) {
+                    lastWrittenPath = path
+                    history.back()
+                } else {
+                    lastWrittenPath = path
+                }
+            }
+            UrlSyncMode.Replace -> {
+                if (path != lastWrittenPath) {
+                    history.replaceState(null, "", path)
+                    lastWrittenPath = path
+                }
+            }
+            UrlSyncMode.Push -> {
+                if (path != lastWrittenPath) {
+                    history.pushState(null, "", path)
+                    lastWrittenPath = path
+                }
+            }
+        }
     }
 
     // Browser → NavigationState (back/forward + address-bar driven history)
@@ -66,8 +86,16 @@ actual fun BindBrowserNavigation(
                     return@EventHandler
                 }
                 applyingFromBrowser = true
-                navigator.navigate(route)
-                lastWrittenPath = RouteMapper.toPath(route)
+                // Pop children until the stack matches the browser path, else replace.
+                while (navState.backStack.size > 1 && navState.currentRoute != route) {
+                    navState.backStack.removeLastOrNull()
+                }
+                if (navState.currentRoute != route) {
+                    navState.urlSyncMode = UrlSyncMode.Replace
+                    navState.backStack.clear()
+                    navState.backStack.add(route)
+                }
+                lastWrittenPath = RouteMapper.toPath(navState.currentRoute)
                 applyingFromBrowser = false
             },
         )

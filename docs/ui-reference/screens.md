@@ -14,7 +14,7 @@
 5. Account (Profile hub) (`/account`)
 6. Category landing (Women/Men/Beauty/...)
 7. Product list (filters + grid)
-8. Product detail (UI only; no checkout)
+8. Product detail (UI only; no checkout) — route `/products/{productId}/{slug}` ↔ shop.app PDP; `ProductDetailScreen`
 9. Collection / Edit page
 10. Search
 

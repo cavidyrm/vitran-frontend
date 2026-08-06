@@ -14,6 +14,7 @@ object RouteMapper {
             Route.Offers -> "/offers"
             Route.Saved -> "/saved"
             Route.Account -> "/account"
+            is Route.ProductDetail -> "/products/${route.productId}/${route.slug}"
         }
 
     fun fromPath(path: String): Route? {
@@ -24,7 +25,7 @@ object RouteMapper {
             "/offers" -> Route.Offers
             "/saved" -> Route.Saved
             "/account" -> Route.Account
-            else -> null
+            else -> parseProductPath(normalized)
         }
     }
 
@@ -35,6 +36,18 @@ object RouteMapper {
     fun fromUri(uri: String): Route? {
         val path = extractPath(uri)
         return fromPath(path)
+    }
+
+    private fun parseProductPath(path: String): Route.ProductDetail? {
+        // /products/{id}/{slug}
+        val parts = path.trim('/').split('/')
+        if (parts.size != 3) return null
+        if (parts[0] != "products") return null
+        val id = parts[1]
+        val slug = parts[2]
+        if (id.isEmpty() || slug.isEmpty()) return null
+        if (id.contains('/') || slug.contains('/')) return null
+        return Route.ProductDetail(productId = id, slug = slug)
     }
 
     private fun extractPath(uri: String): String {

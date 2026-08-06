@@ -52,9 +52,12 @@ private val MobileOmniboxBackdropBlur = 10.dp
 
 /**
  * Home screen host. Sections are added one at a time.
+ *
+ * @param onProductOpen product id, title, and image URL from a product click.
  */
 @Composable
 fun HomeScreen(
+    onProductOpen: (id: String, title: String, imageUrl: String) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val isDesktop = LocalDesktopLayout.current
@@ -217,7 +220,9 @@ fun HomeScreen(
                 sections = rememberMockHomeCategoryShopSections(),
                 onCategoryClick = { /* mock — category landing not wired yet */ },
                 onShopClick = { _, _ -> /* mock — shop page not wired yet */ },
-                onProductClick = { _, _, _ -> /* mock — product detail not wired yet */ },
+                onProductClick = { _, shop, peek ->
+                    onProductOpen(peek.id, shop.name, peek.imageUrl)
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
             SiteFooter(
