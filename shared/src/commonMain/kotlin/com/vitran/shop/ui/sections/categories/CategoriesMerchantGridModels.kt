@@ -91,6 +91,14 @@ private fun shop(
     imageUrls = imageUrls,
 )
 
+/** Flat list of Categories merchant tiles — used by PDP Discover top brands. */
+fun allMockCategoriesMerchantShops(): List<CategoriesMerchantShop> =
+    mockWomenMerchants +
+        mockMenMerchants +
+        mockBeautyMerchants +
+        mockFoodMerchants +
+        mockBabyMerchants
+
 // CDN imagery reused from existing Categories / Home mocks (4 product shots each).
 
 private val mockWomenMerchants = listOf(

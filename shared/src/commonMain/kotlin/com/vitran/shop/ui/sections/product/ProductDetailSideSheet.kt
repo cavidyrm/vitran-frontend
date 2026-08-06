@@ -36,7 +36,7 @@ import com.vitran.shop.ui.theme.VitranSize
 import kotlinx.coroutines.launch
 
 /**
- * shop.app PDP side sheet host (Description / Reviews / policies).
+ * shop.app PDP side sheet host (Description / Reviews).
  *
  * Measured on live shop.app (LTR docks to physical **right** with
  * `translate-x-full` ↔ `none`, `transition-transform 300ms ease-out`).

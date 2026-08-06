@@ -36,8 +36,8 @@ Do **not** mark a section done until responsive sizes and the gap from the secti
   3. Buy box (`ProductDetailBuyBox` — title, rating, badges, price, options, qty, Save|Share; **no** Add to cart / Buy now) — done
   4. Description (`ProductDetailDescription` via `ProductDetailInfoColumn`) — done
   5. Reviews (`ProductDetailReviewsSection` + `ProductDetailReviewsSheet` side sheet) — done
-  6. Delivery / more from merchant / related (later)
-  7. Site footer (later, reuse `SiteFooter`)
+  6. Follow strip + More from / Related / Discover (`ProductDetailMerchantFollowStrip`, `ProductDetailRecommendationsSection`) — done (Delivery & Returns intentionally omitted)
+  7. Site footer (`SiteFooter` on PDP) — done
 - Product detail layout: compact stack vs `md+` two-column (`BuyColumnWidth` 464dp ↔ shop.app `md:w-[29em]`); row uses `md:px-16`, `md:mt-24`, `md:gap-40`; desktop gallery packs toward buy column (no RTL dead middle)
 - PDP mocks: never `محصول` / `فروشگاه` / `—` / “توضیحات به‌زودی” — realistic fake copy only
 - Categories screen remains complete for its listed sections; only touch it when wiring product clicks or shared chrome.

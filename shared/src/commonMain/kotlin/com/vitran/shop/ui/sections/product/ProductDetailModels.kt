@@ -1,7 +1,10 @@
 package com.vitran.shop.ui.sections.product
 
 import androidx.compose.runtime.Immutable
+import com.vitran.shop.ui.sections.categories.CategoriesMerchantGridSection
 import com.vitran.shop.ui.sections.categories.CategoriesProduct
+import com.vitran.shop.ui.sections.categories.CategoriesProductRowSection
+import com.vitran.shop.ui.sections.categories.allMockCategoriesMerchantShops
 import com.vitran.shop.ui.sections.categories.allMockCategoriesProducts
 import com.vitran.shop.ui.sections.home.allMockHomeShopCards
 
@@ -359,6 +362,17 @@ private fun blueberryReviews(): ProductReviewsMock =
     )
 
 /**
+ * Full-bleed recommendation stack under the PDP media|info row
+ * (More from / Related brand rows / Discover top brands).
+ */
+@Immutable
+data class ProductDetailRecommendations(
+    val moreFrom: CategoriesProductRowSection,
+    val relatedRows: List<CategoriesProductRowSection>,
+    val discoverBrands: CategoriesMerchantGridSection,
+)
+
+/**
  * Mock product detail used by [ProductDetailScreen] in the UI/mock phase.
  */
 @Immutable
@@ -380,6 +394,11 @@ data class ProductDetailMock(
     val options: List<ProductOption> = emptyList(),
     val description: String,
     val reviews: ProductReviewsMock? = defaultProductReviews(),
+    /**
+     * Cover image for the merchant Follow strip (shop.app 120px banner).
+     * Falls back to the first media image when null.
+     */
+    val merchantCoverImageUrl: String? = null,
 )
 
 /** shop.app-style handle from an English mock title. */
@@ -1078,4 +1097,62 @@ object MockProductCatalog {
             description = descriptionFor(safeTitle, safeStore),
         )
     }
+}
+
+/**
+ * Builds More from / Related / Discover mocks for [product] from shared Categories catalogs.
+ */
+fun buildProductDetailRecommendations(
+    product: ProductDetailMock,
+    moreFromTitle: String,
+    discoverTitle: String,
+): ProductDetailRecommendations {
+    val catalog = allMockCategoriesProducts()
+    val merchantName = product.merchant.name
+
+    val sameStore = catalog
+        .filter { it.storeName.equals(merchantName, ignoreCase = true) && it.id != product.id }
+        .distinctBy { it.id }
+    val moreFromProducts = when {
+        sameStore.size >= 4 -> sameStore.take(12)
+        else -> (sameStore + catalog.filter { it.id != product.id })
+            .distinctBy { it.id }
+            .take(12)
+    }.ifEmpty {
+        catalog.filter { it.id != product.id }.take(8)
+    }
+
+    val relatedRows = catalog
+        .filter { !it.storeName.equals(merchantName, ignoreCase = true) }
+        .groupBy { it.storeName }
+        .entries
+        .sortedByDescending { it.value.size }
+        .take(4)
+        .mapIndexed { index, (store, products) ->
+            CategoriesProductRowSection(
+                id = "pdp-related-$index-${product.id}",
+                title = store,
+                products = products.distinctBy { it.id }.take(12),
+            )
+        }
+
+    val discoverShops = allMockCategoriesMerchantShops()
+        .filter { !it.name.equals(merchantName, ignoreCase = true) }
+        .distinctBy { it.id }
+        .take(10)
+        .ifEmpty { allMockCategoriesMerchantShops().take(8) }
+
+    return ProductDetailRecommendations(
+        moreFrom = CategoriesProductRowSection(
+            id = "pdp-more-from-${product.id}",
+            title = moreFromTitle,
+            products = moreFromProducts,
+        ),
+        relatedRows = relatedRows,
+        discoverBrands = CategoriesMerchantGridSection(
+            id = "pdp-discover-${product.id}",
+            title = discoverTitle,
+            shops = discoverShops,
+        ),
+    )
 }

@@ -17,10 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.vitran.shop.ui.components.SiteFooter
+import com.vitran.shop.ui.sections.categories.CategoriesSectionGap
 import com.vitran.shop.ui.sections.product.MockProductCatalog
 import com.vitran.shop.ui.sections.product.ProductDetailInfoColumn
 import com.vitran.shop.ui.sections.product.ProductDetailMediaSection
 import com.vitran.shop.ui.sections.product.ProductDetailMerchantHeader
+import com.vitran.shop.ui.sections.product.ProductDetailRecommendationsSection
 import com.vitran.shop.ui.shell.LocalShellViewportWidth
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -36,12 +39,22 @@ import com.vitran.shop.ui.theme.VitranSpacing
  * - Large (`≥ lg`): merchant moves into the buy column (no Visit store)
  *
  * Page pad `md:px-space-16`, row `md:mt-space-24` + `md:gap-space-40`.
+ * Below info: recommendations (More from / Related / Discover) + [SiteFooter].
  * No Add to cart / Buy now (mock phase — no purchase flow).
+ *
+ * @param onProductOpen product id, title, image URL, store name, and price from a recommendation click.
  */
 @Composable
 fun ProductDetailScreen(
     productId: String,
     modifier: Modifier = Modifier,
+    onProductOpen: (
+        id: String,
+        title: String,
+        imageUrl: String,
+        storeName: String,
+        priceLabel: String,
+    ) -> Unit = { _, _, _, _, _ -> },
 ) {
     val product = MockProductCatalog.byId(productId)
     val viewportWidth = LocalShellViewportWidth.current
@@ -67,7 +80,7 @@ fun ProductDetailScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = VitranSpacing.xxxl),
+        contentPadding = PaddingValues(bottom = 0.dp),
     ) {
         if (!isLgUp) {
             stickyHeader(key = "merchant") {
@@ -135,6 +148,33 @@ fun ProductDetailScreen(
                         .padding(top = VitranSpacing.lg),
                 )
             }
+        }
+
+        item(key = "recommendations") {
+            ProductDetailRecommendationsSection(
+                product = product,
+                onProductClick = { clicked ->
+                    onProductOpen(
+                        clicked.id,
+                        clicked.title,
+                        clicked.imageUrl,
+                        clicked.storeName,
+                        clicked.priceLabel,
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = CategoriesSectionGap),
+            )
+        }
+
+        item(key = "footer") {
+            SiteFooter(
+                onLinkClick = { /* mock — footer destinations not wired yet */ },
+                onLanguageClick = { /* mock — language settings not wired yet */ },
+                onDownloadClick = { /* mock — store deep link not wired yet */ },
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }

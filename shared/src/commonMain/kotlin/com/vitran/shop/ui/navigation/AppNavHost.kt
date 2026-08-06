@@ -69,7 +69,24 @@ fun AppNavHost(
             entry<Route.Saved> { SavedScreen() }
             entry<Route.Account> { AccountScreen() }
             entry<Route.ProductDetail> { key ->
-                ProductDetailScreen(productId = key.productId)
+                ProductDetailScreen(
+                    productId = key.productId,
+                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
+                        val product = MockProductCatalog.resolve(
+                            id = id,
+                            title = title,
+                            imageUrl = imageUrl,
+                            storeName = storeName,
+                            priceLabel = priceLabel,
+                        )
+                        navigator.push(
+                            Route.ProductDetail(
+                                productId = product.id,
+                                slug = product.slug,
+                            ),
+                        )
+                    },
+                )
             }
         },
     )

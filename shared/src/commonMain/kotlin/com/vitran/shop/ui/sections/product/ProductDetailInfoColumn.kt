@@ -10,11 +10,13 @@ import com.vitran.shop.ui.theme.VitranSpacing
 
 /**
  * Buy-side info column for Product Detail: optional in-column merchant,
- * buy box, description, and reviews (shop.app `md:w-[29em]` column content).
+ * buy box, description, reviews, and merchant Follow strip
+ * (shop.app `md:w-[29em]` column content).
  *
  * Compact horizontal padding matches shop.app `px-space-16`; pass
  * [contentHorizontalPadding] = false when the parent already pads the column.
- * Vertical `spacedBy(24)` matches shop.app Description → Reviews `mt-space-24`.
+ * Vertical `spacedBy(24)` matches shop.app Description → Reviews `mt-space-24`
+ * (Follow uses the same 24 gap).
  */
 @Composable
 fun ProductDetailInfoColumn(
@@ -23,6 +25,8 @@ fun ProductDetailInfoColumn(
     showMerchantHeader: Boolean = false,
     contentHorizontalPadding: Boolean = true,
 ) {
+    val coverUrl = product.merchantCoverImageUrl ?: product.media.imageUrls.first()
+
     Column(
         modifier = modifier
             .then(
@@ -47,5 +51,9 @@ fun ProductDetailInfoColumn(
         product.reviews?.let { reviews ->
             ProductDetailReviewsSection(reviews = reviews)
         }
+        ProductDetailMerchantFollowStrip(
+            merchant = product.merchant,
+            coverImageUrl = coverUrl,
+        )
     }
 }

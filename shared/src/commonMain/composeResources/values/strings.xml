@@ -173,5 +173,11 @@
     <string name="product_detail_reviews_sort_oldest">قدیمی‌ترین</string>
     <string name="product_detail_reviews_sort_rating_asc">امتیاز: کم به زیاد</string>
     <string name="product_detail_reviews_sort_rating_desc">امتیاز: زیاد به کم</string>
+    <!-- Product detail / recommendations -->
+    <string name="product_detail_follow">دنبال کردن</string>
+    <string name="product_detail_follow_a11y">دنبال کردن فروشگاه %1$s</string>
+    <string name="product_detail_more_from">بیشتر از %1$s</string>
+    <string name="product_detail_related_to">مرتبط با %1$s</string>
+    <string name="product_detail_discover_brands">کشف برندهای برتر</string>
 </resources>
 
