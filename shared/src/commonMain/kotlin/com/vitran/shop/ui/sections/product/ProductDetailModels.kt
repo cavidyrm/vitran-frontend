@@ -36,6 +36,8 @@ enum class ProductImageMode {
 
 /**
  * Merchant / store row on the PDP (logo, name, rating).
+ *
+ * [shopId] maps to [com.vitran.shop.ui.navigation.Route.Store] when Visit store is tapped.
  */
 @Immutable
 data class ProductDetailMerchant(
@@ -45,6 +47,8 @@ data class ProductDetailMerchant(
     val ratingLabel: String,
     /** e.g. "(۱۴۱.۴K)" */
     val reviewCountLabel: String,
+    /** Home / store handle for navigation; null when unknown in mocks. */
+    val shopId: String? = null,
 )
 
 /**
@@ -431,6 +435,7 @@ private fun merchantFromHomeShop(shop: com.vitran.shop.ui.sections.home.HomeShop
         },
         ratingLabel = rating,
         reviewCountLabel = count,
+        shopId = shop.id,
     )
 }
 

@@ -10,6 +10,7 @@ import com.vitran.shop.ui.screens.HomeScreen
 import com.vitran.shop.ui.screens.OffersScreen
 import com.vitran.shop.ui.screens.ProductDetailScreen
 import com.vitran.shop.ui.screens.SavedScreen
+import com.vitran.shop.ui.screens.StoreScreen
 import com.vitran.shop.ui.sections.product.MockProductCatalog
 
 /**
@@ -44,6 +45,9 @@ fun AppNavHost(
                             ),
                         )
                     },
+                    onStoreOpen = { shopId ->
+                        navigator.push(Route.Store(shopId = shopId))
+                    },
                 )
             }
             entry<Route.Categories> {
@@ -63,6 +67,9 @@ fun AppNavHost(
                             ),
                         )
                     },
+                    onStoreOpen = { shopId ->
+                        navigator.push(Route.Store(shopId = shopId))
+                    },
                 )
             }
             entry<Route.Offers> { OffersScreen() }
@@ -71,6 +78,29 @@ fun AppNavHost(
             entry<Route.ProductDetail> { key ->
                 ProductDetailScreen(
                     productId = key.productId,
+                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
+                        val product = MockProductCatalog.resolve(
+                            id = id,
+                            title = title,
+                            imageUrl = imageUrl,
+                            storeName = storeName,
+                            priceLabel = priceLabel,
+                        )
+                        navigator.push(
+                            Route.ProductDetail(
+                                productId = product.id,
+                                slug = product.slug,
+                            ),
+                        )
+                    },
+                    onStoreOpen = { shopId ->
+                        navigator.push(Route.Store(shopId = shopId))
+                    },
+                )
+            }
+            entry<Route.Store> { key ->
+                StoreScreen(
+                    shopId = key.shopId,
                     onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
                         val product = MockProductCatalog.resolve(
                             id = id,

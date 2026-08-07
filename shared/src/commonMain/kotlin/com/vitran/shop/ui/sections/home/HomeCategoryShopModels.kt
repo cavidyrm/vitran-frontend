@@ -184,8 +184,9 @@ private fun mockBabyShops(): List<HomeShopCard> = listOf(
         name = "Tushbaby",
         ratingLabel = "۴٫۵ (۱۲٫۷ هزار)",
         coverUrl = "https://cdn.shopify.com/shop-assets/shopify_brokers/tushbaby.myshopify.com/1763691496/shopappcover-6.png?width=800",
-        logoUrl = "https://cdn.shopify.com/shop-assets/shopify_brokers/tushbaby.myshopify.com/1784658067/ChatGPTImageJun302026at01_17_16PM2",
-        brandColor = rgb(187, 175, 169),
+        // shop.app menu avatar — extension required or Coil fails and the pill collapses to icon-only.
+        logoUrl = "https://cdn.shopify.com/shop-assets/shopify_brokers/tushbaby.myshopify.com/1784658067/ChatGPTImageJun302026at01_17_16PM2.png.png?width=64",
+        brandColor = rgb(210, 201, 197),
         useLightText = false,
         products = peeks(
             "1815161176130" to "https://cdn.shopify.com/s/files/1/0060/9982/8802/files/GreyCarrier.webp?width=384",
@@ -260,10 +261,25 @@ private fun mockBeautyShops(): List<HomeShopCard> = listOf(
         logoUrl = "https://cdn.shopify.com/s/files/1/0257/7583/3137/files/SACHEU-website-logo.png?width=640",
         brandColor = rgb(208, 181, 174),
         useLightText = false,
-        products = peeks(
-            "6768045326385" to "https://cdn.shopify.com/s/files/1/0257/7583/3137/files/Lip_Liner_P_Inked.png?width=384",
-            "7032018665521" to "https://cdn.shopify.com/s/files/1/0257/7583/3137/files/SwatchwProduct-LiquidGlowSTAY-N_AuraGlow.png?width=384",
-            "6928256106545" to "https://cdn.shopify.com/s/files/1/0257/7583/3137/files/Swatch_w_Product_-_Lip_Glaze_Elixir_Bunny_Tongue_a890f1b5-4278-46c8-95c5-f762369e732a.png?width=384",
+        products = listOf(
+            HomeShopProductPeek(
+                id = "6768045326385",
+                imageUrl = "https://cdn.shopify.com/s/files/1/0257/7583/3137/files/Lip_Liner_P_Inked.png?width=384",
+                title = "Lip Liner Stay-N®",
+                priceLabel = PeekPriceCycle[0],
+            ),
+            HomeShopProductPeek(
+                id = "7032018665521",
+                imageUrl = "https://cdn.shopify.com/s/files/1/0257/7583/3137/files/SwatchwProduct-LiquidGlowSTAY-N_AuraGlow.png?width=384",
+                title = "Liquid Glow STAY-N®",
+                priceLabel = PeekPriceCycle[1],
+            ),
+            HomeShopProductPeek(
+                id = "6928256106545",
+                imageUrl = "https://cdn.shopify.com/s/files/1/0257/7583/3137/files/Swatch_w_Product_-_Lip_Glaze_Elixir_Bunny_Tongue_a890f1b5-4278-46c8-95c5-f762369e732a.png?width=384",
+                title = "Lip Glaze Elixir",
+                priceLabel = PeekPriceCycle[2],
+            ),
         ),
     ),
     HomeShopCard(

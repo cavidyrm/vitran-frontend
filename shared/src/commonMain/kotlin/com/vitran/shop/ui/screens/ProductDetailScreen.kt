@@ -40,9 +40,11 @@ import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
 import com.vitran.shop.ui.components.SiteFooter
 import com.vitran.shop.ui.sections.categories.CategoriesSectionGap
+import com.vitran.shop.ui.sections.home.allMockHomeShopCards
 import com.vitran.shop.ui.sections.product.MockProductCatalog
 import com.vitran.shop.ui.sections.product.ProductDetailInfoColumn
 import com.vitran.shop.ui.sections.product.ProductDetailMediaSection
+import com.vitran.shop.ui.sections.product.ProductDetailMerchant
 import com.vitran.shop.ui.sections.product.ProductDetailMerchantHeader
 import com.vitran.shop.ui.sections.product.ProductDetailRecommendationsSection
 import com.vitran.shop.ui.sections.product.productDetailStickyGallery
@@ -74,6 +76,7 @@ private val MobileOmniboxBackdropBlur = 10.dp
  * No Add to cart / Buy now (mock phase — no purchase flow).
  *
  * @param onProductOpen product id, title, image URL, store name, and price from a recommendation click.
+ * @param onStoreOpen store / merchant id from Visit store (when [ProductDetailMerchant.shopId] is set).
  */
 @Composable
 fun ProductDetailScreen(
@@ -86,6 +89,7 @@ fun ProductDetailScreen(
         storeName: String,
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
+    onStoreOpen: (shopId: String) -> Unit = {},
 ) {
     val product = MockProductCatalog.byId(productId)
     val viewportWidth = LocalShellViewportWidth.current
@@ -188,6 +192,9 @@ fun ProductDetailScreen(
                     ProductDetailMerchantHeader(
                         merchant = product.merchant,
                         showVisitStore = true,
+                        onVisitStoreClick = {
+                            resolveStoreId(product.merchant)?.let(onStoreOpen)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.background)
@@ -231,6 +238,9 @@ fun ProductDetailScreen(
                             product = product,
                             showMerchantHeader = isLgUp,
                             contentHorizontalPadding = false,
+                            onVisitStoreClick = {
+                                resolveStoreId(product.merchant)?.let(onStoreOpen)
+                            },
                             modifier = Modifier
                                 .widthIn(min = BuyColumnMinWidth, max = BuyColumnMaxWidth)
                                 .width(BuyColumnWidth)
@@ -250,6 +260,9 @@ fun ProductDetailScreen(
                         product = product,
                         showMerchantHeader = false,
                         contentHorizontalPadding = true,
+                        onVisitStoreClick = {
+                            resolveStoreId(product.merchant)?.let(onStoreOpen)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = VitranSpacing.lg),
@@ -347,3 +360,10 @@ private val InfoSideInset = VitranSpacing.xxxl
 
 /** shop.app `md:mt-space-24` on the media|info row. */
 private val DesktopRowTopMargin = VitranSpacing.xxl
+
+/** Prefer explicit [ProductDetailMerchant.shopId], else match Home shop by name. */
+private fun resolveStoreId(merchant: ProductDetailMerchant): String? =
+    merchant.shopId
+        ?: allMockHomeShopCards()
+            .firstOrNull { it.name.equals(merchant.name, ignoreCase = true) }
+            ?.id

@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.theme.VitranOpacity
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -78,13 +79,15 @@ fun NavItemButton(
                     indication = null,
                     onClick = onClick,
                 )
-                .padding(VitranSpacing.md)
+                .padding(VitranSpacing.xs)
                 .scale(scale),
             contentAlignment = Alignment.Center,
         ) {
             VitranIcon(
                 painter = painter,
                 contentDescription = contentDescription,
+                // shop.app rail glyphs read ~20–24; keep slightly compact vs iconMedium.
+                size = 20.dp,
                 tint = resolvedTint.copy(alpha = opacity),
             )
         }

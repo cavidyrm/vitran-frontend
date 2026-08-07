@@ -15,8 +15,9 @@
 6. Category landing (Women/Men/Beauty/...)
 7. Product list (filters + grid)
 8. Product detail (UI only; no checkout) — route `/products/{productId}/{slug}` ↔ shop.app PDP; `ProductDetailScreen`
-9. Collection / Edit page
-10. Search
+9. Store / Shop — route `/m/{shopId}` ↔ shop.app merchant; `StoreScreen` (header + products grid)
+10. Collection / Edit page
+11. Search
 
 ## Bottom / Side nav tabs
 - Home

@@ -35,12 +35,23 @@ sealed interface Route : NavKey {
         val productId: String,
         val slug: String,
     ) : Route
+
+    /**
+     * Store / merchant page — shop.app path `/m/{shopId}`.
+     * Child route: pushed onto the stack; does not replace the chrome tab root.
+     */
+    @Serializable
+    data class Store(
+        val shopId: String,
+    ) : Route
 }
 
 /** Top-level tab destinations shown in app chrome (side / bottom nav). */
 fun Route.isTopLevel(): Boolean =
     when (this) {
-        is Route.ProductDetail -> false
+        is Route.ProductDetail,
+        is Route.Store,
+        -> false
         Route.Home,
         Route.Categories,
         Route.Offers,

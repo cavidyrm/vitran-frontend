@@ -15,6 +15,7 @@ object RouteMapper {
             Route.Saved -> "/saved"
             Route.Account -> "/account"
             is Route.ProductDetail -> "/products/${route.productId}/${route.slug}"
+            is Route.Store -> "/m/${route.shopId}"
         }
 
     fun fromPath(path: String): Route? {
@@ -25,7 +26,7 @@ object RouteMapper {
             "/offers" -> Route.Offers
             "/saved" -> Route.Saved
             "/account" -> Route.Account
-            else -> parseProductPath(normalized)
+            else -> parseProductPath(normalized) ?: parseStorePath(normalized)
         }
     }
 
@@ -48,6 +49,16 @@ object RouteMapper {
         if (id.isEmpty() || slug.isEmpty()) return null
         if (id.contains('/') || slug.contains('/')) return null
         return Route.ProductDetail(productId = id, slug = slug)
+    }
+
+    private fun parseStorePath(path: String): Route.Store? {
+        // /m/{shopId} — shop.app merchant handle
+        val parts = path.trim('/').split('/')
+        if (parts.size != 2) return null
+        if (parts[0] != "m") return null
+        val shopId = parts[1]
+        if (shopId.isEmpty() || shopId.contains('/')) return null
+        return Route.Store(shopId = shopId)
     }
 
     private fun extractPath(uri: String): String {

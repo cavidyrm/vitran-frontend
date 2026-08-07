@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- shop.app icon-about -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M21,12c0,4.9706 -4.0294,9 -9,9s-9,-4.0294 -9,-9 4.0294,-9 9,-9 9,4.0294 9,9z"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M11,11h1v5"
+        android:strokeWidth="2"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,8m-1.1,0a1.1,1.1 0,1 1,2.2,0a1.1,1.1 0,1 1,-2.2,0" />
+</vector>

@@ -24,6 +24,7 @@ fun ProductDetailInfoColumn(
     modifier: Modifier = Modifier,
     showMerchantHeader: Boolean = false,
     contentHorizontalPadding: Boolean = true,
+    onVisitStoreClick: () -> Unit = {},
 ) {
     val coverUrl = product.merchantCoverImageUrl ?: product.media.imageUrls.first()
 
@@ -44,6 +45,7 @@ fun ProductDetailInfoColumn(
                 showVisitStore = false,
                 showMoreMenu = true,
                 logoSize = 32.dp,
+                onVisitStoreClick = onVisitStoreClick,
             )
         }
         ProductDetailBuyBox(product = product)

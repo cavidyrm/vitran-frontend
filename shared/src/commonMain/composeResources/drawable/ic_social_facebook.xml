@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- shop.app icon-shop-facebook (simplified) -->
+    <path
+        android:pathData="M12,2C6.477,2 2,6.477 2,12c0,5.523 4.477,10 10,10s10,-4.477 10,-10C22,6.477 17.523,2 12,2z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#FF000000"
+        android:fillColor="#00000000" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M13.07,10.31V12.33h2.44l-0.3,1.94h-2.14V21.6C12.36,21.64 12,21.67 12,21.67s-0.36,-0.02 -0.71,-0.07v-7.33H8.64v-1.94h2.29V10.02c0,-1.06 0.31,-1.84 0.83,-2.36 0.52,-0.52 1.27,-0.81 2.24,-0.81 0.47,0 0.96,0.04 1.34,0.09v1.64h-0.8c-0.63,0 -1.1,0.2 -1.4,0.55 -0.3,0.34 -0.4,0.78 -0.4,1.19z" />
+</vector>

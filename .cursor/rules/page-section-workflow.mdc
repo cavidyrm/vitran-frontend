@@ -29,18 +29,23 @@ Every new (or refined) section **must** include live shop.app verification of:
 Do **not** mark a section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code.
 
 ## Current focus
-- Active screen: **Product detail** (`ProductDetailScreen`, route `/products/{productId}/{slug}` ↔ shop.app PDP)
-- Product detail section order:
-  1. Media gallery (`ProductDetailMediaSection` — compact snap / medium thumbs / desktop rail + lightbox) — done
-  2. Merchant / visit-store header (`ProductDetailMerchantHeader` — shop-info-header stack; compact Visit store; lg+ more menu) — done
-  3. Buy box (`ProductDetailBuyBox` — title, rating, badges, price, options, qty, Save|Share; **no** Add to cart / Buy now) — done
-  4. Description (`ProductDetailDescription` via `ProductDetailInfoColumn`) — done
-  5. Reviews (`ProductDetailReviewsSection` + `ProductDetailReviewsSheet` side sheet) — done
-  6. Follow strip + More from / Related / Discover (`ProductDetailMerchantFollowStrip`, `ProductDetailRecommendationsSection`) — done (Delivery & Returns intentionally omitted)
-  7. Site footer (`SiteFooter` on PDP) — done
-- Product detail layout: compact stack vs `md+` two-column (`BuyColumnWidth` 464dp ↔ shop.app `md:w-[29em]`); row uses `md:px-16`, `md:mt-24`, `md:gap-40`; desktop gallery packs toward buy column (no RTL dead middle)
-- PDP mocks: never `محصول` / `فروشگاه` / `—` / “توضیحات به‌زودی” — realistic fake copy only
-- Categories screen remains complete for its listed sections; only touch it when wiring product clicks or shared chrome.
+- Active screen: **Store / Shop** (`StoreScreen`, route `/m/{shopId}` ↔ shop.app `/m/{handle}`)
+- Store section order:
+  1. Header chrome (`StoreCoverLayer` + sticky `StoreMenuFollowBar` / `StoreCategoryChipsBar`, scrolling `StoreIdentityBlock` + `StoreCollectionsSection`) — done
+     - Scroll: cover collapses/fades behind content (shop.app sticky cover); menu + category chips stick via `LazyColumn` sticky headers
+  2. Products (`StoreProductsSection` — title + search, filter chips, responsive grid) — done
+  3. Site footer + floating search (same as Categories / PDP) — done
+  4. Store menu side sheet (`StoreMenuSheet` via menu pill — brand panel, Reviews / Policies / Contact) — done
+- Product detail remains complete for its listed sections; only touch it when wiring Visit store or shared chrome.
+- Product detail section order (complete):
+  1. Media gallery — done
+  2. Merchant / visit-store header — done
+  3. Buy box — done
+  4. Description — done
+  5. Reviews — done
+  6. Follow strip + recommendations — done
+  7. Site footer — done
+- Categories screen remains complete for its listed sections; only touch it when wiring product/shop clicks or shared chrome.
 - Categories vertical rhythm: `CategoriesSectionGap` (40dp) between major blocks on `CategoriesScreen`
 
 ## Placement
@@ -48,7 +53,8 @@ Do **not** mark a section done until responsive sizes and the gap from the secti
 - App chrome navigation: `shared/.../ui/navigation/`
 - Categories sections: `shared/.../ui/sections/categories/`
 - Product detail sections: `shared/.../ui/sections/product/`
-- Screen assembly: `shared/.../ui/screens/ProductDetailScreen.kt` (active), `CategoriesScreen.kt`, `HomeScreen.kt`
+- Store sections: `shared/.../ui/sections/store/`
+- Screen assembly: `shared/.../ui/screens/StoreScreen.kt` (active), `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference

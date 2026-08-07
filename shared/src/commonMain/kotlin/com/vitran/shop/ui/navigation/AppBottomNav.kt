@@ -84,8 +84,8 @@ fun AppBottomNav(
                 MaterialTheme.colorScheme.outline,
                 BottomShape
             )
-            .padding(horizontal = VitranSpacing.lg, vertical = VitranSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(VitranSpacing.xl, Alignment.CenterHorizontally),
+            .padding(horizontal = VitranSpacing.lg, vertical = VitranSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(VitranSpacing.lg, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         NavItemButton(

@@ -18,8 +18,9 @@ object VitranSize {
     val touchTarget = 48.dp
     val buttonHeight = 48.dp
 
-    val sideRailWidth = 72.dp
-    val bottomBarHeight = 72.dp
+    /** shop.app desktop rail ~76px; keep compact so 20dp glyphs don’t feel oversized. */
+    val sideRailWidth = 64.dp
+    val bottomBarHeight = 64.dp
     val profileItemHeight = 54.dp
     val downloadBannerHeight = 40.dp
 

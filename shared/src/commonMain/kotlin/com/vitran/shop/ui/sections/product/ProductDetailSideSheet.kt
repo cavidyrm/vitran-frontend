@@ -36,19 +36,23 @@ import com.vitran.shop.ui.theme.VitranSize
 import kotlinx.coroutines.launch
 
 /**
- * shop.app PDP side sheet host (Description / Reviews).
+ * shop.app side sheet host (PDP Description / Reviews, Store menu).
  *
  * Measured on live shop.app (LTR docks to physical **right** with
  * `translate-x-full` ↔ `none`, `transition-transform 300ms ease-out`).
- * VitranShop is RTL, so this mirrors to the physical **left**:
- * - closed: `translationX = -width`
- * - open: `translationX = 0`
+ * VitranShop PDP sheets are RTL-mirrored to the physical **left**.
+ * Store menu docks to the physical **right** ([fromPhysicalRight]).
  *
  * Only **translateX** moves the panel (no scale-from-center). Scrim fades alone.
+ *
+ * @param panelColor panel fill — white frost for PDP sheets; store brand color for store menu.
+ * @param fromPhysicalRight when true, panel slides in from the physical right edge.
  */
 @Composable
 fun ProductDetailSideSheet(
     onDismiss: () -> Unit,
+    panelColor: Color = SideSheetPanelFill,
+    fromPhysicalRight: Boolean = false,
     content: @Composable (onClose: () -> Unit) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -58,7 +62,10 @@ fun ProductDetailSideSheet(
     var panelReady by remember { mutableStateOf(false) }
     var closing by remember { mutableStateOf(false) }
 
-    fun offscreenX(): Float = -panelWidthPx.toFloat().coerceAtLeast(1f)
+    fun offscreenX(): Float {
+        val w = panelWidthPx.toFloat().coerceAtLeast(1f)
+        return if (fromPhysicalRight) w else -w
+    }
 
     fun requestClose() {
         if (closing) return
@@ -122,7 +129,13 @@ fun ProductDetailSideSheet(
 
             Box(
                 modifier = Modifier
-                    .align(AbsoluteAlignment.CenterLeft)
+                    .align(
+                        if (fromPhysicalRight) {
+                            AbsoluteAlignment.CenterRight
+                        } else {
+                            AbsoluteAlignment.CenterLeft
+                        },
+                    )
                     .then(
                         if (isDesktop) {
                             Modifier
@@ -165,7 +178,7 @@ fun ProductDetailSideSheet(
                             RoundedCornerShape(0.dp)
                         },
                     )
-                    .background(SideSheetPanelFill),
+                    .background(panelColor),
             ) {
                 content(::requestClose)
             }

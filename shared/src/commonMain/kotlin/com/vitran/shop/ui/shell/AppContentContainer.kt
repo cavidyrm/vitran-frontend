@@ -30,21 +30,35 @@ private val ContentFrameBorder = Color(0xFFEBEBEB)
  *
  * - `framed = true` (desktop): inset card, 28.dp radius, `#EBEBEB` border, soft shadow.
  * - `framed = false` (compact): full-bleed, no chrome.
+ * - [bleedTop]: drop the top chrome inset and square the top corners so Store
+ *   cover media is flush with the top of the content pane (no shelf gap).
  */
 @Composable
 fun AppContentContainer(
     framed: Boolean,
     modifier: Modifier = Modifier,
+    bleedTop: Boolean = false,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
     val pageColor = MaterialTheme.colorScheme.background
     if (framed) {
-        val shape = RoundedCornerShape(VitranRadius.extraLarge)
+        // Flush store covers meet the chrome edge — square the top corners so the
+        // hero isn't sitting inside a padded rounded shelf.
+        val shape = if (bleedTop) {
+            RoundedCornerShape(
+                topStart = 0.dp,
+                topEnd = 0.dp,
+                bottomStart = VitranRadius.extraLarge,
+                bottomEnd = VitranRadius.extraLarge,
+            )
+        } else {
+            RoundedCornerShape(VitranRadius.extraLarge)
+        }
         Box(
             modifier = modifier
                 .fillMaxSize()
                 .padding(
-                    top = VitranSpacing.sm,
+                    top = if (bleedTop) 0.dp else VitranSpacing.sm,
                     end = VitranSpacing.sm,
                     bottom = VitranSpacing.sm,
                 ),

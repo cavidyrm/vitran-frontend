@@ -57,6 +57,7 @@ fun AppShell(
                     )
                     AppContentContainer(
                         framed = true,
+                        bleedTop = currentRoute is Route.Store,
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                     ) {
                         content()

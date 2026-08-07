@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -58,6 +60,8 @@ import vitranshop.shared.generated.resources.categories_product_card_a11y
 import vitranshop.shared.generated.resources.categories_product_card_save_a11y
 import vitranshop.shared.generated.resources.ic_nav_saved
 import vitranshop.shared.generated.resources.ic_star_filled
+import vitranshop.shared.generated.resources.ic_star_outline
+import vitranshop.shared.generated.resources.store_product_card_a11y
 
 /**
  * shop.app desktop reference width (~6-up on a ~1200 track).
@@ -92,17 +96,19 @@ private val BadgeTextSize = 10.sp
 
 /**
  * Product tile used by Categories “Top rated / New in” carousels
- * (shop.app `/categories` feed card).
+ * (shop.app `/categories` feed card) and the Store products grid
+ * (shop.app `/m/{handle}` — hide [showStoreName] there).
  *
- * Width follows the parent carousel (shop.app
- * `calc(100% / n - gap * (n - 1) / n)`): ~151 compact / ~188 desktop.
+ * Width follows the parent: pass [cardWidth] for carousels, or omit it and
+ * `Modifier.fillMaxWidth()` for responsive grids.
  * Square image, radius 20, gap 8 to meta; optional sale badge and save overlay.
  */
 @Composable
 fun CategoriesProductCard(
     product: CategoriesProduct,
     modifier: Modifier = Modifier,
-    cardWidth: Dp = CategoriesProductCardWidthDesktop,
+    cardWidth: Dp? = CategoriesProductCardWidthDesktop,
+    showStoreName: Boolean = true,
     onClick: () -> Unit = {},
     onSaveClick: () -> Unit = {},
 ) {
@@ -120,12 +126,20 @@ fun CategoriesProductCard(
         ),
         label = "categoriesProductHover",
     )
-    val a11y = stringResource(
-        Res.string.categories_product_card_a11y,
-        product.title,
-        product.storeName,
-        product.priceLabel,
-    )
+    val a11y = if (showStoreName) {
+        stringResource(
+            Res.string.categories_product_card_a11y,
+            product.title,
+            product.storeName,
+            product.priceLabel,
+        )
+    } else {
+        stringResource(
+            Res.string.store_product_card_a11y,
+            product.title,
+            product.priceLabel,
+        )
+    }
     val saveA11y = stringResource(Res.string.categories_product_card_save_a11y)
     val placeholder = remember { ColorPainter(ImagePlaceholder) }
     val imageShape = RoundedCornerShape(VitranRadius.xl)
@@ -138,7 +152,7 @@ fun CategoriesProductCard(
 
     Column(
         modifier = modifier
-            .width(cardWidth)
+            .then(if (cardWidth != null) Modifier.width(cardWidth) else Modifier)
             .hoverable(interaction)
             .semantics { contentDescription = a11y },
         verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
@@ -196,7 +210,7 @@ fun CategoriesProductCard(
                             color = VitranTheme.extraColors.saleBadge,
                             shape = VitranShapes.pill,
                         )
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                        .padding(horizontal = VitranSpacing.sm, vertical = 3.dp),
                 ) {
                     Text(
                         text = label,
@@ -242,15 +256,18 @@ fun CategoriesProductCard(
                     role = Role.Button,
                     onClick = onClick,
                 )
-                .padding(start = VitranSpacing.xs),
+                .padding(start = if (showStoreName) VitranSpacing.xs else 0.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Text(
-                text = product.storeName,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = captionStyle,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if (showStoreName) {
+                Text(
+                    text = product.storeName,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = captionStyle,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             Text(
                 text = product.title,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -265,18 +282,55 @@ fun CategoriesProductCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
                 ) {
+                    // shop.app always paints a 5-star track (filled / half / empty).
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        val filled = rating.toInt().coerceIn(0, 5)
-                        repeat(filled) {
-                            VitranIcon(
-                                painter = painterResource(Res.drawable.ic_star_filled),
-                                contentDescription = null,
-                                size = StarSize,
-                                tint = VitranTheme.extraColors.star,
-                            )
+                        for (index in 1..5) {
+                            val threshold = index.toFloat()
+                            when {
+                                rating >= threshold -> {
+                                    VitranIcon(
+                                        painter = painterResource(Res.drawable.ic_star_filled),
+                                        contentDescription = null,
+                                        size = StarSize,
+                                        tint = VitranTheme.extraColors.star,
+                                    )
+                                }
+                                rating >= threshold - 0.5f -> {
+                                    Box(modifier = Modifier.size(StarSize)) {
+                                        VitranIcon(
+                                            painter = painterResource(Res.drawable.ic_star_outline),
+                                            contentDescription = null,
+                                            size = StarSize,
+                                            tint = VitranTheme.extraColors.star.copy(alpha = 0.35f),
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.CenterStart)
+                                                .fillMaxHeight()
+                                                .width(StarSize / 2)
+                                                .clip(RectangleShape),
+                                        ) {
+                                            VitranIcon(
+                                                painter = painterResource(Res.drawable.ic_star_filled),
+                                                contentDescription = null,
+                                                size = StarSize,
+                                                tint = VitranTheme.extraColors.star,
+                                            )
+                                        }
+                                    }
+                                }
+                                else -> {
+                                    VitranIcon(
+                                        painter = painterResource(Res.drawable.ic_star_outline),
+                                        contentDescription = null,
+                                        size = StarSize,
+                                        tint = VitranTheme.extraColors.star.copy(alpha = 0.35f),
+                                    )
+                                }
+                            }
                         }
                     }
                     Text(

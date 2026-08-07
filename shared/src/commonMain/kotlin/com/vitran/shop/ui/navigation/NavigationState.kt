@@ -32,7 +32,7 @@ class NavigationState(
 
     /**
      * Last top-level route in the stack — used for side/bottom nav selection while
-     * a child (e.g. [Route.ProductDetail]) is showing.
+     * a child (e.g. [Route.ProductDetail] / [Route.Store]) is showing.
      */
     val chromeRoute: Route
         get() {
@@ -57,6 +57,7 @@ private val routeSavedStateConfiguration: SavedStateConfiguration =
                 subclass(serializer = Route.Saved.serializer())
                 subclass(serializer = Route.Account.serializer())
                 subclass(serializer = Route.ProductDetail.serializer())
+                subclass(serializer = Route.Store.serializer())
             }
         }
     }

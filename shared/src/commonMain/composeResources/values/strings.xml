@@ -179,5 +179,52 @@
     <string name="product_detail_more_from">بیشتر از %1$s</string>
     <string name="product_detail_related_to">مرتبط با %1$s</string>
     <string name="product_detail_discover_brands">کشف برندهای برتر</string>
+    <!-- Store / shop page -->
+    <string name="store_menu_a11y">منوی فروشگاه %1$s</string>
+    <string name="store_menu_close_a11y">بستن منوی فروشگاه</string>
+    <string name="store_menu_share_a11y">اشتراک‌گذاری فروشگاه %1$s</string>
+    <string name="store_menu_open_reviews_a11y">مشاهده همه نظرات</string>
+    <string name="store_menu_policies">قوانین</string>
+    <string name="store_menu_contact">تماس</string>
+    <string name="store_menu_policy_privacy">حریم خصوصی</string>
+    <string name="store_menu_policy_refund">بازگشت وجه</string>
+    <string name="store_menu_policy_shipping">ارسال</string>
+    <string name="store_menu_visit_online_store">بازدید از فروشگاه آنلاین</string>
+    <string name="store_menu_ratings_count">%1$s امتیاز</string>
+    <string name="store_shop_all">همه</string>
+    <string name="store_view_all_collections">مشاهده همه مجموعه‌ها</string>
+    <string name="store_view_all_collections_a11y">مشاهده همه مجموعه‌های %1$s</string>
+    <string name="store_rating_a11y">امتیاز %1$s از ۵، %2$s</string>
+    <string name="store_collection_a11y">مجموعه %1$s</string>
+    <string name="store_category_a11y">دسته %1$s</string>
+    <string name="store_collection_new">جدید</string>
+    <string name="store_collection_wrap">کریر سگک‌دار</string>
+    <string name="store_collection_carrier">کریر هوایی</string>
+    <string name="store_collection_sling">اسلینگ حلقه‌ای</string>
+    <string name="store_collection_lips">لب‌ها</string>
+    <string name="store_collection_eyes">چشم‌ها</string>
+    <string name="store_collection_face">صورت</string>
+    <string name="store_collection_bestsellers">پرفروش‌ها</string>
+    <string name="store_nav_wrap">کریر سگک‌دار</string>
+    <string name="store_nav_carrier">کریر هوایی</string>
+    <string name="store_nav_sling">اسلینگ</string>
+    <string name="store_nav_accessories">لوازم جانبی</string>
+    <string name="store_nav_lips">لب‌ها</string>
+    <string name="store_nav_eyes">چشم‌ها</string>
+    <string name="store_nav_face">صورت</string>
+    <string name="store_nav_bestsellers">پرفروش‌ها</string>
+    <string name="store_menu_contact_facebook">Facebook</string>
+    <string name="store_menu_contact_instagram">Instagram</string>
+    <string name="store_menu_contact_youtube">YouTube</string>
+    <!-- Store / products segment -->
+    <string name="store_products_title">محصولات</string>
+    <string name="store_products_search_placeholder">جستجو در %1$s…</string>
+    <string name="store_products_search_a11y">جستجوی محصولات فروشگاه %1$s</string>
+    <string name="store_products_filter_a11y">فیلترها</string>
+    <string name="store_products_sort">مرتب‌سازی</string>
+    <string name="store_products_on_sale">حراج</string>
+    <string name="store_products_price">قیمت</string>
+    <string name="store_products_in_stock">موجود</string>
+    <string name="store_product_card_a11y">%1$s، %2$s</string>
 </resources>
 
