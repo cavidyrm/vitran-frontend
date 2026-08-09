@@ -18,6 +18,7 @@
 9. Store / Shop — route `/m/{shopId}` ↔ shop.app merchant; `StoreScreen` (header + products grid)
 10. Collection / Edit page
 11. Search
+12. Auth / Login — route `/account/login` (`LoginScreen` / `AuthShell`) ↔ shop.app `/accounts/login`; email step then OTP verify step (same URL); opened from signed-out Saved / Account nav (`onLoginRequest` → push); no app chrome while showing
 
 ## Bottom / Side nav tabs
 - Home

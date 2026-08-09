@@ -7,6 +7,7 @@ import coil3.compose.setSingletonImageLoaderFactory
 import com.vitran.shop.ui.navigation.AppNavHost
 import com.vitran.shop.ui.navigation.BindBrowserNavigation
 import com.vitran.shop.ui.navigation.NavAuthUiState
+import com.vitran.shop.ui.navigation.Route
 import com.vitran.shop.ui.navigation.initWebComposeResources
 import com.vitran.shop.ui.navigation.rememberInitialRoute
 import com.vitran.shop.ui.navigation.rememberNavigationState
@@ -37,9 +38,8 @@ fun App() {
             currentRoute = navState.chromeRoute,
             authState = authState,
             onNavigate = navigator::navigate,
-            onLoginRequest = {
-                // Login UI is out of scope for this section.
-            },
+            onLoginRequest = { navigator.push(Route.Login) },
+            hideChrome = navState.currentRoute is Route.Login,
         ) {
             AppNavHost(navState = navState, navigator = navigator)
         }

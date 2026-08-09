@@ -1,6 +1,7 @@
 package com.vitran.shop.ui.shell
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -28,6 +29,10 @@ fun AppShell(
     onNavigate: (Route) -> Unit,
     onLoginRequest: () -> Unit,
     avatarRenderer: AvatarRenderer = DefaultAvatarRenderer,
+    /**
+     * When true (e.g. [Route.Login]), hide side/bottom nav — full-bleed content like shop.app login.
+     */
+    hideChrome: Boolean = false,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -35,7 +40,7 @@ fun AppShell(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(chrome)
+            .background(if (hideChrome) MaterialTheme.colorScheme.surface else chrome)
             .then(modifier),
     ) {
         val isDesktop = maxWidth >= VitranSize.desktopBreakpoint
@@ -44,7 +49,11 @@ fun AppShell(
             LocalShellViewportWidth provides maxWidth,
             LocalShellViewportHeight provides maxHeight,
         ) {
-            if (isDesktop) {
+            if (hideChrome) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    content()
+                }
+            } else if (isDesktop) {
                 // In RTL, Row Start is on the right — put nav first so the rail sits at Start.
                 Row(modifier = Modifier.fillMaxSize()) {
                     AppSideNav(

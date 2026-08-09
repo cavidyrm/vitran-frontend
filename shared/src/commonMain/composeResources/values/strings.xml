@@ -9,6 +9,22 @@
     <string name="nav_sign_in">ورود</string>
     <string name="nav_account">حساب کاربری</string>
     <string name="nav_saved_sign_in_a11y">برای مشاهده ذخیره‌ها وارد شوید</string>
+    <!-- Auth / login (shop.app /accounts/login) -->
+    <string name="auth_sign_in_title">ورود به ویتران</string>
+    <string name="auth_or_create_account">یا یک حساب بسازید</string>
+    <string name="auth_email_placeholder">ایمیل خود را وارد کنید</string>
+    <string name="auth_continue">ادامه</string>
+    <string name="auth_legal_before">با ادامه، با </string>
+    <string name="auth_legal_mid"> موافقت می‌کنید و </string>
+    <string name="auth_legal_after"> را می‌پذیرید.</string>
+    <string name="auth_language">فارسی</string>
+    <string name="auth_logo_a11y">ویتران</string>
+    <string name="auth_language_a11y">زبان</string>
+    <string name="auth_verify_title">تأیید ایمیل</string>
+    <string name="auth_verify_subtitle">کد ارسال‌شده به</string>
+    <string name="auth_change_email">تغییر نشانی ایمیل</string>
+    <string name="auth_otp_a11y">کد تأیید شش‌رقمی</string>
+    <string name="auth_verify_illustration_a11y">تأیید ایمیل</string>
     <string name="home_placeholder">خانه</string>
     <string name="download_app_banner_primary">اپ ویتران را دانلود کنید.</string>
     <string name="download_app_banner_secondary">موجود برای iOS و Android</string>

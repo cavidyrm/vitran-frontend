@@ -27,6 +27,13 @@ sealed interface Route : NavKey {
     data object Account : Route
 
     /**
+     * Sign-in — path `/account/login` (shop.app `/accounts/login`).
+     * Child route: pushed onto the stack; no app chrome while showing.
+     */
+    @Serializable
+    data object Login : Route
+
+    /**
      * Product detail — shop.app path `/products/{productId}/{slug}`.
      * Child route: pushed onto the stack; does not replace the chrome tab root.
      */
@@ -51,6 +58,7 @@ fun Route.isTopLevel(): Boolean =
     when (this) {
         is Route.ProductDetail,
         is Route.Store,
+        Route.Login,
         -> false
         Route.Home,
         Route.Categories,

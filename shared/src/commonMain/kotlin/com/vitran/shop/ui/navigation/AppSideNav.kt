@@ -79,7 +79,7 @@ fun AppSideNav(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(VitranSpacing.xl),
         ) {
             NavItemButton(
                 painter = painterResource(Res.drawable.ic_nav_home),

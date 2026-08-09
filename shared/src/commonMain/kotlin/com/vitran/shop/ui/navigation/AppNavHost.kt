@@ -7,6 +7,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.vitran.shop.ui.screens.AccountScreen
 import com.vitran.shop.ui.screens.CategoriesScreen
 import com.vitran.shop.ui.screens.HomeScreen
+import com.vitran.shop.ui.screens.LoginScreen
 import com.vitran.shop.ui.screens.OffersScreen
 import com.vitran.shop.ui.screens.ProductDetailScreen
 import com.vitran.shop.ui.screens.SavedScreen
@@ -75,6 +76,9 @@ fun AppNavHost(
             entry<Route.Offers> { OffersScreen() }
             entry<Route.Saved> { SavedScreen() }
             entry<Route.Account> { AccountScreen() }
+            entry<Route.Login> {
+                LoginScreen()
+            }
             entry<Route.ProductDetail> { key ->
                 ProductDetailScreen(
                     productId = key.productId,
