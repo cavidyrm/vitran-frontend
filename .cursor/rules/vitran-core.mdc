@@ -13,13 +13,14 @@ alwaysApply: true
 - Screen map: `docs/ui-reference/screens.md`.
 
 ## UI workflow (important)
-- Screenshots in `docs/ui-reference/` plus **live shop.app** are the source of truth for **colors, spacing, shapes, and section patterns**.
-- **Mandatory live inspection:** Before implementing or refining **any** UI the user asks for, open the **matching shop.app URL/section** in the agent browser and inspect that exact block (layout, spacing, radii, typography, scroll/carousel, breakpoints, interactions). Do not guess from memory or screenshots alone.
-- User screenshots complement live inspection; they do **not** replace it.
-- Do **not** mark a section done until you have opened shop.app for that section and reflected what you measured.
+- Shopper screens: screenshots in `docs/ui-reference/` plus **live shop.app** are the source of truth for **colors, spacing, shapes, and section patterns**.
+- **Mandatory live inspection (shopper):** Before implementing or refining shopper UI, open the **matching shop.app URL/section** in the agent browser and inspect that exact block. Do not guess from memory or screenshots alone.
+- **Merchant admin:** `docs/ui-reference/admin/` (Shopify Admin screenshots) is the source of truth. Do **not** open shop.app for admin pages such as Create store (`/admin/stores/new`).
+- User screenshots complement live inspection for shopper UI; they do **not** replace it.
+- Do **not** mark a shopper section done until you have opened shop.app for that section and reflected what you measured.
 - Build UI **piece by piece** (one component or one section per task).
 - Do **not** implement an entire screen unless the user explicitly asks for that assembly step.
-- New sections: always verify **responsive sizing** and the **gap above** the previous section on live shop.app — see rule `page-section-workflow.mdc`.
+- New shopper sections: always verify **responsive sizing** and the **gap above** the previous section on live shop.app — see rule `page-section-workflow.mdc`.
 
 ## Phase
 - Current phase: **UI + mock data only**. No real API calls.

@@ -15,6 +15,7 @@ object RouteMapper {
             Route.Saved -> "/saved"
             Route.Account -> "/account"
             Route.Login -> "/account/login"
+            Route.CreateStore -> "/admin/stores/new"
             is Route.ProductDetail -> "/products/${route.productId}/${route.slug}"
             is Route.Store -> "/m/${route.shopId}"
         }
@@ -28,6 +29,7 @@ object RouteMapper {
             "/saved" -> Route.Saved
             "/account/login" -> Route.Login
             "/account" -> Route.Account
+            "/admin/stores/new" -> Route.CreateStore
             else -> parseProductPath(normalized) ?: parseStorePath(normalized)
         }
     }

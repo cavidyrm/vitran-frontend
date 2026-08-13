@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.vitran.shop.ui.screens.AccountScreen
 import com.vitran.shop.ui.screens.CategoriesScreen
+import com.vitran.shop.ui.screens.CreateStoreScreen
 import com.vitran.shop.ui.screens.HomeScreen
 import com.vitran.shop.ui.screens.LoginScreen
 import com.vitran.shop.ui.screens.OffersScreen
@@ -75,9 +76,19 @@ fun AppNavHost(
             }
             entry<Route.Offers> { OffersScreen() }
             entry<Route.Saved> { SavedScreen() }
-            entry<Route.Account> { AccountScreen() }
+            entry<Route.Account> {
+                AccountScreen(
+                    onCreateStore = { navigator.push(Route.CreateStore) },
+                )
+            }
             entry<Route.Login> {
                 LoginScreen()
+            }
+            entry<Route.CreateStore> {
+                CreateStoreScreen(
+                    onBack = { navigator.goBack() },
+                    onViewStore = { shopId -> navigator.push(Route.Store(shopId = shopId)) },
+                )
             }
             entry<Route.ProductDetail> { key ->
                 ProductDetailScreen(

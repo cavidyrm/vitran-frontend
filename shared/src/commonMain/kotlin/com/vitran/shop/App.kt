@@ -8,6 +8,7 @@ import com.vitran.shop.ui.navigation.AppNavHost
 import com.vitran.shop.ui.navigation.BindBrowserNavigation
 import com.vitran.shop.ui.navigation.NavAuthUiState
 import com.vitran.shop.ui.navigation.Route
+import com.vitran.shop.ui.navigation.hidesChrome
 import com.vitran.shop.ui.navigation.initWebComposeResources
 import com.vitran.shop.ui.navigation.rememberInitialRoute
 import com.vitran.shop.ui.navigation.rememberNavigationState
@@ -39,7 +40,7 @@ fun App() {
             authState = authState,
             onNavigate = navigator::navigate,
             onLoginRequest = { navigator.push(Route.Login) },
-            hideChrome = navState.currentRoute is Route.Login,
+            hideChrome = navState.currentRoute.hidesChrome(),
         ) {
             AppNavHost(navState = navState, navigator = navigator)
         }

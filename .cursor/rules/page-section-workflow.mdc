@@ -12,54 +12,50 @@ alwaysApply: true
 - Reuse shared composables/models when the shape already exists — see rule `reuse-shared-ui.mdc`.
 
 ## Live shop.app reference (required — non-negotiable)
-- Screenshots in `docs/ui-reference/` are **not enough**.
-- **Every time** the user asks to build, refine, or restyle UI: open the **matching** page/section on **https://shop.app** in the agent browser first (e.g. `/categories` for Categories, `/products/{id}/{slug}` for Product detail — use the exact product URL when the user provides one) and fully inspect that section: layout, spacing, radii, typography, carousel/scroll behavior, interactions, and breakpoints.
+- Screenshots in `docs/ui-reference/` are **not enough** for **shopper** screens.
+- **Every time** the user asks to build, refine, or restyle shopper UI: open the **matching** page/section on **https://shop.app** in the agent browser first (e.g. `/categories` for Categories, `/products/{id}/{slug}` for Product detail — use the exact product URL when the user provides one) and fully inspect that section: layout, spacing, radii, typography, carousel/scroll behavior, interactions, and breakpoints.
 - Measure compact and desktop (and mid when the pattern changes) before coding.
 - User screenshots complement live inspection; they do **not** replace it.
-- Do **not** mark work done until live shop.app for that section was opened and the measured behavior is reflected in code.
+- Do **not** mark shopper work done until live shop.app for that section was opened and the measured behavior is reflected in code.
+
+### Merchant admin exception
+- Admin screens (Create store, later edit/dashboard) are **not** shop.app storefront.
+- Visual source of truth: `docs/ui-reference/admin/` (Shopify Admin screenshots). Do **not** open shop.app for these pages.
+- Still verify responsive compact vs `mdBreakpoint` (768dp two-column) and card gaps in code.
 
 ## Required checks when adding a new section
-Every new (or refined) section **must** include live shop.app verification of:
+Every new (or refined) **shopper** section **must** include live shop.app verification of:
 
 1. **Responsive sizing** — measure compact and desktop (and mid if the pattern changes). Do not ship fixed card/row widths when shop.app scales with viewport (e.g. carousel `n`-up formulas, grid column counts, gaps). Apply the same behavior in Compose (`BoxWithConstraints` / breakpoint tokens as needed).
 2. **Internal spacing** — title→content, item gaps, padding, radii from live inspection, not guesses.
 3. **Gap above (critical)** — measure the distance from the **previous** section’s bottom content to this section’s top (title or first row). Match shop.app exactly when wiring into the screen. Prefer the page’s shared section gap token when one exists (Categories: `CategoriesSectionGap` = 40dp ↔ shop.app `space-y-space-40`); do not invent a different top/bottom pad that doubles or collapses that rhythm.
 4. **Gap below** — only if this section owns trailing space before the next block; otherwise let the screen / next section own the shared gap.
 
-Do **not** mark a section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code.
+Do **not** mark a shopper section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code. For admin sections, check compact vs `mdBreakpoint` and card gaps against `docs/ui-reference/admin/`.
 
 ## Current focus
-- Active screen: **Store / Shop** (`StoreScreen`, route `/m/{shopId}` ↔ shop.app `/m/{handle}`)
-- Store section order:
-  1. Header chrome (`StoreCoverLayer` + sticky `StoreMenuFollowBar` / `StoreCategoryChipsBar`, scrolling `StoreIdentityBlock` + `StoreCollectionsSection`) — done
-     - Scroll: cover collapses/fades behind content (shop.app sticky cover); menu + category chips stick via `LazyColumn` sticky headers
-  2. Products (`StoreProductsSection` — title + search, filter chips, responsive grid) — done
-  3. Site footer + floating search (same as Categories / PDP) — done
-  4. Store menu side sheet (`StoreMenuSheet` via menu pill — brand panel, Reviews / Policies / Contact) — done
-- Product detail remains complete for its listed sections; only touch it when wiring Visit store or shared chrome.
-- Product detail section order (complete):
-  1. Media gallery — done
-  2. Merchant / visit-store header — done
-  3. Buy box — done
-  4. Description — done
-  5. Reviews — done
-  6. Follow strip + recommendations — done
-  7. Site footer — done
+- Active screen: **Create store** (merchant admin) — `CreateStoreScreen`, route `/admin/stores/new`
+- Visual reference: `docs/ui-reference/admin/create-store/` (Shopify Admin), not shop.app
+- Form is a 5-step wizard (Basics, Brand, Contact, Policies, Publish) with live phone preview, progress summary, and sticky bottom bar. Refine a step only when the user asks.
+- Shopper Store / Shop (`StoreScreen`, `/m/{shopId}`) remains complete for its listed sections; only touch it when wiring Visit store or shared chrome.
+- Product detail remains complete for its listed sections.
 - Categories screen remains complete for its listed sections; only touch it when wiring product/shop clicks or shared chrome.
 - Categories vertical rhythm: `CategoriesSectionGap` (40dp) between major blocks on `CategoriesScreen`
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`
+- Admin form primitives: `shared/.../ui/components/admin/`
+- Admin create-store sections: `shared/.../ui/sections/admin/`
 - App chrome navigation: `shared/.../ui/navigation/`
 - Categories sections: `shared/.../ui/sections/categories/`
 - Product detail sections: `shared/.../ui/sections/product/`
 - Store sections: `shared/.../ui/sections/store/`
-- Screen assembly: `shared/.../ui/screens/StoreScreen.kt` (active), `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
+- Screen assembly: `shared/.../ui/screens/CreateStoreScreen.kt` (active), `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference
-- Use `docs/ui-reference/` screenshots for the **active** section **and** live shop.app.
-- Match shop.app look with Persian RTL and `VitranTheme`.
+- Shopper screens: `docs/ui-reference/` screenshots **and** live shop.app. Match shop.app look with Persian RTL and `VitranTheme`.
+- Admin screens: `docs/ui-reference/admin/` only (Shopify Admin cards, black primary, light gray page). Persian RTL still applies.
 - Do **not** use Material3 `NavigationBar` / `NavigationRail` for app chrome.
 
 ## When to use

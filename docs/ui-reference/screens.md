@@ -19,6 +19,7 @@
 10. Collection / Edit page
 11. Search
 12. Auth / Login — route `/account/login` (`LoginScreen` / `AuthShell`) ↔ shop.app `/accounts/login`; email step then OTP verify step (same URL); opened from signed-out Saved / Account nav (`onLoginRequest` → push); no app chrome while showing
+13. Create store (merchant admin) — route `/admin/stores/new` (`CreateStoreScreen`); 5-step wizard with live phone preview; no shopper chrome; mock-only. Opened from Account or the URL.
 
 ## Bottom / Side nav tabs
 - Home
