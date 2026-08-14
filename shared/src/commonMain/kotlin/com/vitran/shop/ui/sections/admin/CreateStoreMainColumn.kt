@@ -166,6 +166,7 @@ fun CreateStoreStepBody(
     onStateChange: (CreateStoreFormState) -> Unit,
     onViewStore: () -> Unit = {},
     onPublish: () -> Unit = {},
+    onAddProduct: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -181,6 +182,7 @@ fun CreateStoreStepBody(
                 state = state,
                 onViewStore = onViewStore,
                 onPublish = onPublish,
+                onAddProduct = onAddProduct,
             )
         }
     }
@@ -1087,6 +1089,7 @@ private fun CreateStorePublishStep(
     state: CreateStoreFormState,
     onViewStore: () -> Unit,
     onPublish: () -> Unit,
+    onAddProduct: () -> Unit,
 ) {
     val ready = state.canPublish
     val name = state.storeName.ifBlank {
@@ -1177,6 +1180,7 @@ private fun CreateStorePublishStep(
         actionLabel = stringResource(Res.string.admin_empty_products_action),
         emoji = "📦",
         emphasized = false,
+        onAction = onAddProduct,
     )
 }
 

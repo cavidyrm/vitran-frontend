@@ -33,9 +33,12 @@ fun AdminFormCard(
     title: String? = null,
     subtitle: String? = null,
     icon: Painter? = null,
+    trailing: @Composable (() -> Unit)? = null,
+    hasError: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val shape = RoundedCornerShape(AdminTokens.CardRadius)
+    val border = if (hasError) AdminTokens.ErrorBorder else AdminTokens.CardBorder
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -48,12 +51,17 @@ fun AdminFormCard(
             )
             .clip(shape)
             .background(MaterialTheme.colorScheme.surface, shape)
-            .border(1.dp, AdminTokens.CardBorder, shape)
+            .border(1.dp, border, shape)
             .padding(AdminTokens.CardPadding),
         verticalArrangement = Arrangement.spacedBy(VitranSpacing.md),
     ) {
         if (title != null) {
-            AdminCardHeader(title = title, subtitle = subtitle, icon = icon)
+            AdminCardHeader(
+                title = title,
+                subtitle = subtitle,
+                icon = icon,
+                trailing = trailing,
+            )
         }
         content()
     }
@@ -64,8 +72,10 @@ fun AdminCardHeader(
     title: String,
     subtitle: String? = null,
     icon: Painter? = null,
+    trailing: @Composable (() -> Unit)? = null,
 ) {
     Row(
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md),
         verticalAlignment = Alignment.Top,
     ) {
@@ -85,7 +95,10 @@ fun AdminCardHeader(
                 )
             }
         }
-        Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
+        ) {
             Text(
                 text = title,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -101,6 +114,9 @@ fun AdminCardHeader(
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, lineHeight = 18.sp),
                 )
             }
+        }
+        if (trailing != null) {
+            trailing()
         }
     }
 }

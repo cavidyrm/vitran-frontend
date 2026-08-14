@@ -58,6 +58,7 @@ private val routeSavedStateConfiguration: SavedStateConfiguration =
                 subclass(serializer = Route.Account.serializer())
                 subclass(serializer = Route.Login.serializer())
                 subclass(serializer = Route.CreateStore.serializer())
+                subclass(serializer = Route.CreateProduct.serializer())
                 subclass(serializer = Route.ProductDetail.serializer())
                 subclass(serializer = Route.Store.serializer())
             }

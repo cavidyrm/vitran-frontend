@@ -30,7 +30,7 @@ fun AppShell(
     onLoginRequest: () -> Unit,
     avatarRenderer: AvatarRenderer = DefaultAvatarRenderer,
     /**
-     * When true (e.g. [Route.Login] / [Route.CreateStore]), hide side/bottom nav.
+     * When true (e.g. [Route.Login] / [Route.CreateStore] / [Route.CreateProduct]), hide side/bottom nav.
      */
     hideChrome: Boolean = false,
     modifier: Modifier = Modifier,

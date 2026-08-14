@@ -41,6 +41,13 @@ sealed interface Route : NavKey {
     data object CreateStore : Route
 
     /**
+     * Merchant admin — add product. Path `/admin/products/new`.
+     * Child route: pushed onto the stack; no shopper chrome while showing.
+     */
+    @Serializable
+    data object CreateProduct : Route
+
+    /**
      * Product detail — shop.app path `/products/{productId}/{slug}`.
      * Child route: pushed onto the stack; does not replace the chrome tab root.
      */
@@ -67,6 +74,7 @@ fun Route.isTopLevel(): Boolean =
         is Route.Store,
         Route.Login,
         Route.CreateStore,
+        Route.CreateProduct,
         -> false
         Route.Home,
         Route.Categories,
@@ -78,4 +86,4 @@ fun Route.isTopLevel(): Boolean =
 
 /** Full-bleed destinations that hide shopper side / bottom nav. */
 fun Route.hidesChrome(): Boolean =
-    this is Route.Login || this is Route.CreateStore
+    this is Route.Login || this is Route.CreateStore || this is Route.CreateProduct

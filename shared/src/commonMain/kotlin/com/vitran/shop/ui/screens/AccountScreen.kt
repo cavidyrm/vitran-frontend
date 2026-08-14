@@ -23,6 +23,7 @@ import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.admin_create_product_title
 import vitranshop.shared.generated.resources.admin_create_store_title
 import vitranshop.shared.generated.resources.nav_account
 
@@ -30,6 +31,7 @@ import vitranshop.shared.generated.resources.nav_account
 fun AccountScreen(
     modifier: Modifier = Modifier,
     onCreateStore: () -> Unit = {},
+    onCreateProduct: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -59,6 +61,22 @@ fun AccountScreen(
             ) {
                 VitranText(
                     text = stringResource(Res.string.admin_create_store_title),
+                    style = VitranTextStyle.Label,
+                    color = MaterialTheme.colorScheme.surface,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .widthIn(min = 180.dp)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(VitranRadius.small))
+                    .background(MaterialTheme.colorScheme.onSurface)
+                    .clickable(role = Role.Button, onClick = onCreateProduct)
+                    .padding(horizontal = VitranSpacing.lg),
+                contentAlignment = Alignment.Center,
+            ) {
+                VitranText(
+                    text = stringResource(Res.string.admin_create_product_title),
                     style = VitranTextStyle.Label,
                     color = MaterialTheme.colorScheme.surface,
                 )

@@ -56,6 +56,7 @@ import vitranshop.shared.generated.resources.admin_last_saved_minutes
 fun CreateStoreScreen(
     onBack: () -> Unit,
     onViewStore: (String) -> Unit = {},
+    onAddProduct: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var state by remember { mutableStateOf(CreateStoreFormState()) }
@@ -179,6 +180,7 @@ fun CreateStoreScreen(
                                     if (state.slug.isNotBlank()) onViewStore(state.slug)
                                 },
                                 onPublish = { publish() },
+                                onAddProduct = onAddProduct,
                             )
                         }
                         Column(
@@ -228,6 +230,7 @@ fun CreateStoreScreen(
                                 if (state.slug.isNotBlank()) onViewStore(state.slug)
                             },
                             onPublish = { publish() },
+                            onAddProduct = onAddProduct,
                         )
                         CreateStoreSummaryCard(
                             state = state,
