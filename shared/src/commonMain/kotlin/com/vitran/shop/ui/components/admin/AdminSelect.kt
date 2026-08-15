@@ -134,7 +134,7 @@ fun AdminSearchableSelect(
 }
 
 @Composable
-private fun AdminDropdownAnchor(
+internal fun AdminDropdownAnchor(
     label: String,
     helper: String?,
     displayText: String?,
@@ -225,7 +225,7 @@ private fun AdminDropdownAnchor(
 }
 
 @Composable
-private fun AdminDropdownSearch(
+internal fun AdminDropdownSearch(
     query: String,
     onQueryChange: (String) -> Unit,
     placeholder: String,

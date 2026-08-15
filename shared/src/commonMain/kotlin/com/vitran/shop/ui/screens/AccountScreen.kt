@@ -23,6 +23,7 @@ import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.admin_create_category_title
 import vitranshop.shared.generated.resources.admin_create_product_title
 import vitranshop.shared.generated.resources.admin_create_store_title
 import vitranshop.shared.generated.resources.nav_account
@@ -32,6 +33,7 @@ fun AccountScreen(
     modifier: Modifier = Modifier,
     onCreateStore: () -> Unit = {},
     onCreateProduct: () -> Unit = {},
+    onCreateCategory: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -49,38 +51,41 @@ fun AccountScreen(
                 style = VitranTextStyle.Headline,
                 color = MaterialTheme.colorScheme.onBackground,
             )
-            Box(
-                modifier = Modifier
-                    .widthIn(min = 180.dp)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(VitranRadius.small))
-                    .background(MaterialTheme.colorScheme.onSurface)
-                    .clickable(role = Role.Button, onClick = onCreateStore)
-                    .padding(horizontal = VitranSpacing.lg),
-                contentAlignment = Alignment.Center,
-            ) {
-                VitranText(
-                    text = stringResource(Res.string.admin_create_store_title),
-                    style = VitranTextStyle.Label,
-                    color = MaterialTheme.colorScheme.surface,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .widthIn(min = 180.dp)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(VitranRadius.small))
-                    .background(MaterialTheme.colorScheme.onSurface)
-                    .clickable(role = Role.Button, onClick = onCreateProduct)
-                    .padding(horizontal = VitranSpacing.lg),
-                contentAlignment = Alignment.Center,
-            ) {
-                VitranText(
-                    text = stringResource(Res.string.admin_create_product_title),
-                    style = VitranTextStyle.Label,
-                    color = MaterialTheme.colorScheme.surface,
-                )
-            }
+            AccountAdminButton(
+                label = stringResource(Res.string.admin_create_store_title),
+                onClick = onCreateStore,
+            )
+            AccountAdminButton(
+                label = stringResource(Res.string.admin_create_product_title),
+                onClick = onCreateProduct,
+            )
+            AccountAdminButton(
+                label = stringResource(Res.string.admin_create_category_title),
+                onClick = onCreateCategory,
+            )
         }
+    }
+}
+
+@Composable
+private fun AccountAdminButton(
+    label: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .widthIn(min = 180.dp)
+            .height(40.dp)
+            .clip(RoundedCornerShape(VitranRadius.small))
+            .background(MaterialTheme.colorScheme.onSurface)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = VitranSpacing.lg),
+        contentAlignment = Alignment.Center,
+    ) {
+        VitranText(
+            text = label,
+            style = VitranTextStyle.Label,
+            color = MaterialTheme.colorScheme.surface,
+        )
     }
 }

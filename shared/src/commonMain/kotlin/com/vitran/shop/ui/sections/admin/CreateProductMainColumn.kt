@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -26,8 +25,7 @@ import com.vitran.shop.ui.components.admin.AdminFormCard
 import com.vitran.shop.ui.components.admin.AdminMediaTile
 import com.vitran.shop.ui.components.admin.AdminMediaUploadPanel
 import com.vitran.shop.ui.components.admin.AdminMultilineField
-import com.vitran.shop.ui.components.admin.AdminSearchableSelect
-import com.vitran.shop.ui.components.admin.AdminSelectOption
+import com.vitran.shop.ui.components.admin.AdminTaxonomyPicker
 import com.vitran.shop.ui.components.admin.AdminTextButton
 import com.vitran.shop.ui.components.admin.AdminTextField
 import com.vitran.shop.ui.components.admin.AdminTokens
@@ -44,16 +42,6 @@ import vitranshop.shared.generated.resources.admin_product_card_media
 import vitranshop.shared.generated.resources.admin_product_card_price
 import vitranshop.shared.generated.resources.admin_product_card_seo
 import vitranshop.shared.generated.resources.admin_product_card_shipping
-import vitranshop.shared.generated.resources.admin_product_category_baby
-import vitranshop.shared.generated.resources.admin_product_category_beauty
-import vitranshop.shared.generated.resources.admin_product_category_fitness
-import vitranshop.shared.generated.resources.admin_product_category_food
-import vitranshop.shared.generated.resources.admin_product_category_home
-import vitranshop.shared.generated.resources.admin_product_category_men
-import vitranshop.shared.generated.resources.admin_product_category_pet
-import vitranshop.shared.generated.resources.admin_product_category_sporting
-import vitranshop.shared.generated.resources.admin_product_category_toys
-import vitranshop.shared.generated.resources.admin_product_category_women
 import vitranshop.shared.generated.resources.admin_product_continue_selling
 import vitranshop.shared.generated.resources.admin_product_field_barcode
 import vitranshop.shared.generated.resources.admin_product_field_barcode_placeholder
@@ -217,20 +205,19 @@ private fun CategoryCard(
     onStateChange: (CreateProductFormState) -> Unit,
     categoryAnchor: BringIntoViewRequester,
 ) {
-    val options = rememberProductCategoryOptions()
+    val taxonomy = rememberProductTaxonomy()
     AdminFormCard(
         hasError = state.errors.category != null,
         modifier = Modifier.bringIntoViewRequester(categoryAnchor),
     ) {
-        AdminSearchableSelect(
+        AdminTaxonomyPicker(
             label = stringResource(Res.string.admin_product_field_category),
             valueId = state.categoryId,
-            options = options,
+            roots = taxonomy,
             onSelect = { onStateChange(state.copy(categoryId = it.id).clearedErrors().markedDirty()) },
             placeholder = stringResource(Res.string.admin_product_field_category_placeholder),
             helper = stringResource(Res.string.admin_product_field_category_helper),
             searchPlaceholder = stringResource(Res.string.admin_product_field_category_search),
-            showItemChevron = false,
         )
         val categoryError = state.errors.category
         if (categoryError != null) {
@@ -501,30 +488,3 @@ private fun SeoSearchPreview(
     }
 }
 
-@Composable
-private fun rememberProductCategoryOptions(): List<AdminSelectOption> {
-    val beauty = stringResource(Res.string.admin_product_category_beauty)
-    val women = stringResource(Res.string.admin_product_category_women)
-    val men = stringResource(Res.string.admin_product_category_men)
-    val home = stringResource(Res.string.admin_product_category_home)
-    val fitness = stringResource(Res.string.admin_product_category_fitness)
-    val baby = stringResource(Res.string.admin_product_category_baby)
-    val sporting = stringResource(Res.string.admin_product_category_sporting)
-    val food = stringResource(Res.string.admin_product_category_food)
-    val toys = stringResource(Res.string.admin_product_category_toys)
-    val pet = stringResource(Res.string.admin_product_category_pet)
-    return remember(beauty, women, men, home, fitness, baby, sporting, food, toys, pet) {
-        listOf(
-            AdminSelectOption("beauty", beauty),
-            AdminSelectOption("women", women),
-            AdminSelectOption("men", men),
-            AdminSelectOption("home", home),
-            AdminSelectOption("fitness", fitness),
-            AdminSelectOption("baby", baby),
-            AdminSelectOption("sporting", sporting),
-            AdminSelectOption("food", food),
-            AdminSelectOption("toys", toys),
-            AdminSelectOption("pet", pet),
-        )
-    }
-}

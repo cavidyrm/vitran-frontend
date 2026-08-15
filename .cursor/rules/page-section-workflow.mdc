@@ -19,9 +19,9 @@ alwaysApply: true
 - Do **not** mark shopper work done until live shop.app for that section was opened and the measured behavior is reflected in code.
 
 ### Merchant admin exception
-- Admin screens (Create store, Add product, later edit/dashboard) are **not** shop.app storefront.
+- Admin screens (Create store, Add product, Select category, later edit/dashboard) are **not** shop.app storefront.
 - Visual source of truth: `docs/ui-reference/admin/` (Shopify Admin screenshots). Do **not** open shop.app for these pages.
-- Still verify responsive compact vs `desktopBreakpoint` (1024dp two-column on Add product) / `mdBreakpoint` (768dp on Create store) and card gaps in code.
+- Still verify responsive compact vs `desktopBreakpoint` (1024dp two-column on Add product / Select category) / `mdBreakpoint` (768dp on Create store) and card gaps in code.
 
 ## Required checks when adding a new section
 Every new (or refined) **shopper** section **must** include live shop.app verification of:
@@ -34,9 +34,11 @@ Every new (or refined) **shopper** section **must** include live shop.app verifi
 Do **not** mark a shopper section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code. For admin sections, check compact vs `mdBreakpoint` and card gaps against `docs/ui-reference/admin/`.
 
 ## Current focus
-- Active screen: **Add product** (merchant admin) — `CreateProductScreen`, route `/admin/products/new`
-- Visual reference: `docs/ui-reference/admin/create-product/` (Shopify Admin), not shop.app
-- Single-page two-column form from 1024dp: basics, media, category, price, inventory, shipping, variants + combination table, SEO accordion; sticky status/organization rail. Default status Draft. Mock-only; no purchase flow.
+- Active screen: **Select category** (merchant admin) — `CreateCategoryScreen`, route `/admin/categories/new`
+- Visual reference: `docs/ui-reference/admin/create-category/` (Shopify Admin taxonomy picker), not shop.app
+- Shopify has no “create category” form: merchants pick a Standard Product Taxonomy node (search, drill-down chevrons, later Magic suggestion + category metafields). Mock-only; no custom IDs; no Collections.
+- First slice: header + picker card. Do not add metafields, suggestion, sidebar, or bottom bar until asked.
+- Add product (`CreateProductScreen`, `/admin/products/new`) remains complete for its listed sections; reuse the shared taxonomy picker there.
 - Create store (`CreateStoreScreen`, `/admin/stores/new`) remains complete; only touch it when wiring Visit store or Add product.
 - Shopper Store / Shop (`StoreScreen`, `/m/{shopId}`) remains complete for its listed sections; only touch it when wiring Visit store or shared chrome.
 - Product detail remains complete for its listed sections.
@@ -51,7 +53,7 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - Categories sections: `shared/.../ui/sections/categories/`
 - Product detail sections: `shared/.../ui/sections/product/`
 - Store sections: `shared/.../ui/sections/store/`
-- Screen assembly: `shared/.../ui/screens/CreateProductScreen.kt` (active), `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
+- Screen assembly: `shared/.../ui/screens/CreateCategoryScreen.kt` (active), `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference
