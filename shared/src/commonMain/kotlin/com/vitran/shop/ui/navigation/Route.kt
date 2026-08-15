@@ -50,6 +50,22 @@ sealed interface Route : NavKey {
     ) : Route
 
     /**
+     * Forgot password — path `/account/forgot`.
+     * Mobile only; submit continues to reset. Child route; no app chrome while showing.
+     */
+    @Serializable
+    data object ForgotPassword : Route
+
+    /**
+     * Reset password — path `/account/forgot/reset`.
+     * OTP + new password. [phone] is carried on the nav key; bare deep links use empty phone.
+     */
+    @Serializable
+    data class ResetPassword(
+        val phone: String = "",
+    ) : Route
+
+    /**
      * Merchant admin — create store. Path `/admin/stores/new`.
      * Child route: pushed onto the stack; no shopper chrome while showing.
      */
@@ -96,8 +112,10 @@ fun Route.isTopLevel(): Boolean =
         is Route.ProductDetail,
         is Route.Store,
         is Route.RegisterVerify,
+        is Route.ResetPassword,
         Route.Login,
         Route.Register,
+        Route.ForgotPassword,
         Route.CreateStore,
         Route.CreateProduct,
         Route.CreateCategory,
@@ -115,6 +133,8 @@ fun Route.hidesChrome(): Boolean =
     this is Route.Login ||
         this is Route.Register ||
         this is Route.RegisterVerify ||
+        this is Route.ForgotPassword ||
+        this is Route.ResetPassword ||
         this is Route.CreateStore ||
         this is Route.CreateProduct ||
         this is Route.CreateCategory

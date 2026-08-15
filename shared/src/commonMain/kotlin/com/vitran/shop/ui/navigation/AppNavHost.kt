@@ -1,6 +1,10 @@
 package com.vitran.shop.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -9,12 +13,14 @@ import com.vitran.shop.ui.screens.CategoriesScreen
 import com.vitran.shop.ui.screens.CreateCategoryScreen
 import com.vitran.shop.ui.screens.CreateProductScreen
 import com.vitran.shop.ui.screens.CreateStoreScreen
+import com.vitran.shop.ui.screens.ForgotPasswordScreen
 import com.vitran.shop.ui.screens.HomeScreen
 import com.vitran.shop.ui.screens.LoginScreen
 import com.vitran.shop.ui.screens.OffersScreen
 import com.vitran.shop.ui.screens.ProductDetailScreen
 import com.vitran.shop.ui.screens.RegisterScreen
 import com.vitran.shop.ui.screens.RegisterVerifyScreen
+import com.vitran.shop.ui.screens.ResetPasswordScreen
 import com.vitran.shop.ui.screens.SavedScreen
 import com.vitran.shop.ui.screens.StoreScreen
 import com.vitran.shop.ui.sections.product.MockProductCatalog
@@ -29,6 +35,7 @@ fun AppNavHost(
     navigator: Navigator,
     modifier: Modifier = Modifier,
 ) {
+    var passwordResetNotice by remember { mutableStateOf(false) }
     NavDisplay(
         backStack = navState.backStack,
         modifier = modifier,
@@ -89,7 +96,10 @@ fun AppNavHost(
             }
             entry<Route.Login> {
                 LoginScreen(
+                    showPasswordResetNotice = passwordResetNotice,
+                    onPasswordResetNoticeConsumed = { passwordResetNotice = false },
                     onCreateAccount = { navigator.push(Route.Register) },
+                    onForgotPassword = { navigator.push(Route.ForgotPassword) },
                 )
             }
             entry<Route.Register> {
@@ -119,6 +129,37 @@ fun AppNavHost(
                     },
                     onVerified = {
                         // Mock phase — no auth state change.
+                    },
+                )
+            }
+            entry<Route.ForgotPassword> {
+                ForgotPasswordScreen(
+                    onSendCode = { phone ->
+                        navigator.push(Route.ResetPassword(phone = phone))
+                    },
+                    onBackToLogin = {
+                        if (navState.backStack.size > 1) {
+                            navigator.goBack()
+                        } else {
+                            navigator.navigate(Route.Login)
+                        }
+                    },
+                )
+            }
+            entry<Route.ResetPassword> { key ->
+                ResetPasswordScreen(
+                    phone = key.phone,
+                    onChangeMobile = {
+                        if (navState.backStack.size > 1) {
+                            navigator.goBack()
+                        } else {
+                            navigator.navigate(Route.ForgotPassword)
+                        }
+                    },
+                    onResetComplete = {
+                        // Mock phase — no auth state change.
+                        passwordResetNotice = true
+                        navigator.navigate(Route.Login)
                     },
                 )
             }

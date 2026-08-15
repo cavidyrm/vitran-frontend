@@ -17,6 +17,8 @@ object RouteMapper {
             Route.Login -> "/account/login"
             Route.Register -> "/account/register"
             is Route.RegisterVerify -> "/account/register/verify"
+            Route.ForgotPassword -> "/account/forgot"
+            is Route.ResetPassword -> "/account/forgot/reset"
             Route.CreateStore -> "/admin/stores/new"
             Route.CreateProduct -> "/admin/products/new"
             Route.CreateCategory -> "/admin/categories/new"
@@ -34,6 +36,8 @@ object RouteMapper {
             "/account/login" -> Route.Login
             "/account/register" -> Route.Register
             "/account/register/verify" -> Route.RegisterVerify()
+            "/account/forgot" -> Route.ForgotPassword
+            "/account/forgot/reset" -> Route.ResetPassword()
             "/account" -> Route.Account
             "/admin/stores/new" -> Route.CreateStore
             "/admin/products/new" -> Route.CreateProduct

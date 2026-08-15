@@ -1,21 +1,20 @@
 package com.vitran.shop.ui.sections.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -28,16 +27,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.theme.SurfaceWhite
-import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
@@ -46,47 +43,51 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.auth_change_mobile
+import vitranshop.shared.generated.resources.auth_logo_a11y
+import vitranshop.shared.generated.resources.auth_new_password_label
 import vitranshop.shared.generated.resources.auth_otp_a11y
 import vitranshop.shared.generated.resources.auth_otp_error
 import vitranshop.shared.generated.resources.auth_otp_resend
 import vitranshop.shared.generated.resources.auth_otp_resend_countdown
-import vitranshop.shared.generated.resources.auth_otp_success
-import vitranshop.shared.generated.resources.auth_otp_verify_cta
-import vitranshop.shared.generated.resources.auth_otp_verifying
-import vitranshop.shared.generated.resources.auth_verify_subtitle
-import vitranshop.shared.generated.resources.auth_verify_title
-import vitranshop.shared.generated.resources.ic_check
+import vitranshop.shared.generated.resources.auth_reset_cta
+import vitranshop.shared.generated.resources.auth_reset_saving
+import vitranshop.shared.generated.resources.auth_reset_subtitle
+import vitranshop.shared.generated.resources.auth_reset_title
 import vitranshop.shared.generated.resources.ic_edit
+import vitranshop.shared.generated.resources.ic_shop_logo
 
-private val OtpCardShape = RoundedCornerShape(VitranRadius.large)
-
-private enum class OtpUiPhase {
+private enum class ResetUiPhase {
     Idle,
-    Verifying,
+    Saving,
     Error,
-    Success,
 }
 
 /**
- * OTP verify card: masked phone, 6-cell entry (paste-friendly), timer, verify CTA, error/success.
+ * Reset-password card: 6-digit OTP + new password (no confirm, no OTP auto-submit).
  *
- * Mock: code [AuthTokens.MockInvalidOtp] fails; any other 6-digit code succeeds after a short delay.
+ * Mock: code [AuthTokens.MockInvalidOtp] fails; any other 6-digit code with a valid
+ * password succeeds after a short delay.
  */
 @Composable
-fun AuthOtpForm(
+fun AuthResetPasswordForm(
     destination: String,
     modifier: Modifier = Modifier,
     onChangeDestination: () -> Unit = {},
-    onCodeComplete: (String) -> Unit = {},
+    onResetComplete: () -> Unit = {},
 ) {
     var code by remember { mutableStateOf("") }
-    var phase by remember { mutableStateOf(OtpUiPhase.Idle) }
+    var password by remember { mutableStateOf("") }
+    var phase by remember { mutableStateOf(ResetUiPhase.Idle) }
     var secondsLeft by remember { mutableIntStateOf(AuthTokens.OtpResendSeconds) }
     var resendGeneration by remember { mutableIntStateOf(0) }
-    var verifyRequestId by remember { mutableIntStateOf(0) }
+    var saveRequestId by remember { mutableIntStateOf(0) }
     val focusRequester = remember { FocusRequester() }
     val otpA11y = stringResource(Res.string.auth_otp_a11y)
     val masked = maskIranMobile(destination)
+    val passwordRules = resetPasswordRulesOf(password)
+    val canSubmit = code.length == 6 &&
+        passwordRules.allMet &&
+        phase != ResetUiPhase.Saving
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -100,97 +101,74 @@ fun AuthOtpForm(
         }
     }
 
-    LaunchedEffect(verifyRequestId) {
-        if (verifyRequestId == 0) return@LaunchedEffect
-        val digits = code
-        if (digits.length != 6) return@LaunchedEffect
-        phase = OtpUiPhase.Verifying
+    LaunchedEffect(saveRequestId) {
+        if (saveRequestId == 0) return@LaunchedEffect
+        if (code.length != 6 || !passwordRules.allMet) return@LaunchedEffect
+        phase = ResetUiPhase.Saving
         delay(650)
-        if (digits == AuthTokens.MockInvalidOtp) {
-            phase = OtpUiPhase.Error
+        if (code == AuthTokens.MockInvalidOtp) {
+            phase = ResetUiPhase.Error
+            focusRequester.requestFocus()
         } else {
-            phase = OtpUiPhase.Success
-            delay(700)
-            onCodeComplete(digits)
-        }
-    }
-
-    // Auto-submit when 6 digits entered (from typing or paste).
-    LaunchedEffect(code) {
-        if (code.length == 6 && phase == OtpUiPhase.Idle) {
-            verifyRequestId++
+            onResetComplete()
         }
     }
 
     Column(
         modifier = modifier
-            .widthIn(max = AuthTokens.OtpCardMaxWidth)
             .fillMaxWidth()
             .shadow(
                 elevation = AuthTokens.CardShadowElevation,
-                shape = OtpCardShape,
+                shape = AuthCardShape,
                 ambientColor = Color.Black.copy(alpha = 0.06f),
                 spotColor = Color.Black.copy(alpha = 0.1f),
             )
-            .clip(OtpCardShape)
-            .background(SurfaceWhite, OtpCardShape)
+            .clip(AuthCardShape)
+            .background(SurfaceWhite, AuthCardShape)
             .padding(
                 horizontal = AuthTokens.CardPaddingHorizontal,
                 vertical = AuthTokens.CardPaddingVertical,
             ),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
     ) {
-        Text(
-            text = stringResource(Res.string.auth_verify_title),
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.headlineSmall.copy(
-                fontSize = 22.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.3).sp,
-                lineHeight = 30.sp,
-                textAlign = TextAlign.Center,
-            ),
-            textAlign = TextAlign.Center,
+        Image(
+            painter = painterResource(Res.drawable.ic_shop_logo),
+            contentDescription = stringResource(Res.string.auth_logo_a11y),
+            modifier = Modifier.size(AuthTokens.LogoSize),
         )
 
         Text(
-            text = stringResource(Res.string.auth_verify_subtitle),
+            text = stringResource(Res.string.auth_reset_title),
             modifier = Modifier.padding(top = VitranSpacing.md),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.4).sp,
+                lineHeight = 32.sp,
+            ),
+        )
+
+        Text(
+            text = stringResource(Res.string.auth_reset_subtitle, masked),
+            modifier = Modifier.padding(top = VitranSpacing.sm),
             color = AuthTokens.Muted,
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = 14.sp,
                 lineHeight = 22.sp,
-                textAlign = TextAlign.Center,
             ),
-            textAlign = TextAlign.Center,
         )
-
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-            Text(
-                text = masked,
-                modifier = Modifier.padding(top = VitranSpacing.xs),
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 22.sp,
-                    textAlign = TextAlign.Center,
-                ),
-                textAlign = TextAlign.Center,
-            )
-        }
 
         Row(
             modifier = Modifier
                 .padding(top = VitranSpacing.sm)
                 .clickable(
-                    enabled = phase != OtpUiPhase.Verifying,
+                    enabled = phase != ResetUiPhase.Saving,
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = onChangeDestination,
                 ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
         ) {
             VitranIcon(
                 painter = painterResource(Res.drawable.ic_edit),
@@ -210,77 +188,70 @@ fun AuthOtpForm(
             )
         }
 
-        AuthOtpCodeField(
-            code = code,
-            onCodeChange = { next ->
-                if (phase == OtpUiPhase.Verifying || phase == OtpUiPhase.Success) return@AuthOtpCodeField
-                code = next
-                if (phase == OtpUiPhase.Error) phase = OtpUiPhase.Idle
-            },
-            focusRequester = focusRequester,
-            a11y = otpA11y,
-            isError = phase == OtpUiPhase.Error,
-            modifier = Modifier.padding(top = VitranSpacing.xl),
-        )
-
-        when (phase) {
-            OtpUiPhase.Error -> {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = VitranSpacing.xl),
+        ) {
+            AuthOtpCodeField(
+                code = code,
+                onCodeChange = { next ->
+                    if (phase == ResetUiPhase.Saving) return@AuthOtpCodeField
+                    code = next
+                    if (phase == ResetUiPhase.Error) phase = ResetUiPhase.Idle
+                },
+                focusRequester = focusRequester,
+                a11y = otpA11y,
+                isError = phase == ResetUiPhase.Error,
+            )
+            if (phase == ResetUiPhase.Error) {
                 Text(
                     text = stringResource(Res.string.auth_otp_error),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = VitranSpacing.sm),
+                    modifier = Modifier.padding(top = VitranSpacing.xs),
                     color = AuthTokens.OtpError,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         lineHeight = 18.sp,
-                        textAlign = TextAlign.Center,
                     ),
-                    textAlign = TextAlign.Center,
                 )
             }
-            OtpUiPhase.Success -> {
-                Row(
-                    modifier = Modifier.padding(top = VitranSpacing.sm),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    VitranIcon(
-                        painter = painterResource(Res.drawable.ic_check),
-                        contentDescription = null,
-                        size = VitranSize.iconSmall,
-                        tint = AuthTokens.OtpSuccess,
-                    )
-                    Spacer(modifier = Modifier.width(VitranSpacing.xs))
-                    Text(
-                        text = stringResource(Res.string.auth_otp_success),
-                        color = AuthTokens.OtpSuccess,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            lineHeight = 18.sp,
-                        ),
-                    )
-                }
-            }
-            else -> Unit
         }
 
-        val verifyLabel = if (phase == OtpUiPhase.Verifying) {
-            stringResource(Res.string.auth_otp_verifying)
-        } else {
-            stringResource(Res.string.auth_otp_verify_cta)
-        }
-        AuthPrimaryButton(
-            label = verifyLabel,
-            enabled = code.length == 6 && phase != OtpUiPhase.Success && phase != OtpUiPhase.Verifying,
-            loading = phase == OtpUiPhase.Verifying,
-            onClick = { verifyRequestId++ },
-            modifier = Modifier.padding(top = VitranSpacing.xl),
+        Spacer(
+            modifier = Modifier
+                .padding(vertical = VitranSpacing.md)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(AuthTokens.FieldBorder.copy(alpha = 0.7f)),
         )
 
-        val resendEnabled = secondsLeft == 0 && phase != OtpUiPhase.Verifying
+        AuthPasswordField(
+            value = password,
+            onValueChange = { password = it },
+            onSubmit = { if (canSubmit) saveRequestId++ },
+            label = stringResource(Res.string.auth_new_password_label),
+        )
+
+        AuthPasswordRulesChecklist(
+            rules = passwordRules,
+            modifier = Modifier.padding(top = VitranSpacing.sm),
+        )
+
+        val ctaLabel = if (phase == ResetUiPhase.Saving) {
+            stringResource(Res.string.auth_reset_saving)
+        } else {
+            stringResource(Res.string.auth_reset_cta)
+        }
+        AuthPrimaryButton(
+            label = ctaLabel,
+            enabled = canSubmit,
+            loading = phase == ResetUiPhase.Saving,
+            onClick = { saveRequestId++ },
+            modifier = Modifier.padding(top = VitranSpacing.lg),
+        )
+
+        val resendEnabled = secondsLeft == 0 && phase != ResetUiPhase.Saving
         Text(
             text = if (secondsLeft > 0) {
                 stringResource(
@@ -299,7 +270,7 @@ fun AuthOtpForm(
                     onClick = {
                         resendGeneration++
                         code = ""
-                        phase = OtpUiPhase.Idle
+                        phase = ResetUiPhase.Idle
                         focusRequester.requestFocus()
                     },
                 ),
@@ -312,19 +283,18 @@ fun AuthOtpForm(
                 fontSize = 13.sp,
                 fontWeight = if (resendEnabled) FontWeight.SemiBold else FontWeight.Medium,
                 lineHeight = 18.sp,
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Start,
                 textDecoration = if (resendEnabled) TextDecoration.Underline else TextDecoration.None,
             ),
-            textAlign = TextAlign.Center,
         )
     }
 }
 
 @Preview(showBackground = true, widthDp = 400)
 @Composable
-private fun AuthOtpFormPreview() {
+private fun AuthResetPasswordFormPreview() {
     VitranTheme {
-        AuthOtpForm(
+        AuthResetPasswordForm(
             destination = "09123456789",
             modifier = Modifier.padding(VitranSpacing.lg),
         )

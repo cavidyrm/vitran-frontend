@@ -33,7 +33,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -52,21 +50,16 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.theme.ShopPurpleDark
 import com.vitran.shop.ui.theme.SurfaceWhite
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranShapes
-import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 import org.jetbrains.compose.resources.painterResource
@@ -82,13 +75,6 @@ import vitranshop.shared.generated.resources.auth_legal_after
 import vitranshop.shared.generated.resources.auth_legal_before
 import vitranshop.shared.generated.resources.auth_legal_mid
 import vitranshop.shared.generated.resources.auth_logo_a11y
-import vitranshop.shared.generated.resources.auth_mobile_country_code
-import vitranshop.shared.generated.resources.auth_mobile_label
-import vitranshop.shared.generated.resources.auth_mobile_placeholder
-import vitranshop.shared.generated.resources.auth_password_hide_a11y
-import vitranshop.shared.generated.resources.auth_password_label
-import vitranshop.shared.generated.resources.auth_password_placeholder
-import vitranshop.shared.generated.resources.auth_password_show_a11y
 import vitranshop.shared.generated.resources.auth_register_subtitle
 import vitranshop.shared.generated.resources.auth_register_title
 import vitranshop.shared.generated.resources.auth_sign_in_cta
@@ -96,8 +82,6 @@ import vitranshop.shared.generated.resources.auth_sign_in_title
 import vitranshop.shared.generated.resources.auth_tab_login
 import vitranshop.shared.generated.resources.auth_tab_register
 import vitranshop.shared.generated.resources.ic_shop_logo
-import vitranshop.shared.generated.resources.ic_visibility
-import vitranshop.shared.generated.resources.ic_visibility_off
 import vitranshop.shared.generated.resources.site_footer_link_privacy
 import vitranshop.shared.generated.resources.site_footer_link_terms
 
@@ -110,17 +94,8 @@ data class AuthCredentials(
     val inviteCode: String = "",
 )
 
-fun AuthCredentials.isValidForSubmit(): Boolean {
-    val mobileOk = normalizeIranMobile(mobile).length >= 10
-    val trimmed = password
-    val passwordOk = trimmed.length >= AuthTokens.MinPasswordLength &&
-        !trimmed.startsWith(' ') &&
-        !trimmed.endsWith(' ')
-    return mobileOk && passwordOk
-}
-
-private val AuthCardShape = RoundedCornerShape(VitranRadius.large)
-private val AuthFieldShape = RoundedCornerShape(VitranRadius.small)
+fun AuthCredentials.isValidForSubmit(): Boolean =
+    isValidIranMobile(mobile) && isValidAuthPassword(password)
 
 /**
  * Dense credentials card: mode toggle, brand header, +98 mobile, password strength, CTA.
@@ -224,16 +199,7 @@ fun AuthCredentialsForm(
         ) {
             AuthMobileField(
                 value = nationalMobile,
-                onValueChange = { raw ->
-                    nationalMobile = raw.mapNotNull { ch ->
-                        when (ch) {
-                            in '0'..'9' -> ch
-                            in '۰'..'۹' -> ('0'.code + (ch - '۰')).toChar()
-                            in '٠'..'٩' -> ('0'.code + (ch - '٠')).toChar()
-                            else -> null
-                        }
-                    }.joinToString(separator = "").take(11)
-                },
+                onValueChange = { nationalMobile = it },
             )
 
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -418,208 +384,6 @@ private fun AuthModeTab(
 }
 
 @Composable
-private fun AuthMobileField(
-    value: String,
-    onValueChange: (String) -> Unit,
-) {
-    var focused by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
-    ) {
-        Text(
-            text = stringResource(Res.string.auth_mobile_label),
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                lineHeight = 18.sp,
-            ),
-        )
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(AuthTokens.LabeledFieldHeight)
-                    .clip(AuthFieldShape)
-                    .background(SurfaceWhite, AuthFieldShape)
-                    .border(
-                        width = 1.dp,
-                        color = if (focused) AuthTokens.FieldBorderFocus else AuthTokens.FieldBorder,
-                        shape = AuthFieldShape,
-                    ),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(AuthTokens.CountryCodeWidth)
-                        .fillMaxHeight()
-                        .background(AuthTokens.FieldFill),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(Res.string.auth_mobile_country_code),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.88f),
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            lineHeight = 18.sp,
-                        ),
-                        maxLines = 1,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .fillMaxHeight()
-                        .background(AuthTokens.FieldBorder),
-                )
-                BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .padding(horizontal = VitranSpacing.md)
-                        .onFocusChanged { focused = it.isFocused },
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 16.sp,
-                        lineHeight = 22.sp,
-                    ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Phone,
-                        imeAction = ImeAction.Next,
-                    ),
-                    decorationBox = { inner ->
-                        Box(
-                            modifier = Modifier.fillMaxHeight(),
-                            contentAlignment = Alignment.CenterStart,
-                        ) {
-                            AuthFieldPlaceholder(
-                                empty = value.isEmpty(),
-                                placeholder = stringResource(Res.string.auth_mobile_placeholder),
-                                inner = inner,
-                            )
-                        }
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AuthPasswordField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    onSubmit: () -> Unit,
-    imeAction: ImeAction = ImeAction.Go,
-) {
-    var visible by remember { mutableStateOf(false) }
-    var focused by remember { mutableStateOf(false) }
-    val strength = passwordStrengthOf(value)
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
-    ) {
-        Text(
-            text = stringResource(Res.string.auth_password_label),
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                lineHeight = 18.sp,
-            ),
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(AuthTokens.LabeledFieldHeight)
-                .clip(AuthFieldShape)
-                .background(SurfaceWhite, AuthFieldShape)
-                .border(
-                    width = 1.dp,
-                    color = if (focused) AuthTokens.FieldBorderFocus else AuthTokens.FieldBorder,
-                    shape = AuthFieldShape,
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(start = VitranSpacing.md)
-                    .onFocusChanged { focused = it.isFocused },
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 16.sp,
-                    lineHeight = 22.sp,
-                ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                visualTransformation = if (visible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = imeAction,
-                ),
-                keyboardActions = KeyboardActions(
-                    onGo = { onSubmit() },
-                    onNext = { /* focus moves to invite field when expanded */ },
-                ),
-                decorationBox = { inner ->
-                    Box(
-                        modifier = Modifier.fillMaxHeight(),
-                        contentAlignment = Alignment.CenterStart,
-                    ) {
-                        AuthFieldPlaceholder(
-                            empty = value.isEmpty(),
-                            placeholder = stringResource(Res.string.auth_password_placeholder),
-                            inner = inner,
-                        )
-                    }
-                },
-            )
-            Box(
-                modifier = Modifier
-                    .size(AuthTokens.LabeledFieldHeight)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { visible = !visible },
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                VitranIcon(
-                    painter = painterResource(
-                        if (visible) Res.drawable.ic_visibility_off else Res.drawable.ic_visibility,
-                    ),
-                    contentDescription = stringResource(
-                        if (visible) {
-                            Res.string.auth_password_hide_a11y
-                        } else {
-                            Res.string.auth_password_show_a11y
-                        },
-                    ),
-                    size = VitranSize.iconMedium,
-                    tint = AuthTokens.Muted,
-                )
-            }
-        }
-        AuthPasswordStrengthBar(strength = strength)
-    }
-}
-
-@Composable
 private fun AuthInviteCodeSection(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
@@ -719,68 +483,6 @@ private fun AuthInviteCodeField(
                 },
             )
         }
-    }
-}
-
-@Composable
-private fun AuthPasswordStrengthBar(
-    strength: PasswordStrength,
-    modifier: Modifier = Modifier,
-) {
-    val active = when (strength) {
-        PasswordStrength.Empty -> 0
-        PasswordStrength.Weak -> 1
-        PasswordStrength.Fair -> 2
-        PasswordStrength.Good -> 3
-        PasswordStrength.Strong -> 4
-    }
-    val color = when (strength) {
-        PasswordStrength.Empty -> AuthTokens.FieldBorder
-        PasswordStrength.Weak -> AuthTokens.StrengthWeak
-        PasswordStrength.Fair -> AuthTokens.StrengthFair
-        PasswordStrength.Good -> AuthTokens.StrengthGood
-        PasswordStrength.Strong -> AuthTokens.StrengthStrong
-    }
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        repeat(4) { index ->
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(3.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(
-                        if (index < active) color else AuthTokens.FieldFill,
-                    ),
-            )
-        }
-    }
-}
-
-@Composable
-private fun AuthFieldPlaceholder(
-    empty: Boolean,
-    placeholder: String,
-    inner: @Composable () -> Unit,
-) {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        if (empty) {
-            Text(
-                text = placeholder,
-                color = AuthTokens.Muted,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp,
-                    lineHeight = 22.sp,
-                ),
-                maxLines = 1,
-            )
-        }
-        inner()
     }
 }
 

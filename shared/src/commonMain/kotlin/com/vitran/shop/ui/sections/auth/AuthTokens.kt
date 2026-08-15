@@ -49,9 +49,54 @@ internal object AuthTokens {
 
     val CardShadowElevation = 10.dp
     const val MinPasswordLength = 5
+    const val ResetPasswordMinLength = 8
     const val OtpResendSeconds = 45
     /** Mock wrong OTP used to demo error state. */
     const val MockInvalidOtp = "000000"
+}
+
+fun isValidAuthPassword(password: String): Boolean =
+    password.length >= AuthTokens.MinPasswordLength &&
+        !password.startsWith(' ') &&
+        !password.endsWith(' ')
+
+fun isValidIranMobile(mobile: String): Boolean {
+    val normalized = normalizeIranMobile(mobile)
+    return normalized.length == 11 && normalized.startsWith("09")
+}
+
+internal data class AuthPasswordRules(
+    val minLength: Boolean,
+    val hasLetter: Boolean,
+    val hasDigit: Boolean,
+) {
+    val allMet: Boolean get() = minLength && hasLetter && hasDigit
+}
+
+internal fun resetPasswordRulesOf(password: String): AuthPasswordRules {
+    val noEdgeSpace = !password.startsWith(' ') && !password.endsWith(' ')
+    return AuthPasswordRules(
+        minLength = password.length >= AuthTokens.ResetPasswordMinLength && noEdgeSpace,
+        hasLetter = password.any { it.isLetter() },
+        hasDigit = password.any { it.isDigit() },
+    )
+}
+
+/** Maps ASCII / Persian / Arabic-Indic digits; drops other characters. */
+internal fun filterToAsciiDigits(raw: String, maxLength: Int = Int.MAX_VALUE): String =
+    raw.mapNotNull { ch ->
+        when (ch) {
+            in '0'..'9' -> ch
+            in '۰'..'۹' -> ('0'.code + (ch - '۰')).toChar()
+            in '٠'..'٩' -> ('0'.code + (ch - '٠')).toChar()
+            else -> null
+        }
+    }.joinToString(separator = "").take(maxLength)
+
+internal fun formatOtpCountdown(seconds: Int): String {
+    val m = seconds / 60
+    val s = seconds % 60
+    return "${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}"
 }
 
 enum class AuthMode {

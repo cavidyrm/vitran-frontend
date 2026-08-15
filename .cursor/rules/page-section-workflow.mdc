@@ -37,8 +37,8 @@ Every new (or refined) **shopper** section **must** include live shop.app verifi
 Do **not** mark a shopper section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code. For admin sections, check compact vs `mdBreakpoint` and card gaps against `docs/ui-reference/admin/`.
 
 ## Current focus
-- Active screen: **Auth** — Login `/account/login`, Register `/account/register`, Register verify `/account/register/verify`
-- Visual: `AuthSplitShell` (two-column brand panel md+; compact = form only), denser credentials card (ورود|ساخت حساب toggle, +98 mobile, password strength, invite collapsed behind «کد دعوت دارید؟»), OTP card (timer→resend link, mask, verify CTA, paste/auto-submit, error/success)
+- Active screen: **Auth** — Login `/account/login`, Register `/account/register`, Register verify `/account/register/verify`, Forgot `/account/forgot`, Reset `/account/forgot/reset`
+- Visual: `AuthSplitShell` (two-column brand panel md+; compact = form only), denser credentials card (ورود|ساخت حساب toggle, +98 mobile, password strength, invite collapsed behind «کد دعوت دارید؟»), OTP card (timer→resend link, mask, verify CTA, paste/auto-submit, error/success), forgot card (mobile + send code), reset card (OTP + new password, no confirm, no auto-submit)
 - Reference: `docs/ui-reference/auth/`; mock-only
 - Select category / Add product / Create store / Store / PDP / Categories remain complete for listed sections
 
@@ -51,7 +51,7 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - Product detail sections: `shared/.../ui/sections/product/`
 - Store sections: `shared/.../ui/sections/store/`
 - Auth sections: `shared/.../ui/sections/auth/`
-- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt` (active auth), `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
+- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt`, `ForgotPasswordScreen.kt`, `ResetPasswordScreen.kt` (active auth), `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference
