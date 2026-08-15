@@ -13,6 +13,8 @@ import com.vitran.shop.ui.screens.HomeScreen
 import com.vitran.shop.ui.screens.LoginScreen
 import com.vitran.shop.ui.screens.OffersScreen
 import com.vitran.shop.ui.screens.ProductDetailScreen
+import com.vitran.shop.ui.screens.RegisterScreen
+import com.vitran.shop.ui.screens.RegisterVerifyScreen
 import com.vitran.shop.ui.screens.SavedScreen
 import com.vitran.shop.ui.screens.StoreScreen
 import com.vitran.shop.ui.sections.product.MockProductCatalog
@@ -86,7 +88,39 @@ fun AppNavHost(
                 )
             }
             entry<Route.Login> {
-                LoginScreen()
+                LoginScreen(
+                    onCreateAccount = { navigator.push(Route.Register) },
+                )
+            }
+            entry<Route.Register> {
+                RegisterScreen(
+                    onContinue = { credentials ->
+                        navigator.push(Route.RegisterVerify(phone = credentials.mobile.trim()))
+                    },
+                    onSignIn = {
+                        if (navState.backStack.size > 1) {
+                            navigator.goBack()
+                        } else {
+                            navigator.navigate(Route.Login)
+                        }
+                    },
+                )
+            }
+            entry<Route.RegisterVerify> { key ->
+                RegisterVerifyScreen(
+                    phone = key.phone,
+                    onChangeMobile = {
+                        if (navState.backStack.size > 1) {
+                            navigator.goBack()
+                        } else {
+                            // Deep link to verify only — replace with register form.
+                            navigator.navigate(Route.Register)
+                        }
+                    },
+                    onVerified = {
+                        // Mock phase — no auth state change.
+                    },
+                )
             }
             entry<Route.CreateStore> {
                 CreateStoreScreen(

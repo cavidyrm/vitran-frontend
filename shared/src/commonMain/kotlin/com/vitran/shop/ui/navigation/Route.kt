@@ -27,11 +27,27 @@ sealed interface Route : NavKey {
     data object Account : Route
 
     /**
-     * Sign-in — path `/account/login` (shop.app `/accounts/login`).
-     * Child route: pushed onto the stack; no app chrome while showing.
+     * Sign-in — path `/account/login`.
+     * Mobile + password only (no OTP). Child route; no app chrome while showing.
      */
     @Serializable
     data object Login : Route
+
+    /**
+     * Register — path `/account/register`.
+     * Mobile + password step. Child route; no app chrome while showing.
+     */
+    @Serializable
+    data object Register : Route
+
+    /**
+     * Register OTP verify — path `/account/register/verify`.
+     * [phone] is carried on the nav key for in-app push; bare deep links use empty phone.
+     */
+    @Serializable
+    data class RegisterVerify(
+        val phone: String = "",
+    ) : Route
 
     /**
      * Merchant admin — create store. Path `/admin/stores/new`.
@@ -79,7 +95,9 @@ fun Route.isTopLevel(): Boolean =
     when (this) {
         is Route.ProductDetail,
         is Route.Store,
+        is Route.RegisterVerify,
         Route.Login,
+        Route.Register,
         Route.CreateStore,
         Route.CreateProduct,
         Route.CreateCategory,
@@ -95,6 +113,8 @@ fun Route.isTopLevel(): Boolean =
 /** Full-bleed destinations that hide shopper side / bottom nav. */
 fun Route.hidesChrome(): Boolean =
     this is Route.Login ||
+        this is Route.Register ||
+        this is Route.RegisterVerify ||
         this is Route.CreateStore ||
         this is Route.CreateProduct ||
         this is Route.CreateCategory

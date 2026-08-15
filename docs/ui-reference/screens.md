@@ -18,7 +18,7 @@
 9. Store / Shop — route `/m/{shopId}` ↔ shop.app merchant; `StoreScreen` (header + products grid)
 10. Collection / Edit page
 11. Search
-12. Auth / Login — route `/account/login` (`LoginScreen` / `AuthShell`) ↔ shop.app `/accounts/login`; email step then OTP verify step (same URL); opened from signed-out Saved / Account nav (`onLoginRequest` → push); no app chrome while showing
+12. Auth — Login `/account/login` + Register `/account/register` (`AuthSplitShell` two-column brand panel on md+ / form-only below; segmented ورود|ساخت حساب; mobile +98 prefix + password strength; invite code collapsed behind «کد دعوت دارید؟»; forgot-password on login). Register verify `/account/register/verify` (OTP card, masked phone, resend timer→link, paste + auto-submit, verify CTA, mock error `000000`). No Google. Mock-only; no app chrome.
 13. Create store (merchant admin) — route `/admin/stores/new` (`CreateStoreScreen`); 5-step wizard with live phone preview; no shopper chrome; mock-only. Opened from Account or the URL.
 14. Add product (merchant admin) — route `/admin/products/new` (`CreateProductScreen`); two-column form from 1024dp; default status Draft; variant chips + combination table; no shopper chrome; mock-only. Opened from Account, Create store empty-products CTA, or the URL.
 15. Select standard category (merchant admin) — route `/admin/categories/new` (`CreateCategoryScreen`); Shopify Standard Product Taxonomy picker (search + hierarchy drill-down); mock-only; no custom taxonomy IDs; no shopper chrome. Opened from Account or the URL.

@@ -15,6 +15,8 @@ object RouteMapper {
             Route.Saved -> "/saved"
             Route.Account -> "/account"
             Route.Login -> "/account/login"
+            Route.Register -> "/account/register"
+            is Route.RegisterVerify -> "/account/register/verify"
             Route.CreateStore -> "/admin/stores/new"
             Route.CreateProduct -> "/admin/products/new"
             Route.CreateCategory -> "/admin/categories/new"
@@ -30,6 +32,8 @@ object RouteMapper {
             "/offers" -> Route.Offers
             "/saved" -> Route.Saved
             "/account/login" -> Route.Login
+            "/account/register" -> Route.Register
+            "/account/register/verify" -> Route.RegisterVerify()
             "/account" -> Route.Account
             "/admin/stores/new" -> Route.CreateStore
             "/admin/products/new" -> Route.CreateProduct

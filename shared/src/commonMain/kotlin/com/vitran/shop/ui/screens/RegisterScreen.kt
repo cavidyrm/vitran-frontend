@@ -2,34 +2,30 @@ package com.vitran.shop.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.vitran.shop.ui.sections.auth.AuthCredentials
 import com.vitran.shop.ui.sections.auth.AuthCredentialsForm
 import com.vitran.shop.ui.sections.auth.AuthMode
 import com.vitran.shop.ui.sections.auth.AuthSplitShell
 
 /**
- * Sign-in — route `/account/login`.
- * Mobile + password; mode toggle navigates to register.
+ * Register step 1 — route `/account/register`.
+ * Mobile + password; mode toggle navigates to login; submit → verify OTP.
  */
 @Composable
-fun LoginScreen(
+fun RegisterScreen(
     modifier: Modifier = Modifier,
-    onCreateAccount: () -> Unit = {},
-    onSignedIn: () -> Unit = {},
-    onForgotPassword: () -> Unit = {},
+    onContinue: (AuthCredentials) -> Unit = {},
+    onSignIn: () -> Unit = {},
     onTermsClick: () -> Unit = {},
     onPrivacyClick: () -> Unit = {},
 ) {
     AuthSplitShell(modifier = modifier) {
         AuthCredentialsForm(
-            mode = AuthMode.Login,
+            mode = AuthMode.Register,
             onModeChange = { mode ->
-                if (mode == AuthMode.Register) onCreateAccount()
+                if (mode == AuthMode.Login) onSignIn()
             },
-            onSubmit = {
-                // Mock phase — no auth state change.
-                onSignedIn()
-            },
-            onForgotPassword = onForgotPassword,
+            onSubmit = onContinue,
             onTermsClick = onTermsClick,
             onPrivacyClick = onPrivacyClick,
         )

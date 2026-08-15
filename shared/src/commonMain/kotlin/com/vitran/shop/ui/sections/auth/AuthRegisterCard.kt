@@ -7,29 +7,32 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 
-/** Thin wrapper kept for previews — prefer [AuthCredentialsForm] with [AuthMode.Login]. */
+/**
+ * Register credentials card — hosted inside [AuthSplitShell] by [com.vitran.shop.ui.screens.RegisterScreen].
+ * Kept as a named entry for previews / reuse.
+ */
 @Composable
-fun AuthLoginForm(
+fun AuthRegisterCard(
     modifier: Modifier = Modifier,
-    onCreateAccount: () -> Unit = {},
-    onContinue: (AuthCredentials) -> Unit = {},
+    onSubmit: (AuthCredentials) -> Unit = {},
+    onSignIn: () -> Unit = {},
     onTermsClick: () -> Unit = {},
     onPrivacyClick: () -> Unit = {},
 ) {
     AuthCredentialsForm(
-        mode = AuthMode.Login,
-        onModeChange = { if (it == AuthMode.Register) onCreateAccount() },
-        onSubmit = onContinue,
+        mode = AuthMode.Register,
+        onModeChange = { if (it == AuthMode.Login) onSignIn() },
+        onSubmit = onSubmit,
         onTermsClick = onTermsClick,
         onPrivacyClick = onPrivacyClick,
         modifier = modifier,
     )
 }
 
-@Preview(showBackground = true, widthDp = 390)
+@Preview(showBackground = true, widthDp = 420)
 @Composable
-private fun AuthLoginFormPreview() {
+private fun AuthRegisterCardPreview() {
     VitranTheme {
-        AuthLoginForm(modifier = Modifier.padding(horizontal = VitranSpacing.xxl))
+        AuthRegisterCard(modifier = Modifier.padding(VitranSpacing.lg))
     }
 }

@@ -23,6 +23,9 @@ alwaysApply: true
 - Visual source of truth: `docs/ui-reference/admin/` (Shopify Admin screenshots). Do **not** open shop.app for these pages.
 - Still verify responsive compact vs `desktopBreakpoint` (1024dp two-column on Add product / Select category) / `mdBreakpoint` (768dp on Create store) and card gaps in code.
 
+### Auth exception
+- Auth uses `AuthSplitShell`: form card + brand gradient panel from `mdBreakpoint` up (`docs/ui-reference/auth/`). Compact = form card only. No language selector. Not shop.app storefront.
+
 ## Required checks when adding a new section
 Every new (or refined) **shopper** section **must** include live shop.app verification of:
 
@@ -34,16 +37,10 @@ Every new (or refined) **shopper** section **must** include live shop.app verifi
 Do **not** mark a shopper section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code. For admin sections, check compact vs `mdBreakpoint` and card gaps against `docs/ui-reference/admin/`.
 
 ## Current focus
-- Active screen: **Select category** (merchant admin) — `CreateCategoryScreen`, route `/admin/categories/new`
-- Visual reference: `docs/ui-reference/admin/create-category/` (Shopify Admin taxonomy picker), not shop.app
-- Shopify has no “create category” form: merchants pick a Standard Product Taxonomy node (search, drill-down chevrons, later Magic suggestion + category metafields). Mock-only; no custom IDs; no Collections.
-- First slice: header + picker card. Do not add metafields, suggestion, sidebar, or bottom bar until asked.
-- Add product (`CreateProductScreen`, `/admin/products/new`) remains complete for its listed sections; reuse the shared taxonomy picker there.
-- Create store (`CreateStoreScreen`, `/admin/stores/new`) remains complete; only touch it when wiring Visit store or Add product.
-- Shopper Store / Shop (`StoreScreen`, `/m/{shopId}`) remains complete for its listed sections; only touch it when wiring Visit store or shared chrome.
-- Product detail remains complete for its listed sections.
-- Categories screen remains complete for its listed sections; only touch it when wiring product/shop clicks or shared chrome.
-- Categories vertical rhythm: `CategoriesSectionGap` (40dp) between major blocks on `CategoriesScreen`
+- Active screen: **Auth** — Login `/account/login`, Register `/account/register`, Register verify `/account/register/verify`
+- Visual: `AuthSplitShell` (two-column brand panel md+; compact = form only), denser credentials card (ورود|ساخت حساب toggle, +98 mobile, password strength, invite collapsed behind «کد دعوت دارید؟»), OTP card (timer→resend link, mask, verify CTA, paste/auto-submit, error/success)
+- Reference: `docs/ui-reference/auth/`; mock-only
+- Select category / Add product / Create store / Store / PDP / Categories remain complete for listed sections
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`
@@ -53,7 +50,8 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - Categories sections: `shared/.../ui/sections/categories/`
 - Product detail sections: `shared/.../ui/sections/product/`
 - Store sections: `shared/.../ui/sections/store/`
-- Screen assembly: `shared/.../ui/screens/CreateCategoryScreen.kt` (active), `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
+- Auth sections: `shared/.../ui/sections/auth/`
+- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt` (active auth), `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference
