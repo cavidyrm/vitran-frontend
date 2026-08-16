@@ -14,6 +14,10 @@ object RouteMapper {
             Route.Offers -> "/offers"
             Route.Saved -> "/saved"
             Route.Account -> "/account"
+            Route.Profile -> "/account/profile"
+            Route.Referrals -> "/account/referrals"
+            Route.Following -> "/account/following"
+            Route.AccountSettings -> "/account/settings"
             Route.Login -> "/account/login"
             Route.Register -> "/account/register"
             is Route.RegisterVerify -> "/account/register/verify"
@@ -33,6 +37,10 @@ object RouteMapper {
             "/categories" -> Route.Categories
             "/offers" -> Route.Offers
             "/saved" -> Route.Saved
+            "/account/profile" -> Route.Profile
+            "/account/referrals" -> Route.Referrals
+            "/account/following" -> Route.Following
+            "/account/settings" -> Route.AccountSettings
             "/account/login" -> Route.Login
             "/account/register" -> Route.Register
             "/account/register/verify" -> Route.RegisterVerify()

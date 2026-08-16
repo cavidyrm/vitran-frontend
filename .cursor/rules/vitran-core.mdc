@@ -17,6 +17,7 @@ alwaysApply: true
 - **Mandatory live inspection (shopper):** Before implementing or refining shopper UI, open the **matching shop.app URL/section** in the agent browser and inspect that exact block. Do not guess from memory or screenshots alone.
 - **Merchant admin:** `docs/ui-reference/admin/` (Shopify Admin screenshots) is the source of truth. Do **not** open shop.app for admin pages such as Create store (`/admin/stores/new`), Add product (`/admin/products/new`), or Select category (`/admin/categories/new`).
 - **Auth register card:** `docs/ui-reference/auth/` (Shopify signup-style). Login `/account/login` (mobile+password); register `/account/register` then OTP at `/account/register/verify`. Forgot `/account/forgot` (mobile + send code) then reset `/account/forgot/reset` (OTP + new password, no confirm).
+- **Account / Profile:** `docs/ui-reference/account/` (shop.app account hub + profile). Live shop.app `/account` is sign-in gated; use screenshots plus re-check when a session is available. Hub `/account`, edit profile `/account/profile`, referrals `/account/referrals`, following `/account/following`, settings `/account/settings`.
 - User screenshots complement live inspection for shopper UI; they do **not** replace it.
 - Do **not** mark a shopper section done until you have opened shop.app for that section and reflected what you measured.
 - Build UI **piece by piece** (one component or one section per task).

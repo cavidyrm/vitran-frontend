@@ -39,6 +39,7 @@ class NavigationState(
             for (i in backStack.lastIndex downTo 0) {
                 val route = backStack[i] as? Route ?: continue
                 if (route.isTopLevel()) return route
+                if (route.isAccountChild()) return Route.Account
             }
             return Route.Home
         }
@@ -56,6 +57,10 @@ private val routeSavedStateConfiguration: SavedStateConfiguration =
                 subclass(serializer = Route.Offers.serializer())
                 subclass(serializer = Route.Saved.serializer())
                 subclass(serializer = Route.Account.serializer())
+                subclass(serializer = Route.Profile.serializer())
+                subclass(serializer = Route.Referrals.serializer())
+                subclass(serializer = Route.Following.serializer())
+                subclass(serializer = Route.AccountSettings.serializer())
                 subclass(serializer = Route.Login.serializer())
                 subclass(serializer = Route.Register.serializer())
                 subclass(serializer = Route.RegisterVerify.serializer())

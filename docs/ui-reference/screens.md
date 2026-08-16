@@ -11,7 +11,11 @@
 2. Explore / Categories (`/categories` — `CategoriesScreen`; shop.app title “Explore”, nav label «دسته‌بندی‌ها»)
 3. Deals (`/offers`)
 4. Saved (`/saved`)
-5. Account (Profile hub) (`/account`)
+5. Account (Profile hub) (`/account` — `AccountScreen`; compact identity row, referral promo, Saved/Following tiles, recently viewed, seller empty-state, sign out). Visual: `docs/ui-reference/account/hub-desktop.png`
+5b. Edit profile (`/account/profile` — `ProfileScreen`; avatar + camera badge, personal/contact/sizing cards with icon headers, dropdown sizes, cancel+save). Child of Account; chrome stays. Visual: `docs/ui-reference/account/profile-redesign.png`
+5c. Referrals (`/account/referrals` — `ReferralsScreen`; hero invite card with gift illustration + code/link + share/copy, 4 stat cards, how-it-works, filtered invite list with status badges, seller-credit progress). Child of Account. Visual: `docs/ui-reference/account/referrals-desktop.png`
+5d. Following (`/account/following` — `FollowingScreen`; followed stores). Child of Account.
+5e. Account settings (`/account/settings` — `AccountSettingsScreen`; two-column settings+privacy cards with icon rows/toggles, interests accordion, shopping-for). Child of Account. Visual: `docs/ui-reference/account/settings-desktop.png`
 6. Category landing (Women/Men/Beauty/...)
 7. Product list (filters + grid)
 8. Product detail (UI only; no checkout) — route `/products/{productId}/{slug}` ↔ shop.app PDP; `ProductDetailScreen`

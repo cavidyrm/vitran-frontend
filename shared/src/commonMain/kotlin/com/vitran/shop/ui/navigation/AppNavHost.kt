@@ -9,20 +9,25 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.vitran.shop.ui.screens.AccountScreen
+import com.vitran.shop.ui.screens.AccountSettingsScreen
 import com.vitran.shop.ui.screens.CategoriesScreen
 import com.vitran.shop.ui.screens.CreateCategoryScreen
 import com.vitran.shop.ui.screens.CreateProductScreen
 import com.vitran.shop.ui.screens.CreateStoreScreen
+import com.vitran.shop.ui.screens.FollowingScreen
 import com.vitran.shop.ui.screens.ForgotPasswordScreen
 import com.vitran.shop.ui.screens.HomeScreen
 import com.vitran.shop.ui.screens.LoginScreen
 import com.vitran.shop.ui.screens.OffersScreen
 import com.vitran.shop.ui.screens.ProductDetailScreen
+import com.vitran.shop.ui.screens.ProfileScreen
+import com.vitran.shop.ui.screens.ReferralsScreen
 import com.vitran.shop.ui.screens.RegisterScreen
 import com.vitran.shop.ui.screens.RegisterVerifyScreen
 import com.vitran.shop.ui.screens.ResetPasswordScreen
 import com.vitran.shop.ui.screens.SavedScreen
 import com.vitran.shop.ui.screens.StoreScreen
+import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.product.MockProductCatalog
 
 /**
@@ -89,9 +94,59 @@ fun AppNavHost(
             entry<Route.Saved> { SavedScreen() }
             entry<Route.Account> {
                 AccountScreen(
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenProfile = { navigator.push(Route.Profile) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onOpenFollowing = { navigator.push(Route.Following) },
+                    onOpenReferrals = { navigator.push(Route.Referrals) },
                     onCreateStore = { navigator.push(Route.CreateStore) },
-                    onCreateProduct = { navigator.push(Route.CreateProduct) },
-                    onCreateCategory = { navigator.push(Route.CreateCategory) },
+                    onSignOut = { navigator.push(Route.Login) },
+                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
+                        val product = MockProductCatalog.resolve(
+                            id = id,
+                            title = title,
+                            imageUrl = imageUrl,
+                            storeName = storeName,
+                            priceLabel = priceLabel,
+                        )
+                        navigator.push(
+                            Route.ProductDetail(
+                                productId = product.id,
+                                slug = product.slug,
+                            ),
+                        )
+                    },
+                )
+            }
+            entry<Route.Profile> {
+                ProfileScreen(
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                )
+            }
+            entry<Route.Referrals> {
+                ReferralsScreen(
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                )
+            }
+            entry<Route.Following> {
+                FollowingScreen(
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onStoreOpen = { shopId -> navigator.push(Route.Store(shopId = shopId)) },
+                )
+            }
+            entry<Route.AccountSettings> {
+                AccountSettingsScreen(
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onOpenProfile = { navigator.openAccountDest(navState, AccountDest.Profile) },
+                    onSignOut = { navigator.push(Route.Login) },
                 )
             }
             entry<Route.Login> {
@@ -225,4 +280,23 @@ fun AppNavHost(
             }
         },
     )
+}
+
+private fun Navigator.openAccountDest(state: NavigationState, dest: AccountDest) {
+    val target: Route = when (dest) {
+        AccountDest.Hub -> Route.Account
+        AccountDest.Profile -> Route.Profile
+        AccountDest.Referrals -> Route.Referrals
+        AccountDest.Following -> Route.Following
+        AccountDest.Settings -> Route.AccountSettings
+    }
+    if (state.currentRoute == target) return
+    if (target == Route.Account) {
+        if (state.backStack.size > 1) goBack() else navigate(Route.Account)
+        return
+    }
+    if (state.currentRoute.isAccountChild() && state.backStack.size > 1) {
+        goBack()
+    }
+    push(target)
 }

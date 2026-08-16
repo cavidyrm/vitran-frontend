@@ -27,6 +27,25 @@ sealed interface Route : NavKey {
     data object Account : Route
 
     /**
+     * Profile editor — path `/account/profile`.
+     * Child of Account; shopper chrome stays, Account tab remains selected.
+     */
+    @Serializable
+    data object Profile : Route
+
+    /** Referral dashboard — path `/account/referrals`. Child of Account. */
+    @Serializable
+    data object Referrals : Route
+
+    /** Followed stores — path `/account/following`. Child of Account. */
+    @Serializable
+    data object Following : Route
+
+    /** Account settings — path `/account/settings`. Child of Account. */
+    @Serializable
+    data object AccountSettings : Route
+
+    /**
      * Sign-in — path `/account/login`.
      * Mobile + password only (no OTP). Child route; no app chrome while showing.
      */
@@ -119,6 +138,10 @@ fun Route.isTopLevel(): Boolean =
         Route.CreateStore,
         Route.CreateProduct,
         Route.CreateCategory,
+        Route.Profile,
+        Route.Referrals,
+        Route.Following,
+        Route.AccountSettings,
         -> false
         Route.Home,
         Route.Categories,
@@ -127,6 +150,12 @@ fun Route.isTopLevel(): Boolean =
         Route.Account,
         -> true
     }
+
+fun Route.isAccountChild(): Boolean =
+    this == Route.Profile ||
+        this == Route.Referrals ||
+        this == Route.Following ||
+        this == Route.AccountSettings
 
 /** Full-bleed destinations that hide shopper side / bottom nav. */
 fun Route.hidesChrome(): Boolean =

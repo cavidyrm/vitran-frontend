@@ -1,91 +1,76 @@
 package com.vitran.shop.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
-import com.vitran.shop.ui.components.VitranText
-import com.vitran.shop.ui.components.VitranTextStyle
-import com.vitran.shop.ui.theme.VitranRadius
-import com.vitran.shop.ui.theme.VitranSpacing
-import org.jetbrains.compose.resources.stringResource
-import vitranshop.shared.generated.resources.Res
-import vitranshop.shared.generated.resources.admin_create_category_title
-import vitranshop.shared.generated.resources.admin_create_product_title
-import vitranshop.shared.generated.resources.admin_create_store_title
-import vitranshop.shared.generated.resources.nav_account
+import com.vitran.shop.ui.sections.account.AccountDest
+import com.vitran.shop.ui.sections.account.AccountHubHeader
+import com.vitran.shop.ui.sections.account.AccountPageShell
+import com.vitran.shop.ui.sections.account.AccountRecentlyViewedSection
+import com.vitran.shop.ui.sections.account.AccountReferralBanner
+import com.vitran.shop.ui.sections.account.AccountSavedFollowingRow
+import com.vitran.shop.ui.sections.account.AccountSellerSection
+import com.vitran.shop.ui.sections.account.AccountSignOutRow
+import com.vitran.shop.ui.sections.account.rememberMockAccountHubExtras
+import com.vitran.shop.ui.sections.account.rememberMockAccountProfile
+import com.vitran.shop.ui.sections.account.rememberMockReferralProfile
 
+/**
+ * Account hub — route `/account`.
+ * Identity row, referral promo, Saved/Following tiles, recently viewed, seller entry.
+ * Visual rhythm matches shop.app account hub (`docs/ui-reference/account/`).
+ */
 @Composable
 fun AccountScreen(
     modifier: Modifier = Modifier,
+    onDestClick: (AccountDest) -> Unit = {},
+    onOpenProfile: () -> Unit = {},
+    onOpenSaved: () -> Unit = {},
+    onOpenFollowing: () -> Unit = {},
+    onOpenReferrals: () -> Unit = {},
     onCreateStore: () -> Unit = {},
-    onCreateProduct: () -> Unit = {},
-    onCreateCategory: () -> Unit = {},
+    onSignOut: () -> Unit = {},
+    onProductOpen: (
+        id: String,
+        title: String,
+        imageUrl: String,
+        storeName: String,
+        priceLabel: String,
+    ) -> Unit = { _, _, _, _, _ -> },
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(VitranSpacing.xl),
-            modifier = Modifier.padding(VitranSpacing.xxl),
-        ) {
-            VitranText(
-                text = stringResource(Res.string.nav_account),
-                style = VitranTextStyle.Headline,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            AccountAdminButton(
-                label = stringResource(Res.string.admin_create_store_title),
-                onClick = onCreateStore,
-            )
-            AccountAdminButton(
-                label = stringResource(Res.string.admin_create_product_title),
-                onClick = onCreateProduct,
-            )
-            AccountAdminButton(
-                label = stringResource(Res.string.admin_create_category_title),
-                onClick = onCreateCategory,
-            )
-        }
-    }
-}
+    val profile = rememberMockAccountProfile()
+    val referral = rememberMockReferralProfile()
+    val extras = rememberMockAccountHubExtras()
 
-@Composable
-private fun AccountAdminButton(
-    label: String,
-    onClick: () -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .widthIn(min = 180.dp)
-            .height(40.dp)
-            .clip(RoundedCornerShape(VitranRadius.small))
-            .background(MaterialTheme.colorScheme.onSurface)
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = VitranSpacing.lg),
-        contentAlignment = Alignment.Center,
+    AccountPageShell(
+        dest = AccountDest.Hub,
+        onDestClick = onDestClick,
+        onSavedClick = onOpenSaved,
+        modifier = modifier,
     ) {
-        VitranText(
-            text = label,
-            style = VitranTextStyle.Label,
-            color = MaterialTheme.colorScheme.surface,
+        AccountHubHeader(
+            profile = profile,
+            onEditClick = onOpenProfile,
         )
+        AccountReferralBanner(
+            profile = referral,
+            onInviteClick = onOpenReferrals,
+            onHistoryClick = onOpenReferrals,
+        )
+        AccountSavedFollowingRow(
+            extras = extras,
+            onSavedClick = onOpenSaved,
+            onFollowingClick = onOpenFollowing,
+        )
+        AccountRecentlyViewedSection(
+            items = extras.recentlyViewed,
+            onItemClick = { item ->
+                onProductOpen(item.id, item.title, item.imageUrl, item.storeName, item.priceLabel)
+            },
+            onSaveClick = {},
+        )
+        if (!profile.isMerchant) {
+            AccountSellerSection(onCreateStore = onCreateStore)
+        }
+        AccountSignOutRow(onClick = onSignOut)
     }
 }
