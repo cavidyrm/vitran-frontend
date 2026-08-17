@@ -74,6 +74,13 @@ internal object AccountTokens {
     val ReferralStatIconBg = Color(0xFFEEEAFF)
     /** Settings page two-column cards — `docs/ui-reference/account/settings-desktop.png`. */
     val SettingsContentMaxWidth = 920.dp
+    /** Users list table — `docs/ui-reference/account/users-list-desktop.png`. */
+    val UsersContentMaxWidth = 1100.dp
+    val UserDetailRailWidth = 300.dp
+    val UserDetailAvatar = 72.dp
+    val UserNoteMinHeight = 112.dp
+    val UserAvatar = 40.dp
+    val StatusDot = 8.dp
     val DangerSoft = Color(0xFFFFEBEE)
     val SoftIconBg = Color(0xFFEEEAFF)
     val SellerIllustrationWidth = 200.dp

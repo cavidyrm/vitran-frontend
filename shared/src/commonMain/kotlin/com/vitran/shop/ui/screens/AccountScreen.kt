@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountHubHeader
+import com.vitran.shop.ui.sections.account.AccountHubUsersRow
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountRecentlyViewedSection
 import com.vitran.shop.ui.sections.account.AccountReferralBanner
@@ -13,6 +14,7 @@ import com.vitran.shop.ui.sections.account.AccountSignOutRow
 import com.vitran.shop.ui.sections.account.rememberMockAccountHubExtras
 import com.vitran.shop.ui.sections.account.rememberMockAccountProfile
 import com.vitran.shop.ui.sections.account.rememberMockReferralProfile
+import com.vitran.shop.ui.shell.LocalDesktopLayout
 
 /**
  * Account hub — route `/account`.
@@ -61,6 +63,9 @@ fun AccountScreen(
             onSavedClick = onOpenSaved,
             onFollowingClick = onOpenFollowing,
         )
+        if (!LocalDesktopLayout.current) {
+            AccountHubUsersRow(onClick = { onDestClick(AccountDest.Users) })
+        }
         AccountRecentlyViewedSection(
             items = extras.recentlyViewed,
             onItemClick = { item ->

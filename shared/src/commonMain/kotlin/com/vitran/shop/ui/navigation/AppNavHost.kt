@@ -10,6 +10,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.vitran.shop.ui.screens.AccountScreen
 import com.vitran.shop.ui.screens.AccountSettingsScreen
+import com.vitran.shop.ui.screens.AccountUserDetailScreen
+import com.vitran.shop.ui.screens.AccountUsersScreen
 import com.vitran.shop.ui.screens.CategoriesScreen
 import com.vitran.shop.ui.screens.CreateCategoryScreen
 import com.vitran.shop.ui.screens.CreateProductScreen
@@ -147,6 +149,24 @@ fun AppNavHost(
                     onOpenSaved = { navigator.navigate(Route.Saved) },
                     onOpenProfile = { navigator.openAccountDest(navState, AccountDest.Profile) },
                     onSignOut = { navigator.push(Route.Login) },
+                )
+            }
+            entry<Route.AccountUsers> {
+                AccountUsersScreen(
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onUserOpen = { userId ->
+                        navigator.push(Route.AccountUserDetail(userId = userId.toString()))
+                    },
+                )
+            }
+            entry<Route.AccountUserDetail> { key ->
+                AccountUserDetailScreen(
+                    userId = key.userId,
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
                 )
             }
             entry<Route.Login> {
@@ -289,8 +309,13 @@ private fun Navigator.openAccountDest(state: NavigationState, dest: AccountDest)
         AccountDest.Referrals -> Route.Referrals
         AccountDest.Following -> Route.Following
         AccountDest.Settings -> Route.AccountSettings
+        AccountDest.Users -> Route.AccountUsers
     }
     if (state.currentRoute == target) return
+    if (state.currentRoute is Route.AccountUserDetail && state.backStack.size > 1) {
+        goBack()
+        if (target == Route.AccountUsers) return
+    }
     if (target == Route.Account) {
         if (state.backStack.size > 1) goBack() else navigate(Route.Account)
         return

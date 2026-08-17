@@ -16,6 +16,8 @@
 5c. Referrals (`/account/referrals` — `ReferralsScreen`; hero invite card with gift illustration + code/link + share/copy, 4 stat cards, how-it-works, filtered invite list with status badges, seller-credit progress). Child of Account. Visual: `docs/ui-reference/account/referrals-desktop.png`
 5d. Following (`/account/following` — `FollowingScreen`; followed stores). Child of Account.
 5e. Account settings (`/account/settings` — `AccountSettingsScreen`; two-column settings+privacy cards with icon rows/toggles, interests accordion, shopping-for). Child of Account. Visual: `docs/ui-reference/account/settings-desktop.png`
+5f. User management (`/account/users` — `AccountUsersScreen`; header + add-user CTA, filter card, desktop table / compact cards, pagination). Child of Account; chrome stays. Visual: `docs/ui-reference/account/users-list-desktop.png`
+5g. User detail (`/account/users/{id}` — `AccountUserDetailScreen`; breadcrumb + actions, two-column form + summary rail, mock save/reset/deactivate). Child of Account; chrome stays. Visual: `docs/ui-reference/account/users-detail-desktop.png`
 6. Category landing (Women/Men/Beauty/...)
 7. Product list (filters + grid)
 8. Product detail (UI only; no checkout) — route `/products/{productId}/{slug}` ↔ shop.app PDP; `ProductDetailScreen`

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.components.VitranText
 import com.vitran.shop.ui.components.VitranTextStyle
+import com.vitran.shop.ui.theme.ErrorRed
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -54,6 +55,7 @@ internal fun AccountStackedField(
     supportingPositive: Boolean = false,
     showSupportingCheck: Boolean = false,
     readOnly: Boolean = false,
+    required: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(VitranRadius.small)
@@ -61,11 +63,23 @@ internal fun AccountStackedField(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
     ) {
-        VitranText(
-            text = label,
-            style = VitranTextStyle.Label,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
+        ) {
+            VitranText(
+                text = label,
+                style = VitranTextStyle.Label,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (required) {
+                VitranText(
+                    text = "*",
+                    style = VitranTextStyle.Label,
+                    color = ErrorRed,
+                )
+            }
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()

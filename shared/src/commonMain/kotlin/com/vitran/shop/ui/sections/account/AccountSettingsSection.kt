@@ -33,6 +33,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.account_nav_settings
+import vitranshop.shared.generated.resources.account_nav_users
 import vitranshop.shared.generated.resources.account_privacy_data
 import vitranshop.shared.generated.resources.account_privacy_data_hint
 import vitranshop.shared.generated.resources.account_privacy_delete
@@ -55,6 +56,7 @@ import vitranshop.shared.generated.resources.account_settings_security
 import vitranshop.shared.generated.resources.account_settings_security_hint
 import vitranshop.shared.generated.resources.account_sign_out
 import vitranshop.shared.generated.resources.account_sign_out_hint
+import vitranshop.shared.generated.resources.account_users_hub_hint
 import vitranshop.shared.generated.resources.ic_bell
 import vitranshop.shared.generated.resources.ic_chevron_right
 import vitranshop.shared.generated.resources.ic_database
@@ -62,6 +64,7 @@ import vitranshop.shared.generated.resources.ic_delete
 import vitranshop.shared.generated.resources.ic_list
 import vitranshop.shared.generated.resources.ic_lock
 import vitranshop.shared.generated.resources.ic_logout
+import vitranshop.shared.generated.resources.ic_people
 import vitranshop.shared.generated.resources.ic_settings
 import vitranshop.shared.generated.resources.ic_shield
 import vitranshop.shared.generated.resources.ic_sparkles
@@ -357,6 +360,22 @@ internal fun AccountHubSettingsRow(
             title = stringResource(Res.string.account_nav_settings),
             subtitle = stringResource(Res.string.account_settings_privacy_hint),
             icon = painterResource(Res.drawable.ic_settings),
+            onClick = onClick,
+            trailing = { SettingsChevron() },
+        )
+    }
+}
+
+@Composable
+internal fun AccountHubUsersRow(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AccountCard(modifier = modifier) {
+        SettingsActionRow(
+            title = stringResource(Res.string.account_nav_users),
+            subtitle = stringResource(Res.string.account_users_hub_hint),
+            icon = painterResource(Res.drawable.ic_people),
             onClick = onClick,
             trailing = { SettingsChevron() },
         )

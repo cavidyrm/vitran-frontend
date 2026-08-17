@@ -16,6 +16,7 @@ enum class AccountDest {
     Referrals,
     Following,
     Settings,
+    Users,
 }
 
 enum class AccountGender {
@@ -241,3 +242,26 @@ internal fun toPersianDigits(value: String): String = buildString {
 }
 
 internal fun toPersianDigits(value: Int): String = toPersianDigits(value.toString())
+
+internal fun fromPersianDigits(value: String): String = buildString {
+    value.forEach { ch ->
+        append(
+            when (ch) {
+                '۰' -> '0'
+                '۱' -> '1'
+                '۲' -> '2'
+                '۳' -> '3'
+                '۴' -> '4'
+                '۵' -> '5'
+                '۶' -> '6'
+                '۷' -> '7'
+                '۸' -> '8'
+                '۹' -> '9'
+                else -> ch
+            },
+        )
+    }
+}
+
+internal fun digitsOnly(value: String): String =
+    fromPersianDigits(value).filter { it.isDigit() }

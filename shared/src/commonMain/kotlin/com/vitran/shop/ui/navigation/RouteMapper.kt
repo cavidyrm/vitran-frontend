@@ -18,6 +18,8 @@ object RouteMapper {
             Route.Referrals -> "/account/referrals"
             Route.Following -> "/account/following"
             Route.AccountSettings -> "/account/settings"
+            Route.AccountUsers -> "/account/users"
+            is Route.AccountUserDetail -> "/account/users/${route.userId}"
             Route.Login -> "/account/login"
             Route.Register -> "/account/register"
             is Route.RegisterVerify -> "/account/register/verify"
@@ -41,6 +43,7 @@ object RouteMapper {
             "/account/referrals" -> Route.Referrals
             "/account/following" -> Route.Following
             "/account/settings" -> Route.AccountSettings
+            "/account/users" -> Route.AccountUsers
             "/account/login" -> Route.Login
             "/account/register" -> Route.Register
             "/account/register/verify" -> Route.RegisterVerify()
@@ -50,7 +53,9 @@ object RouteMapper {
             "/admin/stores/new" -> Route.CreateStore
             "/admin/products/new" -> Route.CreateProduct
             "/admin/categories/new" -> Route.CreateCategory
-            else -> parseProductPath(normalized) ?: parseStorePath(normalized)
+            else -> parseProductPath(normalized)
+                ?: parseStorePath(normalized)
+                ?: parseAccountUserPath(normalized)
         }
     }
 
@@ -61,6 +66,16 @@ object RouteMapper {
     fun fromUri(uri: String): Route? {
         val path = extractPath(uri)
         return fromPath(path)
+    }
+
+    private fun parseAccountUserPath(path: String): Route.AccountUserDetail? {
+        // /account/users/{userId}
+        val parts = path.trim('/').split('/')
+        if (parts.size != 3) return null
+        if (parts[0] != "account" || parts[1] != "users") return null
+        val userId = parts[2]
+        if (userId.isEmpty() || userId.contains('/')) return null
+        return Route.AccountUserDetail(userId = userId)
     }
 
     private fun parseProductPath(path: String): Route.ProductDetail? {

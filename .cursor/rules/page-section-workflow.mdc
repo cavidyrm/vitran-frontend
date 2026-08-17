@@ -37,8 +37,8 @@ Every new (or refined) **shopper** section **must** include live shop.app verifi
 Do **not** mark a shopper section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code. For admin sections, check compact vs `mdBreakpoint` and card gaps against `docs/ui-reference/admin/`.
 
 ## Current focus
-- Active screen: **Account** — hub `/account`, edit `/account/profile`, referrals `/account/referrals`, following `/account/following`, settings `/account/settings`
-- Visual: `AuthSplitShell` is auth-only. Account uses `AccountPageShell` (desktop sub-nav: پروفایل / ذخیره‌ها / دنبال‌شده‌ها / دعوت از دوستان / تنظیمات; compact = stacked + back on children). Same `SiteFooter` as other shopper pages. Compact identity row + referral promo (illustration + reward copy + code + stats) + Saved/Following tiles; seller empty-state (store illustration + gradient CTA); sign out on hub (settings remains in sub-nav / settings page). Referrals: hero invite + 4 stats + how-it-works + invite list + seller-credit progress (`docs/ui-reference/account/referrals-desktop.png`). Settings: two-column menu+privacy cards, interest chips + skin accordions, shopping-for (`docs/ui-reference/account/settings-desktop.png`).
+- Active screen: **Account** — hub `/account`, edit `/account/profile`, referrals `/account/referrals`, following `/account/following`, settings `/account/settings`, users `/account/users`, user detail `/account/users/{id}`
+- Visual: `AuthSplitShell` is auth-only. Account uses `AccountPageShell` (desktop sub-nav: پروفایل / ذخیره‌ها / دنبال‌شده‌ها / دعوت از دوستان / تنظیمات / مدیریت کاربران; compact = stacked + back on children). Same `SiteFooter` as other shopper pages. Compact identity row + referral promo (illustration + reward copy + code + stats) + Saved/Following tiles + users-management row; seller empty-state (store illustration + gradient CTA); sign out on hub (settings remains in sub-nav / settings page). Referrals: hero invite + 4 stats + how-it-works + invite list + seller-credit progress (`docs/ui-reference/account/referrals-desktop.png`). Settings: two-column menu+privacy cards, interest chips + skin accordions, shopping-for (`docs/ui-reference/account/settings-desktop.png`). Users list: header + purple add CTA, filter card, 6-column table (compact cards), pagination (`docs/ui-reference/account/users-list-desktop.png`). User detail: breadcrumb + save/reset/deactivate, form + summary rail (`docs/ui-reference/account/users-detail-desktop.png`).
 - Reference: `docs/ui-reference/account/` (live shop.app `/account` is sign-in gated); plus user screenshots
 - Auth / Select category / Add product / Create store / Store / PDP / Categories remain complete for listed sections
 
@@ -52,7 +52,8 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - Store sections: `shared/.../ui/sections/store/`
 - Auth sections: `shared/.../ui/sections/auth/`
 - Account / Profile sections: `shared/.../ui/sections/account/`
-- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt`, `ForgotPasswordScreen.kt`, `ResetPasswordScreen.kt`, `AccountScreen.kt`, `ProfileScreen.kt`, `ReferralsScreen.kt`, `FollowingScreen.kt`, `AccountSettingsScreen.kt`, `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
+- Account users list sections: `shared/.../ui/sections/account/users/`
+- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt`, `ForgotPasswordScreen.kt`, `ResetPasswordScreen.kt`, `AccountScreen.kt`, `ProfileScreen.kt`, `ReferralsScreen.kt`, `FollowingScreen.kt`, `AccountSettingsScreen.kt`, `AccountUsersScreen.kt`, `AccountUserDetailScreen.kt`, `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference

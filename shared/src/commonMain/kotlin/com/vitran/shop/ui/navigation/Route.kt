@@ -45,6 +45,19 @@ sealed interface Route : NavKey {
     @Serializable
     data object AccountSettings : Route
 
+    /** User management list — path `/account/users`. Child of Account. */
+    @Serializable
+    data object AccountUsers : Route
+
+    /**
+     * User detail — path `/account/users/{userId}`.
+     * Child of Account; pushed onto the users list; shopper chrome stays.
+     */
+    @Serializable
+    data class AccountUserDetail(
+        val userId: String,
+    ) : Route
+
     /**
      * Sign-in — path `/account/login`.
      * Mobile + password only (no OTP). Child route; no app chrome while showing.
@@ -142,6 +155,8 @@ fun Route.isTopLevel(): Boolean =
         Route.Referrals,
         Route.Following,
         Route.AccountSettings,
+        Route.AccountUsers,
+        is Route.AccountUserDetail,
         -> false
         Route.Home,
         Route.Categories,
@@ -155,7 +170,9 @@ fun Route.isAccountChild(): Boolean =
     this == Route.Profile ||
         this == Route.Referrals ||
         this == Route.Following ||
-        this == Route.AccountSettings
+        this == Route.AccountSettings ||
+        this == Route.AccountUsers ||
+        this is Route.AccountUserDetail
 
 /** Full-bleed destinations that hide shopper side / bottom nav. */
 fun Route.hidesChrome(): Boolean =
