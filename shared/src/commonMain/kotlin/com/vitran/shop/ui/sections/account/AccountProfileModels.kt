@@ -17,6 +17,7 @@ enum class AccountDest {
     Following,
     Settings,
     Users,
+    Cities,
 }
 
 enum class AccountGender {

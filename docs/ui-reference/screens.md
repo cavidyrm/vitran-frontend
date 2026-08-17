@@ -18,6 +18,9 @@
 5e. Account settings (`/account/settings` — `AccountSettingsScreen`; two-column settings+privacy cards with icon rows/toggles, interests accordion, shopping-for). Child of Account. Visual: `docs/ui-reference/account/settings-desktop.png`
 5f. User management (`/account/users` — `AccountUsersScreen`; header + add-user CTA, filter card, desktop table / compact cards, pagination). Child of Account; chrome stays. Visual: `docs/ui-reference/account/users-list-desktop.png`
 5g. User detail (`/account/users/{id}` — `AccountUserDetailScreen`; breadcrumb + actions, two-column form + summary rail, mock save/reset/deactivate). Child of Account; chrome stays. Visual: `docs/ui-reference/account/users-detail-desktop.png`
+5h. City management (`/account/cities` — `AccountCitiesScreen`; header + add-city CTA, search filter, desktop table / compact cards). Child of Account; chrome stays. Visual: `docs/ui-reference/account/cities-list-desktop.png`
+5i. City detail (`/account/cities/{id}` — `AccountCityDetailScreen`; breadcrumb, id/name/slug form, mock save/reset/delete). Child of Account; chrome stays. Visual: `docs/ui-reference/account/cities-detail-desktop.png`
+5j. Add city (`/account/cities/new` — `AccountCityCreateScreen`; required name/slug, URL preview, create/cancel). Child of Account; chrome stays. Visual: `docs/ui-reference/account/cities-add-desktop.png`
 6. Category landing (Women/Men/Beauty/...)
 7. Product list (filters + grid)
 8. Product detail (UI only; no checkout) — route `/products/{productId}/{slug}` ↔ shop.app PDP; `ProductDetailScreen`

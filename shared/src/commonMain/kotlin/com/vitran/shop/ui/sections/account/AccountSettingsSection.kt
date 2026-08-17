@@ -32,6 +32,8 @@ import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.account_cities_hub_hint
+import vitranshop.shared.generated.resources.account_nav_cities
 import vitranshop.shared.generated.resources.account_nav_settings
 import vitranshop.shared.generated.resources.account_nav_users
 import vitranshop.shared.generated.resources.account_privacy_data
@@ -59,6 +61,7 @@ import vitranshop.shared.generated.resources.account_sign_out_hint
 import vitranshop.shared.generated.resources.account_users_hub_hint
 import vitranshop.shared.generated.resources.ic_bell
 import vitranshop.shared.generated.resources.ic_chevron_right
+import vitranshop.shared.generated.resources.ic_city
 import vitranshop.shared.generated.resources.ic_database
 import vitranshop.shared.generated.resources.ic_delete
 import vitranshop.shared.generated.resources.ic_list
@@ -376,6 +379,22 @@ internal fun AccountHubUsersRow(
             title = stringResource(Res.string.account_nav_users),
             subtitle = stringResource(Res.string.account_users_hub_hint),
             icon = painterResource(Res.drawable.ic_people),
+            onClick = onClick,
+            trailing = { SettingsChevron() },
+        )
+    }
+}
+
+@Composable
+internal fun AccountHubCitiesRow(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AccountCard(modifier = modifier) {
+        SettingsActionRow(
+            title = stringResource(Res.string.account_nav_cities),
+            subtitle = stringResource(Res.string.account_cities_hub_hint),
+            icon = painterResource(Res.drawable.ic_city),
             onClick = onClick,
             trailing = { SettingsChevron() },
         )

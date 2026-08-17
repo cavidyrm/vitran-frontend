@@ -20,6 +20,9 @@ object RouteMapper {
             Route.AccountSettings -> "/account/settings"
             Route.AccountUsers -> "/account/users"
             is Route.AccountUserDetail -> "/account/users/${route.userId}"
+            Route.AccountCities -> "/account/cities"
+            Route.AccountCityCreate -> "/account/cities/new"
+            is Route.AccountCityDetail -> "/account/cities/${route.cityId}"
             Route.Login -> "/account/login"
             Route.Register -> "/account/register"
             is Route.RegisterVerify -> "/account/register/verify"
@@ -44,6 +47,8 @@ object RouteMapper {
             "/account/following" -> Route.Following
             "/account/settings" -> Route.AccountSettings
             "/account/users" -> Route.AccountUsers
+            "/account/cities" -> Route.AccountCities
+            "/account/cities/new" -> Route.AccountCityCreate
             "/account/login" -> Route.Login
             "/account/register" -> Route.Register
             "/account/register/verify" -> Route.RegisterVerify()
@@ -56,6 +61,7 @@ object RouteMapper {
             else -> parseProductPath(normalized)
                 ?: parseStorePath(normalized)
                 ?: parseAccountUserPath(normalized)
+                ?: parseAccountCityPath(normalized)
         }
     }
 
@@ -76,6 +82,16 @@ object RouteMapper {
         val userId = parts[2]
         if (userId.isEmpty() || userId.contains('/')) return null
         return Route.AccountUserDetail(userId = userId)
+    }
+
+    private fun parseAccountCityPath(path: String): Route.AccountCityDetail? {
+        // /account/cities/{cityId} — `/new` is handled as [Route.AccountCityCreate]
+        val parts = path.trim('/').split('/')
+        if (parts.size != 3) return null
+        if (parts[0] != "account" || parts[1] != "cities") return null
+        val cityId = parts[2]
+        if (cityId.isEmpty() || cityId.contains('/') || cityId == "new") return null
+        return Route.AccountCityDetail(cityId = cityId)
     }
 
     private fun parseProductPath(path: String): Route.ProductDetail? {

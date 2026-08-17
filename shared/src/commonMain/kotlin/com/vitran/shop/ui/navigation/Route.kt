@@ -58,6 +58,23 @@ sealed interface Route : NavKey {
         val userId: String,
     ) : Route
 
+    /** City management list — path `/account/cities`. Child of Account. */
+    @Serializable
+    data object AccountCities : Route
+
+    /** Add city — path `/account/cities/new`. Child of Account. */
+    @Serializable
+    data object AccountCityCreate : Route
+
+    /**
+     * City detail — path `/account/cities/{cityId}`.
+     * Child of Account; pushed onto the cities list; shopper chrome stays.
+     */
+    @Serializable
+    data class AccountCityDetail(
+        val cityId: String,
+    ) : Route
+
     /**
      * Sign-in — path `/account/login`.
      * Mobile + password only (no OTP). Child route; no app chrome while showing.
@@ -157,6 +174,9 @@ fun Route.isTopLevel(): Boolean =
         Route.AccountSettings,
         Route.AccountUsers,
         is Route.AccountUserDetail,
+        Route.AccountCities,
+        Route.AccountCityCreate,
+        is Route.AccountCityDetail,
         -> false
         Route.Home,
         Route.Categories,
@@ -172,7 +192,10 @@ fun Route.isAccountChild(): Boolean =
         this == Route.Following ||
         this == Route.AccountSettings ||
         this == Route.AccountUsers ||
-        this is Route.AccountUserDetail
+        this is Route.AccountUserDetail ||
+        this == Route.AccountCities ||
+        this == Route.AccountCityCreate ||
+        this is Route.AccountCityDetail
 
 /** Full-bleed destinations that hide shopper side / bottom nav. */
 fun Route.hidesChrome(): Boolean =

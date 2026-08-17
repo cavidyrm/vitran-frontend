@@ -8,6 +8,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.vitran.shop.ui.screens.AccountCitiesScreen
+import com.vitran.shop.ui.screens.AccountCityCreateScreen
+import com.vitran.shop.ui.screens.AccountCityDetailScreen
 import com.vitran.shop.ui.screens.AccountScreen
 import com.vitran.shop.ui.screens.AccountSettingsScreen
 import com.vitran.shop.ui.screens.AccountUserDetailScreen
@@ -169,6 +172,32 @@ fun AppNavHost(
                     onOpenSaved = { navigator.navigate(Route.Saved) },
                 )
             }
+            entry<Route.AccountCities> {
+                AccountCitiesScreen(
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onCityOpen = { cityId ->
+                        navigator.push(Route.AccountCityDetail(cityId = cityId.toString()))
+                    },
+                    onAddCity = { navigator.push(Route.AccountCityCreate) },
+                )
+            }
+            entry<Route.AccountCityCreate> {
+                AccountCityCreateScreen(
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                )
+            }
+            entry<Route.AccountCityDetail> { key ->
+                AccountCityDetailScreen(
+                    cityId = key.cityId,
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                )
+            }
             entry<Route.Login> {
                 LoginScreen(
                     showPasswordResetNotice = passwordResetNotice,
@@ -310,11 +339,17 @@ private fun Navigator.openAccountDest(state: NavigationState, dest: AccountDest)
         AccountDest.Following -> Route.Following
         AccountDest.Settings -> Route.AccountSettings
         AccountDest.Users -> Route.AccountUsers
+        AccountDest.Cities -> Route.AccountCities
     }
     if (state.currentRoute == target) return
-    if (state.currentRoute is Route.AccountUserDetail && state.backStack.size > 1) {
+    val nestedList = when (state.currentRoute) {
+        is Route.AccountUserDetail -> Route.AccountUsers
+        is Route.AccountCityDetail, Route.AccountCityCreate -> Route.AccountCities
+        else -> null
+    }
+    if (nestedList != null && state.backStack.size > 1) {
         goBack()
-        if (target == Route.AccountUsers) return
+        if (target == nestedList) return
     }
     if (target == Route.Account) {
         if (state.backStack.size > 1) goBack() else navigate(Route.Account)

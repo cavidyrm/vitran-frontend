@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.account_nav_cities
 import vitranshop.shared.generated.resources.account_nav_following
 import vitranshop.shared.generated.resources.account_nav_hub
 import vitranshop.shared.generated.resources.account_nav_referrals
@@ -64,6 +65,11 @@ internal fun AccountSubNav(
             label = stringResource(Res.string.account_nav_users),
             selected = dest == AccountDest.Users,
             onClick = { onDestClick(AccountDest.Users) },
+        )
+        AccountSubNavItem(
+            label = stringResource(Res.string.account_nav_cities),
+            selected = dest == AccountDest.Cities,
+            onClick = { onDestClick(AccountDest.Cities) },
         )
     }
 }

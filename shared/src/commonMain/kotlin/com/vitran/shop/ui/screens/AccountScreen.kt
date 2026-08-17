@@ -3,6 +3,7 @@ package com.vitran.shop.ui.screens
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.vitran.shop.ui.sections.account.AccountDest
+import com.vitran.shop.ui.sections.account.AccountHubCitiesRow
 import com.vitran.shop.ui.sections.account.AccountHubHeader
 import com.vitran.shop.ui.sections.account.AccountHubUsersRow
 import com.vitran.shop.ui.sections.account.AccountPageShell
@@ -65,6 +66,7 @@ fun AccountScreen(
         )
         if (!LocalDesktopLayout.current) {
             AccountHubUsersRow(onClick = { onDestClick(AccountDest.Users) })
+            AccountHubCitiesRow(onClick = { onDestClick(AccountDest.Cities) })
         }
         AccountRecentlyViewedSection(
             items = extras.recentlyViewed,
