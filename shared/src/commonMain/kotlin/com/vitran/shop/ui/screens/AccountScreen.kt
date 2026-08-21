@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountHubCitiesRow
 import com.vitran.shop.ui.sections.account.AccountHubHeader
+import com.vitran.shop.ui.sections.account.AccountHubStorePlanRow
 import com.vitran.shop.ui.sections.account.AccountHubUsersRow
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountRecentlyViewedSection
@@ -31,6 +32,7 @@ fun AccountScreen(
     onOpenFollowing: () -> Unit = {},
     onOpenReferrals: () -> Unit = {},
     onCreateStore: () -> Unit = {},
+    onOpenStorePlan: () -> Unit = {},
     onSignOut: () -> Unit = {},
     onProductOpen: (
         id: String,
@@ -75,8 +77,13 @@ fun AccountScreen(
             },
             onSaveClick = {},
         )
-        if (!profile.isMerchant) {
-            AccountSellerSection(onCreateStore = onCreateStore)
+        when {
+            profile.isMerchant && profile.hasStore -> {
+                AccountHubStorePlanRow(onClick = onOpenStorePlan)
+            }
+            !profile.isMerchant -> {
+                AccountSellerSection(onCreateStore = onCreateStore)
+            }
         }
         AccountSignOutRow(onClick = onSignOut)
     }

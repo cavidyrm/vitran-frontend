@@ -893,5 +893,41 @@
     <string name="account_city_create_preview_empty">پیش‌نمایش: cities/</string>
     <string name="account_city_create_submit">ایجاد شهر</string>
     <string name="account_city_create_cancel">انصراف</string>
+    <!-- Merchant store plan -->
+    <string name="store_plan_upgrade_title">ارتقای پلن فروشگاه</string>
+    <string name="store_plan_upgrade_subtitle">پلن مناسب خود را انتخاب کنید</string>
+    <string name="store_plan_dashboard_title">پلن و اعتبار فروشگاه</string>
+    <string name="store_plan_dashboard_subtitle">مدیریت امکانات و اعتبار فروشگاه خود</string>
+    <string name="store_plan_billing_monthly">ماهانه</string>
+    <string name="store_plan_billing_yearly">سالانه</string>
+    <string name="store_plan_yearly_discount">٪%1$s تخفیف</string>
+    <string name="store_plan_recommended_badge">پیشنهاد ویتران</string>
+    <string name="store_plan_select_cta">انتخاب پلن</string>
+    <string name="store_plan_toman">تومان</string>
+    <string name="store_plan_per_month">/ ماه</string>
+    <string name="store_plan_per_year">/ سال</string>
+    <string name="store_plan_col_features">امکانات</string>
+    <string name="store_plan_col_start">شروع</string>
+    <string name="store_plan_col_growth">رشد</string>
+    <string name="store_plan_col_professional">حرفه‌ای</string>
+    <string name="store_plan_empty_dash">—</string>
+    <string name="store_plan_support_title">سوال دارید؟ تیم پشتیبانی ویتران در تماس است.</string>
+    <string name="store_plan_support_body">پیش از خرید، با ما صحبت کنید تا بهترین پلن را پیشنهاد دهیم.</string>
+    <string name="store_plan_support_cta">تماس با پشتیبانی</string>
+    <string name="store_plan_current_label">پلن فعلی شما</string>
+    <string name="store_plan_upgrade_cta">ارتقای پلن</string>
+    <string name="store_plan_usage_section_title">میزان استفاده از امکانات</string>
+    <string name="store_plan_benefits_title">مزایای پلن رشد</string>
+    <string name="store_plan_payments_title">سوابق پرداخت‌ها</string>
+    <string name="store_plan_payment_paid">پرداخت شد</string>
+    <string name="store_plan_payment_failed">پرداخت ناموفق</string>
+    <string name="store_plan_promo_title">برای دیده‌شدن بیشتر و تحلیل‌های دقیق‌تر، ارتقا دهید</string>
+    <string name="store_plan_promo_body">با پلن بالاتر، جایگاه بهتر و گزارش‌های پیشرفته‌تری دریافت می‌کنید.</string>
+    <string name="store_plan_promo_cta">مشاهده پلن‌ها</string>
+    <string name="store_plan_notifications_a11y">اعلان‌ها</string>
+    <string name="store_plan_home_a11y">خانه</string>
+    <string name="store_plan_store_picker_a11y">انتخاب فروشگاه</string>
+    <string name="account_store_plan_hub_title">پلن و اعتبار فروشگاه</string>
+    <string name="account_store_plan_hub_hint">مدیریت پلن، امکانات و سوابق پرداخت</string>
 </resources>
 

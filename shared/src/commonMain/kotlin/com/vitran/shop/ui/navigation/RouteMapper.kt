@@ -29,6 +29,8 @@ object RouteMapper {
             Route.ForgotPassword -> "/account/forgot"
             is Route.ResetPassword -> "/account/forgot/reset"
             Route.CreateStore -> "/admin/stores/new"
+            Route.StorePlan -> "/admin/stores/plan"
+            Route.StorePlanUpgrade -> "/admin/stores/plan/upgrade"
             Route.CreateProduct -> "/admin/products/new"
             Route.CreateCategory -> "/admin/categories/new"
             is Route.ProductDetail -> "/products/${route.productId}/${route.slug}"
@@ -56,6 +58,8 @@ object RouteMapper {
             "/account/forgot/reset" -> Route.ResetPassword()
             "/account" -> Route.Account
             "/admin/stores/new" -> Route.CreateStore
+            "/admin/stores/plan" -> Route.StorePlan
+            "/admin/stores/plan/upgrade" -> Route.StorePlanUpgrade
             "/admin/products/new" -> Route.CreateProduct
             "/admin/categories/new" -> Route.CreateCategory
             else -> parseProductPath(normalized)

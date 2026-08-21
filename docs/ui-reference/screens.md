@@ -31,6 +31,8 @@
 13. Create store (merchant admin) — route `/admin/stores/new` (`CreateStoreScreen`); 5-step wizard with live phone preview; no shopper chrome; mock-only. Opened from Account or the URL.
 14. Add product (merchant admin) — route `/admin/products/new` (`CreateProductScreen`); two-column form from 1024dp; default status Draft; variant chips + combination table; no shopper chrome; mock-only. Opened from Account, Create store empty-products CTA, or the URL.
 15. Select standard category (merchant admin) — route `/admin/categories/new` (`CreateCategoryScreen`); Shopify Standard Product Taxonomy picker (search + hierarchy drill-down); mock-only; no custom taxonomy IDs; no shopper chrome. Opened from Account or the URL.
+16. Store plan & credit (merchant admin) — route `/admin/stores/plan` (`StorePlanScreen`); current plan summary, usage meters, benefits, payment history, upgrade promo; no shopper chrome; mock-only. Opened from Account when merchant has a store, or the URL. Visual: `docs/ui-reference/admin/store-plan/dashboard-desktop.png`
+17. Upgrade store plan (merchant admin) — route `/admin/stores/plan/upgrade` (`StorePlanUpgradeScreen`); billing toggle, Start/Growth/Professional cards, comparison table, support bar; no shopper chrome; mock-only. Opened from plan dashboard CTAs or the URL. Visual: `docs/ui-reference/admin/store-plan/upgrade-desktop.png`
 
 ## Bottom / Side nav tabs
 - Home

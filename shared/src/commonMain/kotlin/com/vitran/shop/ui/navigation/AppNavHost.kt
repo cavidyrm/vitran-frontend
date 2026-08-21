@@ -31,6 +31,8 @@ import com.vitran.shop.ui.screens.RegisterScreen
 import com.vitran.shop.ui.screens.RegisterVerifyScreen
 import com.vitran.shop.ui.screens.ResetPasswordScreen
 import com.vitran.shop.ui.screens.SavedScreen
+import com.vitran.shop.ui.screens.StorePlanScreen
+import com.vitran.shop.ui.screens.StorePlanUpgradeScreen
 import com.vitran.shop.ui.screens.StoreScreen
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.product.MockProductCatalog
@@ -105,6 +107,7 @@ fun AppNavHost(
                     onOpenFollowing = { navigator.push(Route.Following) },
                     onOpenReferrals = { navigator.push(Route.Referrals) },
                     onCreateStore = { navigator.push(Route.CreateStore) },
+                    onOpenStorePlan = { navigator.push(Route.StorePlan) },
                     onSignOut = { navigator.push(Route.Login) },
                     onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
                         val product = MockProductCatalog.resolve(
@@ -272,6 +275,17 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                     onViewStore = { shopId -> navigator.push(Route.Store(shopId = shopId)) },
                     onAddProduct = { navigator.push(Route.CreateProduct) },
+                )
+            }
+            entry<Route.StorePlan> {
+                StorePlanScreen(
+                    onBack = { navigator.goBack() },
+                    onUpgradeClick = { navigator.push(Route.StorePlanUpgrade) },
+                )
+            }
+            entry<Route.StorePlanUpgrade> {
+                StorePlanUpgradeScreen(
+                    onBack = { navigator.goBack() },
                 )
             }
             entry<Route.CreateProduct> {

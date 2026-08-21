@@ -58,6 +58,8 @@ import vitranshop.shared.generated.resources.account_settings_security
 import vitranshop.shared.generated.resources.account_settings_security_hint
 import vitranshop.shared.generated.resources.account_sign_out
 import vitranshop.shared.generated.resources.account_sign_out_hint
+import vitranshop.shared.generated.resources.account_store_plan_hub_hint
+import vitranshop.shared.generated.resources.account_store_plan_hub_title
 import vitranshop.shared.generated.resources.account_users_hub_hint
 import vitranshop.shared.generated.resources.ic_bell
 import vitranshop.shared.generated.resources.ic_chevron_right
@@ -73,6 +75,7 @@ import vitranshop.shared.generated.resources.ic_shield
 import vitranshop.shared.generated.resources.ic_sparkles
 import vitranshop.shared.generated.resources.ic_user
 import vitranshop.shared.generated.resources.ic_visibility
+import vitranshop.shared.generated.resources.ic_wallet
 
 @Composable
 internal fun AccountSettingsSection(
@@ -395,6 +398,22 @@ internal fun AccountHubCitiesRow(
             title = stringResource(Res.string.account_nav_cities),
             subtitle = stringResource(Res.string.account_cities_hub_hint),
             icon = painterResource(Res.drawable.ic_city),
+            onClick = onClick,
+            trailing = { SettingsChevron() },
+        )
+    }
+}
+
+@Composable
+internal fun AccountHubStorePlanRow(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AccountCard(modifier = modifier) {
+        SettingsActionRow(
+            title = stringResource(Res.string.account_store_plan_hub_title),
+            subtitle = stringResource(Res.string.account_store_plan_hub_hint),
+            icon = painterResource(Res.drawable.ic_wallet),
             onClick = onClick,
             trailing = { SettingsChevron() },
         )
