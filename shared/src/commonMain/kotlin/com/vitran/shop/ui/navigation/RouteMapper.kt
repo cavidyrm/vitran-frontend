@@ -31,10 +31,12 @@ object RouteMapper {
             Route.CreateStore -> "/admin/stores/new"
             Route.StorePlan -> "/admin/stores/plan"
             Route.StorePlanUpgrade -> "/admin/stores/plan/upgrade"
+            Route.AdminPlans -> "/admin/plans"
             Route.CreateProduct -> "/admin/products/new"
             Route.CreateCategory -> "/admin/categories/new"
             is Route.ProductDetail -> "/products/${route.productId}/${route.slug}"
             is Route.Store -> "/m/${route.shopId}"
+            Route.About -> "/about"
         }
 
     fun fromPath(path: String): Route? {
@@ -60,8 +62,10 @@ object RouteMapper {
             "/admin/stores/new" -> Route.CreateStore
             "/admin/stores/plan" -> Route.StorePlan
             "/admin/stores/plan/upgrade" -> Route.StorePlanUpgrade
+            "/admin/plans" -> Route.AdminPlans
             "/admin/products/new" -> Route.CreateProduct
             "/admin/categories/new" -> Route.CreateCategory
+            "/about" -> Route.About
             else -> parseProductPath(normalized)
                 ?: parseStorePath(normalized)
                 ?: parseAccountUserPath(normalized)

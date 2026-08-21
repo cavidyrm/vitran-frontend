@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountTokens
@@ -25,6 +26,7 @@ fun AccountCityCreateScreen(
     onBack: () -> Unit,
     onDestClick: (AccountDest) -> Unit,
     onOpenSaved: () -> Unit,
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var draft by remember { mutableStateOf(AccountCity(id = 0, name = "", slug = "")) }
@@ -35,6 +37,7 @@ fun AccountCityCreateScreen(
         onBack = onBack,
         backTitle = stringResource(Res.string.account_nav_cities),
         contentMaxWidth = AccountTokens.UsersContentMaxWidth,
+        onFooterLinkClick = onFooterLinkClick,
         modifier = modifier,
     ) {
         AccountCityDetailHeader(

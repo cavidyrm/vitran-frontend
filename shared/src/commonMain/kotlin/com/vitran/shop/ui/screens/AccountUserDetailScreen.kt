@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import com.vitran.shop.ui.components.VitranText
 import com.vitran.shop.ui.components.VitranTextStyle
 import com.vitran.shop.ui.sections.account.AccountCard
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountPrimaryButton
@@ -39,6 +40,7 @@ fun AccountUserDetailScreen(
     onBack: () -> Unit,
     onDestClick: (AccountDest) -> Unit,
     onOpenSaved: () -> Unit,
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val initial = remember(userId) { findMockAccountUser(userId) }
@@ -49,6 +51,7 @@ fun AccountUserDetailScreen(
         onBack = onBack,
         backTitle = stringResource(Res.string.account_user_detail_title),
         contentMaxWidth = AccountTokens.UsersContentMaxWidth,
+        onFooterLinkClick = onFooterLinkClick,
         modifier = modifier,
     ) {
         if (initial == null) {

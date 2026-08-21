@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountPrivacyPrefs
@@ -25,6 +26,7 @@ fun AccountSettingsScreen(
     onOpenSaved: () -> Unit,
     onOpenProfile: () -> Unit,
     onSignOut: () -> Unit,
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val initial = rememberMockAccountProfile().copy(skinType = "نرمال")
@@ -37,6 +39,7 @@ fun AccountSettingsScreen(
         onBack = onBack,
         backTitle = stringResource(Res.string.account_nav_settings),
         contentMaxWidth = AccountTokens.SettingsContentMaxWidth,
+        onFooterLinkClick = onFooterLinkClick,
         modifier = modifier,
     ) {
         AccountSettingsSection(

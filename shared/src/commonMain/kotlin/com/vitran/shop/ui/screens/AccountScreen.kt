@@ -2,7 +2,9 @@ package com.vitran.shop.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
+import com.vitran.shop.ui.sections.account.AccountHubAdminPlansRow
 import com.vitran.shop.ui.sections.account.AccountHubCitiesRow
 import com.vitran.shop.ui.sections.account.AccountHubHeader
 import com.vitran.shop.ui.sections.account.AccountHubStorePlanRow
@@ -33,7 +35,9 @@ fun AccountScreen(
     onOpenReferrals: () -> Unit = {},
     onCreateStore: () -> Unit = {},
     onOpenStorePlan: () -> Unit = {},
+    onOpenAdminPlans: () -> Unit = {},
     onSignOut: () -> Unit = {},
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     onProductOpen: (
         id: String,
         title: String,
@@ -50,6 +54,7 @@ fun AccountScreen(
         dest = AccountDest.Hub,
         onDestClick = onDestClick,
         onSavedClick = onOpenSaved,
+        onFooterLinkClick = onFooterLinkClick,
         modifier = modifier,
     ) {
         AccountHubHeader(
@@ -70,6 +75,7 @@ fun AccountScreen(
             AccountHubUsersRow(onClick = { onDestClick(AccountDest.Users) })
             AccountHubCitiesRow(onClick = { onDestClick(AccountDest.Cities) })
         }
+        AccountHubAdminPlansRow(onClick = onOpenAdminPlans)
         AccountRecentlyViewedSection(
             items = extras.recentlyViewed,
             onItemClick = { item ->

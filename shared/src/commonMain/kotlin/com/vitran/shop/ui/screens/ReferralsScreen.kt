@@ -2,6 +2,7 @@ package com.vitran.shop.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountTokens
@@ -17,6 +18,7 @@ fun ReferralsScreen(
     onBack: () -> Unit,
     onDestClick: (AccountDest) -> Unit,
     onOpenSaved: () -> Unit,
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val referral = rememberMockReferralProfile()
@@ -27,6 +29,7 @@ fun ReferralsScreen(
         onBack = onBack,
         backTitle = stringResource(Res.string.account_nav_referrals),
         contentMaxWidth = AccountTokens.ReferralsContentMaxWidth,
+        onFooterLinkClick = onFooterLinkClick,
         modifier = modifier,
     ) {
         ProfileReferralCard(referral = referral)

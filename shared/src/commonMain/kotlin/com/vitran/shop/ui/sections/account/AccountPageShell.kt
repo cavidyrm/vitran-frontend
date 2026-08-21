@@ -45,6 +45,7 @@ import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
 import com.vitran.shop.ui.components.SiteFooter
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.components.VitranText
 import com.vitran.shop.ui.components.VitranTextStyle
@@ -73,6 +74,7 @@ internal fun AccountPageShell(
     showSearch: Boolean = true,
     contentMaxWidth: Dp = AccountTokens.ContentMaxWidth,
     bottomBar: (@Composable () -> Unit)? = null,
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val isDesktop = LocalDesktopLayout.current
@@ -230,7 +232,7 @@ internal fun AccountPageShell(
                 }
             }
             SiteFooter(
-                onLinkClick = { /* mock — footer destinations not wired yet */ },
+                onLinkClick = onFooterLinkClick,
                 onLanguageClick = { /* mock — language settings not wired yet */ },
                 onDownloadClick = { /* mock — store deep link not wired yet */ },
                 modifier = Modifier.fillMaxWidth(),

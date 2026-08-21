@@ -19,9 +19,9 @@ alwaysApply: true
 - Do **not** mark shopper work done until live shop.app for that section was opened and the measured behavior is reflected in code.
 
 ### Merchant admin exception
-- Admin screens (Create store, Add product, Select category, Store plan / Upgrade plan, later edit/dashboard) are **not** shop.app storefront.
+- Admin screens (Create store, Add product, Select category, Store plan / Upgrade plan, Manage plans, later edit/dashboard) are **not** shop.app storefront.
 - Visual source of truth: `docs/ui-reference/admin/` (Shopify Admin screenshots + store-plan PNGs). Do **not** open shop.app for these pages.
-- Still verify responsive compact vs `desktopBreakpoint` (1024dp two-column on Add product / Select category) / `mdBreakpoint` (768dp on Create store / Store plan) and card gaps in code.
+- Still verify responsive compact vs `desktopBreakpoint` (1024dp two-column on Add product / Select category / Manage plans) / `mdBreakpoint` (768dp on Create store / Store plan) and card gaps in code.
 
 ### Auth exception
 - Auth uses `AuthSplitShell`: form card + brand gradient panel from `mdBreakpoint` up (`docs/ui-reference/auth/`). Compact = form card only. No language selector. Not shop.app storefront.
@@ -36,17 +36,21 @@ Every new (or refined) **shopper** section **must** include live shop.app verifi
 
 Do **not** mark a shopper section done until responsive sizes and the gap from the section above are checked on live shop.app and reflected in code. For admin sections, check compact vs `mdBreakpoint` and card gaps against `docs/ui-reference/admin/`.
 
+### Marketing / About exception
+- About Us (`/about`, `AboutScreen`) is **not** shop.app storefront. Visual source: `docs/ui-reference/about/`. Do **not** open shop.app for this page. Keep shopper AppShell chrome; responsive compact vs `mdBreakpoint` (768dp two-column hero/story).
+
 ## Current focus
-- Active screen: **Store plan (merchant admin)** — dashboard `/admin/stores/plan`, upgrade `/admin/stores/plan/upgrade`
-- Visual: `MerchantPlanTopBar` (logo + notifications + store chip); white/gray page with Vitran purple CTAs. Dashboard: current plan card + usage meters + benefits/payments + promo banner. Upgrade: billing toggle + 3 pricing cards + comparison table + support bar. Entry from Account hub when `isMerchant && hasStore`. Mock-only; no payment gateway.
-- Reference: `docs/ui-reference/admin/store-plan/` (`dashboard-desktop.png`, `upgrade-desktop.png`)
-- Account / Auth / Select category / Add product / Create store / Store / PDP / Categories remain complete for listed sections
+- Active screen: **About Us** — `/about` (`AboutScreen`)
+- Visual: hero (breadcrumb + CTA + image + trust card), 4 feature cards, story + checklist, soft stats bar, purple join CTA, SiteFooter. Shopper chrome stays. Entry from footer «درباره ما» or URL.
+- Reference: `docs/ui-reference/about/about-desktop.png`
+- Manage plans / Store plan / Account / Auth / admin create flows remain complete for listed sections
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`
 - Admin form primitives: `shared/.../ui/components/admin/`
 - Admin create-store / create-product sections: `shared/.../ui/sections/admin/`
 - Admin store-plan sections: `shared/.../ui/sections/admin/plan/`
+- About Us sections: `shared/.../ui/sections/about/`
 - App chrome navigation: `shared/.../ui/navigation/`
 - Categories sections: `shared/.../ui/sections/categories/`
 - Product detail sections: `shared/.../ui/sections/product/`
@@ -55,7 +59,7 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - Account / Profile sections: `shared/.../ui/sections/account/`
 - Account users list sections: `shared/.../ui/sections/account/users/`
 - Account cities list sections: `shared/.../ui/sections/account/cities/`
-- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt`, `ForgotPasswordScreen.kt`, `ResetPasswordScreen.kt`, `AccountScreen.kt`, `ProfileScreen.kt`, `ReferralsScreen.kt`, `FollowingScreen.kt`, `AccountSettingsScreen.kt`, `AccountUsersScreen.kt`, `AccountUserDetailScreen.kt`, `AccountCitiesScreen.kt`, `AccountCityDetailScreen.kt`, `AccountCityCreateScreen.kt`, `StorePlanScreen.kt`, `StorePlanUpgradeScreen.kt`, `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
+- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt`, `ForgotPasswordScreen.kt`, `ResetPasswordScreen.kt`, `AccountScreen.kt`, `ProfileScreen.kt`, `ReferralsScreen.kt`, `FollowingScreen.kt`, `AccountSettingsScreen.kt`, `AccountUsersScreen.kt`, `AccountUserDetailScreen.kt`, `AccountCitiesScreen.kt`, `AccountCityDetailScreen.kt`, `AccountCityCreateScreen.kt`, `StorePlanScreen.kt`, `StorePlanUpgradeScreen.kt`, `AdminPlansScreen.kt`, `AboutScreen.kt`, `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference

@@ -32,6 +32,7 @@ import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
 import com.vitran.shop.ui.components.SiteFooter
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.categories.CategoriesBrowseCategoriesSection
 import com.vitran.shop.ui.sections.categories.CategoriesExploreFeaturedSection
 import com.vitran.shop.ui.sections.categories.CategoriesMerchantGridsFeed
@@ -72,6 +73,7 @@ fun CategoriesScreen(
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
     onStoreOpen: (shopId: String) -> Unit = {},
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val isDesktop = LocalDesktopLayout.current
@@ -191,7 +193,7 @@ fun CategoriesScreen(
                 )
             }
             SiteFooter(
-                onLinkClick = { /* mock — footer destinations not wired yet */ },
+                onLinkClick = onFooterLinkClick,
                 onLanguageClick = { /* mock — language settings not wired yet */ },
                 onDownloadClick = { /* mock — store deep link not wired yet */ },
                 modifier = Modifier.fillMaxWidth(),

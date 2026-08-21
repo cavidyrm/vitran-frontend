@@ -33,6 +33,8 @@
 15. Select standard category (merchant admin) — route `/admin/categories/new` (`CreateCategoryScreen`); Shopify Standard Product Taxonomy picker (search + hierarchy drill-down); mock-only; no custom taxonomy IDs; no shopper chrome. Opened from Account or the URL.
 16. Store plan & credit (merchant admin) — route `/admin/stores/plan` (`StorePlanScreen`); current plan summary, usage meters, benefits, payment history, upgrade promo; no shopper chrome; mock-only. Opened from Account when merchant has a store, or the URL. Visual: `docs/ui-reference/admin/store-plan/dashboard-desktop.png`
 17. Upgrade store plan (merchant admin) — route `/admin/stores/plan/upgrade` (`StorePlanUpgradeScreen`); billing toggle, Start/Growth/Professional cards, comparison table, support bar; no shopper chrome; mock-only. Opened from plan dashboard CTAs or the URL. Visual: `docs/ui-reference/admin/store-plan/upgrade-desktop.png`
+18. Manage plans (platform admin) — route `/admin/plans` (`AdminPlansScreen`); stats, plans table, create/edit form, preview; mock create/edit/delete; no shopper chrome. Opened from Account hub or the URL. Visual: `docs/ui-reference/admin/store-plan/admin-plans-desktop.png`
+19. About Us — route `/about` (`AboutScreen`); hero, feature cards, story, stats bar, join CTA; shopper chrome stays; entry from SiteFooter + URL. Visual: `docs/ui-reference/about/about-desktop.png`
 
 ## Bottom / Side nav tabs
 - Home
