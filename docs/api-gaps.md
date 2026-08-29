@@ -10,10 +10,10 @@ Status values: `Open` | `Verified from backend source` | `Resolved by backend up
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
+| **Status** | Client compatibility workaround |
 | **Issue** | Taxonomy uses string slugs (`aa-1-2-3-4`). Query params use string slugs. Request/response examples also show `"category_slug": 1` and `"category_slugs": [1]`. |
-| **Client impact** | Domain must use `CategorySlug` as `String`. Accept int/string only at DTO boundary if backend requires compatibility. |
-| **Phase 4 handling** | Domain `CategorySlug` is `String`. Int/string DTO coercion deferred to Shop/Product phase only. |
+| **Client impact** | Domain uses `CategorySlug` as `String`. `FlexibleCategorySlugSerializer` accepts int/string at DTO boundary in `:feature:marketplace`. |
+| **Phase 5 handling** | Implemented in product/shop DTOs. Live production probe did not re-verify numeric slugs; Postman examples drive tests. |
 
 ---
 
@@ -199,7 +199,51 @@ Postman requests **without saved response examples** (15):
 | **Status** | Open |
 | **Issue** | Fields `price`, `price_amount`, `price_paid`, `amount` with no explicit currency in transport contract. |
 | **Client impact** | Do not assume IRR or any currency in shared domain without product confirmation. |
-| **Phase 2+ handling** | Use `Money` or amount-only display until backend specifies currency. |
+| **Phase 5 handling** | `formatMarketplacePrice(Long)` displays raw amounts; domain stores `priceAmount: Long`. |
+
+---
+
+## Gap 17 — Public shop detail visual fields
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | `GET /shops/{id}` Postman payload lacks cover, avatar, wordmark, brand color, rating, review count, collections, nav chips expected by `StoreMock`. |
+| **Client impact** | `StoreScreen` maps API title/slug/categories/share URL; placeholders for visual-only fields. |
+| **Phase 5 handling** | Documented in [public-marketplace.md](public-marketplace.md). Resolve when backend enriches public shop projection or separate media endpoint exists. |
+
+---
+
+## Gap 18 — Home section item schemas
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | `GET /home` Postman has envelope; live probe to `vitran.ir` returned 404. Non-empty item shapes for `featured`, `popular`, `categories`, `following`, `personal` unverified. |
+| **Client impact** | `HomeApi` + `HomeFeed` counts implemented; `HomeScreen` sections remain mock until schemas captured. |
+| **Phase 5 handling** | `HomeDtos` stores section arrays as `JsonElement`; `HomeFeed.itemsVerified = false`. |
+
+---
+
+## Gap 19 — Catalog search response
+
+| Field | Status |
+|-------|--------|
+| **Status** | UNRESOLVED — NOT INVENTED |
+| **Issue** | `GET /catalog/search` has no saved Postman response example; live probe unavailable. |
+| **Client impact** | `CatalogFilters` / `CatalogSort` domain request models only. No `searchCatalog()` API or response DTOs. |
+| **Phase 5 handling** | Defer to backend verification. Simple product search uses `GET /products/search` instead. |
+
+---
+
+## Gap 20 — Personalized home feed
+
+| Field | Status |
+|-------|--------|
+| **Status** | UNRESOLVED — NOT INVENTED |
+| **Issue** | `GET /me/home/feed` has no response example in Postman. |
+| **Client impact** | Not implemented. `HomeViewModel` uses public `/home` only. |
+| **Phase 5 handling** | Implement only after authenticated probe captures schema. |
 
 ---
 

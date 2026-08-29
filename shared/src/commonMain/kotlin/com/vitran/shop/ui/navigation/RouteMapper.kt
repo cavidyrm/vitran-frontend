@@ -36,6 +36,7 @@ object RouteMapper {
             Route.CreateCategory -> "/admin/categories/new"
             is Route.ProductDetail -> "/products/${route.productId}/${route.slug}"
             is Route.Store -> "/m/${route.shopId}"
+            is Route.Search -> "/search?q=${percentEncode(route.query)}"
             Route.About -> "/about"
         }
 
@@ -78,7 +79,13 @@ object RouteMapper {
      * Ignores scheme/host; uses path only (query reserved for future routes).
      */
     fun fromUri(uri: String): Route? {
-        val path = extractPath(uri)
+        val withoutFragment = uri.substringBefore('#')
+        val path = extractPath(withoutFragment)
+        val query = extractQuery(withoutFragment)
+        if (path == "/search" || path.startsWith("/search/")) {
+            val q = query["q"] ?: path.removePrefix("/search/").takeIf { it.isNotBlank() }
+            if (!q.isNullOrBlank()) return Route.Search(percentDecode(q))
+        }
         return fromPath(path)
     }
 
@@ -135,6 +142,57 @@ object RouteMapper {
         }
         return withoutQuery
     }
+
+    private fun extractQuery(uri: String): Map<String, String> {
+        val withoutFragment = uri.substringBefore('#')
+        val queryStart = withoutFragment.indexOf('?')
+        if (queryStart < 0) return emptyMap()
+        return withoutFragment.substring(queryStart + 1)
+            .split('&')
+            .mapNotNull { part ->
+                if (part.isEmpty()) return@mapNotNull null
+                val eq = part.indexOf('=')
+                if (eq <= 0) null
+                else percentDecode(part.substring(0, eq)) to percentDecode(part.substring(eq + 1))
+            }
+            .toMap()
+    }
+
+    private fun percentEncode(value: String): String =
+        buildString {
+            for (byte in value.encodeToByteArray()) {
+                val c = byte.toInt().toChar()
+                if (c.isLetterOrDigit() || c in "-_.~") append(c)
+                else append('%', hexDigit((byte.toInt() and 0xFF) shr 4), hexDigit(byte.toInt() and 0x0F))
+            }
+        }
+
+    private fun percentDecode(value: String): String {
+        val bytes = ArrayList<Byte>()
+        var i = 0
+        while (i < value.length) {
+            when (val c = value[i]) {
+                '%' -> {
+                    if (i + 2 >= value.length) break
+                    val hex = value.substring(i + 1, i + 3)
+                    bytes.add(hex.toInt(16).toByte())
+                    i += 3
+                }
+                '+' -> {
+                    bytes.add(' '.code.toByte())
+                    i++
+                }
+                else -> {
+                    bytes.add(c.code.toByte())
+                    i++
+                }
+            }
+        }
+        return bytes.toByteArray().decodeToString()
+    }
+
+    private fun hexDigit(value: Int): Char =
+        "0123456789ABCDEF"[value and 0xF]
 
     private fun normalizePath(path: String): String {
         if (path.isEmpty()) return "/"

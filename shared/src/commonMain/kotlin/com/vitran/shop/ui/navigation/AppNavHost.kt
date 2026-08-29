@@ -35,12 +35,14 @@ import com.vitran.shop.ui.screens.RegisterScreen
 import com.vitran.shop.ui.screens.RegisterVerifyScreen
 import com.vitran.shop.ui.screens.ResetPasswordScreen
 import com.vitran.shop.ui.screens.SavedScreen
+import com.vitran.shop.ui.screens.SearchResultsScreen
 import com.vitran.shop.ui.screens.StorePlanScreen
 import com.vitran.shop.ui.screens.StorePlanUpgradeScreen
 import com.vitran.shop.ui.screens.StoreScreen
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.product.MockProductCatalog
+import com.vitran.shop.ui.sections.product.productSlug
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -66,6 +68,25 @@ fun AppNavHost(
     val onFooterLink: (SiteFooterLinkId) -> Unit = { id ->
         navigator.handleSiteFooterLink(navState, id)
     }
+    val onSearchSubmit: (String) -> Unit = { query ->
+        if (query.isNotBlank()) {
+            navigator.push(Route.Search(query = query.trim()))
+        }
+    }
+    val onProductOpen: (
+        String,
+        String,
+        String,
+        String,
+        String,
+    ) -> Unit = { id, title, _, _, _ ->
+        navigator.push(
+            Route.ProductDetail(
+                productId = id,
+                slug = productSlug(title),
+            ),
+        )
+    }
     NavDisplay(
         backStack = navState.backStack,
         modifier = modifier,
@@ -73,47 +94,21 @@ fun AppNavHost(
         entryProvider = entryProvider {
             entry<Route.Home> {
                 HomeScreen(
-                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
-                        val product = MockProductCatalog.resolve(
-                            id = id,
-                            title = title,
-                            imageUrl = imageUrl,
-                            storeName = storeName,
-                            priceLabel = priceLabel,
-                        )
-                        navigator.push(
-                            Route.ProductDetail(
-                                productId = product.id,
-                                slug = product.slug,
-                            ),
-                        )
-                    },
+                    onProductOpen = onProductOpen,
                     onStoreOpen = { shopId ->
                         navigator.push(Route.Store(shopId = shopId))
                     },
+                    onSearchSubmit = onSearchSubmit,
                     onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Categories> {
                 CategoriesScreen(
-                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
-                        val product = MockProductCatalog.resolve(
-                            id = id,
-                            title = title,
-                            imageUrl = imageUrl,
-                            storeName = storeName,
-                            priceLabel = priceLabel,
-                        )
-                        navigator.push(
-                            Route.ProductDetail(
-                                productId = product.id,
-                                slug = product.slug,
-                            ),
-                        )
-                    },
+                    onProductOpen = onProductOpen,
                     onStoreOpen = { shopId ->
                         navigator.push(Route.Store(shopId = shopId))
                     },
+                    onSearchSubmit = onSearchSubmit,
                     onFooterLinkClick = onFooterLink,
                 )
             }
@@ -341,46 +336,26 @@ fun AppNavHost(
             entry<Route.ProductDetail> { key ->
                 ProductDetailScreen(
                     productId = key.productId,
-                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
-                        val product = MockProductCatalog.resolve(
-                            id = id,
-                            title = title,
-                            imageUrl = imageUrl,
-                            storeName = storeName,
-                            priceLabel = priceLabel,
-                        )
-                        navigator.push(
-                            Route.ProductDetail(
-                                productId = product.id,
-                                slug = product.slug,
-                            ),
-                        )
-                    },
+                    onProductOpen = onProductOpen,
                     onStoreOpen = { shopId ->
                         navigator.push(Route.Store(shopId = shopId))
                     },
+                    onSearchSubmit = onSearchSubmit,
                     onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Store> { key ->
                 StoreScreen(
                     shopId = key.shopId,
-                    onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
-                        val product = MockProductCatalog.resolve(
-                            id = id,
-                            title = title,
-                            imageUrl = imageUrl,
-                            storeName = storeName,
-                            priceLabel = priceLabel,
-                        )
-                        navigator.push(
-                            Route.ProductDetail(
-                                productId = product.id,
-                                slug = product.slug,
-                            ),
-                        )
-                    },
+                    onProductOpen = onProductOpen,
+                    onSearchSubmit = onSearchSubmit,
                     onFooterLinkClick = onFooterLink,
+                )
+            }
+            entry<Route.Search> { key ->
+                SearchResultsScreen(
+                    query = key.query,
+                    onProductOpen = onProductOpen,
                 )
             }
             entry<Route.About> {

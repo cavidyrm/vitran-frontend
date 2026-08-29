@@ -34,7 +34,12 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.TextButton
 import com.vitran.shop.ui.components.FloatingSearchFab
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.di.rememberProductDetailsViewModel
+import com.vitran.shop.feature.marketplace.product.presentation.ProductDetailsUiState
 import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
@@ -42,7 +47,8 @@ import com.vitran.shop.ui.components.SiteFooter
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.categories.CategoriesSectionGap
 import com.vitran.shop.ui.sections.home.allMockHomeShopCards
-import com.vitran.shop.ui.sections.product.MockProductCatalog
+import com.vitran.shop.ui.sections.product.ProductDetailMock
+import com.vitran.shop.ui.sections.reference.toProductDetailMock
 import com.vitran.shop.ui.sections.product.ProductDetailInfoColumn
 import com.vitran.shop.ui.sections.product.ProductDetailMediaSection
 import com.vitran.shop.ui.sections.product.ProductDetailMerchant
@@ -91,9 +97,15 @@ fun ProductDetailScreen(
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
     onStoreOpen: (shopId: String) -> Unit = {},
+    onSearchSubmit: (String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
 ) {
-    val product = MockProductCatalog.byId(productId)
+    val viewModel = rememberProductDetailsViewModel(productId)
+    val detailsState by viewModel.uiState.collectAsStateWithLifecycle()
+    val product: ProductDetailMock? = when (val state = detailsState) {
+        is ProductDetailsUiState.Content -> state.product.toProductDetailMock()
+        else -> null
+    }
     val viewportWidth = LocalShellViewportWidth.current
     val isMdUp = viewportWidth >= VitranSize.mdBreakpoint
     val isLgUp = viewportWidth >= VitranSize.desktopBreakpoint
@@ -128,6 +140,26 @@ fun ProductDetailScreen(
             .distinctUntilChanged()
             .filter { scrolling -> scrolling }
             .collect { onDismissOmnibox() }
+    }
+
+    if (detailsState is ProductDetailsUiState.Loading) {
+        Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("در حال بارگذاری…", style = MaterialTheme.typography.bodyLarge)
+        }
+        return
+    }
+
+    if (detailsState is ProductDetailsUiState.Error) {
+        Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
+            Column(Modifier.padding(VitranSpacing.lg)) {
+                Text(
+                    text = (detailsState as ProductDetailsUiState.Error).message ?: "خطا در بارگذاری",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                TextButton(onClick = viewModel::retry) { Text("تلاش دوباره") }
+            }
+        }
+        return
     }
 
     if (product == null) {
@@ -307,7 +339,7 @@ fun ProductDetailScreen(
                 onQueryChange = { query = it },
                 expanded = omniboxExpanded,
                 onExpandedChange = { omniboxExpanded = it },
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = { onSearchSubmit(query.trim()) },
                 onDismiss = { dismissOmnibox() },
                 onBoundsInRoot = { omniboxBoundsInRoot = it },
                 modifier = Modifier
@@ -328,7 +360,7 @@ fun ProductDetailScreen(
             OmniboxMobileSearchSheet(
                 query = query,
                 onQueryChange = { query = it },
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = { onSearchSubmit(query.trim()) },
                 onDismiss = { dismissOmnibox() },
                 onResultClick = { result ->
                     query = when (result) {

@@ -1,6 +1,6 @@
 # VitranShop Architecture
 
-Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`).
+Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`).
 
 ## Selected architecture
 
@@ -45,7 +45,9 @@ VitranShop/
 │   ├── auth/            # Auth flows (Phase 3)
 │   ├── account/         # Profile / current user (Phase 3)
 │   ├── location/        # Public cities reference data (Phase 4)
-│   └── taxonomy/        # Public category tree (Phase 4)
+│   ├── taxonomy/        # Public category tree (Phase 4)
+│   ├── marketplace/     # Public shops + products (Phase 5)
+│   └── home/            # Home feed envelope (Phase 5)
 └── shared/              # UI, navigation, DI bootstrap
     └── src/commonMain/kotlin/com/vitran/shop/
         ├── App.kt
@@ -104,6 +106,8 @@ See [dependency-rules.md](dependency-rules.md). Summary:
 - **`core:session`** — secure credential storage, token refresh, `SessionRepository` (Phase 3)
 - **`feature:location`** — `LocationRepository`, public cities API, in-memory list cache ([reference-data.md](reference-data.md))
 - **`feature:taxonomy`** — `TaxonomyRepository`, public category tree/detail, in-memory cache
+- **`feature:marketplace`** — `ShopRepository`, `ProductRepository`, public shop/product APIs, cursor list ViewModels ([public-marketplace.md](public-marketplace.md))
+- **`feature:home`** — `HomeRepository`, optional-auth home envelope ([public-marketplace.md](public-marketplace.md))
 - **`core:designsystem` / `core:ui`** — deferred; theme lives in `:shared` today
 
 ## Feature responsibility (conceptual packages)

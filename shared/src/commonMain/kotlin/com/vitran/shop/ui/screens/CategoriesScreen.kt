@@ -40,8 +40,7 @@ import com.vitran.shop.ui.components.SiteFooter
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.categories.CategoriesBrowseCategoriesSection
 import com.vitran.shop.ui.sections.categories.CategoriesExploreFeaturedSection
-import com.vitran.shop.ui.sections.categories.CategoriesMerchantGridsFeed
-import com.vitran.shop.ui.sections.categories.CategoriesProductRowsFeed
+import com.vitran.shop.ui.sections.categories.CategoriesMarketplaceFeed
 import com.vitran.shop.ui.sections.categories.CategoriesSectionGap
 import com.vitran.shop.ui.sections.categories.rememberMockBrowseCategories
 import com.vitran.shop.ui.sections.categories.rememberMockCategoriesMerchantGrids
@@ -81,6 +80,7 @@ fun CategoriesScreen(
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
     onStoreOpen: (shopId: String) -> Unit = {},
+    onSearchSubmit: (String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
     browseViewModel: CategoriesBrowseViewModel = vitranKoinViewModel(),
@@ -201,26 +201,12 @@ fun CategoriesScreen(
                         )
                     }
                 }
-                CategoriesProductRowsFeed(
-                    sections = productRows,
+                CategoriesMarketplaceFeed(
                     modifier = Modifier.fillMaxWidth(),
-                    onSectionClick = { /* mock — category / collection landing not wired yet */ },
-                    onProductClick = { _, product ->
-                        onProductOpen(
-                            product.id,
-                            product.title,
-                            product.imageUrl,
-                            product.storeName,
-                            product.priceLabel,
-                        )
-                    },
-                    onSaveClick = { _, _ -> /* mock — saved items not wired yet */ },
-                )
-                CategoriesMerchantGridsFeed(
-                    sections = merchantGrids,
-                    modifier = Modifier.fillMaxWidth(),
-                    onSectionClick = { /* mock — category landing not wired yet */ },
-                    onShopClick = { _, shop -> onStoreOpen(shop.id) },
+                    onProductOpen = onProductOpen,
+                    onStoreOpen = onStoreOpen,
+                    fallbackProductRows = productRows,
+                    fallbackMerchantGrids = merchantGrids,
                 )
             }
             SiteFooter(
@@ -238,7 +224,7 @@ fun CategoriesScreen(
                 onQueryChange = { query = it },
                 expanded = omniboxExpanded,
                 onExpandedChange = { omniboxExpanded = it },
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = { onSearchSubmit(query.trim()) },
                 onDismiss = { dismissOmnibox() },
                 onBoundsInRoot = { omniboxBoundsInRoot = it },
                 modifier = Modifier
@@ -259,7 +245,7 @@ fun CategoriesScreen(
             OmniboxMobileSearchSheet(
                 query = query,
                 onQueryChange = { query = it },
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = { onSearchSubmit(query.trim()) },
                 onDismiss = { dismissOmnibox() },
                 onResultClick = { result ->
                     query = when (result) {

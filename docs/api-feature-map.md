@@ -17,10 +17,10 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Admin Users | Admin — Users | `AdminUserApi` | `AdminUserRepository` | Required (admin) |
 | Location / Cities | Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public + admin |
 | Taxonomy | Taxonomy | `TaxonomyApi` ✅ (public read) | `TaxonomyRepository` ✅ | Public + admin |
-| Home | Home | `HomeApi` | `HomeRepository` | Optional |
-| Marketplace Shops | Shops — Public | `PublicShopApi` | `ShopRepository` | Public |
-| Marketplace Products | Products — Public | `PublicProductApi` | `ProductRepository` | Public / Optional |
-| Catalog / Search | catalog/search, products/search | `PublicProductApi` | `ProductRepository` | Public |
+| Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional |
+| Marketplace Shops | Shops — Public | `PublicShopApi` ✅ | `ShopRepository` ✅ | Public |
+| Marketplace Products | Products — Public | `PublicProductApi` ✅ | `ProductRepository` ✅ | Public |
+| Catalog / Search | catalog/search, products/search | `PublicProductApi` ✅ (simple search) | `ProductRepository` ✅ | Public / catalog **deferred** |
 | Engagement | Favorites, Shop follows, Wishlists | `EngagementApi` | `FollowRepository`, `WishlistRepository` | Required / Optional |
 | Product Reviews | Products — Public (reviews) | `PublicProductApi` | `ReviewRepository` | Optional |
 | Shop Comments | Comments | `EngagementApi` | `CommentRepository` | Mixed |

@@ -19,8 +19,8 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 
 | Existing Screen | Route | Business Feature | Expected API / Domain | Runtime fake data | Future ViewModel | Previews | Notes |
 |-----------------|-------|------------------|----------------------|-------------------|------------------|----------|-------|
-| HomeScreen | `/` | Home | `GET /home`, `POST /events` | `HomeCategoryModels.kt`, `HomeCategoryShopModels.kt`, `HomeCategoryMosaicModels.kt`, `HeroCollageModels.kt` | `HomeViewModel` | Yes | Omnibox uses `OmniboxModels.kt` |
-| CategoriesScreen | `/categories` | Catalog / Marketplace | Taxonomy, product rows, merchant grids, catalog search | `BrowseCategoryModels.kt` (visual fallbacks), `ExploreEditModels.kt`, row/grid mocks | `CategoriesBrowseViewModel` | Partial — browse grid uses real taxonomy titles/slugs; other sections mock | Explore / browse |
+| HomeScreen | `/` | Home | `GET /home`, `POST /events` | Category rows, mosaics, shop feeds (`HomeCategory*.kt`, `HeroCollageModels.kt`) when API items unverified | `HomeViewModel` ✅ | Yes | Omnibox → `Route.Search`; API sections deferred |
+| CategoriesScreen | `/categories` | Catalog / Marketplace | Taxonomy ✅, `GET /shops/browse`, `GET /products?category_slug=` | Visual fallbacks in `BrowseCategoryVisuals.kt`; mock when feeds empty | `CategoriesBrowseViewModel` ✅, `ShopBrowseViewModel` ✅, `ProductListViewModel` ✅ | Partial | Explore / browse |
 | OffersScreen | `/offers` | Deals | TBD — no dedicated API in collection | `PlaceholderScreen` | `OffersViewModel` | — | Placeholder only |
 | SavedScreen | `/saved` | Engagement / Wishlist | `GET /me/favorites/products` | `PlaceholderScreen` | `SavedViewModel` | — | Placeholder only |
 | AccountScreen | `/account` | Account | `GET /auth/me` | Hub extras still mock | `AccountRepository` ✅ (hub identity) | Yes | Wired to `CurrentUserState` |
@@ -44,8 +44,9 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | AdminPlansScreen | `/admin/plans` | Admin Plans | `GET/POST/PATCH/DELETE /admin/plans` | `AdminPlansModels.kt` | `AdminPlansViewModel` | Yes | Platform admin |
 | CreateProductScreen | `/admin/products/new` | Seller Product | Seller product CRUD, `GET /categories` | `CreateProductModels.kt`, `ProductTaxonomyMocks.kt` (Preview) | `TaxonomyPickerViewModel` | Real API — category picker | |
 | CreateCategoryScreen | `/admin/categories/new` | Admin Catalog / Taxonomy | `GET /categories` | `ProductTaxonomyMocks.kt` (Preview only) | `TaxonomyPickerViewModel` | Real API — taxonomy tree | Standard taxonomy picker |
-| ProductDetailScreen | `/products/{id}/{slug}` | Public Product | `GET /products/{id}`, reviews, contact | `ProductDetailModels.kt`, `MockProductCatalog` | `ProductDetailViewModel` | Yes | No purchase CTAs |
-| StoreScreen | `/m/{shopId}` | Public Shop | `GET /shops/{id}` or slug | `StoreModels.kt`, `StoreProductsModels.kt`, `StoreMenuModels.kt` | `StoreViewModel` | Yes | |
+| ProductDetailScreen | `/products/{id}/{slug}` | Public Product | `GET /products/{id}` | Preview fixtures only; reviews deferred | `ProductDetailsViewModel` ✅ | Yes | No purchase CTAs |
+| StoreScreen | `/m/{shopId}` | Public Shop | `GET /shops/{id}` or slug + products list | Cover, collections, menu mocks | `ShopDetailsViewModel` ✅ | Yes | |
+| SearchResultsScreen | `/search?q=` | Marketplace search | `GET /products/search` | — | `ProductSearchViewModel` ✅ | — | New in Phase 5 |
 | AboutScreen | `/about` | CMS | `GET /static-pages/slug/about-us` | `AboutModels.kt` | `AboutViewModel` | Yes | Marketing page |
 | PlaceholderScreen | — | — | — | — | — | — | Used by Offers/Saved |
 
@@ -59,7 +60,7 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 |--------------|--------|
 | Category landing (Women/Men/Beauty) | UI not currently found |
 | Product list (filters + grid) | UI not currently found |
-| Search results | UI not currently found (omnibox mock only) |
+| Search results | `SearchResultsScreen` ✅ (`/search?q=`) |
 | Collection / Edit page | UI not currently found |
 | Cart / Checkout / Payment | Out of scope (mock phase) |
 
@@ -72,7 +73,7 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 | AccountScreen | `SessionRepository` + `AccountRepository`; seller/admin role gates |
 | CreateStoreScreen | Session update after shop create (not Auth ViewModel) |
 | StorePlanScreen | Shop context + `SubscriptionRepository` per shop |
-| HomeScreen / CategoriesScreen | `MockProductCatalog` shared with PDP |
+| HomeScreen / CategoriesScreen / PDP / Store | `:feature:marketplace` + `MarketplaceUiMapper`; omnibox → search |
 | App chrome | `SessionState` + `CurrentUserState` in `App.kt` via `AppSessionCoordinator` |
 
 ---

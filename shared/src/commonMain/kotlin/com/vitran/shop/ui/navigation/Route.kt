@@ -156,6 +156,12 @@ sealed interface Route : NavKey {
     @Serializable
     data object CreateCategory : Route
 
+    /** Search results — path `/search?q=`. */
+    @Serializable
+    data class Search(
+        val query: String,
+    ) : Route
+
     /**
      * Product detail — shop.app path `/products/{productId}/{slug}`.
      * Child route: pushed onto the stack; does not replace the chrome tab root.
@@ -188,6 +194,7 @@ fun Route.isTopLevel(): Boolean =
     when (this) {
         is Route.ProductDetail,
         is Route.Store,
+        is Route.Search,
         is Route.RegisterVerify,
         is Route.ResetPassword,
         Route.Login,

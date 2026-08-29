@@ -52,22 +52,13 @@ kotlin {
     // }
     
     sourceSets {
-<<<<<<< HEAD
         // androidMain.dependencies {
         //     implementation(libs.compose.uiToolingPreview)
         //     implementation(libs.compose.uiTooling)
         //     implementation(libs.ktor.client.android)
         //     implementation(libs.media3.exoplayer)
+        //     implementation(libs.androidx.security.crypto)
         // }
-=======
-        androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.compose.uiTooling)
-            implementation(libs.ktor.client.android)
-            implementation(libs.media3.exoplayer)
-            implementation(libs.androidx.security.crypto)
-        }
->>>>>>> c716a3f3e28eebe5a7838ca8de0d8a6783f92148
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -89,6 +80,8 @@ kotlin {
             implementation(project(":feature:account"))
             implementation(project(":feature:location"))
             implementation(project(":feature:taxonomy"))
+            implementation(project(":feature:marketplace"))
+            implementation(project(":feature:home"))
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)

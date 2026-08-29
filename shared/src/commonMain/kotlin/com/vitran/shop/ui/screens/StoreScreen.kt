@@ -29,6 +29,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.di.rememberShopDetailsViewModel
+import com.vitran.shop.feature.marketplace.shop.presentation.ShopDetailsUiState
 import com.vitran.shop.ui.components.FloatingSearchFab
 import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
@@ -43,9 +46,11 @@ import com.vitran.shop.ui.sections.store.StoreIdentityBlock
 import com.vitran.shop.ui.sections.store.StoreMenuFollowBar
 import com.vitran.shop.ui.sections.store.StoreMenuSheet
 import com.vitran.shop.ui.sections.store.StoreProductsSection
-import com.vitran.shop.ui.sections.store.rememberMockStore
+import com.vitran.shop.ui.sections.reference.toCategoriesProduct
+import com.vitran.shop.ui.sections.reference.toStoreMock
+import com.vitran.shop.ui.sections.store.StoreMock
+import com.vitran.shop.ui.sections.store.StoreProductsMock
 import com.vitran.shop.ui.sections.store.rememberMockStoreMenu
-import com.vitran.shop.ui.sections.store.rememberMockStoreProducts
 import com.vitran.shop.ui.sections.store.rememberStoreCoverHeight
 import com.vitran.shop.ui.shell.LocalDesktopLayout
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -79,11 +84,37 @@ fun StoreScreen(
         storeName: String,
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
+    onSearchSubmit: (String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
 ) {
-    val store = rememberMockStore(shopId)
-    val productsMock = rememberMockStoreProducts(store.name)
-    val menuMock = rememberMockStoreMenu(store)
+    val viewModel = rememberShopDetailsViewModel(shopId)
+    val shopState by viewModel.uiState.collectAsStateWithLifecycle()
+    val store = when (val state = shopState) {
+        is ShopDetailsUiState.Content -> state.shop.toStoreMock()
+        else -> null
+    }
+    val productsMock = when (val state = shopState) {
+        is ShopDetailsUiState.Content -> StoreProductsMock(
+            products = state.products.items.map { it.toCategoriesProduct(state.shop.title) },
+        )
+        else -> StoreProductsMock(emptyList())
+    }
+
+    if (shopState is ShopDetailsUiState.Loading || store == null) {
+        Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            androidx.compose.material3.Text(
+                when (val state = shopState) {
+                    is ShopDetailsUiState.NotFound -> "فروشگاه پیدا نشد"
+                    is ShopDetailsUiState.Error -> state.message ?: "خطا"
+                    else -> "در حال بارگذاری…"
+                },
+            )
+        }
+        return
+    }
+
+    val resolvedStore = store
+    val resolvedMenu = rememberMockStoreMenu(resolvedStore)
     val isDesktop = LocalDesktopLayout.current
     val focusManager = LocalFocusManager.current
     val listState = rememberLazyListState()
@@ -134,7 +165,7 @@ fun StoreScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(store.brandColor)
+            .background(resolvedStore.brandColor)
             .onGloballyPositioned { coords ->
                 screenOriginInRoot = coords.positionInRoot()
             }
@@ -162,7 +193,7 @@ fun StoreScreen(
     ) {
         // Cover sits under the list (shop.app sticky media + negative margin).
         StoreCoverLayer(
-            store = store,
+            store = resolvedStore,
             coverHeight = coverHeight,
             collapseProgress = collapseProgress,
             modifier = Modifier
@@ -186,18 +217,18 @@ fun StoreScreen(
         ) {
             stickyHeader(key = "store-menu") {
                 StoreMenuFollowBar(
-                    store = store,
+                    store = resolvedStore,
                     onMenuClick = { menuOpen = true },
                     onFollowClick = { /* mock — follow not wired yet */ },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(store.brandColor.copy(alpha = collapseProgress)),
+                        .background(resolvedStore.brandColor.copy(alpha = collapseProgress)),
                 )
             }
 
             item(key = StoreIdentityKey) {
                 StoreIdentityBlock(
-                    store = store,
+                    store = resolvedStore,
                     coverHeight = coverHeight,
                     onRatingClick = { storeReviewsOpen = true },
                     modifier = Modifier.fillMaxWidth(),
@@ -206,25 +237,25 @@ fun StoreScreen(
 
             stickyHeader(key = StoreChipsKey) {
                 StoreCategoryChipsBar(
-                    store = store,
+                    store = resolvedStore,
                     onNavChipClick = { /* mock — collection filter not wired yet */ },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(store.brandColor.copy(alpha = collapseProgress)),
+                        .background(resolvedStore.brandColor.copy(alpha = collapseProgress)),
                 )
             }
 
             item(key = "store-collections") {
                 StoreCollectionsSection(
-                    store = store,
+                    store = resolvedStore,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             item(key = "store-products") {
                 StoreProductsSection(
-                    storeName = store.name,
-                    brandColor = store.brandColor,
+                    storeName = resolvedStore.name,
+                    brandColor = resolvedStore.brandColor,
                     products = productsMock.products,
                     onProductClick = { product ->
                         onProductOpen(
@@ -256,7 +287,7 @@ fun StoreScreen(
                 onQueryChange = { query = it },
                 expanded = omniboxExpanded,
                 onExpandedChange = { omniboxExpanded = it },
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = { onSearchSubmit(query.trim()) },
                 onDismiss = { dismissOmnibox() },
                 onBoundsInRoot = { omniboxBoundsInRoot = it },
                 modifier = Modifier
@@ -277,7 +308,7 @@ fun StoreScreen(
             OmniboxMobileSearchSheet(
                 query = query,
                 onQueryChange = { query = it },
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = { onSearchSubmit(query.trim()) },
                 onDismiss = { dismissOmnibox() },
                 onResultClick = { result ->
                     query = when (result) {
@@ -294,8 +325,8 @@ fun StoreScreen(
 
         if (menuOpen) {
             StoreMenuSheet(
-                store = store,
-                menu = menuMock,
+                store = resolvedStore,
+                menu = resolvedMenu,
                 onDismiss = {
                     menuOpen = false
                     storeReviewsOpen = false
@@ -306,7 +337,7 @@ fun StoreScreen(
 
         if (storeReviewsOpen) {
             ProductDetailReviewsSheet(
-                reviews = menuMock.fullReviews,
+                reviews = resolvedMenu.fullReviews,
                 onDismiss = { storeReviewsOpen = false },
             )
         }

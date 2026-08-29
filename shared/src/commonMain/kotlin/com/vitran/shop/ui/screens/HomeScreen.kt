@@ -30,6 +30,10 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.home.presentation.HomeUiState
+import com.vitran.shop.feature.home.presentation.HomeViewModel
 import com.vitran.shop.ui.components.DownloadAppBanner
 import com.vitran.shop.ui.components.FloatingSearchFab
 import com.vitran.shop.ui.components.FloatingSearchOmnibox
@@ -67,9 +71,14 @@ fun HomeScreen(
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
     onStoreOpen: (shopId: String) -> Unit = {},
+    onSearchSubmit: (String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
+    homeViewModel: HomeViewModel = vitranKoinViewModel(),
 ) {
+    val homeState by homeViewModel.uiState.collectAsStateWithLifecycle()
+    @Suppress("UNUSED_VARIABLE")
+    val useApiSections = (homeState as? HomeUiState.Content)?.useApiSections == true
     val isDesktop = LocalDesktopLayout.current
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
@@ -201,6 +210,7 @@ fun HomeScreen(
                         }
                     },
                     onOmniboxDismiss = { dismissOmnibox() },
+                    onSubmit = { onSearchSubmit(query.trim()) },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 DownloadAppBanner(
@@ -257,7 +267,7 @@ fun HomeScreen(
                 onQueryChange = { query = it },
                 expanded = floatingOmniboxExpanded,
                 onExpandedChange = { omniboxExpanded = it },
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = { onSearchSubmit(query.trim()) },
                 onDismiss = { dismissOmnibox() },
                 onBoundsInRoot = { omniboxBoundsInRoot = it },
                 modifier = Modifier
@@ -280,7 +290,7 @@ fun HomeScreen(
             OmniboxMobileSearchSheet(
                 query = query,
                 onQueryChange = { query = it },
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = { onSearchSubmit(query.trim()) },
                 onDismiss = { dismissOmnibox() },
                 onResultClick = { result ->
                     query = when (result) {

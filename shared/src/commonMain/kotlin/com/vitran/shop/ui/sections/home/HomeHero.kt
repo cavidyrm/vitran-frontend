@@ -65,6 +65,7 @@ fun HomeHero(
     onOmniboxBoundsInRoot: (Rect) -> Unit = {},
     onOmniboxCollapsedLayoutCoordinates: (LayoutCoordinates) -> Unit = {},
     onOmniboxDismiss: () -> Unit = {},
+    onSubmit: () -> Unit = {},
 ) {
     val isDesktop = LocalDesktopLayout.current
 
@@ -150,7 +151,7 @@ fun HomeHero(
             HeroOmnibox(
                 query = query,
                 onQueryChange = onQueryChange,
-                onSubmit = { /* mock — search screen not wired yet */ },
+                onSubmit = onSubmit,
                 expanded = omniboxExpanded,
                 onExpandedChange = onOmniboxExpandedChange,
                 onBoundsInRoot = onOmniboxBoundsInRoot,
