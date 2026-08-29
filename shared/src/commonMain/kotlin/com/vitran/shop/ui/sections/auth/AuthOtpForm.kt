@@ -78,6 +78,12 @@ fun AuthOtpForm(
     modifier: Modifier = Modifier,
     onChangeDestination: () -> Unit = {},
     onCodeComplete: (String) -> Unit = {},
+    liveVerification: Boolean = false,
+    isVerifying: Boolean = false,
+    verifyError: String? = null,
+    onVerify: (String) -> Unit = {},
+    onResend: () -> Unit = {},
+    debugOtpHint: String? = null,
 ) {
     var code by remember { mutableStateOf("") }
     var phase by remember { mutableStateOf(OtpUiPhase.Idle) }
@@ -101,7 +107,7 @@ fun AuthOtpForm(
     }
 
     LaunchedEffect(verifyRequestId) {
-        if (verifyRequestId == 0) return@LaunchedEffect
+        if (verifyRequestId == 0 || liveVerification) return@LaunchedEffect
         val digits = code
         if (digits.length != 6) return@LaunchedEffect
         phase = OtpUiPhase.Verifying
@@ -115,10 +121,19 @@ fun AuthOtpForm(
         }
     }
 
+    LaunchedEffect(isVerifying, verifyError, liveVerification) {
+        if (!liveVerification) return@LaunchedEffect
+        phase = when {
+            isVerifying -> OtpUiPhase.Verifying
+            verifyError != null -> OtpUiPhase.Error
+            else -> OtpUiPhase.Idle
+        }
+    }
+
     // Auto-submit when 6 digits entered (from typing or paste).
     LaunchedEffect(code) {
-        if (code.length == 6 && phase == OtpUiPhase.Idle) {
-            verifyRequestId++
+        if (code.length == 6 && phase != OtpUiPhase.Verifying && phase != OtpUiPhase.Success) {
+            if (liveVerification) onVerify(code) else verifyRequestId++
         }
     }
 
@@ -164,6 +179,16 @@ fun AuthOtpForm(
             ),
             textAlign = TextAlign.Center,
         )
+
+        if (debugOtpHint != null) {
+            Text(
+                text = "کد توسعه: $debugOtpHint",
+                modifier = Modifier.padding(top = VitranSpacing.xs),
+                color = AuthTokens.Muted,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+            )
+        }
 
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Text(
@@ -226,7 +251,7 @@ fun AuthOtpForm(
         when (phase) {
             OtpUiPhase.Error -> {
                 Text(
-                    text = stringResource(Res.string.auth_otp_error),
+                    text = verifyError ?: stringResource(Res.string.auth_otp_error),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = VitranSpacing.sm),
@@ -276,7 +301,9 @@ fun AuthOtpForm(
             label = verifyLabel,
             enabled = code.length == 6 && phase != OtpUiPhase.Success && phase != OtpUiPhase.Verifying,
             loading = phase == OtpUiPhase.Verifying,
-            onClick = { verifyRequestId++ },
+            onClick = {
+                if (liveVerification) onVerify(code) else verifyRequestId++
+            },
             modifier = Modifier.padding(top = VitranSpacing.xl),
         )
 
@@ -301,6 +328,7 @@ fun AuthOtpForm(
                         code = ""
                         phase = OtpUiPhase.Idle
                         focusRequester.requestFocus()
+                        if (liveVerification) onResend()
                     },
                 ),
             color = if (resendEnabled) {

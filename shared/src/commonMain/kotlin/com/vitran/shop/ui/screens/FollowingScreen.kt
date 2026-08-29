@@ -2,6 +2,7 @@ package com.vitran.shop.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountFollowingList
 import com.vitran.shop.ui.sections.account.AccountPageShell
@@ -16,6 +17,7 @@ fun FollowingScreen(
     onDestClick: (AccountDest) -> Unit,
     onOpenSaved: () -> Unit,
     onStoreOpen: (shopId: String) -> Unit,
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val extras = rememberMockAccountHubExtras()
@@ -25,6 +27,7 @@ fun FollowingScreen(
         onSavedClick = onOpenSaved,
         onBack = onBack,
         backTitle = stringResource(Res.string.account_nav_following),
+        onFooterLinkClick = onFooterLinkClick,
         modifier = modifier,
     ) {
         AccountFollowingList(

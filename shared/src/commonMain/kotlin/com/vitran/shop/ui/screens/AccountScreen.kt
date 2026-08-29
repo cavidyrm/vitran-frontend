@@ -1,10 +1,17 @@
 package com.vitran.shop.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.feature.account.domain.model.CurrentUserState
+import com.vitran.shop.feature.account.domain.repository.AccountRepository
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
+import com.vitran.shop.ui.sections.account.AccountHubAdminPlansRow
 import com.vitran.shop.ui.sections.account.AccountHubCitiesRow
 import com.vitran.shop.ui.sections.account.AccountHubHeader
+import com.vitran.shop.ui.sections.account.AccountHubStorePlanRow
 import com.vitran.shop.ui.sections.account.AccountHubUsersRow
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountRecentlyViewedSection
@@ -12,10 +19,12 @@ import com.vitran.shop.ui.sections.account.AccountReferralBanner
 import com.vitran.shop.ui.sections.account.AccountSavedFollowingRow
 import com.vitran.shop.ui.sections.account.AccountSellerSection
 import com.vitran.shop.ui.sections.account.AccountSignOutRow
+import com.vitran.shop.ui.sections.account.accountProfileLoadingPlaceholder
 import com.vitran.shop.ui.sections.account.rememberMockAccountHubExtras
-import com.vitran.shop.ui.sections.account.rememberMockAccountProfile
 import com.vitran.shop.ui.sections.account.rememberMockReferralProfile
+import com.vitran.shop.ui.sections.account.toAccountProfile
 import com.vitran.shop.ui.shell.LocalDesktopLayout
+import org.koin.compose.koinInject
 
 /**
  * Account hub — route `/account`.
@@ -31,7 +40,10 @@ fun AccountScreen(
     onOpenFollowing: () -> Unit = {},
     onOpenReferrals: () -> Unit = {},
     onCreateStore: () -> Unit = {},
+    onOpenStorePlan: () -> Unit = {},
+    onOpenAdminPlans: () -> Unit = {},
     onSignOut: () -> Unit = {},
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     onProductOpen: (
         id: String,
         title: String,
@@ -39,8 +51,13 @@ fun AccountScreen(
         storeName: String,
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
+    accountRepository: AccountRepository = koinInject(),
 ) {
-    val profile = rememberMockAccountProfile()
+    val currentUser by accountRepository.currentUserState.collectAsStateWithLifecycle()
+    val profile = when (val state = currentUser) {
+        is CurrentUserState.Available -> state.user.toAccountProfile()
+        else -> accountProfileLoadingPlaceholder()
+    }
     val referral = rememberMockReferralProfile()
     val extras = rememberMockAccountHubExtras()
 
@@ -48,6 +65,7 @@ fun AccountScreen(
         dest = AccountDest.Hub,
         onDestClick = onDestClick,
         onSavedClick = onOpenSaved,
+        onFooterLinkClick = onFooterLinkClick,
         modifier = modifier,
     ) {
         AccountHubHeader(
@@ -68,6 +86,7 @@ fun AccountScreen(
             AccountHubUsersRow(onClick = { onDestClick(AccountDest.Users) })
             AccountHubCitiesRow(onClick = { onDestClick(AccountDest.Cities) })
         }
+        AccountHubAdminPlansRow(onClick = onOpenAdminPlans)
         AccountRecentlyViewedSection(
             items = extras.recentlyViewed,
             onItemClick = { item ->
@@ -75,8 +94,13 @@ fun AccountScreen(
             },
             onSaveClick = {},
         )
-        if (!profile.isMerchant) {
-            AccountSellerSection(onCreateStore = onCreateStore)
+        when {
+            profile.isMerchant && profile.hasStore -> {
+                AccountHubStorePlanRow(onClick = onOpenStorePlan)
+            }
+            !profile.isMerchant -> {
+                AccountSellerSection(onCreateStore = onCreateStore)
+            }
         }
         AccountSignOutRow(onClick = onSignOut)
     }

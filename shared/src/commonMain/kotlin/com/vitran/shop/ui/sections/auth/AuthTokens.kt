@@ -65,7 +65,7 @@ fun isValidIranMobile(mobile: String): Boolean {
     return normalized.length == 11 && normalized.startsWith("09")
 }
 
-internal data class AuthPasswordRules(
+data class AuthPasswordRules(
     val minLength: Boolean,
     val hasLetter: Boolean,
     val hasDigit: Boolean,
@@ -73,7 +73,7 @@ internal data class AuthPasswordRules(
     val allMet: Boolean get() = minLength && hasLetter && hasDigit
 }
 
-internal fun resetPasswordRulesOf(password: String): AuthPasswordRules {
+fun resetPasswordRulesOf(password: String): AuthPasswordRules {
     val noEdgeSpace = !password.startsWith(' ') && !password.endsWith(' ')
     return AuthPasswordRules(
         minLength = password.length >= AuthTokens.ResetPasswordMinLength && noEdgeSpace,

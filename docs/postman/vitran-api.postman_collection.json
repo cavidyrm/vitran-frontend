@@ -1,0 +1,3744 @@
+{
+  "info": {
+    "name": "Vitran API",
+    "description": "Vitran marketplace backend — **104 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`.\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** then **Verify** (OTP logged when `SMS_OTP_PROVIDER=log`), or **Login**.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (seller) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "tempToken",
+      "value": ""
+    },
+    {
+      "key": "referralCode",
+      "value": "V2"
+    },
+    {
+      "key": "referralCreditId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "Unversioned liveness probe (load balancers, uptime checks)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"سرویس در دسترس است\",\n  \"code\": 1,\n  \"data\": { \"status\": \"ok\" },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Health check (v1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/health",
+            "description": "Versioned health for API v1. Response includes `version: \"v1\"`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"سرویس در دسترس است\",\n  \"code\": 1,\n  \"data\": { \"status\": \"ok\", \"version\": \"v1\" },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Health check (v2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v2/health",
+            "description": "Versioned health for API v2. Response includes `version: \"v2\"`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"سرویس در دسترس است\",\n  \"code\": 1,\n  \"data\": { \"status\": \"ok\", \"version\": \"v2\" },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.data?.temp_token) pm.collectionVariables.set('tempToken', j.data.temp_token);",
+                  "if (j.data?.otp_code) pm.collectionVariables.set('otpCode', j.data.otp_code);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456789\",\n  \"password\": \"secret12\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "description": "Optional `referral_code` — use **Register with referral code** instead."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"ثبت‌نام با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"temp_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n    \"otp_code\": \"123456\"\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register with referral code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.data?.temp_token) pm.collectionVariables.set('tempToken', j.data.temp_token);",
+                  "if (j.data?.otp_code) pm.collectionVariables.set('otpCode', j.data.otp_code);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9121111111\",\n  \"password\": \"secret12\",\n  \"referral_code\": \"{{referralCode}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "description": "Link new account to referrer. Set `referralCode` from **Referrals → Get my referral profile** (referrer must be logged in first). Rewards trigger on referred user's **first** paid shop plan purchase."
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.data?.tokens?.access_token) {",
+                  "  pm.collectionVariables.set('accessToken', j.data.tokens.access_token);",
+                  "  pm.collectionVariables.set('refreshToken', j.data.tokens.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_token\": \"{{tempToken}}\",\n  \"code\": \"{{otpCode}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/verify",
+            "description": "Send `temp_token` and 6-digit OTP. While SMS is not connected, `otp_code` is returned in Register / Login (403) / Resend OTP / Forgot password responses when `EXPOSE_OTP_IN_RESPONSE=true` (default in development)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"شماره تلفن با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"tokens\": {\n      \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n      \"refresh_token\": \"a1b2c3d4-e5f6-...\",\n      \"expires_at\": \"2026-06-09T12:30:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.data?.tokens?.access_token) {",
+                  "  pm.collectionVariables.set('accessToken', j.data.tokens.access_token);",
+                  "  pm.collectionVariables.set('refreshToken', j.data.tokens.refresh_token);",
+                  "}",
+                  "if (j.data?.temp_token) pm.collectionVariables.set('tempToken', j.data.temp_token);",
+                  "if (j.data?.otp_code) pm.collectionVariables.set('otpCode', j.data.otp_code);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456789\",\n  \"password\": \"secret12\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/login"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"ورود با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"tokens\": {\n      \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n      \"refresh_token\": \"a1b2c3d4-e5f6-...\",\n      \"expires_at\": \"2026-06-09T12:30:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "403 Not verified",
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"تأیید شماره تلفن الزامی است\",\n  \"code\": 403,\n  \"data\": {\n    \"temp_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n    \"otp_code\": \"123456\"\n  },\n  \"errors\": [{ \"reason\": \"phone\", \"messages\": [\"شماره تلفن تأیید نشده است.\"] }]\n}"
+            },
+            {
+              "name": "400 Invalid credentials",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"invalid credentials\",\n  \"code\": 400,\n  \"data\": {},\n  \"errors\": [{ \"reason\": \"credentials\", \"messages\": [\"invalid credentials\"] }]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.data?.tokens?.access_token) {",
+                  "  pm.collectionVariables.set('accessToken', j.data.tokens.access_token);",
+                  "  pm.collectionVariables.set('refreshToken', j.data.tokens.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/refresh"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"توکن با موفقیت تازه‌سازی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"tokens\": {\n      \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n      \"refresh_token\": \"new-refresh-token-...\",\n      \"expires_at\": \"2026-06-09T13:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/logout"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"خروج با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456789\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/resend-otp"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"کد تأیید ارسال شد\",\n  \"code\": 1,\n  \"data\": { \"otp_code\": \"123456\" },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Forgot password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456789\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/forgot-password"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"کد تأیید ارسال شد\",\n  \"code\": 1,\n  \"data\": { \"otp_code\": \"123456\" },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456789\",\n  \"code\": \"123456\",\n  \"new_password\": \"newsecret12\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/reset-password"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"رمز عبور با موفقیت تغییر کرد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Referrals",
+      "item": [
+        {
+          "name": "Validate referral code (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/referrals/{{referralCode}}",
+            "description": "No auth. Returns `{ \"valid\": true }` if the code exists."
+          },
+          "response": [
+            {
+              "name": "200 OK — valid",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"کد معرف بررسی شد\",\n  \"code\": 1,\n  \"data\": { \"valid\": true },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 OK — invalid",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"کد معرف بررسی شد\",\n  \"code\": 1,\n  \"data\": { \"valid\": false },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get my referral profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.data?.referral?.referral_code) {",
+                  "  pm.collectionVariables.set('referralCode', j.data.referral.referral_code);",
+                  "}",
+                  "const credits = j.data?.referral?.credits || [];",
+                  "const available = credits.find(c => c.status === 'available');",
+                  "if (available?.id) pm.collectionVariables.set('referralCreditId', String(available.id));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/referral",
+            "description": "Seller referral dashboard: invite code, URL, stats, `successful_referrals`, `pending_referrals`, and credits. Saves `referralCode` and first available `referralCreditId`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات معرفی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"referral\": {\n      \"referral_code\": \"V2\",\n      \"invite_url\": \"https://vitran.ir/signup?ref=V2\",\n      \"stats\": {\n        \"total_referrals\": 2,\n        \"rewarded_referrals\": 1,\n        \"pending_referrals\": 1,\n        \"available_credits\": 1\n      },\n      \"successful_referrals\": [\n        {\n          \"id\": 1,\n          \"referred_user_id\": 5,\n          \"phone_masked\": \"0912***6789\",\n          \"status\": \"successful\",\n          \"signed_up_at\": \"2026-06-01T10:00:00Z\",\n          \"rewarded_at\": \"2026-06-05T14:00:00Z\"\n        }\n      ],\n      \"pending_referrals\": [\n        {\n          \"id\": 2,\n          \"referred_user_id\": 6,\n          \"phone_masked\": \"0913***4321\",\n          \"status\": \"pending\",\n          \"signed_up_at\": \"2026-06-08T09:00:00Z\"\n        }\n      ],\n      \"credits\": [\n        {\n          \"id\": 1,\n          \"plan_id\": 2,\n          \"plan_title\": \"Starter\",\n          \"duration_days\": 30,\n          \"source\": \"referral_referrer\",\n          \"status\": \"available\",\n          \"created_at\": \"2026-06-09T14:00:00Z\"\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Apply subscription credit",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shop_id\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/me/referrals/credits/{{referralCreditId}}/apply",
+            "description": "Apply a saved Starter month to a shop on Free or Starter only. Use credit `id` from **Get my referral profile** (`referralCreditId`). Seller token required."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اعتبار اشتراک با موفقیت اعمال شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get profile (me)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/auth/me"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات پروفایل با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"roles\": [\"customer\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"javid\",\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/profile"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"roles\": [\"customer\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T11:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin — Users",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/users?per_page=20&role=customer&phone=0912&is_active=true",
+            "description": "Filter: `role`, `phone`, `is_active`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست کاربران با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"users\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 2,\n          \"phone\": \"9123456789\",\n          \"roles\": [\n            \"customer\"\n          ],\n          \"verified\": true,\n          \"is_active\": true\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get user by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/users/2"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات کاربر با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"roles\": [\"customer\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": true,\n  \"roles\": [\"customer\", \"seller\"]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/users/2",
+            "description": "Roles: `customer`, `seller`, `admin`, `super_admin`. Only `super_admin` may assign `admin`. Existing `super_admin` users must keep `super_admin` in the roles array; it cannot be granted to new users via API."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"کاربر با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"roles\": [\"customer\", \"seller\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cities",
+      "item": [
+        {
+          "name": "List cities (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/cities"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست شهرها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"cities\": [\n      { \"id\": 1, \"slug\": \"tehran\", \"name\": \"تهران\" },\n      { \"id\": 2, \"slug\": \"isfahan\", \"name\": \"اصفهان\" }\n    ]\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get city (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/cities/1"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات شهر با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": { \"city\": { \"id\": 1, \"slug\": \"tehran\", \"name\": \"تهران\" } },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get city by slug (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/cities/slug/tehran"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات شهر با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": { \"city\": { \"id\": 1, \"slug\": \"tehran\", \"name\": \"تهران\" } },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create city (admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"shiraz\",\n  \"name\": \"شیراز\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/cities"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"شهر با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": { \"city\": { \"id\": 3, \"slug\": \"shiraz\", \"name\": \"شیراز\" } },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update city (admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"tehran\",\n  \"name\": \"تهران\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/cities/1"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"شهر با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": { \"city\": { \"id\": 1, \"slug\": \"tehran\", \"name\": \"تهران\" } },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete city (super_admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/cities/3"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"شهر با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            },
+            {
+              "name": "409 In use",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"city in use\",\n  \"code\": 409,\n  \"data\": null,\n  \"errors\": [{ \"reason\": \"global\", \"messages\": [\"این شهر در فروشگاه‌ها استفاده شده و قابل حذف نیست.\"] }]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Taxonomy",
+      "item": [
+        {
+          "name": "List categories (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/categories"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست دسته‌بندی‌ها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"categories\": [\n      {\n        \"slug\": \"aa-1-1-1-1\",\n        \"title\": \"Apparel & Accessories\",\n        \"name\": \"پوشاک و اکسسوری\",\n        \"is_leaf\": false,\n        \"children\": [\n          {\n            \"slug\": \"aa-1-2-3-4\",\n            \"title\": \"T-Shirts\",\n            \"name\": \"تی‌شرت\",\n            \"is_leaf\": true\n          }\n        ]\n      }\n    ]\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get category (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/categories/aa-1-2-3-4"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات دسته‌بندی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"category\": {\n      \"slug\": \"aa-1-2-3-4\",\n      \"title\": \"T-Shirts\",\n      \"name\": \"تی‌شرت\",\n      \"full_name\": \"Apparel & Accessories > Clothing > Shirts > T-Shirts\",\n      \"is_leaf\": true,\n      \"icon_url\": \"https://cdn.example.com/categories/uuid.jpg\",\n      \"children\": []\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get category by slug (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/categories/slug/aa-1-2-3-4",
+            "description": "SEO-friendly lookup by URL slug (e.g. `/categories/electronics` on the frontend)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات دسته‌بندی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"category\": {\n      \"slug\": \"aa-1-2-3-4\",\n      \"title\": \"T-Shirts\",\n      \"name\": \"تی‌شرت\",\n      \"full_name\": \"Apparel & Accessories > Clothing > Shirts > T-Shirts\",\n      \"is_leaf\": true,\n      \"icon_url\": \"https://cdn.example.com/categories/uuid.jpg\",\n      \"children\": []\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Import Shopify taxonomy (super_admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "categories",
+                  "type": "file",
+                  "src": [],
+                  "description": "Shopify dist/en/categories.json"
+                },
+                {
+                  "key": "attributes",
+                  "type": "file",
+                  "src": [],
+                  "description": "Shopify dist/en/attributes.json"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/v1/admin/taxonomy/import",
+            "description": "Upserts taxonomy from Shopify dist/en/categories.json + attributes.json (https://github.com/Shopify/product-taxonomy/tree/main/dist/en). Requires super_admin. Preserves admin Persian names and category icons for matching slugs. Also: `make taxonomy-import CATEGORIES=... ATTRIBUTES=...`"
+          },
+          "response": []
+        },
+        {
+          "name": "Update category Persian name (admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"تی‌شرت\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/categories/aa-1-2-3-4/name",
+            "description": "Sets localized `name`; `title` stays English from Shopify import."
+          },
+          "response": []
+        },
+        {
+          "name": "Upload category icon (admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/v1/admin/categories/ap/icon",
+            "description": "Shopify taxonomy JSON has no images. Upload icon per category slug; response includes `icon_url` when S3 is configured."
+          },
+          "response": []
+        },
+        {
+          "name": "Update attribute Persian name (admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"رنگ\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/attributes/color/name"
+          },
+          "response": []
+        },
+        {
+          "name": "Update value Persian name (admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"آبی\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/values/color__blue/name"
+          },
+          "response": []
+        },
+        {
+          "name": "List return reasons (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/categories/aa-1-2-3-4/return-reasons"
+          },
+          "response": []
+        },
+        {
+          "name": "List category attributes (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/categories/aa-1-2-3-4/attributes",
+            "description": "Shopify attributes + values for a leaf category slug."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"ویژگی‌های دسته‌بندی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"attributes\": []\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shops — Public",
+      "item": [
+        {
+          "name": "List shops (live only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/shops?per_page=20&city_slug=tehran&category_slug=aa-1-2-3-4",
+            "description": "Live shops only (`active` + `confirmed`). SEO filters: `city_id`/`city_slug`, `category_slug`/`category_slug`, optional `user_id`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست فروشگاه‌ها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shops\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"title\": \"My Shop\",\n          \"slug\": \"my-shop\",\n          \"active\": true,\n          \"confirmed\": true\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Browse shops (by plan tier)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/shops/browse?per_page=20&city_slug=tehran&category_slug=aa-1-2-3-4",
+            "description": "Shops ranked by plan tier (Business → Growth → Starter → Free).\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فهرست فروشگاه‌ها بر اساس پلن با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shops\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 2,\n          \"slug\": \"business-store\",\n          \"plan\": {\n            \"slug\": \"business\",\n            \"title\": \"Business\"\n          }\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Track analytics event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"product_view\",\n  \"session_id\": \"visitor-abc-123\",\n  \"product_id\": 1,\n  \"category_slug\": 1,\n  \"city_id\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/shops/1/analytics/events",
+            "description": "Public — record shop analytics. Field is `event` (not `event_type`). Values: shop_view, product_view, category_view, search_result_view, product_click, share_click, promotion_impression, promotion_click."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"رویداد تحلیلی ثبت شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get shop by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/shops/1"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T13:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Not live",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"shop not found\",\n  \"code\": 404,\n  \"data\": null,\n  \"errors\": [{ \"reason\": \"global\", \"messages\": [\"shop not found\"] }]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get shop by slug (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/shops/slug/my-shop",
+            "description": "SEO-friendly lookup matching `share_url` (`https://vitran.ir/{slug}`). Only live shops (`active` + `confirmed`)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T13:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shops — Seller",
+      "item": [
+        {
+          "name": "Check slug availability",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/check-slug?slug=my-shop&exclude_id=1",
+            "description": "Debounce on client (~300–500 ms). `customer` or `seller` token."
+          },
+          "response": [
+            {
+              "name": "200 Available",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بررسی نامک انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"slug_check\": {\n      \"slug\": \"my-shop\",\n      \"available\": true\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 Taken",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بررسی نامک انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"slug_check\": {\n      \"slug\": \"my-shop\",\n      \"available\": false\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create shop",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.data?.tokens?.access_token) {",
+                  "  pm.collectionVariables.set('accessToken', j.data.tokens.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Shop\",\n  \"slug\": \"my-shop\",\n  \"description\": \"Best products in town\",\n  \"address\": \"123 Main St\",\n  \"phone_number\": \"02112345678\",\n  \"support_times\": \"9-18\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1],\n  \"whatsapp\": \"https://wa.me/989123456789\",\n  \"telegram\": \"@myshop\",\n  \"instagram\": \"@myshop\",\n  \"website\": \"https://example.com\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/seller/shops",
+            "description": "Creates with `active=false`, `confirmed=false`. Adds `seller` role when missing. First shop returns `data.tokens.access_token` with updated JWT roles (saved automatically). Then call **List my shops**. Omit `slug` to auto-generate from title."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"tokens\": {\n      \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n      \"expires_at\": \"2026-06-09T14:00:00Z\"\n    },\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"description\": \"Best products in town\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"qr_code_url\": \"http://localhost:9000/vitran/shops/1/qr.png\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "409 Slug taken",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"shop slug already taken\",\n  \"code\": 409,\n  \"data\": null,\n  \"errors\": [{ \"reason\": \"slug\", \"messages\": [\"این نامک قبلاً استفاده شده است.\"] }]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List my shops",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops?per_page=20",
+            "description": "Own shops. Optional `active` filter.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست فروشگاه‌ها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shops\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"title\": \"My Shop\",\n          \"active\": false,\n          \"confirmed\": false\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get shop subscription (days remaining)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/subscription",
+            "description": "Per-shop subscription. Requires `seller` token and shop ownership. `days_remaining` / `expires_at` are null on Free."
+          },
+          "response": [
+            {
+              "name": "200 OK — paid plan",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات اشتراک فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"subscription\": {\n      \"shop_id\": 1,\n      \"plan\": {\n        \"id\": 2,\n        \"slug\": \"starter\",\n        \"title\": \"Starter\",\n        \"price_amount\": 150000,\n        \"duration_days\": 30,\n        \"max_products\": 50,\n        \"max_images\": 5,\n        \"max_shops\": 1,\n        \"active\": true,\n        \"sort_order\": 2\n      },\n      \"status\": \"active\",\n      \"started_at\": \"2026-06-01T10:00:00Z\",\n      \"expires_at\": \"2026-07-01T10:00:00Z\",\n      \"days_remaining\": 12\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 OK — free plan",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات اشتراک فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"subscription\": {\n      \"shop_id\": 1,\n      \"plan\": {\n        \"id\": 1,\n        \"slug\": \"free\",\n        \"title\": \"Free\",\n        \"max_products\": 15,\n        \"max_images\": 3,\n        \"max_shops\": 1\n      },\n      \"status\": \"active\",\n      \"started_at\": \"2026-06-09T10:00:00Z\",\n      \"expires_at\": null,\n      \"days_remaining\": null\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get shop analytics dashboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/analytics?period=7d",
+            "description": "Tier-gated dashboard. Response includes `available_metrics` and `locked_metrics` for upsell UI."
+          },
+          "response": []
+        },
+        {
+          "name": "Export shop analytics (Business)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/analytics/export?period=30d",
+            "description": "Business plan (`advanced_analytics`). Returns CSV attachment."
+          },
+          "response": []
+        },
+        {
+          "name": "Purchase shop plan",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_id\": 2\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/subscription/purchase",
+            "description": "Pay for this shop's plan. Early renewal stacks remaining days onto the new period. Redirect user to `payment_url`."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"پرداخت با موفقیت آغاز شد\",\n  \"code\": 1,\n  \"data\": {\n    \"payment\": {\n      \"payment_id\": 1,\n      \"authority\": \"mock-99000\",\n      \"payment_url\": \"http://localhost:8080/payments/callback?Authority=mock-99000&Status=OK\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Shop Updated\",\n  \"slug\": \"my-shop\",\n  \"description\": \"Updated description\",\n  \"address\": \"456 New St\",\n  \"phone_number\": \"02187654321\",\n  \"support_times\": \"10-20\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1, 2],\n  \"whatsapp\": \"https://wa.me/989123456789\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/seller/shops/1",
+            "description": "Requires `seller` token. Sets `active=false`, `confirmed=false` (needs re-confirmation)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"title\": \"My Shop Updated\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [1, 2],\n      \"updated_at\": \"2026-06-09T14:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get my shop by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1",
+            "description": "Seller token. Returns own shop including pending state.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"slug\": \"my-shop\",\n      \"active\": false,\n      \"confirmed\": false\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List fulfillment options",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/fulfillment-options",
+            "description": "Available fulfillment modes for the shop based on plan/features.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"fulfillment_options\": [\n      \"manual\",\n      \"redirect\"\n    ]\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Regenerate shop API key",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/regenerate-api-key",
+            "description": "Requires fulfillment API feature on plan. Returns new `api_key`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"api_key\": \"vt_live_xxxxxxxx\"\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Boosts — Seller",
+      "item": [
+        {
+          "name": "Create placement boost",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/boosts",
+            "description": "Promote shop/product placement. Body: `product_id?`, `days`, `price_paid`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": 1,\n  \"days\": 7,\n  \"price_paid\": 50000\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"boost\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"days\": 7\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List active boosts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/boosts",
+            "description": "Active placement boosts for the shop.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"boosts\": []\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shops — Admin",
+      "item": [
+        {
+          "name": "List shops (all / filter active)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/shops?per_page=20&active=false&city_id=1&category_slug=aa-1-2-3-4&user_id=2",
+            "description": "Moderation queue: `active=false`. Filters: `city_id`, `category_slug`, `user_id`, `active`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست فروشگاه‌ها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shops\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"slug\": \"my-shop\",\n          \"active\": false,\n          \"confirmed\": false\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Confirm shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/shops/1/confirm",
+            "description": "Sets `active=true` and `confirmed=true` — shop becomes visible on public API."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"category_slugs\": [1],\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Products — Public",
+      "item": [
+        {
+          "name": "Catalog search (filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/catalog/search?category_slug=aa-1-2-3-4&min_price=100000&max_price=500000&min_rating=4&attributes[color]=color__red,color__blue&sort=price_asc&per_page=20",
+            "description": "Shop.app-style discovery: optional `q`/`query` plus combinable filters. Filter-only browse works without text query.\n\n**Filters:** `city_id`/`city_slug`, comma-separated `category_slug`, comma-separated `shop_id`, `min_price`/`max_price`, `min_rating` (1–4 only: 1-and-up … 4-and-up average reviews), `following=true` (JWT — products from followed shops only), `attributes[attr]=value1,value2` or `attr_color=...` (OR within attribute, AND across attributes), `sort` (`relevance`, `newest`, `price_asc`, `price_desc`).\n\nResponse includes `data.filters` echo + `data.products` list page.\n\n**Pagination:** cursor mode (omit `page`) or `page=1` offset mode — same as other list endpoints."
+          },
+          "response": []
+        },
+        {
+          "name": "Search products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/products/search?q=widget&city_slug=tehran&category_slug=aa-1-2-3-4&per_page=20",
+            "description": "Query `q` or `title`. Live products only. SEO filters: `city_id`/`city_slug`, `category_slug`/`category_slug`, `shop_id`/`shop_slug`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"جستجوی محصولات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"products\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"shop_id\": 1,\n          \"title\": \"Blue Widget\",\n          \"price\": 150000,\n          \"active\": true,\n          \"confirmed\": true\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/products?per_page=20&shop_slug=my-shop&category_slug=aa-1-2-3-4",
+            "description": "Live products only (`active` + `confirmed`). Filter by `shop_id`/`shop_slug`, `category_slug`/`category_slug`, `city_id`/`city_slug`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"products\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"shop_id\": 1,\n          \"category_slug\": 1,\n          \"title\": \"Blue Widget\",\n          \"price\": 150000,\n          \"active\": true,\n          \"confirmed\": true,\n          \"images\": []\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get product by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/products/1",
+            "description": "Live products only (`active=true`, `confirmed=true`). Pending products return 404."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"description\": \"High quality widget\",\n      \"price\": 150000,\n      \"active\": true,\n      \"confirmed\": true,\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0 }\n      ],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Contact product (purchase intent)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/products/1/contact?session_id=visitor-abc-123",
+            "description": "Optional JWT. Routes contact by shop fulfillment (WhatsApp, redirect, webhook). Records purchase intent + analytics. Response: `contact` + `intent`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Optional — omit for anonymous intent."
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"contact\": {\n      \"routed_via\": \"whatsapp\",\n      \"whatsapp_link\": \"https://wa.me/989123456789\"\n    },\n    \"intent\": {\n      \"id\": 1,\n      \"product_id\": 1,\n      \"shop_id\": 1,\n      \"routed_via\": \"whatsapp\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List product reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/products/1/reviews?per_page=20",
+            "description": "Public reviews for a product.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"reviews\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"product_id\": 1,\n          \"user_id\": 2,\n          \"rating\": 5,\n          \"comment\": \"Great product\"\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create product review (auth)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/products/1/reviews",
+            "description": "Authenticated. Optional `intent_id` for verified purchase. `rating` 1–5.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"intent_id\": 1,\n  \"rating\": 5,\n  \"comment\": \"Excellent quality\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"review\": {\n      \"id\": 1,\n      \"product_id\": 1,\n      \"rating\": 5,\n      \"comment\": \"Excellent quality\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Products — Seller",
+      "item": [
+        {
+          "name": "List my products",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/products?per_page=20&active=false&shop_id=1&category_slug=aa-1-2-3-4",
+            "description": "Own products. Optional `active`, `shop_id`, `category_slug`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"products\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"shop_id\": 1,\n          \"title\": \"Blue Widget\",\n          \"active\": false,\n          \"confirmed\": false\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Blue Widget",
+                  "type": "text"
+                },
+                {
+                  "key": "category_slug",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "150000",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "High quality widget",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "true",
+                  "type": "text",
+                  "description": "true or false (default false)"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": [],
+                  "description": "Repeat for up to 5 images"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/products",
+            "description": "Requires `seller` token and shop ownership. Seller sets `active`; `confirmed=false` until admin approves. `category_slug` must belong to the shop."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"محصول با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"description\": \"High quality widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0 }\n      ],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Blue Widget Pro",
+                  "type": "text"
+                },
+                {
+                  "key": "category_slug",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "175000",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Updated description",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": [],
+                  "description": "Optional — appended; total ≤ 5"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/v1/seller/products/1",
+            "description": "Sets `confirmed=false` (admin re-approval). Seller sets `active` in form. New `images` appended (total ≤ 5)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"محصول با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"title\": \"Blue Widget Pro\",\n      \"price\": 175000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": []\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set product active",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/seller/products/1/active",
+            "description": "Toggle public visibility. `active: true` requires `confirmed: true` (admin approved). `active: false` hides anytime."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"وضعیت نمایش محصول با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"active\": true,\n      \"confirmed\": true\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/products/1",
+            "description": "Deletes product + all images from DB (transaction), then removes objects from storage."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"محصول با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete product image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/products/1/images/1",
+            "description": "Removes one image by `image_id` from DB and storage. Returns updated product."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"تصویر محصول با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"images\": []\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get own product by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/products/1",
+            "description": "Requires `seller` token. Returns product if the authenticated user owns the shop (pending or live)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": [],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Products — Admin",
+      "item": [
+        {
+          "name": "List products (all / filter active)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/products?per_page=20&active=false&shop_id=1&category_slug=aa-1-2-3-4&user_id=2",
+            "description": "Filters: `shop_id`, `category_slug`, `user_id`, `active`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"products\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"shop_id\": 1,\n          \"title\": \"Blue Widget\",\n          \"active\": false,\n          \"confirmed\": false\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get product by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/products/1",
+            "description": "Any product by id (pending or live)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": [],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Confirm product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/products/1/confirm",
+            "description": "Sets `confirmed=true` only. Seller publishes with **Set product active** (`active: true`)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"محصول با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": true,\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0 }\n      ],\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Plans — Public",
+      "item": [
+        {
+          "name": "List plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/plans",
+            "description": "Active plans only, ordered by `sort_order` (Free → Starter → Growth → Business)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست پلن‌ها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"plans\": [\n      {\n        \"id\": 1,\n        \"slug\": \"free\",\n        \"title\": \"Free\",\n        \"price_amount\": 0,\n        \"max_products\": 15,\n        \"max_images\": 3,\n        \"max_shops\": 1,\n        \"features\": { \"ranking_boost\": \"none\" },\n        \"active\": true,\n        \"sort_order\": 1\n      },\n      {\n        \"id\": 2,\n        \"slug\": \"starter\",\n        \"title\": \"Starter\",\n        \"price_amount\": 150000,\n        \"duration_days\": 30,\n        \"max_products\": 50,\n        \"max_images\": 5,\n        \"max_shops\": 1,\n        \"features\": { \"ranking_boost\": \"slight\", \"contact_buttons\": true },\n        \"active\": true,\n        \"sort_order\": 2\n      }\n    ]\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get plan by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/plans/2",
+            "description": "Returns 404 if plan is inactive."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات پلن با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"plan\": {\n      \"id\": 2,\n      \"slug\": \"starter\",\n      \"title\": \"Starter\",\n      \"description\": \"For small shops getting serious online.\",\n      \"price_amount\": 150000,\n      \"duration_days\": 30,\n      \"max_products\": 50,\n      \"max_images\": 5,\n      \"max_shops\": 1,\n      \"features\": {\n        \"ranking_boost\": \"slight\",\n        \"contact_buttons\": true,\n        \"basic_analytics\": true,\n        \"offers_discounts\": true\n      },\n      \"active\": true,\n      \"sort_order\": 2\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Plans — Admin",
+      "item": [
+        {
+          "name": "List plans (all)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/plans",
+            "description": "Includes inactive plans. `admin` or `super_admin` token."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست پلن‌ها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": { \"plans\": [] },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create plan",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"starter\",\n  \"title\": \"Starter\",\n  \"description\": \"For small shops\",\n  \"price_amount\": 150000,\n  \"duration_days\": 30,\n  \"max_products\": 50,\n  \"max_images\": 5,\n  \"max_shops\": 1,\n  \"features\": {\n    \"ranking_boost\": \"slight\",\n    \"contact_buttons\": true,\n    \"basic_analytics\": true,\n    \"offers_discounts\": true\n  },\n  \"active\": true,\n  \"sort_order\": 2\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/plans"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"پلن با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": { \"plan\": { \"id\": 2, \"slug\": \"starter\", \"title\": \"Starter\" } },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update plan",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price_amount\": 129000,\n  \"active\": true,\n  \"max_products\": 30\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/plans/2",
+            "description": "Partial update — pricing, limits, features, or `active` flag."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"پلن با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": { \"plan\": { \"id\": 2, \"price_amount\": 129000, \"active\": true } },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete plan",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/plans/5",
+            "description": "`super_admin` only. Cannot delete the free plan."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"پلن با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Static Pages — Public",
+      "item": [
+        {
+          "name": "List static pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/static-pages",
+            "description": "Active pages only (metadata — no `body`). Ordered by `sort_order`. Seeded slugs: `about-us`, `terms-of-service`, `privacy-policy`, `service-levels`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست صفحات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"static_pages\": [\n      {\n        \"id\": 1,\n        \"slug\": \"about-us\",\n        \"title\": \"درباره ما\",\n        \"active\": true,\n        \"sort_order\": 1\n      },\n      {\n        \"id\": 2,\n        \"slug\": \"terms-of-service\",\n        \"title\": \"قوانین و مقررات\",\n        \"active\": true,\n        \"sort_order\": 2\n      }\n    ]\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get static page by slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/static-pages/slug/about-us",
+            "description": "Full page content for frontend routes (About Us, Terms, Privacy, Service Levels, etc.). Returns 404 if inactive or unknown slug."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات صفحه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"static_page\": {\n      \"id\": 1,\n      \"slug\": \"about-us\",\n      \"title\": \"درباره ما\",\n      \"body\": \"<p>متن درباره ما...</p>\",\n      \"active\": true,\n      \"sort_order\": 1\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Static Pages — Admin",
+      "item": [
+        {
+          "name": "List static pages (all)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/static-pages",
+            "description": "Includes inactive pages and full `body`. Requires `admin` or `super_admin` token."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست صفحات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": { \"static_pages\": [] },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get static page by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/static-pages/1"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات صفحه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"static_page\": {\n      \"id\": 1,\n      \"slug\": \"about-us\",\n      \"title\": \"درباره ما\",\n      \"body\": \"\",\n      \"active\": true,\n      \"sort_order\": 1\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create static page",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"faq\",\n  \"title\": \"سوالات متداول\",\n  \"body\": \"<p>پاسخ سوالات...</p>\",\n  \"active\": true,\n  \"sort_order\": 5\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/static-pages",
+            "description": "Slug is kebab-case (3–100 chars) and cannot be changed after create."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"صفحه با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": { \"static_page\": { \"id\": 5, \"slug\": \"faq\", \"title\": \"سوالات متداول\" } },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update static page",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"درباره ما\",\n  \"body\": \"<p>متن به‌روز شده...</p>\",\n  \"active\": true,\n  \"sort_order\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/static-pages/1",
+            "description": "Partial update — edit CMS content for About Us, Terms, Privacy, Service Levels, etc."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"صفحه با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": { \"static_page\": { \"id\": 1, \"slug\": \"about-us\", \"body\": \"<p>متن به‌روز شده...</p>\" } },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete static page",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/static-pages/5",
+            "description": "`super_admin` only."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"صفحه با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payments — Public",
+      "item": [
+        {
+          "name": "Payment callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/payments/callback?Authority=mock-99000&Status=OK",
+            "description": "Gateway return URL. On success marks payment paid and activates the user's subscription. Normally called by the payment provider, not manually — included for mock/dev testing."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"پرداخت با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"payment\": {\n      \"id\": 1,\n      \"user_id\": 2,\n      \"plan_id\": 2,\n      \"amount\": 99000,\n      \"status\": \"paid\",\n      \"authority\": \"mock-99000\",\n      \"ref_id\": \"ref-mock-99000\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Home",
+      "item": [
+        {
+          "name": "Get home feed",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Optional — omit or clear token for anonymous feed."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home?city_id=1",
+            "description": "Homepage feed (categories, featured products, boosts). Optional JWT adds personalized `following` preview (up to 12 latest products from followed shops). Optional `city_id` filters by city."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home\": {\n      \"featured\": [],\n      \"popular\": [],\n      \"categories\": [],\n      \"following\": [],\n      \"personal\": []\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get home feed (custom sections)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10",
+            "description": "Build a personalized home screen by requesting only the sections you need. Each section name is a query param with a limit (default 12, max 100).\n\n**Product sections:** `latest_products`, `following_products`, `favorite_products`, `featured_products`, `personal_products`, `popular_products`.\n\n**Shop sections:** `latest_shops`, `following_shops` (shops you follow), `favorite_shops` (top live shops by rating and analytics views — discovery, not your follow list).\n\n**City filter:** `city_id` / `city_slug` — limits products and shops to those serving the city.\n\n**Pagination:** `{section}_cursor` for cursor mode on paginated sections (e.g. `following_products_cursor`). Response: `data.feed.sections.{section}` with `{ per_page, has_more, next_cursor?, results }`.\n\nReplaces the removed `/me/home/following-products` route — use `following_products` here instead."
+          },
+          "response": []
+        },
+        {
+          "name": "Track user event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/events",
+            "description": "Optional JWT. Personalization/analytics events. Types: view_product, search, click_category, wishlist, purchase_intent, follow_shop, view_shop.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Optional JWT."
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"view_product\",\n  \"session_id\": \"visitor-abc-123\",\n  \"product_id\": 1,\n  \"shop_id\": 1\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"event\": {\n      \"id\": 1,\n      \"event_type\": \"view_product\",\n      \"product_id\": 1\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shop follows — Me",
+      "item": [
+        {
+          "name": "Follow shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/follows/shops/1",
+            "description": "Follow a live shop. Idempotent — safe to call twice."
+          },
+          "response": []
+        },
+        {
+          "name": "List followed shops",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/follows/shops?per_page=20",
+            "description": "Response: data.followed_shops.results[] with followed_at + shop."
+          },
+          "response": []
+        },
+        {
+          "name": "Get followed shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/follows/shops/1"
+          },
+          "response": []
+        },
+        {
+          "name": "Unfollow shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/follows/shops/1"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Favorites — Me",
+      "item": [
+        {
+          "name": "List favorite shops",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/favorites/shops?per_page=20",
+            "description": "Authenticated user's followed/saved shops.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست فروشگاه‌های علاقه‌مندی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"favorite_shops\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"favorited_at\": \"2026-06-09T12:00:00Z\",\n          \"shop\": {\n            \"id\": 1,\n            \"slug\": \"my-shop\",\n            \"title\": \"My Shop\"\n          }\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add favorite shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/favorites/shops/1",
+            "description": "Shop must be live (`active` + `confirmed`). Returns 409 if already favorited."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه به علاقه‌مندی‌ها اضافه شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Remove favorite shop",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/favorites/shops/1"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه از علاقه‌مندی‌ها حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List favorite products",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/favorites/products?per_page=20",
+            "description": "Authenticated user's wishlist products.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات علاقه‌مندی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"favorite_products\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"favorited_at\": \"2026-06-09T12:00:00Z\",\n          \"product\": {\n            \"id\": 1,\n            \"title\": \"Blue Widget\",\n            \"price\": 150000\n          }\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add favorite product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/favorites/products/1",
+            "description": "Product must be live (`active` + `confirmed`)."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"محصول به علاقه‌مندی‌ها اضافه شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Remove favorite product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/favorites/products/1"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"محصول از علاقه‌مندی‌ها حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get wishlist share settings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/wishlist/share",
+            "description": "Returns the user's stable share slug and whether the wishlist is public (`public: true`) or private (`public: false`, default)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"تنظیمات اشتراک‌گذاری لیست علاقه‌مندی دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"share_slug\": \"wl-a1b2c3d4e5f67890\",\n    \"public\": false\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update wishlist share (public / private)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"public\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/me/wishlist/share",
+            "description": "Toggle wishlist visibility. `public: true` lets anyone with the share link view saved products; `public: false` hides the list (public GET returns 403). Creates `share_slug` on first call if missing."
+          },
+          "response": [
+            {
+              "name": "200 OK — public",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"تنظیمات اشتراک‌گذاری لیست علاقه‌مندی به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"share_slug\": \"wl-a1b2c3d4e5f67890\",\n    \"public\": true\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 OK — private",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"تنظیمات اشتراک‌گذاری لیست علاقه‌مندی به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"share_slug\": \"wl-a1b2c3d4e5f67890\",\n    \"public\": false\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wishlists — Public",
+      "item": [
+        {
+          "name": "View public wishlist by share slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/wishlists/share/wl-a1b2c3d4e5f67890?per_page=20",
+            "description": "No auth. Owner must set `public: true` via **Update wishlist share**. Returns 403 if private.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات علاقه‌مندی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"wishlist\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"saved_at\": \"2026-06-09T12:00:00Z\",\n          \"product\": {\n            \"id\": 1,\n            \"title\": \"Blue Widget\"\n          }\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Create comment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Great shop\",\n  \"description\": \"Fast delivery and friendly staff.\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/shops/1/comments",
+            "description": "Any authenticated user. Creates with `confirmed=false`."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"نظر با موفقیت ثبت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"comment\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"user_id\": 2,\n      \"title\": \"Great shop\",\n      \"description\": \"Fast delivery and friendly staff.\",\n      \"confirmed\": false,\n      \"created_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List shop comments (confirmed)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/shops/1/comments?per_page=20",
+            "description": "Public. Only `confirmed=true` comments.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+          },
+          "response": [
+            {
+              "name": "200 OK — cursor mode",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست نظرات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"comments\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"title\": \"Great shop\",\n          \"confirmed\": true\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Confirm comment (admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/comments/1/confirm",
+            "description": "Sets `confirmed=true` — comment appears on public shop list."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"نظر با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"comment\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"user_id\": 2,\n      \"title\": \"Great shop\",\n      \"confirmed\": true\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

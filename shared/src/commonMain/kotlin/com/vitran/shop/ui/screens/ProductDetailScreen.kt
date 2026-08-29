@@ -39,6 +39,7 @@ import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
 import com.vitran.shop.ui.components.SiteFooter
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.categories.CategoriesSectionGap
 import com.vitran.shop.ui.sections.home.allMockHomeShopCards
 import com.vitran.shop.ui.sections.product.MockProductCatalog
@@ -90,6 +91,7 @@ fun ProductDetailScreen(
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
     onStoreOpen: (shopId: String) -> Unit = {},
+    onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
 ) {
     val product = MockProductCatalog.byId(productId)
     val viewportWidth = LocalShellViewportWidth.current
@@ -290,7 +292,7 @@ fun ProductDetailScreen(
 
             item(key = "footer") {
                 SiteFooter(
-                    onLinkClick = { /* mock — footer destinations not wired yet */ },
+                    onLinkClick = onFooterLinkClick,
                     onLanguageClick = { /* mock — language settings not wired yet */ },
                     onDownloadClick = { /* mock — store deep link not wired yet */ },
                     modifier = Modifier.fillMaxWidth(),

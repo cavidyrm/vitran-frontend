@@ -122,6 +122,27 @@ sealed interface Route : NavKey {
     data object CreateStore : Route
 
     /**
+     * Merchant admin — store plan & credit dashboard. Path `/admin/stores/plan`.
+     * Child route; no shopper chrome while showing.
+     */
+    @Serializable
+    data object StorePlan : Route
+
+    /**
+     * Merchant admin — upgrade store plan catalog. Path `/admin/stores/plan/upgrade`.
+     * Child route; no shopper chrome while showing.
+     */
+    @Serializable
+    data object StorePlanUpgrade : Route
+
+    /**
+     * Platform admin — manage store plan catalog (CRUD). Path `/admin/plans`.
+     * Child route; no shopper chrome while showing.
+     */
+    @Serializable
+    data object AdminPlans : Route
+
+    /**
      * Merchant admin — add product. Path `/admin/products/new`.
      * Child route: pushed onto the stack; no shopper chrome while showing.
      */
@@ -153,6 +174,13 @@ sealed interface Route : NavKey {
     data class Store(
         val shopId: String,
     ) : Route
+
+    /**
+     * Public About Us marketing page — path `/about`.
+     * Child route; shopper chrome stays (previous tab remains selected).
+     */
+    @Serializable
+    data object About : Route
 }
 
 /** Top-level tab destinations shown in app chrome (side / bottom nav). */
@@ -166,6 +194,9 @@ fun Route.isTopLevel(): Boolean =
         Route.Register,
         Route.ForgotPassword,
         Route.CreateStore,
+        Route.StorePlan,
+        Route.StorePlanUpgrade,
+        Route.AdminPlans,
         Route.CreateProduct,
         Route.CreateCategory,
         Route.Profile,
@@ -177,6 +208,7 @@ fun Route.isTopLevel(): Boolean =
         Route.AccountCities,
         Route.AccountCityCreate,
         is Route.AccountCityDetail,
+        Route.About,
         -> false
         Route.Home,
         Route.Categories,
@@ -205,5 +237,8 @@ fun Route.hidesChrome(): Boolean =
         this is Route.ForgotPassword ||
         this is Route.ResetPassword ||
         this is Route.CreateStore ||
+        this is Route.StorePlan ||
+        this is Route.StorePlanUpgrade ||
+        this is Route.AdminPlans ||
         this is Route.CreateProduct ||
         this is Route.CreateCategory

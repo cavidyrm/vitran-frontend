@@ -18,6 +18,7 @@ import vitranshop.shared.generated.resources.site_footer_link_manage_cookies
 import vitranshop.shared.generated.resources.site_footer_link_privacy
 import vitranshop.shared.generated.resources.site_footer_link_privacy_choices
 import vitranshop.shared.generated.resources.site_footer_link_terms
+import vitranshop.shared.generated.resources.site_footer_link_about
 import vitranshop.shared.generated.resources.site_footer_link_vitran_pay
 import vitranshop.shared.generated.resources.site_footer_link_x_twitter
 
@@ -27,6 +28,7 @@ enum class SiteFooterLinkId {
     ForCreators,
     BuildStore,
     VitranPay,
+    About,
     HelpCenter,
     XTwitter,
     Instagram,
@@ -59,6 +61,7 @@ fun rememberSiteFooterColumns(): List<SiteFooterColumn> {
     val buildStore = stringResource(Res.string.site_footer_link_build_store)
     val information = stringResource(Res.string.site_footer_col_information)
     val vitranPay = stringResource(Res.string.site_footer_link_vitran_pay)
+    val about = stringResource(Res.string.site_footer_link_about)
     val helpCenter = stringResource(Res.string.site_footer_link_help_center)
     val social = stringResource(Res.string.site_footer_col_social)
     val xTwitter = stringResource(Res.string.site_footer_link_x_twitter)
@@ -71,7 +74,7 @@ fun rememberSiteFooterColumns(): List<SiteFooterColumn> {
 
     return remember(
         startSelling, forBrands, forCreators, buildStore,
-        information, vitranPay, helpCenter,
+        information, vitranPay, about, helpCenter,
         social, xTwitter, instagram,
         legal, terms, privacy, privacyChoices, manageCookies,
     ) {
@@ -88,6 +91,7 @@ fun rememberSiteFooterColumns(): List<SiteFooterColumn> {
                 title = information,
                 links = listOf(
                     SiteFooterLink(SiteFooterLinkId.VitranPay, vitranPay),
+                    SiteFooterLink(SiteFooterLinkId.About, about),
                     SiteFooterLink(SiteFooterLinkId.HelpCenter, helpCenter),
                 ),
             ),

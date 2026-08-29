@@ -1,0 +1,14 @@
+package com.vitran.shop.di
+
+import android.content.Context
+import com.vitran.shop.core.platform.serialization.createPlatformJson
+import com.vitran.shop.core.platform.storage.AndroidSecureSessionStorage
+import com.vitran.shop.core.platform.storage.SecureSessionStorage
+import org.koin.core.module.Module
+import org.koin.dsl.module
+
+fun androidPlatformModule(context: Context): Module = module {
+    single { createPlatformJson() }
+    single { context.applicationContext }
+    single<SecureSessionStorage> { AndroidSecureSessionStorage(get(), get()) }
+}

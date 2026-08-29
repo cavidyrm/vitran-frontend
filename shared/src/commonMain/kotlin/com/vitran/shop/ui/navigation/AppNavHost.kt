@@ -4,10 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.vitran.shop.feature.auth.domain.usecase.LogoutUseCase
 import com.vitran.shop.ui.screens.AccountCitiesScreen
 import com.vitran.shop.ui.screens.AccountCityCreateScreen
 import com.vitran.shop.ui.screens.AccountCityDetailScreen
@@ -15,6 +17,8 @@ import com.vitran.shop.ui.screens.AccountScreen
 import com.vitran.shop.ui.screens.AccountSettingsScreen
 import com.vitran.shop.ui.screens.AccountUserDetailScreen
 import com.vitran.shop.ui.screens.AccountUsersScreen
+import com.vitran.shop.ui.screens.AdminPlansScreen
+import com.vitran.shop.ui.screens.AboutScreen
 import com.vitran.shop.ui.screens.CategoriesScreen
 import com.vitran.shop.ui.screens.CreateCategoryScreen
 import com.vitran.shop.ui.screens.CreateProductScreen
@@ -31,9 +35,14 @@ import com.vitran.shop.ui.screens.RegisterScreen
 import com.vitran.shop.ui.screens.RegisterVerifyScreen
 import com.vitran.shop.ui.screens.ResetPasswordScreen
 import com.vitran.shop.ui.screens.SavedScreen
+import com.vitran.shop.ui.screens.StorePlanScreen
+import com.vitran.shop.ui.screens.StorePlanUpgradeScreen
 import com.vitran.shop.ui.screens.StoreScreen
+import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.product.MockProductCatalog
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 /**
  * Sole place that maps [Route] → screen UI via Navigation 3 [NavDisplay].
@@ -46,6 +55,17 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
 ) {
     var passwordResetNotice by remember { mutableStateOf(false) }
+    val logoutUseCase: LogoutUseCase = koinInject()
+    val signOutScope = rememberCoroutineScope()
+    val onSignOut: () -> Unit = {
+        signOutScope.launch {
+            logoutUseCase()
+        }
+        navigator.navigate(Route.Login)
+    }
+    val onFooterLink: (SiteFooterLinkId) -> Unit = { id ->
+        navigator.handleSiteFooterLink(navState, id)
+    }
     NavDisplay(
         backStack = navState.backStack,
         modifier = modifier,
@@ -71,6 +91,7 @@ fun AppNavHost(
                     onStoreOpen = { shopId ->
                         navigator.push(Route.Store(shopId = shopId))
                     },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Categories> {
@@ -93,6 +114,7 @@ fun AppNavHost(
                     onStoreOpen = { shopId ->
                         navigator.push(Route.Store(shopId = shopId))
                     },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Offers> { OffersScreen() }
@@ -105,7 +127,9 @@ fun AppNavHost(
                     onOpenFollowing = { navigator.push(Route.Following) },
                     onOpenReferrals = { navigator.push(Route.Referrals) },
                     onCreateStore = { navigator.push(Route.CreateStore) },
-                    onSignOut = { navigator.push(Route.Login) },
+                    onOpenStorePlan = { navigator.push(Route.StorePlan) },
+                    onOpenAdminPlans = { navigator.push(Route.AdminPlans) },
+                    onSignOut = onSignOut,
                     onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
                         val product = MockProductCatalog.resolve(
                             id = id,
@@ -121,6 +145,7 @@ fun AppNavHost(
                             ),
                         )
                     },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Profile> {
@@ -128,6 +153,7 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Referrals> {
@@ -135,6 +161,7 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Following> {
@@ -143,6 +170,7 @@ fun AppNavHost(
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
                     onStoreOpen = { shopId -> navigator.push(Route.Store(shopId = shopId)) },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.AccountSettings> {
@@ -151,7 +179,8 @@ fun AppNavHost(
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
                     onOpenProfile = { navigator.openAccountDest(navState, AccountDest.Profile) },
-                    onSignOut = { navigator.push(Route.Login) },
+                    onSignOut = onSignOut,
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.AccountUsers> {
@@ -162,6 +191,7 @@ fun AppNavHost(
                     onUserOpen = { userId ->
                         navigator.push(Route.AccountUserDetail(userId = userId.toString()))
                     },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.AccountUserDetail> { key ->
@@ -170,6 +200,7 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.AccountCities> {
@@ -181,6 +212,7 @@ fun AppNavHost(
                         navigator.push(Route.AccountCityDetail(cityId = cityId.toString()))
                     },
                     onAddCity = { navigator.push(Route.AccountCityCreate) },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.AccountCityCreate> {
@@ -188,6 +220,7 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.AccountCityDetail> { key ->
@@ -196,6 +229,7 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Login> {
@@ -204,12 +238,16 @@ fun AppNavHost(
                     onPasswordResetNoticeConsumed = { passwordResetNotice = false },
                     onCreateAccount = { navigator.push(Route.Register) },
                     onForgotPassword = { navigator.push(Route.ForgotPassword) },
+                    onSignedIn = { navigator.navigate(Route.Home) },
+                    onVerificationRequired = {
+                        navigator.push(Route.RegisterVerify(phone = ""))
+                    },
                 )
             }
             entry<Route.Register> {
                 RegisterScreen(
-                    onContinue = { credentials ->
-                        navigator.push(Route.RegisterVerify(phone = credentials.mobile.trim()))
+                    onContinue = { phone ->
+                        navigator.push(Route.RegisterVerify(phone = phone))
                     },
                     onSignIn = {
                         if (navState.backStack.size > 1) {
@@ -232,7 +270,7 @@ fun AppNavHost(
                         }
                     },
                     onVerified = {
-                        // Mock phase — no auth state change.
+                        navigator.navigate(Route.Home)
                     },
                 )
             }
@@ -274,6 +312,22 @@ fun AppNavHost(
                     onAddProduct = { navigator.push(Route.CreateProduct) },
                 )
             }
+            entry<Route.StorePlan> {
+                StorePlanScreen(
+                    onBack = { navigator.goBack() },
+                    onUpgradeClick = { navigator.push(Route.StorePlanUpgrade) },
+                )
+            }
+            entry<Route.StorePlanUpgrade> {
+                StorePlanUpgradeScreen(
+                    onBack = { navigator.goBack() },
+                )
+            }
+            entry<Route.AdminPlans> {
+                AdminPlansScreen(
+                    onBack = { navigator.goBack() },
+                )
+            }
             entry<Route.CreateProduct> {
                 CreateProductScreen(
                     onBack = { navigator.goBack() },
@@ -305,6 +359,7 @@ fun AppNavHost(
                     onStoreOpen = { shopId ->
                         navigator.push(Route.Store(shopId = shopId))
                     },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
             entry<Route.Store> { key ->
@@ -325,10 +380,31 @@ fun AppNavHost(
                             ),
                         )
                     },
+                    onFooterLinkClick = onFooterLink,
+                )
+            }
+            entry<Route.About> {
+                AboutScreen(
+                    onHomeClick = { navigator.navigate(Route.Home) },
+                    onCreateStore = { navigator.push(Route.CreateStore) },
+                    onFooterLinkClick = onFooterLink,
                 )
             }
         },
     )
+}
+
+private fun Navigator.handleSiteFooterLink(state: NavigationState, id: SiteFooterLinkId) {
+    when (id) {
+        SiteFooterLinkId.About -> {
+            if (state.currentRoute is Route.About) return
+            push(Route.About)
+        }
+        SiteFooterLinkId.BuildStore,
+        SiteFooterLinkId.StartSellingFree,
+        -> push(Route.CreateStore)
+        else -> Unit
+    }
 }
 
 private fun Navigator.openAccountDest(state: NavigationState, dest: AccountDest) {
