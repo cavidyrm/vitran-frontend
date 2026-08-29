@@ -72,6 +72,11 @@ kotlin {
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
+            implementation(project(":core:domain"))
+            implementation(project(":core:network"))
+            implementation(project(":core:session"))
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

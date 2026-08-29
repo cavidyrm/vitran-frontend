@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
+import com.vitran.shop.di.startVitranKoin
 import com.vitran.shop.ui.navigation.AppNavHost
 import com.vitran.shop.ui.navigation.BindBrowserNavigation
 import com.vitran.shop.ui.navigation.NavAuthUiState
@@ -19,6 +20,8 @@ import com.vitran.shop.ui.theme.VitranTheme
 @Composable
 @Preview
 fun App() {
+    startVitranKoin()
+
     // Once per process: absolute composeResources URLs on web (see expect actual).
     initWebComposeResources()
 
