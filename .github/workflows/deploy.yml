@@ -59,7 +59,7 @@ jobs:
 
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            docker network create vitran 2>/dev/null || true
+            docker network create traefik-public 2>/dev/null || true
 
             cd ${{ secrets.DEPLOY_PATH }}
             docker compose pull

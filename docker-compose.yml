@@ -2,30 +2,20 @@ services:
   web:
     container_name: vitran-frontend-web
     image: ${DOCKER_IMAGE:-ghcr.io/cavidyrm/vitran-frontend:latest}
-    ports:
-      # Published for Traefik on the host/docker bridge (not on the vitran network).
-      - "9080:80"
     networks:
-      - vitran
+      - traefik-public
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-public
       # SPA on apex + www; /api/* is routed to the backend (priority 100 there).
+      # HTTP→HTTPS redirect is handled globally by Traefik entrypoint config.
       - traefik.http.routers.vitran-web.rule=Host(`vitran.ir`) || Host(`www.vitran.ir`)
       - traefik.http.routers.vitran-web.entrypoints=websecure
       - traefik.http.routers.vitran-web.tls=true
-      - traefik.http.routers.vitran-web.tls.certresolver=letsencrypt
-      - traefik.http.routers.vitran-web.tls.domains[0].main=vitran.ir
-      - traefik.http.routers.vitran-web.tls.domains[0].sans=www.vitran.ir
+      - traefik.http.routers.vitran-web.tls.certresolver=myresolver
       - traefik.http.routers.vitran-web.priority=1
       - traefik.http.routers.vitran-web.service=vitran-web
-      - traefik.http.routers.vitran-web-http.rule=Host(`vitran.ir`) || Host(`www.vitran.ir`)
-      - traefik.http.routers.vitran-web-http.entrypoints=web
-      - traefik.http.routers.vitran-web-http.middlewares=vitran-web-redirect
-      - traefik.http.routers.vitran-web-http.priority=1
-      - traefik.http.routers.vitran-web-http.service=noop@internal
-      - traefik.http.middlewares.vitran-web-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.vitran-web-redirect.redirectscheme.permanent=true
-      - traefik.http.services.vitran-web.loadbalancer.server.url=http://172.17.0.1:9080
+      - traefik.http.services.vitran-web.loadbalancer.server.port=80
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
@@ -35,5 +25,5 @@ services:
       start_period: 10s
 
 networks:
-  vitran:
+  traefik-public:
     external: true
