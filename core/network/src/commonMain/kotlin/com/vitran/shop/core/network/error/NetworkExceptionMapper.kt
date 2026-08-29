@@ -1,6 +1,7 @@
 package com.vitran.shop.core.network.error
 
 import com.vitran.shop.core.domain.error.AppError
+import com.vitran.shop.core.network.client.LocalAuthException
 import com.vitran.shop.core.network.logging.NetworkLogger
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
@@ -20,6 +21,8 @@ internal object NetworkExceptionMapper {
             is IOException -> AppError.Network.ConnectionFailure(message = throwable.message)
 
             is SerializationException -> AppError.Serialization(message = throwable.message)
+
+            is LocalAuthException -> throwable.error
 
             else -> {
                 logger.error("Unexpected network failure", throwable)

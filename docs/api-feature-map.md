@@ -11,9 +11,9 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Client domain | Postman folders | Future API service | Future repository | Primary auth |
 |---------------|-----------------|--------------------|--------------------|--------------|
 | Platform | Health | `HealthApi` | — | Public |
-| Auth | Auth | `AuthApi` | `SessionRepository` | Public (issues tokens) |
-| Session | Auth refresh, seller shop create | — | `SessionRepository` | Required when mutating session |
-| Account | Users | `AccountApi` | `AccountRepository` | Required |
+| Auth | Auth | `AuthApi` ✅ | `AuthRepository` ✅ | Public (issues tokens) |
+| Session | Auth refresh, seller shop create | `KtorTokenRefreshRemoteDataSource` ✅ | `SessionRepository` ✅ | Required when mutating session |
+| Account | Users | `AccountApi` ✅ | `AccountRepository` ✅ | Required |
 | Admin Users | Admin — Users | `AdminUserApi` | `AdminUserRepository` | Required (admin) |
 | Location / Cities | Cities | `LocationApi` | `LocationRepository` | Public + admin |
 | Taxonomy | Taxonomy | `TaxonomyApi` | `TaxonomyRepository` | Public + admin |

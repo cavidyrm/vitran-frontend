@@ -2,7 +2,7 @@ package com.vitran.shop.core.network.client
 
 import com.vitran.shop.core.network.config.NetworkConfig
 import com.vitran.shop.core.network.logging.NetworkLogger
-import com.vitran.shop.core.session.SessionReader
+import com.vitran.shop.core.session.auth.SessionAuthCoordinator
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
@@ -24,12 +24,31 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 
+/**
+ * HttpClient for auth bootstrap calls (e.g. token refresh) that must not depend on
+ * [SessionAuthCoordinator] — otherwise Koin circularly resolves the main client.
+ */
+fun createUnauthenticatedHttpClient(
+    config: NetworkConfig,
+    json: Json,
+    networkLogger: NetworkLogger = com.vitran.shop.core.network.logging.NoOpNetworkLogger,
+    engine: HttpClientEngine? = null,
+): HttpClient = buildHttpClient(config, json, networkLogger, sessionAuthCoordinator = null, engine)
+
 fun createHttpClient(
     config: NetworkConfig,
     json: Json,
-    sessionReader: SessionReader,
+    sessionAuthCoordinator: SessionAuthCoordinator,
     networkLogger: NetworkLogger = com.vitran.shop.core.network.logging.NoOpNetworkLogger,
     engine: HttpClientEngine? = null,
+): HttpClient = buildHttpClient(config, json, networkLogger, sessionAuthCoordinator, engine)
+
+private fun buildHttpClient(
+    config: NetworkConfig,
+    json: Json,
+    networkLogger: NetworkLogger,
+    sessionAuthCoordinator: SessionAuthCoordinator?,
+    engine: HttpClientEngine?,
 ): HttpClient {
     val clientConfig: HttpClientConfig<*>.() -> Unit = {
         expectSuccess = false
@@ -44,7 +63,9 @@ fun createHttpClient(
             socketTimeoutMillis = config.timeouts.socketTimeout.inWholeMilliseconds
         }
 
-        install(createAuthHeaderPlugin(sessionReader))
+        if (sessionAuthCoordinator != null) {
+            installSessionAuth(sessionAuthCoordinator)
+        }
 
         install(HttpRequestRetry) {
             maxRetries = config.maxRetryCount

@@ -58,6 +58,7 @@ kotlin {
             implementation(libs.compose.uiTooling)
             implementation(libs.ktor.client.android)
             implementation(libs.media3.exoplayer)
+            implementation(libs.androidx.security.crypto)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -75,8 +76,12 @@ kotlin {
             implementation(project(":core:domain"))
             implementation(project(":core:network"))
             implementation(project(":core:session"))
+            implementation(project(":core:platform"))
+            implementation(project(":feature:auth"))
+            implementation(project(":feature:account"))
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

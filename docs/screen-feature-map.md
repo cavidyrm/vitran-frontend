@@ -23,8 +23,8 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | CategoriesScreen | `/categories` | Catalog / Marketplace | Taxonomy, product rows, merchant grids, catalog search | `CategoriesProductRowModels.kt`, `CategoriesMerchantGridModels.kt`, `BrowseCategoryModels.kt`, `ExploreEditModels.kt` | `CategoriesViewModel` | Yes | Explore / browse |
 | OffersScreen | `/offers` | Deals | TBD — no dedicated API in collection | `PlaceholderScreen` | `OffersViewModel` | — | Placeholder only |
 | SavedScreen | `/saved` | Engagement / Wishlist | `GET /me/favorites/products` | `PlaceholderScreen` | `SavedViewModel` | — | Placeholder only |
-| AccountScreen | `/account` | Account | `GET /auth/me` | `AccountProfileModels.kt` | `AccountViewModel` | Yes | Hub; mock signed-in/out via `NavAuthUiState` |
-| ProfileScreen | `/account/profile` | Account | `GET/PUT /auth/profile` | `AccountProfileModels.kt` | `ProfileViewModel` | Yes | |
+| AccountScreen | `/account` | Account | `GET /auth/me` | Hub extras still mock | `AccountRepository` ✅ (hub identity) | Yes | Wired to `CurrentUserState` |
+| ProfileScreen | `/account/profile` | Account | `GET/PUT /auth/profile` | Preview fixtures only | `ProfileViewModel` ✅ | Yes | |
 | ReferralsScreen | `/account/referrals` | Referral | `GET /me/referral`, credits apply | `ReferralModels.kt` | `ReferralsViewModel` | Yes | |
 | FollowingScreen | `/account/following` | Engagement (follows) | `GET /me/follows/shops` | Inline mock in section | `FollowingViewModel` | Yes | Response schema missing in Postman |
 | AccountSettingsScreen | `/account/settings` | Account | Profile preferences (partial `/auth/profile`) | Local `remember` state | `AccountSettingsViewModel` | Yes | |
@@ -33,11 +33,11 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | AccountCitiesScreen | `/account/cities` | Admin Cities | `GET /admin/cities`, public cities | `AccountCityModels.kt`, `MockAccountCities` | `AccountCitiesViewModel` | Yes | Mutable mock CRUD |
 | AccountCityCreateScreen | `/account/cities/new` | Admin Cities | `POST /admin/cities` | `AccountCityModels.kt` | `AccountCityCreateViewModel` | Yes | |
 | AccountCityDetailScreen | `/account/cities/{id}` | Admin Cities | `PATCH/DELETE /admin/cities/{id}` | `AccountCityModels.kt` | `AccountCityDetailViewModel` | Yes | |
-| LoginScreen | `/account/login` | Auth | `POST /auth/login` | Form `remember` state | `LoginViewModel` | Yes | No app chrome |
-| RegisterScreen | `/account/register` | Auth | `POST /auth/register` | Form `remember` state | `RegisterViewModel` | Yes | Optional referral code |
-| RegisterVerifyScreen | `/account/register/verify` | Auth | `POST /auth/verify` | Form `remember`; mock OTP `000000` | `RegisterVerifyViewModel` | Yes | |
-| ForgotPasswordScreen | `/account/forgot` | Auth | `POST /auth/forgot-password` | Form `remember` state | `ForgotPasswordViewModel` | Yes | |
-| ResetPasswordScreen | `/account/forgot/reset` | Auth | `POST /auth/reset-password` | Form `remember`; mock OTP `000000` | `ResetPasswordViewModel` | Yes | |
+| LoginScreen | `/account/login` | Auth | `POST /auth/login` | Preview only | `LoginViewModel` ✅ | Yes | No app chrome |
+| RegisterScreen | `/account/register` | Auth | `POST /auth/register` | Preview only | `RegisterViewModel` ✅ | Yes | Optional referral code |
+| RegisterVerifyScreen | `/account/register/verify` | Auth | `POST /auth/verify` | Preview only | `RegisterVerifyViewModel` ✅ | Yes | Challenge from `AuthFlowStateHolder` |
+| ForgotPasswordScreen | `/account/forgot` | Auth | `POST /auth/forgot-password` | Preview only | `ForgotPasswordViewModel` ✅ | Yes | |
+| ResetPasswordScreen | `/account/forgot/reset` | Auth | `POST /auth/reset-password` | Preview only | `ResetPasswordViewModel` ✅ | Yes | |
 | CreateStoreScreen | `/admin/stores/new` | Seller Shop | `POST /seller/shops` (+ session token update) | `CreateStoreModels.kt` | `CreateStoreViewModel` | Yes | No shopper chrome |
 | StorePlanScreen | `/admin/stores/plan` | Seller Subscription | `GET /seller/shops/{id}/subscription` | `StorePlanModels.kt` | `StorePlanViewModel` | Yes | Per-shop plan |
 | StorePlanUpgradeScreen | `/admin/stores/plan/upgrade` | Seller Subscription | Plans public + purchase | `StorePlanModels.kt` | `StorePlanUpgradeViewModel` | Yes | |
@@ -69,11 +69,11 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 
 | Screen | Depends on |
 |--------|------------|
-| AccountScreen | Future `SessionReader` for auth state; seller/admin role gates |
+| AccountScreen | `SessionRepository` + `AccountRepository`; seller/admin role gates |
 | CreateStoreScreen | Session update after shop create (not Auth ViewModel) |
 | StorePlanScreen | Shop context + `SubscriptionRepository` per shop |
 | HomeScreen / CategoriesScreen | `MockProductCatalog` shared with PDP |
-| App chrome | `NavAuthUiState` in `App.kt` (hardcoded `SignedOut` today) |
+| App chrome | `SessionState` + `CurrentUserState` in `App.kt` via `AppSessionCoordinator` |
 
 ---
 

@@ -19,7 +19,7 @@ Feature `data/remote` APIs (Phase 3+) depend on `:core:network` and map DTOs to 
 ## 2. HttpClient lifecycle
 
 - **One application-scoped singleton** provided by Koin (`networkModule`).
-- Created via `createHttpClient(...)` in `client/HttpClientFactory.kt`.
+- **Two HttpClient instances** in `networkModule`: the main client installs `SessionAuthPlugin`; token refresh uses a separate unauthenticated client to avoid a Koin circular dependency (`HttpClient` → `SessionAuthCoordinator` → `TokenRefreshRemoteDataSource` → `HttpClient`).
 - Platform engines: Android, Darwin, Java, JS (including Wasm browser target).
 - Tests inject `MockEngine` through the optional `engine` parameter — no global singleton client object.
 - Close behavior: Ktor manages engine lifecycle with the app; features must not create or close clients per request.
@@ -112,31 +112,37 @@ sealed class AppResult<out T> {
 
 Success returns **unwrapped `data` only** — not envelope `message`/`code`. Mutation flows needing server messages can read them from repository layer if required later.
 
-## 9. Authentication modes
+## 9. Authentication modes (Phase 3)
 
 Reuse `AuthMode` from `:core:domain`:
 
-| Mode | Phase 2 behavior |
-|------|------------------|
+| Mode | Behavior |
+|------|----------|
 | `None` | Never attach Bearer token |
-| `Optional` | Attach token if `SessionReader` returns one |
-| `Required` | Attach token if available; Phase 3 defines fail-fast when missing |
+| `Optional` | Attach if session exists; proactive refresh near expiry; GET/HEAD may retry once after 401 refresh |
+| `Required` | Fail locally with `SessionExpired` if no credentials; proactive refresh; single 401 retry |
 
-Set per request via Ktor attribute:
+Set per request:
 
 ```kotlin
 client.get(url) { authMode(AuthMode.Required) }
 ```
 
-`AuthHeaderPlugin` reads the attribute and `SessionReader.accessTokenOrNull()`.
+`SessionAuthPlugin` (not `AuthHeaderPlugin`) calls `SessionAuthCoordinator` for token resolution and 401 handling.
 
-## 10. Phase 3 token integration point
+Refresh endpoint uses `AuthMode.None` + `markSkipSessionAuth()` to prevent recursion.
 
-Phase 2 registers `EmptySessionReader` (always unauthenticated).
+### Optional mutation policy
 
-Phase 3 replaces it with a real `SessionReader` backed by secure storage. Token attachment requires **no HttpClient rewrite** — only swap the Koin binding.
+- **GET/HEAD:** may retry after failed auth refresh
+- **POST/PUT/PATCH/DELETE:** do **not** silently replay without token after 401
 
-**Separate from transport retry:** Phase 3 adds a refresh interceptor for `401` + `/auth/refresh`. Do not merge with `HttpRequestRetry`.
+## 10. Token integration (implemented Phase 3)
+
+- `DefaultSessionReader` backed by `CredentialStore` + secure storage
+- `SessionAuthPlugin` installed in `HttpClientFactory`
+- Token refresh via `TokenRefreshCoordinator` (mutex single-flight)
+- Separate from `HttpRequestRetry` transport retry
 
 ## 11. Timeout policy
 

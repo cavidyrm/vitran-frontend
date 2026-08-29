@@ -4,10 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.vitran.shop.feature.auth.domain.usecase.LogoutUseCase
 import com.vitran.shop.ui.screens.AccountCitiesScreen
 import com.vitran.shop.ui.screens.AccountCityCreateScreen
 import com.vitran.shop.ui.screens.AccountCityDetailScreen
@@ -39,6 +41,8 @@ import com.vitran.shop.ui.screens.StoreScreen
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.product.MockProductCatalog
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 /**
  * Sole place that maps [Route] → screen UI via Navigation 3 [NavDisplay].
@@ -51,6 +55,14 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
 ) {
     var passwordResetNotice by remember { mutableStateOf(false) }
+    val logoutUseCase: LogoutUseCase = koinInject()
+    val signOutScope = rememberCoroutineScope()
+    val onSignOut: () -> Unit = {
+        signOutScope.launch {
+            logoutUseCase()
+        }
+        navigator.navigate(Route.Login)
+    }
     val onFooterLink: (SiteFooterLinkId) -> Unit = { id ->
         navigator.handleSiteFooterLink(navState, id)
     }
@@ -117,7 +129,7 @@ fun AppNavHost(
                     onCreateStore = { navigator.push(Route.CreateStore) },
                     onOpenStorePlan = { navigator.push(Route.StorePlan) },
                     onOpenAdminPlans = { navigator.push(Route.AdminPlans) },
-                    onSignOut = { navigator.push(Route.Login) },
+                    onSignOut = onSignOut,
                     onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
                         val product = MockProductCatalog.resolve(
                             id = id,
@@ -167,7 +179,7 @@ fun AppNavHost(
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
                     onOpenProfile = { navigator.openAccountDest(navState, AccountDest.Profile) },
-                    onSignOut = { navigator.push(Route.Login) },
+                    onSignOut = onSignOut,
                     onFooterLinkClick = onFooterLink,
                 )
             }
@@ -226,12 +238,16 @@ fun AppNavHost(
                     onPasswordResetNoticeConsumed = { passwordResetNotice = false },
                     onCreateAccount = { navigator.push(Route.Register) },
                     onForgotPassword = { navigator.push(Route.ForgotPassword) },
+                    onSignedIn = { navigator.navigate(Route.Home) },
+                    onVerificationRequired = {
+                        navigator.push(Route.RegisterVerify(phone = ""))
+                    },
                 )
             }
             entry<Route.Register> {
                 RegisterScreen(
-                    onContinue = { credentials ->
-                        navigator.push(Route.RegisterVerify(phone = credentials.mobile.trim()))
+                    onContinue = { phone ->
+                        navigator.push(Route.RegisterVerify(phone = phone))
                     },
                     onSignIn = {
                         if (navState.backStack.size > 1) {
@@ -254,7 +270,7 @@ fun AppNavHost(
                         }
                     },
                     onVerified = {
-                        // Mock phase — no auth state change.
+                        navigator.navigate(Route.Home)
                     },
                 )
             }

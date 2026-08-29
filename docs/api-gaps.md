@@ -106,10 +106,43 @@ Postman requests **without saved response examples** (15):
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
+| **Status** | Open (Phase 3 client workaround) |
 | **Issue** | Examples use `9123456789`; filters use `0912`. Canonical format not specified. |
-| **Client impact** | Do not invent normalization in Phase 1. |
-| **Phase 2+ handling** | Align with backend validation rules when documented. |
+| **Client impact** | UI keeps `09xxxxxxxxx`; `PhoneMapper.toApiPhone()` strips leading `0` for auth requests. |
+| **Phase 3 handling** | Documented in `:feature:auth`; verify with backend integration tests. |
+
+---
+
+## Gap 10 — Web / Desktop persistent session
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | JS/Wasm and JVM desktop use `InMemorySecureSessionStorage` — sessions lost on restart. |
+| **Client impact** | Users must re-login after app restart on Web/Desktop dev builds. |
+| **Phase 3+ handling** | Evaluate OS keychain / encrypted file storage per platform. |
+
+---
+
+## Gap 11 — Profile PUT partial update semantics
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Whether omitted null fields clear username/email vs leave unchanged is not documented. |
+| **Client impact** | Profile editor sends explicit null for blank fields; confirm backend behavior. |
+| **Phase 3 handling** | Monitor integration test results before changing mapper. |
+
+---
+
+## Gap 12 — Username / email nullability on `/auth/me`
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Postman examples sometimes omit `username` or `email`. |
+| **Client impact** | Domain uses `String?`; UI shows empty string placeholders. |
+| **Phase 3 handling** | No crash on null; revisit when backend schema confirmed. |
 
 ---
 

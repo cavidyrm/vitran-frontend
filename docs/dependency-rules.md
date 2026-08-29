@@ -2,7 +2,7 @@
 
 Rules for Gradle modules and Kotlin packages in VitranShop. Phase 1 enforces a small core layer under `:shared`; feature modules arrive incrementally.
 
-## Module dependency graph (Phase 2)
+## Module dependency graph (Phase 3)
 
 ```mermaid
 flowchart TB
@@ -13,19 +13,33 @@ flowchart TB
   end
 
   sharedMod[":shared"]
+  featAuth[":feature:auth"]
+  featAccount[":feature:account"]
   coreDomain[":core:domain"]
   coreNetwork[":core:network"]
   coreSession[":core:session"]
+  corePlatform[":core:platform"]
   coreCommon[":core:common"]
 
   apps --> sharedMod
+  sharedMod --> featAuth
+  sharedMod --> featAccount
   sharedMod --> coreDomain
   sharedMod --> coreNetwork
   sharedMod --> coreSession
+  sharedMod --> corePlatform
+  featAuth --> coreSession
+  featAuth --> coreNetwork
+  featAuth --> coreDomain
+  featAccount --> coreSession
+  featAccount --> coreNetwork
+  featAccount --> coreDomain
   coreNetwork --> coreDomain
   coreNetwork --> coreSession
   coreNetwork --> coreCommon
   coreSession --> coreDomain
+  coreSession --> corePlatform
+  corePlatform --> coreDomain
   coreDomain --> coreCommon
 ```
 
@@ -34,12 +48,12 @@ flowchart TB
 | From | May depend on |
 |------|----------------|
 | Platform apps (`androidApp`, etc.) | `:shared` |
-| `:shared` (presentation) | `:core:domain`, `:core:network`, `:core:session`, design tokens in `ui/theme`, Koin |
-| `:core:session` | `:core:domain` |
+| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
+| `:feature:auth` / `:feature:account` | Own domain, `:core:network`, `:core:session`, `:core:domain` |
+| `:core:session` | `:core:domain`, `:core:platform` |
+| `:core:platform` | `:core:domain` |
 | `:core:domain` | `:core:common` |
 | `:core:network` | `:core:common`, `:core:domain`, `:core:session` |
-| Future `:feature:*` data | Its feature domain, `:core:network`, `:core:platform`, etc. |
-| Future `:feature:*` presentation | Its feature domain, `:core:ui`, `:core:designsystem` |
 
 ## Forbidden dependencies
 

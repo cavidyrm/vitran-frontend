@@ -52,6 +52,8 @@ fun AuthForgotPasswordForm(
     modifier: Modifier = Modifier,
     onSendCode: (String) -> Unit = {},
     onBackToLogin: () -> Unit = {},
+    isSubmitting: Boolean = false,
+    submitError: String? = null,
 ) {
     var nationalMobile by remember { mutableStateOf("") }
     val fullMobile = normalizeIranMobile(nationalMobile)
@@ -121,9 +123,19 @@ fun AuthForgotPasswordForm(
                 },
             )
 
+            if (submitError != null) {
+                Text(
+                    text = submitError,
+                    color = AuthTokens.OtpError,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = VitranSpacing.xs),
+                )
+            }
+
             AuthPrimaryButton(
                 label = stringResource(Res.string.auth_forgot_send_code),
-                enabled = canSubmit,
+                enabled = canSubmit && !isSubmitting,
+                loading = isSubmitting,
                 onClick = { onSendCode(fullMobile) },
             )
 

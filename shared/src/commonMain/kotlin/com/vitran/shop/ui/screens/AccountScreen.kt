@@ -1,7 +1,11 @@
 package com.vitran.shop.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.feature.account.domain.model.CurrentUserState
+import com.vitran.shop.feature.account.domain.repository.AccountRepository
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountHubAdminPlansRow
@@ -15,10 +19,12 @@ import com.vitran.shop.ui.sections.account.AccountReferralBanner
 import com.vitran.shop.ui.sections.account.AccountSavedFollowingRow
 import com.vitran.shop.ui.sections.account.AccountSellerSection
 import com.vitran.shop.ui.sections.account.AccountSignOutRow
+import com.vitran.shop.ui.sections.account.accountProfileLoadingPlaceholder
 import com.vitran.shop.ui.sections.account.rememberMockAccountHubExtras
-import com.vitran.shop.ui.sections.account.rememberMockAccountProfile
 import com.vitran.shop.ui.sections.account.rememberMockReferralProfile
+import com.vitran.shop.ui.sections.account.toAccountProfile
 import com.vitran.shop.ui.shell.LocalDesktopLayout
+import org.koin.compose.koinInject
 
 /**
  * Account hub — route `/account`.
@@ -45,8 +51,13 @@ fun AccountScreen(
         storeName: String,
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
+    accountRepository: AccountRepository = koinInject(),
 ) {
-    val profile = rememberMockAccountProfile()
+    val currentUser by accountRepository.currentUserState.collectAsStateWithLifecycle()
+    val profile = when (val state = currentUser) {
+        is CurrentUserState.Available -> state.user.toAccountProfile()
+        else -> accountProfileLoadingPlaceholder()
+    }
     val referral = rememberMockReferralProfile()
     val extras = rememberMockAccountHubExtras()
 

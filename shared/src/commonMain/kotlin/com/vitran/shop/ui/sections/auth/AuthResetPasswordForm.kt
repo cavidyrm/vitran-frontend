@@ -74,6 +74,11 @@ fun AuthResetPasswordForm(
     modifier: Modifier = Modifier,
     onChangeDestination: () -> Unit = {},
     onResetComplete: () -> Unit = {},
+    liveReset: Boolean = false,
+    isSubmitting: Boolean = false,
+    resetError: String? = null,
+    onSubmit: (code: String, password: String) -> Unit = { _, _ -> },
+    debugOtpHint: String? = null,
 ) {
     var code by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -102,7 +107,7 @@ fun AuthResetPasswordForm(
     }
 
     LaunchedEffect(saveRequestId) {
-        if (saveRequestId == 0) return@LaunchedEffect
+        if (saveRequestId == 0 || liveReset) return@LaunchedEffect
         if (code.length != 6 || !passwordRules.allMet) return@LaunchedEffect
         phase = ResetUiPhase.Saving
         delay(650)
@@ -111,6 +116,15 @@ fun AuthResetPasswordForm(
             focusRequester.requestFocus()
         } else {
             onResetComplete()
+        }
+    }
+
+    LaunchedEffect(isSubmitting, resetError, liveReset) {
+        if (!liveReset) return@LaunchedEffect
+        phase = when {
+            isSubmitting -> ResetUiPhase.Saving
+            resetError != null -> ResetUiPhase.Error
+            else -> ResetUiPhase.Idle
         }
     }
 
@@ -206,7 +220,7 @@ fun AuthResetPasswordForm(
             )
             if (phase == ResetUiPhase.Error) {
                 Text(
-                    text = stringResource(Res.string.auth_otp_error),
+                    text = resetError ?: stringResource(Res.string.auth_otp_error),
                     modifier = Modifier.padding(top = VitranSpacing.xs),
                     color = AuthTokens.OtpError,
                     style = MaterialTheme.typography.bodySmall.copy(
@@ -229,7 +243,11 @@ fun AuthResetPasswordForm(
         AuthPasswordField(
             value = password,
             onValueChange = { password = it },
-            onSubmit = { if (canSubmit) saveRequestId++ },
+            onSubmit = {
+                if (canSubmit) {
+                    if (liveReset) onSubmit(code, password) else saveRequestId++
+                }
+            },
             label = stringResource(Res.string.auth_new_password_label),
         )
 
@@ -247,7 +265,9 @@ fun AuthResetPasswordForm(
             label = ctaLabel,
             enabled = canSubmit,
             loading = phase == ResetUiPhase.Saving,
-            onClick = { saveRequestId++ },
+            onClick = {
+                if (liveReset) onSubmit(code, password) else saveRequestId++
+            },
             modifier = Modifier.padding(top = VitranSpacing.lg),
         )
 

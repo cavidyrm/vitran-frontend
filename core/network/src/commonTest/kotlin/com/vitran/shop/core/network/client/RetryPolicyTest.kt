@@ -4,8 +4,9 @@ import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.core.network.config.NetworkConfig
 import com.vitran.shop.core.network.config.NetworkDiagnosticsConfig
-import com.vitran.shop.core.network.createTestExecutor
 import com.vitran.shop.core.network.health.HealthDto
+import com.vitran.shop.core.network.createTestExecutor
+import com.vitran.shop.core.network.FakeSessionAuthCoordinator
 import com.vitran.shop.core.network.jsonResponse
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.request.get
@@ -32,7 +33,7 @@ class RetryPolicyTest {
                 maxRetryCount = 2,
             ),
             json = com.vitran.shop.core.network.serialization.createNetworkJson(),
-            sessionReader = com.vitran.shop.core.session.EmptySessionReader(),
+            sessionAuthCoordinator = FakeSessionAuthCoordinator(),
             engine = MockEngine {
                 attempts++
                 if (attempts < 3) {
@@ -69,7 +70,7 @@ class RetryPolicyTest {
                 maxRetryCount = 2,
             ),
             json = com.vitran.shop.core.network.serialization.createNetworkJson(),
-            sessionReader = com.vitran.shop.core.session.EmptySessionReader(),
+            sessionAuthCoordinator = FakeSessionAuthCoordinator(),
             engine = MockEngine {
                 attempts++
                 jsonResponse(

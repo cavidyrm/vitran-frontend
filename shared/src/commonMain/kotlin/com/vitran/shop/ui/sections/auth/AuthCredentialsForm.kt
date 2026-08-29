@@ -109,6 +109,8 @@ fun AuthCredentialsForm(
     onForgotPassword: () -> Unit = {},
     onTermsClick: () -> Unit = {},
     onPrivacyClick: () -> Unit = {},
+    isSubmitting: Boolean = false,
+    submitError: String? = null,
 ) {
     var nationalMobile by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -243,9 +245,20 @@ fun AuthCredentialsForm(
                 )
             }
 
+            if (submitError != null) {
+                Text(
+                    text = submitError,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = VitranSpacing.sm),
+                    color = AuthTokens.OtpError,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+
             AuthPrimaryButton(
                 label = primaryLabel,
-                enabled = canSubmit,
+                enabled = canSubmit && !isSubmitting,
                 onClick = { onSubmit(credentials) },
                 modifier = Modifier.padding(top = VitranSpacing.sm),
             )
