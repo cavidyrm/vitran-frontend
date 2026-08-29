@@ -1,0 +1,12 @@
+.git
+.github
+.cursor
+.idea
+*.md
+androidApp
+desktopApp
+iosApp
+build
+**/build
+.gradle
+**/.gradle

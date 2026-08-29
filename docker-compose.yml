@@ -1,0 +1,31 @@
+services:
+  web:
+    image: ${DOCKER_IMAGE:-ghcr.io/cavidyrm/vitran-frontend:latest}
+    networks:
+      - vitran
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=vitran
+      # SPA on apex + www; /api/* is routed to the backend (priority 100 there).
+      - traefik.http.routers.vitran-web.rule=(Host(`${TRAEFIK_DOMAIN:-vitran.ir}`) || Host(`www.${TRAEFIK_DOMAIN:-vitran.ir}`))
+      - traefik.http.routers.vitran-web.entrypoints=websecure
+      - traefik.http.routers.vitran-web.tls=true
+      - traefik.http.routers.vitran-web.tls.certresolver=letsencrypt
+      - traefik.http.routers.vitran-web.priority=1
+      - traefik.http.routers.vitran-web.service=vitran-web
+      - traefik.http.routers.vitran-web-http.rule=(Host(`${TRAEFIK_DOMAIN:-vitran.ir}`) || Host(`www.${TRAEFIK_DOMAIN:-vitran.ir}`))
+      - traefik.http.routers.vitran-web-http.entrypoints=web
+      - traefik.http.routers.vitran-web-http.priority=1
+      - traefik.http.routers.vitran-web-http.service=vitran-web
+      - traefik.http.services.vitran-web.loadbalancer.server.port=80
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  vitran:
+    external: true
