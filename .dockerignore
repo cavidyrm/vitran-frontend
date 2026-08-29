@@ -7,6 +7,8 @@ androidApp
 desktopApp
 iosApp
 build
-**/build
+shared/build
+androidApp/build
+desktopApp/build
 .gradle
 **/.gradle
