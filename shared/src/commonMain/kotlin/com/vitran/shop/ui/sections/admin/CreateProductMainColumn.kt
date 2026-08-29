@@ -25,11 +25,15 @@ import com.vitran.shop.ui.components.admin.AdminFormCard
 import com.vitran.shop.ui.components.admin.AdminMediaTile
 import com.vitran.shop.ui.components.admin.AdminMediaUploadPanel
 import com.vitran.shop.ui.components.admin.AdminMultilineField
+import com.vitran.shop.ui.components.admin.AdminTaxonomyNode
 import com.vitran.shop.ui.components.admin.AdminTaxonomyPicker
 import com.vitran.shop.ui.components.admin.AdminTextButton
 import com.vitran.shop.ui.components.admin.AdminTextField
 import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.components.admin.AdminToggleRow
+import com.vitran.shop.ui.sections.reference.ReferenceDataEmpty
+import com.vitran.shop.ui.sections.reference.ReferenceDataError
+import com.vitran.shop.ui.sections.reference.ReferenceDataLoading
 import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
@@ -92,6 +96,10 @@ fun CreateProductMainColumn(
     titleAnchor: BringIntoViewRequester,
     priceAnchor: BringIntoViewRequester,
     categoryAnchor: BringIntoViewRequester,
+    taxonomyRoots: List<AdminTaxonomyNode>,
+    taxonomyLoading: Boolean = false,
+    taxonomyError: String? = null,
+    onTaxonomyRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -108,7 +116,15 @@ fun CreateProductMainColumn(
         }
         TitleDescriptionCard(state, onStateChange, titleAnchor)
         MediaCard(state, onStateChange)
-        CategoryCard(state, onStateChange, categoryAnchor)
+        CategoryCard(
+            state = state,
+            onStateChange = onStateChange,
+            categoryAnchor = categoryAnchor,
+            taxonomyRoots = taxonomyRoots,
+            taxonomyLoading = taxonomyLoading,
+            taxonomyError = taxonomyError,
+            onTaxonomyRetry = onTaxonomyRetry,
+        )
         PriceCard(state, onStateChange, priceAnchor)
         InventoryCard(state, onStateChange)
         ShippingCard(state, onStateChange)
@@ -204,21 +220,29 @@ private fun CategoryCard(
     state: CreateProductFormState,
     onStateChange: (CreateProductFormState) -> Unit,
     categoryAnchor: BringIntoViewRequester,
+    taxonomyRoots: List<AdminTaxonomyNode>,
+    taxonomyLoading: Boolean,
+    taxonomyError: String?,
+    onTaxonomyRetry: () -> Unit,
 ) {
-    val taxonomy = rememberProductTaxonomy()
     AdminFormCard(
         hasError = state.errors.category != null,
         modifier = Modifier.bringIntoViewRequester(categoryAnchor),
     ) {
-        AdminTaxonomyPicker(
-            label = stringResource(Res.string.admin_product_field_category),
-            valueId = state.categoryId,
-            roots = taxonomy,
-            onSelect = { onStateChange(state.copy(categoryId = it.id).clearedErrors().markedDirty()) },
-            placeholder = stringResource(Res.string.admin_product_field_category_placeholder),
-            helper = stringResource(Res.string.admin_product_field_category_helper),
-            searchPlaceholder = stringResource(Res.string.admin_product_field_category_search),
-        )
+        when {
+            taxonomyLoading -> ReferenceDataLoading(message = "در حال بارگذاری دسته‌بندی‌ها…")
+            taxonomyError != null -> ReferenceDataError(message = taxonomyError, onRetry = onTaxonomyRetry)
+            taxonomyRoots.isEmpty() -> ReferenceDataEmpty(message = "دسته‌بندی‌ای یافت نشد.")
+            else -> AdminTaxonomyPicker(
+                label = stringResource(Res.string.admin_product_field_category),
+                valueId = state.categoryId,
+                roots = taxonomyRoots,
+                onSelect = { onStateChange(state.copy(categoryId = it.id).clearedErrors().markedDirty()) },
+                placeholder = stringResource(Res.string.admin_product_field_category_placeholder),
+                helper = stringResource(Res.string.admin_product_field_category_helper),
+                searchPlaceholder = stringResource(Res.string.admin_product_field_category_search),
+            )
+        }
         val categoryError = state.errors.category
         if (categoryError != null) {
             Text(

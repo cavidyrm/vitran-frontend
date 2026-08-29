@@ -25,10 +25,20 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerUiState
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
+import com.vitran.shop.ui.components.admin.AdminFormCard
 import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.sections.admin.CreateCategoryFormState
 import com.vitran.shop.ui.sections.admin.CreateCategoryHeaderBar
 import com.vitran.shop.ui.sections.admin.CreateCategoryMainColumn
+import com.vitran.shop.ui.sections.admin.rememberProductTaxonomy
+import com.vitran.shop.ui.sections.reference.ReferenceDataEmpty
+import com.vitran.shop.ui.sections.reference.ReferenceDataError
+import com.vitran.shop.ui.sections.reference.ReferenceDataLoading
+import com.vitran.shop.ui.sections.reference.toAdminTaxonomyNodes
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
@@ -44,8 +54,10 @@ import com.vitran.shop.ui.theme.VitranTheme
 fun CreateCategoryScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
 ) {
     var state by remember { mutableStateOf(CreateCategoryFormState()) }
+    val taxonomyState by viewModel.uiState.collectAsStateWithLifecycle()
 
     BoxWithConstraints(
         modifier = modifier
@@ -80,9 +92,11 @@ fun CreateCategoryScreen(
                     ),
                     verticalAlignment = Alignment.Top,
                 ) {
-                    CreateCategoryMainColumn(
+                    CreateCategoryTaxonomyBody(
                         state = state,
                         onStateChange = { state = it },
+                        taxonomyState = taxonomyState,
+                        onRetry = viewModel::retry,
                         modifier = Modifier
                             .weight(1f, fill = false)
                             .widthIn(max = AdminTokens.ProductFormMaxWidth)
@@ -107,12 +121,49 @@ fun CreateCategoryScreen(
                         .padding(top = VitranSpacing.md, bottom = AdminTokens.CardGap),
                     verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
                 ) {
-                    CreateCategoryMainColumn(
+                    CreateCategoryTaxonomyBody(
                         state = state,
                         onStateChange = { state = it },
+                        taxonomyState = taxonomyState,
+                        onRetry = viewModel::retry,
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CreateCategoryTaxonomyBody(
+    state: CreateCategoryFormState,
+    onStateChange: (CreateCategoryFormState) -> Unit,
+    taxonomyState: TaxonomyPickerUiState,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    when (taxonomyState) {
+        TaxonomyPickerUiState.Loading -> {
+            AdminFormCard(modifier = modifier) {
+                ReferenceDataLoading(message = "در حال بارگذاری دسته‌بندی‌ها…")
+            }
+        }
+        is TaxonomyPickerUiState.Error -> {
+            AdminFormCard(modifier = modifier) {
+                ReferenceDataError(message = taxonomyState.message, onRetry = onRetry)
+            }
+        }
+        TaxonomyPickerUiState.Empty -> {
+            AdminFormCard(modifier = modifier) {
+                ReferenceDataEmpty(message = "دسته‌بندی‌ای یافت نشد.")
+            }
+        }
+        is TaxonomyPickerUiState.Content -> {
+            CreateCategoryMainColumn(
+                state = state,
+                onStateChange = onStateChange,
+                taxonomyRoots = taxonomyState.roots.toAdminTaxonomyNodes(),
+                modifier = modifier,
+            )
         }
     }
 }
@@ -122,5 +173,18 @@ fun CreateCategoryScreen(
 private fun CreateCategoryScreenPreview() {
     VitranTheme {
         CreateCategoryScreen(onBack = {})
+    }
+}
+
+@Preview
+@Composable
+private fun CreateCategoryMainColumnPreview() {
+    VitranTheme {
+        var state by remember { mutableStateOf(CreateCategoryFormState()) }
+        CreateCategoryMainColumn(
+            state = state,
+            onStateChange = { state = it },
+            taxonomyRoots = rememberProductTaxonomy(),
+        )
     }
 }

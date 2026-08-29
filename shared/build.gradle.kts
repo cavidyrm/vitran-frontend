@@ -79,6 +79,8 @@ kotlin {
             implementation(project(":core:platform"))
             implementation(project(":feature:auth"))
             implementation(project(":feature:account"))
+            implementation(project(":feature:location"))
+            implementation(project(":feature:taxonomy"))
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)

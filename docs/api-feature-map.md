@@ -15,8 +15,8 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Session | Auth refresh, seller shop create | `KtorTokenRefreshRemoteDataSource` ✅ | `SessionRepository` ✅ | Required when mutating session |
 | Account | Users | `AccountApi` ✅ | `AccountRepository` ✅ | Required |
 | Admin Users | Admin — Users | `AdminUserApi` | `AdminUserRepository` | Required (admin) |
-| Location / Cities | Cities | `LocationApi` | `LocationRepository` | Public + admin |
-| Taxonomy | Taxonomy | `TaxonomyApi` | `TaxonomyRepository` | Public + admin |
+| Location / Cities | Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public + admin |
+| Taxonomy | Taxonomy | `TaxonomyApi` ✅ (public read) | `TaxonomyRepository` ✅ | Public + admin |
 | Home | Home | `HomeApi` | `HomeRepository` | Optional |
 | Marketplace Shops | Shops — Public | `PublicShopApi` | `ShopRepository` | Public |
 | Marketplace Products | Products — Public | `PublicProductApi` | `ProductRepository` | Public / Optional |
@@ -63,9 +63,9 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | POST | `/api/v1/admin/cities` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
 | PATCH | `/api/v1/admin/cities/1` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
 | DELETE | `/api/v1/admin/cities/3` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
-| GET | `/api/v1/cities` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
-| GET | `/api/v1/cities/1` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
-| GET | `/api/v1/cities/slug/tehran` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
+| GET | `/api/v1/cities` | Cities | Location / Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public | Yes |
+| GET | `/api/v1/cities/1` | Cities | Location / Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public | Yes |
+| GET | `/api/v1/cities/slug/tehran` | Cities | Location / Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public | Yes |
 | PATCH | `/api/v1/admin/comments/1/confirm` | Comments | Shop Comments | EngagementApi | CommentRepository | Public | Yes |
 | POST | `/api/v1/shops/1/comments` | Comments | Shop Comments | EngagementApi | CommentRepository | Public | Yes |
 | GET | `/api/v1/shops/1/comments?per_page=20` | Comments | Shop Comments | EngagementApi | CommentRepository | Public | Yes |
@@ -144,11 +144,11 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | PUT | `/api/v1/admin/categories/ap/icon` | Taxonomy | Taxonomy | TaxonomyApi | TaxonomyRepository | Public (multipart) | **Missing** |
 | POST | `/api/v1/admin/taxonomy/import` | Taxonomy | Taxonomy | TaxonomyApi | TaxonomyRepository | Public (multipart) | **Missing** |
 | PATCH | `/api/v1/admin/values/color__blue/name` | Taxonomy | Taxonomy | TaxonomyApi | TaxonomyRepository | Public | **Missing** |
-| GET | `/api/v1/categories` | Taxonomy | Taxonomy | TaxonomyApi | TaxonomyRepository | Public | Yes |
-| GET | `/api/v1/categories/aa-1-2-3-4` | Taxonomy | Taxonomy | TaxonomyApi | TaxonomyRepository | Public | Yes |
-| GET | `/api/v1/categories/aa-1-2-3-4/attributes` | Taxonomy | Taxonomy | TaxonomyApi | TaxonomyRepository | Public | Yes |
-| GET | `/api/v1/categories/aa-1-2-3-4/return-reasons` | Taxonomy | Taxonomy | TaxonomyApi | TaxonomyRepository | Public | **Missing** |
-| GET | `/api/v1/categories/slug/aa-1-2-3-4` | Taxonomy | Taxonomy | TaxonomyApi | TaxonomyRepository | Public | Yes |
+| GET | `/api/v1/categories` | Taxonomy | Taxonomy | `TaxonomyApi` ✅ | `TaxonomyRepository` ✅ | Public | Yes |
+| GET | `/api/v1/categories/aa-1-2-3-4` | Taxonomy | Taxonomy | `TaxonomyApi` ✅ | `TaxonomyRepository` ✅ | Public | Yes |
+| GET | `/api/v1/categories/aa-1-2-3-4/attributes` | Taxonomy | Taxonomy | — | — | Public | Yes (empty only) **Deferred** |
+| GET | `/api/v1/categories/aa-1-2-3-4/return-reasons` | Taxonomy | Taxonomy | — | — | Public | **Missing** **Deferred** |
+| GET | `/api/v1/categories/slug/aa-1-2-3-4` | Taxonomy | Taxonomy | — (alias) | — | Public | Yes |
 | GET | `/api/v1/auth/me` | Users | Account | AccountApi | AccountRepository | Public | Yes |
 | PUT | `/api/v1/auth/profile` | Users | Account | AccountApi | AccountRepository | Public | Yes |
 | GET | `/api/v1/wishlists/share/wl-a1b2c3d4e5f67890?per_page=20` | Wishlists — Public | Engagement | EngagementApi | WishlistRepository | Optional | Yes |

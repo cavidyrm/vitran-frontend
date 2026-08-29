@@ -13,7 +13,7 @@ Status values: `Open` | `Verified from backend source` | `Resolved by backend up
 | **Status** | Open |
 | **Issue** | Taxonomy uses string slugs (`aa-1-2-3-4`). Query params use string slugs. Request/response examples also show `"category_slug": 1` and `"category_slugs": [1]`. |
 | **Client impact** | Domain must use `CategorySlug` as `String`. Accept int/string only at DTO boundary if backend requires compatibility. |
-| **Phase 2+ handling** | Custom serializer or flexible DTO field; never leak ambiguous typing into domain. |
+| **Phase 4 handling** | Domain `CategorySlug` is `String`. Int/string DTO coercion deferred to Shop/Product phase only. |
 
 ---
 
@@ -28,25 +28,47 @@ Status values: `Open` | `Verified from backend source` | `Resolved by backend up
 
 ---
 
-## Gap 3 — Follow shops vs favorite shops
+## Gap 13 — Cities API lacks province hierarchy
 
 | Field | Status |
 |-------|--------|
 | **Status** | Open |
-| **Issue** | `/me/follows/shops` and `/me/favorites/shops` both exist; semantics overlap. |
-| **Client impact** | Keep separate repositories/APIs. `FollowingScreen` may map to follows; favorites may differ. |
-| **Phase 2+ handling** | Confirm product semantics before merging UI or domain concepts. |
+| **Issue** | Public `GET /cities` returns flat `{ id, slug, name }`. CreateStore UI uses province → city cascade; no `province_id` on city objects. |
+| **Client impact** | Phase 4 loads real cities into city dropdown; province selector remains mock-only. All API cities shown when province is selected. |
+| **Phase 4 handling** | Documented in [reference-data.md](reference-data.md). Resolve when backend adds province or nested geography. |
 
 ---
 
-## Gap 4 — Home `favorite_shops` naming
+## Gap 14 — Category localized name nullability
 
 | Field | Status |
 |-------|--------|
 | **Status** | Open |
-| **Issue** | Personalized home feed params include `favorite_shops`; description suggests discovery/high-performing shops, not necessarily user's saved favorites. |
-| **Client impact** | DTO preserves backend field names; domain uses semantically correct names (e.g. `DiscoveryShops`). |
-| **Phase 2+ handling** | Map in Home mapper after response schema verified. |
+| **Issue** | Postman examples include Persian `name`, but imported Shopify taxonomy may omit names before admin PATCH. |
+| **Client impact** | Domain uses `localizedName: String?`; `displayName` falls back to `sourceTitle`. |
+| **Phase 4 handling** | Nullable in DTO/domain; no forced non-null defaults. |
+
+---
+
+## Gap 15 — Duplicate category lookup routes
+
+| Field | Status |
+|-------|--------|
+| **Status** | Workaround |
+| **Issue** | `GET /categories/{slug}` and `GET /categories/slug/{slug}` return identical example payloads. |
+| **Client impact** | Domain exposes one `getCategory(slug)`. Data uses **`GET /categories/{slug}`** as canonical. |
+| **Phase 4 handling** | SEO alias route unused unless backend documents semantic difference. |
+
+---
+
+## Gap 16 — Category list lacks browse visuals
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | List tree nodes have no `icon_url` or marketing collage assets. Browse grid UI expects colors + dual CDN images. |
+| **Client impact** | `CategoriesScreen` uses API slug/title with index-based visual fallbacks from `BrowseCategoryVisuals.kt`. |
+| **Phase 4 handling** | Home API or enriched taxonomy list may replace fallbacks in Phase 5+. |
 
 ---
 
@@ -76,7 +98,31 @@ Postman requests **without saved response examples** (15):
 | GET | `/api/v1/me/follows/shops/{id}` | Get followed shop |
 | DELETE | `/api/v1/me/follows/shops/{id}` | Unfollow shop |
 
+**Category attributes:** `GET /categories/{slug}/attributes` has an example but only `"attributes": []` — **non-empty item schema unverified (Phase 4 deferred).**
+
 **Client impact:** Do not invent response DTOs. Use integration tests or backend verification before implementation.
+
+---
+
+## Gap 3 — Follow shops vs favorite shops
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | `/me/follows/shops` and `/me/favorites/shops` both exist; semantics overlap. |
+| **Client impact** | Keep separate repositories/APIs. `FollowingScreen` may map to follows; favorites may differ. |
+| **Phase 2+ handling** | Confirm product semantics before merging UI or domain concepts. |
+
+---
+
+## Gap 4 — Home `favorite_shops` naming
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Personalized home feed params include `favorite_shops`; description suggests discovery/high-performing shops, not necessarily user's saved favorites. |
+| **Client impact** | DTO preserves backend field names; domain uses semantically correct names (e.g. `DiscoveryShops`). |
+| **Phase 2+ handling** | Map in Home mapper after response schema verified. |
 
 ---
 

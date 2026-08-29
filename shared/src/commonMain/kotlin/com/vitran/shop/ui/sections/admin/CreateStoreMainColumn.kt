@@ -45,9 +45,12 @@ import com.vitran.shop.ui.components.admin.AdminFormCard
 import com.vitran.shop.ui.components.admin.AdminMediaDropzone
 import com.vitran.shop.ui.components.admin.AdminMultilineField
 import com.vitran.shop.ui.components.admin.AdminSelectField
+import com.vitran.shop.ui.components.admin.AdminSelectOption
 import com.vitran.shop.ui.components.admin.AdminSearchableSelect
 import com.vitran.shop.ui.components.admin.AdminTextField
 import com.vitran.shop.ui.components.admin.AdminTokens
+import com.vitran.shop.ui.sections.reference.ReferenceDataError
+import com.vitran.shop.ui.sections.reference.ReferenceDataLoading
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -164,6 +167,10 @@ fun CreateStoreStepBody(
     step: CreateStoreStep,
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
+    cityOptions: List<AdminSelectOption> = emptyList(),
+    citiesLoading: Boolean = false,
+    citiesError: String? = null,
+    onCitiesRetry: () -> Unit = {},
     onViewStore: () -> Unit = {},
     onPublish: () -> Unit = {},
     onAddProduct: () -> Unit = {},
@@ -176,7 +183,14 @@ fun CreateStoreStepBody(
         when (step) {
             CreateStoreStep.Basics -> CreateStoreBasicsStep(state, onStateChange)
             CreateStoreStep.Brand -> CreateStoreBrandStep(state, onStateChange)
-            CreateStoreStep.Contact -> CreateStoreContactStep(state, onStateChange)
+            CreateStoreStep.Contact -> CreateStoreContactStep(
+                state = state,
+                onStateChange = onStateChange,
+                cityOptions = cityOptions,
+                citiesLoading = citiesLoading,
+                citiesError = citiesError,
+                onCitiesRetry = onCitiesRetry,
+            )
             CreateStoreStep.Policies -> CreateStorePoliciesStep(state, onStateChange)
             CreateStoreStep.Publish -> CreateStorePublishStep(
                 state = state,
@@ -652,8 +666,11 @@ private fun CoverSlider(
 private fun CreateStoreContactStep(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
+    cityOptions: List<AdminSelectOption>,
+    citiesLoading: Boolean,
+    citiesError: String?,
+    onCitiesRetry: () -> Unit,
 ) {
-    val cityOptions = CreateStoreMocks.citiesFor(state.provinceId)
     AdminFormCard(
         title = stringResource(Res.string.admin_card_location),
         subtitle = stringResource(Res.string.admin_card_location_sub),
@@ -701,19 +718,23 @@ private fun CreateStoreContactStep(
                 )
             }
             Box(modifier = Modifier.weight(1f)) {
-                AdminSelectField(
-                    label = stringResource(Res.string.admin_field_city),
-                    valueId = state.cityId,
-                    options = cityOptions,
-                    onSelect = { onStateChange(state.copy(cityId = it.id, dirty = true)) },
-                    placeholder = stringResource(Res.string.admin_field_city_placeholder),
-                    helper = if (state.provinceId == null) {
-                        stringResource(Res.string.admin_field_city_helper)
-                    } else {
-                        null
-                    },
-                    enabled = state.provinceId != null,
-                )
+                when {
+                    citiesLoading -> ReferenceDataLoading(message = "در حال بارگذاری شهرها…")
+                    citiesError != null -> ReferenceDataError(message = citiesError, onRetry = onCitiesRetry)
+                    else -> AdminSelectField(
+                        label = stringResource(Res.string.admin_field_city),
+                        valueId = state.cityId,
+                        options = cityOptions,
+                        onSelect = { onStateChange(state.copy(cityId = it.id, dirty = true)) },
+                        placeholder = stringResource(Res.string.admin_field_city_placeholder),
+                        helper = if (state.provinceId == null) {
+                            stringResource(Res.string.admin_field_city_helper)
+                        } else {
+                            null
+                        },
+                        enabled = state.provinceId != null && cityOptions.isNotEmpty(),
+                    )
+                }
             }
         }
     }

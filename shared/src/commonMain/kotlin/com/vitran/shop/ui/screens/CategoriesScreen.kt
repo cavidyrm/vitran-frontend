@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -27,6 +28,10 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.taxonomy.presentation.CategoriesBrowseUiState
+import com.vitran.shop.feature.taxonomy.presentation.CategoriesBrowseViewModel
 import com.vitran.shop.ui.components.FloatingSearchFab
 import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
@@ -42,6 +47,9 @@ import com.vitran.shop.ui.sections.categories.rememberMockBrowseCategories
 import com.vitran.shop.ui.sections.categories.rememberMockCategoriesMerchantGrids
 import com.vitran.shop.ui.sections.categories.rememberMockCategoriesProductRows
 import com.vitran.shop.ui.sections.categories.rememberMockExploreEdits
+import com.vitran.shop.ui.sections.reference.ReferenceDataError
+import com.vitran.shop.ui.sections.reference.ReferenceDataLoading
+import com.vitran.shop.ui.sections.reference.toBrowseCategories
 import com.vitran.shop.ui.shell.LocalDesktopLayout
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -75,12 +83,18 @@ fun CategoriesScreen(
     onStoreOpen: (shopId: String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
+    browseViewModel: CategoriesBrowseViewModel = vitranKoinViewModel(),
 ) {
     val isDesktop = LocalDesktopLayout.current
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
     val edits = rememberMockExploreEdits()
-    val browseCategories = rememberMockBrowseCategories()
+    val mockBrowseCategories = rememberMockBrowseCategories()
+    val browseState by browseViewModel.uiState.collectAsStateWithLifecycle()
+    val browseCategories = when (val current = browseState) {
+        is CategoriesBrowseUiState.Content -> current.rootCategories.toBrowseCategories()
+        else -> mockBrowseCategories
+    }
     val productRows = rememberMockCategoriesProductRows()
     val merchantGrids = rememberMockCategoriesMerchantGrids()
 
@@ -165,11 +179,28 @@ fun CategoriesScreen(
                     modifier = Modifier.fillMaxWidth(),
                     onEditClick = { /* mock — collection landing not wired yet */ },
                 )
-                CategoriesBrowseCategoriesSection(
-                    categories = browseCategories,
-                    modifier = Modifier.fillMaxWidth(),
-                    onCategoryClick = { /* mock — category landing not wired yet */ },
-                )
+                when (val current = browseState) {
+                    CategoriesBrowseUiState.Loading -> {
+                        ReferenceDataLoading(
+                            message = "در حال بارگذاری دسته‌بندی‌ها…",
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    is CategoriesBrowseUiState.Error -> {
+                        ReferenceDataError(
+                            message = current.message,
+                            onRetry = browseViewModel::retry,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    else -> {
+                        CategoriesBrowseCategoriesSection(
+                            categories = browseCategories,
+                            modifier = Modifier.fillMaxWidth(),
+                            onCategoryClick = { /* mock — category landing not wired yet */ },
+                        )
+                    }
+                }
                 CategoriesProductRowsFeed(
                     sections = productRows,
                     modifier = Modifier.fillMaxWidth(),

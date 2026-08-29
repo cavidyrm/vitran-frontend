@@ -2,7 +2,7 @@
 
 Rules for Gradle modules and Kotlin packages in VitranShop. Phase 1 enforces a small core layer under `:shared`; feature modules arrive incrementally.
 
-## Module dependency graph (Phase 3)
+## Module dependency graph (Phase 4)
 
 ```mermaid
 flowchart TB
@@ -15,6 +15,8 @@ flowchart TB
   sharedMod[":shared"]
   featAuth[":feature:auth"]
   featAccount[":feature:account"]
+  featLocation[":feature:location"]
+  featTaxonomy[":feature:taxonomy"]
   coreDomain[":core:domain"]
   coreNetwork[":core:network"]
   coreSession[":core:session"]
@@ -24,6 +26,8 @@ flowchart TB
   apps --> sharedMod
   sharedMod --> featAuth
   sharedMod --> featAccount
+  sharedMod --> featLocation
+  sharedMod --> featTaxonomy
   sharedMod --> coreDomain
   sharedMod --> coreNetwork
   sharedMod --> coreSession
@@ -34,6 +38,10 @@ flowchart TB
   featAccount --> coreSession
   featAccount --> coreNetwork
   featAccount --> coreDomain
+  featLocation --> coreNetwork
+  featLocation --> coreDomain
+  featTaxonomy --> coreNetwork
+  featTaxonomy --> coreDomain
   coreNetwork --> coreDomain
   coreNetwork --> coreSession
   coreNetwork --> coreCommon
@@ -43,13 +51,24 @@ flowchart TB
   coreDomain --> coreCommon
 ```
 
+Future modules (Phase 5+):
+
+```text
+:feature:marketplace  → :feature:location, :feature:taxonomy
+:feature:seller       → :feature:location, :feature:taxonomy
+:feature:home           → :feature:taxonomy (optional :feature:location)
+```
+
+Reference modules must **not** depend on marketplace, seller, or home features.
+
 ## Allowed dependencies
 
 | From | May depend on |
 |------|----------------|
 | Platform apps (`androidApp`, etc.) | `:shared` |
-| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
+| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
 | `:feature:auth` / `:feature:account` | Own domain, `:core:network`, `:core:session`, `:core:domain` |
+| `:feature:location` / `:feature:taxonomy` | Own domain, `:core:network`, `:core:domain` |
 | `:core:session` | `:core:domain`, `:core:platform` |
 | `:core:platform` | `:core:domain` |
 | `:core:domain` | `:core:common` |

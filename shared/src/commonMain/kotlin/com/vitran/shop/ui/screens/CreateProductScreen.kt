@@ -35,6 +35,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerUiState
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
 import com.vitran.shop.ui.components.admin.AdminPrimaryButton
 import com.vitran.shop.ui.components.admin.AdminSecondaryButton
 import com.vitran.shop.ui.components.admin.AdminTokens
@@ -48,6 +52,7 @@ import com.vitran.shop.ui.sections.admin.CreateProductStatusCard
 import com.vitran.shop.ui.sections.admin.ProductPublishStatus
 import com.vitran.shop.ui.sections.admin.ProductSaveMode
 import com.vitran.shop.ui.sections.admin.ProductSavePhase
+import com.vitran.shop.ui.sections.reference.toAdminTaxonomyNodes
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -70,6 +75,7 @@ import vitranshop.shared.generated.resources.admin_create_product_leave_title
 fun CreateProductScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
 ) {
     var state by remember { mutableStateOf(CreateProductFormState()) }
     var leaveDialog by remember { mutableStateOf(false) }
@@ -77,6 +83,13 @@ fun CreateProductScreen(
     val titleAnchor = remember { BringIntoViewRequester() }
     val priceAnchor = remember { BringIntoViewRequester() }
     val categoryAnchor = remember { BringIntoViewRequester() }
+    val taxonomyState by taxonomyViewModel.uiState.collectAsStateWithLifecycle()
+    val taxonomyRoots = when (val current = taxonomyState) {
+        is TaxonomyPickerUiState.Content -> current.roots.toAdminTaxonomyNodes()
+        else -> emptyList()
+    }
+    val taxonomyLoading = taxonomyState is TaxonomyPickerUiState.Loading
+    val taxonomyError = (taxonomyState as? TaxonomyPickerUiState.Error)?.message
 
     val uploadingIds = state.media.filter { it.uploading }.map { it.id }
     LaunchedEffect(uploadingIds) {
@@ -164,6 +177,10 @@ fun CreateProductScreen(
                         titleAnchor = titleAnchor,
                         priceAnchor = priceAnchor,
                         categoryAnchor = categoryAnchor,
+                        taxonomyRoots = taxonomyRoots,
+                        taxonomyLoading = taxonomyLoading,
+                        taxonomyError = taxonomyError,
+                        onTaxonomyRetry = taxonomyViewModel::retry,
                         modifier = Modifier
                             .weight(1f, fill = false)
                             .widthIn(max = AdminTokens.ProductFormMaxWidth)
@@ -216,6 +233,10 @@ fun CreateProductScreen(
                         titleAnchor = titleAnchor,
                         priceAnchor = priceAnchor,
                         categoryAnchor = categoryAnchor,
+                        taxonomyRoots = taxonomyRoots,
+                        taxonomyLoading = taxonomyLoading,
+                        taxonomyError = taxonomyError,
+                        onTaxonomyRetry = taxonomyViewModel::retry,
                     )
                     CreateProductOrganizationCard(
                         state = state,

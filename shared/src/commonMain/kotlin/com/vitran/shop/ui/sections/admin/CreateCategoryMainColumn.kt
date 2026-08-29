@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.vitran.shop.ui.components.admin.AdminFormCard
+import com.vitran.shop.ui.components.admin.AdminTaxonomyNode
 import com.vitran.shop.ui.components.admin.AdminTaxonomyPicker
 import com.vitran.shop.ui.components.admin.AdminTokens
 import org.jetbrains.compose.resources.stringResource
@@ -19,9 +20,9 @@ import vitranshop.shared.generated.resources.admin_product_field_category_search
 fun CreateCategoryMainColumn(
     state: CreateCategoryFormState,
     onStateChange: (CreateCategoryFormState) -> Unit,
+    taxonomyRoots: List<AdminTaxonomyNode>,
     modifier: Modifier = Modifier,
 ) {
-    val taxonomy = rememberProductTaxonomy()
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
@@ -30,7 +31,7 @@ fun CreateCategoryMainColumn(
             AdminTaxonomyPicker(
                 label = stringResource(Res.string.admin_product_field_category),
                 valueId = state.categoryId,
-                roots = taxonomy,
+                roots = taxonomyRoots,
                 onSelect = { onStateChange(state.copy(categoryId = it.id)) },
                 placeholder = stringResource(Res.string.admin_product_field_category_placeholder),
                 helper = stringResource(Res.string.admin_product_field_category_helper),

@@ -6,6 +6,8 @@ import com.vitran.shop.core.network.di.networkModule
 import com.vitran.shop.core.session.di.sessionModule
 import com.vitran.shop.feature.account.di.accountModule
 import com.vitran.shop.feature.auth.di.authModule
+import com.vitran.shop.feature.location.di.locationModule
+import com.vitran.shop.feature.taxonomy.di.taxonomyModule
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
@@ -26,6 +28,8 @@ fun startVitranKoin(
             networkModule,
             authModule,
             accountModule,
+            locationModule,
+            taxonomyModule,
             appCoordinatorModule,
             *extraModules.toTypedArray(),
         )

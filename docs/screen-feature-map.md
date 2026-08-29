@@ -20,7 +20,7 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | Existing Screen | Route | Business Feature | Expected API / Domain | Runtime fake data | Future ViewModel | Previews | Notes |
 |-----------------|-------|------------------|----------------------|-------------------|------------------|----------|-------|
 | HomeScreen | `/` | Home | `GET /home`, `POST /events` | `HomeCategoryModels.kt`, `HomeCategoryShopModels.kt`, `HomeCategoryMosaicModels.kt`, `HeroCollageModels.kt` | `HomeViewModel` | Yes | Omnibox uses `OmniboxModels.kt` |
-| CategoriesScreen | `/categories` | Catalog / Marketplace | Taxonomy, product rows, merchant grids, catalog search | `CategoriesProductRowModels.kt`, `CategoriesMerchantGridModels.kt`, `BrowseCategoryModels.kt`, `ExploreEditModels.kt` | `CategoriesViewModel` | Yes | Explore / browse |
+| CategoriesScreen | `/categories` | Catalog / Marketplace | Taxonomy, product rows, merchant grids, catalog search | `BrowseCategoryModels.kt` (visual fallbacks), `ExploreEditModels.kt`, row/grid mocks | `CategoriesBrowseViewModel` | Partial — browse grid uses real taxonomy titles/slugs; other sections mock | Explore / browse |
 | OffersScreen | `/offers` | Deals | TBD — no dedicated API in collection | `PlaceholderScreen` | `OffersViewModel` | — | Placeholder only |
 | SavedScreen | `/saved` | Engagement / Wishlist | `GET /me/favorites/products` | `PlaceholderScreen` | `SavedViewModel` | — | Placeholder only |
 | AccountScreen | `/account` | Account | `GET /auth/me` | Hub extras still mock | `AccountRepository` ✅ (hub identity) | Yes | Wired to `CurrentUserState` |
@@ -38,12 +38,12 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | RegisterVerifyScreen | `/account/register/verify` | Auth | `POST /auth/verify` | Preview only | `RegisterVerifyViewModel` ✅ | Yes | Challenge from `AuthFlowStateHolder` |
 | ForgotPasswordScreen | `/account/forgot` | Auth | `POST /auth/forgot-password` | Preview only | `ForgotPasswordViewModel` ✅ | Yes | |
 | ResetPasswordScreen | `/account/forgot/reset` | Auth | `POST /auth/reset-password` | Preview only | `ResetPasswordViewModel` ✅ | Yes | |
-| CreateStoreScreen | `/admin/stores/new` | Seller Shop | `POST /seller/shops` (+ session token update) | `CreateStoreModels.kt` | `CreateStoreViewModel` | Yes | No shopper chrome |
+| CreateStoreScreen | `/admin/stores/new` | Seller Shop | `POST /seller/shops`, `GET /cities` | `CreateStoreModels.kt` (province mock) | `CreateStoreLocationViewModel` | Partial — city dropdown real API; province mock | No shopper chrome |
 | StorePlanScreen | `/admin/stores/plan` | Seller Subscription | `GET /seller/shops/{id}/subscription` | `StorePlanModels.kt` | `StorePlanViewModel` | Yes | Per-shop plan |
 | StorePlanUpgradeScreen | `/admin/stores/plan/upgrade` | Seller Subscription | Plans public + purchase | `StorePlanModels.kt` | `StorePlanUpgradeViewModel` | Yes | |
 | AdminPlansScreen | `/admin/plans` | Admin Plans | `GET/POST/PATCH/DELETE /admin/plans` | `AdminPlansModels.kt` | `AdminPlansViewModel` | Yes | Platform admin |
-| CreateProductScreen | `/admin/products/new` | Seller Product | Seller product CRUD, multipart images | `CreateProductModels.kt` | `CreateProductViewModel` | Yes | |
-| CreateCategoryScreen | `/admin/categories/new` | Admin Catalog / Taxonomy | `GET /categories`, taxonomy tree | `CreateCategoryModels.kt`, `ProductTaxonomyMocks.kt` | `CreateCategoryViewModel` | Yes | Standard taxonomy picker |
+| CreateProductScreen | `/admin/products/new` | Seller Product | Seller product CRUD, `GET /categories` | `CreateProductModels.kt`, `ProductTaxonomyMocks.kt` (Preview) | `TaxonomyPickerViewModel` | Real API — category picker | |
+| CreateCategoryScreen | `/admin/categories/new` | Admin Catalog / Taxonomy | `GET /categories` | `ProductTaxonomyMocks.kt` (Preview only) | `TaxonomyPickerViewModel` | Real API — taxonomy tree | Standard taxonomy picker |
 | ProductDetailScreen | `/products/{id}/{slug}` | Public Product | `GET /products/{id}`, reviews, contact | `ProductDetailModels.kt`, `MockProductCatalog` | `ProductDetailViewModel` | Yes | No purchase CTAs |
 | StoreScreen | `/m/{shopId}` | Public Shop | `GET /shops/{id}` or slug | `StoreModels.kt`, `StoreProductsModels.kt`, `StoreMenuModels.kt` | `StoreViewModel` | Yes | |
 | AboutScreen | `/about` | CMS | `GET /static-pages/slug/about-us` | `AboutModels.kt` | `AboutViewModel` | Yes | Marketing page |

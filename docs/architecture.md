@@ -1,6 +1,6 @@
 # VitranShop Architecture
 
-Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking infrastructure; feature repositories remain deferred.
+Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`).
 
 ## Selected architecture
 
@@ -39,8 +39,14 @@ VitranShop/
 │   ├── common/          # Universal Kotlin primitives (minimal)
 │   ├── domain/          # Cross-feature domain types (AuthMode, UserRole)
 │   ├── network/         # Ktor client, envelope, executor, health API (Phase 2)
-│   └── session/         # SessionReader contract, TokenKind (no storage yet)
-└── shared/              # All UI, navigation, mocks, DI bootstrap
+│   ├── platform/        # Secure storage, platform JSON (Phase 3)
+│   └── session/         # Session lifecycle, token refresh (Phase 3)
+├── feature/
+│   ├── auth/            # Auth flows (Phase 3)
+│   ├── account/         # Profile / current user (Phase 3)
+│   ├── location/        # Public cities reference data (Phase 4)
+│   └── taxonomy/        # Public category tree (Phase 4)
+└── shared/              # UI, navigation, DI bootstrap
     └── src/commonMain/kotlin/com/vitran/shop/
         ├── App.kt
         ├── di/
@@ -95,7 +101,9 @@ See [dependency-rules.md](dependency-rules.md). Summary:
 - **`core:common`** — genuinely universal helpers only; not a dumping ground
 - **`core:domain`** — cross-feature primitives (`AuthMode`, `UserRole`, `AppError`, `AppResult`, pagination)
 - **`core:network`** — Ktor client, envelope, executor, pagination DTOs, HealthApi ([networking.md](networking.md))
-- **`core:session`** — `SessionReader` contract; `EmptySessionReader` stub until Phase 3 secure storage
+- **`core:session`** — secure credential storage, token refresh, `SessionRepository` (Phase 3)
+- **`feature:location`** — `LocationRepository`, public cities API, in-memory list cache ([reference-data.md](reference-data.md))
+- **`feature:taxonomy`** — `TaxonomyRepository`, public category tree/detail, in-memory cache
 - **`core:designsystem` / `core:ui`** — deferred; theme lives in `:shared` today
 
 ## Feature responsibility (conceptual packages)

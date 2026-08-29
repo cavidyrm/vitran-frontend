@@ -27,6 +27,10 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.location.presentation.CreateStoreLocationUiState
+import com.vitran.shop.feature.location.presentation.CreateStoreLocationViewModel
 import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.sections.admin.AutosaveStatus
 import com.vitran.shop.ui.sections.admin.CreateStoreBottomBar
@@ -37,6 +41,7 @@ import com.vitran.shop.ui.sections.admin.CreateStoreStep
 import com.vitran.shop.ui.sections.admin.CreateStoreStepBody
 import com.vitran.shop.ui.sections.admin.CreateStoreStepOrder
 import com.vitran.shop.ui.sections.admin.CreateStoreStepper
+import com.vitran.shop.ui.sections.reference.toAdminSelectOptions
 import com.vitran.shop.ui.sections.admin.CreateStoreSummaryCard
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -58,6 +63,7 @@ fun CreateStoreScreen(
     onViewStore: (String) -> Unit = {},
     onAddProduct: () -> Unit = {},
     modifier: Modifier = Modifier,
+    locationViewModel: CreateStoreLocationViewModel = vitranKoinViewModel(),
 ) {
     var state by remember { mutableStateOf(CreateStoreFormState()) }
     var step by remember { mutableStateOf(CreateStoreStep.Basics) }
@@ -66,6 +72,13 @@ fun CreateStoreScreen(
     val justNow = stringResource(Res.string.admin_last_saved_just_now)
     val minutesAgo = stringResource(Res.string.admin_last_saved_minutes)
     var lastSavedLabel by remember { mutableStateOf<String?>(null) }
+    val locationState by locationViewModel.uiState.collectAsStateWithLifecycle()
+    val cityOptions = when (val current = locationState) {
+        is CreateStoreLocationUiState.Content -> current.cities.toAdminSelectOptions()
+        else -> emptyList()
+    }
+    val citiesLoading = locationState is CreateStoreLocationUiState.Loading
+    val citiesError = (locationState as? CreateStoreLocationUiState.Error)?.message
 
     LaunchedEffect(state) {
         if (!state.dirty) return@LaunchedEffect
@@ -176,6 +189,10 @@ fun CreateStoreScreen(
                                 step = step,
                                 state = state,
                                 onStateChange = { state = it },
+                                cityOptions = cityOptions,
+                                citiesLoading = citiesLoading,
+                                citiesError = citiesError,
+                                onCitiesRetry = locationViewModel::retry,
                                 onViewStore = {
                                     if (state.slug.isNotBlank()) onViewStore(state.slug)
                                 },
@@ -226,6 +243,10 @@ fun CreateStoreScreen(
                             step = step,
                             state = state,
                             onStateChange = { state = it },
+                            cityOptions = cityOptions,
+                            citiesLoading = citiesLoading,
+                            citiesError = citiesError,
+                            onCitiesRetry = locationViewModel::retry,
                             onViewStore = {
                                 if (state.slug.isNotBlank()) onViewStore(state.slug)
                             },
