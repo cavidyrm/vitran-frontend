@@ -41,6 +41,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:domain"))
+            implementation(libs.koin.core)
         }
     }
 }

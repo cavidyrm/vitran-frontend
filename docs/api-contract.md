@@ -54,7 +54,11 @@ All business responses use a global envelope:
 - Examples also use HTTP-like values: `400`, `403`, `404`, `409` inside `code`
 - Phase 2 must model `code` as `Int` (or flexible type), not a two-value enum
 
-Implementation (`ApiEnvelope<T>`) belongs to **Phase 2** in `:core:network`.
+Implementation in `:core:network` — see [networking.md](networking.md):
+
+- `ApiEnvelope<T>`, `ApiErrorDto`, `EmptyDataDto`
+- `ApiRequestExecutor` → `AppResult<T>`
+- `AppError` hierarchy in `:core:domain`
 
 ---
 

@@ -2,7 +2,7 @@
 
 Rules for Gradle modules and Kotlin packages in VitranShop. Phase 1 enforces a small core layer under `:shared`; feature modules arrive incrementally.
 
-## Module dependency graph (Phase 1)
+## Module dependency graph (Phase 2)
 
 ```mermaid
 flowchart TB
@@ -22,6 +22,8 @@ flowchart TB
   sharedMod --> coreDomain
   sharedMod --> coreNetwork
   sharedMod --> coreSession
+  coreNetwork --> coreDomain
+  coreNetwork --> coreSession
   coreNetwork --> coreCommon
   coreSession --> coreDomain
   coreDomain --> coreCommon
@@ -35,7 +37,7 @@ flowchart TB
 | `:shared` (presentation) | `:core:domain`, `:core:network`, `:core:session`, design tokens in `ui/theme`, Koin |
 | `:core:session` | `:core:domain` |
 | `:core:domain` | `:core:common` |
-| `:core:network` | `:core:common` |
+| `:core:network` | `:core:common`, `:core:domain`, `:core:session` |
 | Future `:feature:*` data | Its feature domain, `:core:network`, `:core:platform`, etc. |
 | Future `:feature:*` presentation | Its feature domain, `:core:ui`, `:core:designsystem` |
 

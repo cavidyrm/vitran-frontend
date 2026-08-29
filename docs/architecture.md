@@ -1,6 +1,6 @@
 # VitranShop Architecture
 
-Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`; business networking and repositories are deferred to later phases.
+Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking infrastructure; feature repositories remain deferred.
 
 ## Selected architecture
 
@@ -38,7 +38,7 @@ VitranShop/
 ├── core/
 │   ├── common/          # Universal Kotlin primitives (minimal)
 │   ├── domain/          # Cross-feature domain types (AuthMode, UserRole)
-│   ├── network/         # ApiEnvironment config (no Ktor yet)
+│   ├── network/         # Ktor client, envelope, executor, health API (Phase 2)
 │   └── session/         # SessionReader contract, TokenKind (no storage yet)
 └── shared/              # All UI, navigation, mocks, DI bootstrap
     └── src/commonMain/kotlin/com/vitran/shop/
@@ -71,7 +71,7 @@ Phase 1 does **not** create empty feature modules or move UI out of `:shared`.
 | API origin config | `:core:network` | `ApiEnvironment`, `ApiEnvironments` |
 | Auth mode / roles (types) | `:core:domain` | `AuthMode`, `UserRole` |
 | Session contract | `:core:session` | `SessionReader`, `TokenKind` |
-| DI bootstrap | `:shared` / `di/` | Koin with `ApiEnvironment` only |
+| DI bootstrap | `:shared` / `di/` | Koin: `ApiEnvironment`, `networkModule`, `sessionModule` |
 | UI + mocks | `:shared` / `ui/` | Unchanged screens and sections |
 | Navigation | `:shared` / `ui/navigation/` | Navigation 3, typed `Route` |
 | Design system | `:shared` / `ui/theme/` | `VitranTheme`, tokens (future `:core:designsystem`) |
@@ -80,7 +80,7 @@ Phase 1 does **not** create empty feature modules or move UI out of `:shared`.
 
 [`App.kt`](../shared/src/commonMain/kotlin/com/vitran/shop/App.kt) is the shared root composable:
 
-1. `startVitranKoin()` — DI bootstrap (Phase 1: `ApiEnvironment` only)
+1. `startVitranKoin()` — DI bootstrap (`ApiEnvironment`, networking, session stub)
 2. `VitranTheme` — RTL Material3 + design tokens
 3. `NavigationState` + `Navigator` + `BindBrowserNavigation` (web URL sync)
 4. `AppShell` — desktop side rail / mobile bottom bar; auth-aware chrome
@@ -93,9 +93,9 @@ Platform launchers (`androidApp`, `desktopApp`, `webApp`, `iosApp`) stay thin an
 See [dependency-rules.md](dependency-rules.md). Summary:
 
 - **`core:common`** — genuinely universal helpers only; not a dumping ground
-- **`core:domain`** — cross-feature primitives; not feature domain models
-- **`core:network`** — future Ktor, envelope, pagination transport (Phase 2)
-- **`core:session`** — future auth state, secure storage (Phase 3)
+- **`core:domain`** — cross-feature primitives (`AuthMode`, `UserRole`, `AppError`, `AppResult`, pagination)
+- **`core:network`** — Ktor client, envelope, executor, pagination DTOs, HealthApi ([networking.md](networking.md))
+- **`core:session`** — `SessionReader` contract; `EmptySessionReader` stub until Phase 3 secure storage
 - **`core:designsystem` / `core:ui`** — deferred; theme lives in `:shared` today
 
 ## Feature responsibility (conceptual packages)

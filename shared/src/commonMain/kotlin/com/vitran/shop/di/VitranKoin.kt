@@ -2,6 +2,8 @@ package com.vitran.shop.di
 
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.core.network.config.ApiEnvironments
+import com.vitran.shop.core.network.di.networkModule
+import com.vitran.shop.core.session.di.sessionModule
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -9,8 +11,8 @@ import org.koin.dsl.module
 private var koinStarted = false
 
 /**
- * Minimal Koin bootstrap for Phase 1.
- * Registers only [ApiEnvironment] — no repositories, ViewModels, or session impl yet.
+ * Koin bootstrap for VitranShop.
+ * Registers API environment, networking infrastructure, and session stub.
  */
 fun startVitranKoin(
     apiEnvironment: ApiEnvironment = ApiEnvironments.Local,
@@ -35,9 +37,3 @@ fun stopVitranKoin() {
 private fun appModule(apiEnvironment: ApiEnvironment) = module {
     single { apiEnvironment }
 }
-
-/** Reserved for Phase 2 Ktor client wiring. */
-val networkModule = module { }
-
-/** Reserved for Phase 3 session implementation. */
-val sessionModule = module { }

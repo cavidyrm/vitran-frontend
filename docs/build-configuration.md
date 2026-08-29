@@ -13,7 +13,7 @@ Central catalog: [`gradle/libs.versions.toml`](../gradle/libs.versions.toml)
 | Compose Material3 | 1.11.0-alpha07 | `material3` |
 | Android Gradle Plugin | 9.2.1 | `agp` |
 | Gradle wrapper | 9.6.1 | `gradle/wrapper/gradle-wrapper.properties` |
-| Ktor (Coil only today) | 3.1.3 | `ktor` |
+| Ktor (Coil in `:shared`; API client in `:core:network`) | 3.1.3 | `ktor` |
 | Navigation 3 | 1.1.1 | `navigation3` |
 | Koin | 4.0.0 | `koin` |
 | kotlinx-coroutines | 1.11.0 | `kotlinx-coroutines` |
@@ -27,8 +27,8 @@ Do not scatter versions in module `build.gradle.kts` files except where AGP requ
 |--------|------|------|
 | `:shared` | KMP library | UI, navigation, mocks, DI bootstrap |
 | `:core:common` | KMP library | Shared primitives |
-| `:core:domain` | KMP library | Cross-feature domain types |
-| `:core:network` | KMP library | API environment config |
+| `:core:network` | KMP library | Ktor client, envelope, executor, HealthApi |
+| `:core:domain` | KMP library | Cross-feature types, AppError, AppResult, pagination |
 | `:core:session` | KMP library | Session contracts |
 | `:androidApp` | Android app | Thin launcher |
 | `:desktopApp` | JVM app | Compose Desktop launcher |
@@ -57,10 +57,10 @@ Uses Kotlin default hierarchy — **no custom `dependsOn` chains** added in Phas
 |------------|---------|
 | `commonMain` | Default for shared logic |
 | `commonTest` | Shared unit tests |
-| `androidMain` | Android Ktor engine, ExoPlayer, tooling |
+| `androidMain` | Android Ktor engine (Coil + `:core:network`) |
 | `iosMain` | Darwin Ktor engine |
 | `jvmMain` | Java Ktor engine |
-| `jsMain`, `wasmJsMain` | Browser wrappers, web navigation |
+| `jsMain`, `wasmJsMain` | JS Ktor engine (`:core:network`), browser wrappers |
 | `androidHostTest`, `iosTest`, `jvmTest`, `webTest` | Platform tests |
 
 ## Gradle properties
@@ -95,7 +95,7 @@ ApiEnvironment(origin = "http://localhost:8080", apiVersionPath = "/api/v1")
 - API prefix `/api/v1` is separate (`apiVersionPath`)
 - Origins are configuration, not secrets
 
-Phase 1 registers default `ApiEnvironments.Local` via Koin in [`VitranKoin.kt`](../shared/src/commonMain/kotlin/com/vitran/shop/di/VitranKoin.kt).
+Phase 2 registers `ApiEnvironments.Local` by default and wires `networkModule` + `sessionModule` via Koin in [`VitranKoin.kt`](../shared/src/commonMain/kotlin/com/vitran/shop/di/VitranKoin.kt). HTTP logging is enabled for local environment only — see [networking.md](networking.md).
 
 ### Future platform-specific overrides
 
