@@ -1,5 +1,6 @@
 services:
   web:
+    container_name: vitran-frontend-web
     image: ${DOCKER_IMAGE:-ghcr.io/cavidyrm/vitran-frontend:latest}
     networks:
       - vitran
@@ -7,16 +8,19 @@ services:
       - traefik.enable=true
       - traefik.docker.network=vitran
       # SPA on apex + www; /api/* is routed to the backend (priority 100 there).
-      - traefik.http.routers.vitran-web.rule=(Host(`${TRAEFIK_DOMAIN:-vitran.ir}`) || Host(`www.${TRAEFIK_DOMAIN:-vitran.ir}`))
+      - traefik.http.routers.vitran-web.rule=Host(`vitran.ir`) || Host(`www.vitran.ir`)
       - traefik.http.routers.vitran-web.entrypoints=websecure
       - traefik.http.routers.vitran-web.tls=true
       - traefik.http.routers.vitran-web.tls.certresolver=letsencrypt
       - traefik.http.routers.vitran-web.priority=1
       - traefik.http.routers.vitran-web.service=vitran-web
-      - traefik.http.routers.vitran-web-http.rule=(Host(`${TRAEFIK_DOMAIN:-vitran.ir}`) || Host(`www.${TRAEFIK_DOMAIN:-vitran.ir}`))
+      - traefik.http.routers.vitran-web-http.rule=Host(`vitran.ir`) || Host(`www.vitran.ir`)
       - traefik.http.routers.vitran-web-http.entrypoints=web
+      - traefik.http.routers.vitran-web-http.middlewares=vitran-web-redirect
       - traefik.http.routers.vitran-web-http.priority=1
       - traefik.http.routers.vitran-web-http.service=vitran-web
+      - traefik.http.middlewares.vitran-web-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.vitran-web-redirect.redirectscheme.permanent=true
       - traefik.http.services.vitran-web.loadbalancer.server.port=80
     restart: unless-stopped
     healthcheck:
