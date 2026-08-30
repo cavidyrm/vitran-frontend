@@ -25,7 +25,7 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | SavedScreen | `/saved` | Engagement / Wishlist | `GET /me/favorites/products` | `PlaceholderScreen` | `WishlistViewModel` ✅ (unconnected) | — | Placeholder only — API exists |
 | AccountScreen | `/account` | Account | `GET /auth/me` | Hub extras still mock | `AccountRepository` ✅ (hub identity) | Yes | Wired to `CurrentUserState` |
 | ProfileScreen | `/account/profile` | Account | `GET/PUT /auth/profile` | Preview fixtures only | `ProfileViewModel` ✅ | Yes | |
-| ReferralsScreen | `/account/referrals` | Referral | `GET /me/referral`, credits apply | `ReferralModels.kt` | `ReferralsViewModel` | Yes | |
+| ReferralsScreen | `/account/referrals` | Referral | `GET /me/referral`, credits apply | Preview fixtures | `ReferralsViewModel` ✅ | Yes | Real API; share via ShareManager; no toman fake credits |
 | FollowingScreen | `/account/following` | Engagement (follows) | `GET /me/follows/shops` | Inline mock in section | — | Yes | Schema unresolved — mock kept; follow **mutations** wired on PDP/store |
 | AccountSettingsScreen | `/account/settings` | Account | Profile preferences (partial `/auth/profile`) | Local `remember` state | `AccountSettingsViewModel` | Yes | |
 | AccountUsersScreen | `/account/users` | Admin Users | `GET /admin/users` | `AccountUserModels.kt` | `AccountUsersViewModel` | Yes | Platform admin |
@@ -39,8 +39,8 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | ForgotPasswordScreen | `/account/forgot` | Auth | `POST /auth/forgot-password` | Preview only | `ForgotPasswordViewModel` ✅ | Yes | |
 | ResetPasswordScreen | `/account/forgot/reset` | Auth | `POST /auth/reset-password` | Preview only | `ResetPasswordViewModel` ✅ | Yes | |
 | CreateStoreScreen | `/admin/stores/new` | Seller Shop | `POST /seller/shops`, `GET /cities`, `GET /seller/shops/check-slug` | `CreateStoreModels.kt` (unsupported fields deferred) | `CreateShopViewModel` + `CreateStoreLocationViewModel` | Partial — create+slug+cities real; category IDs / logo / policies deferred | No shopper chrome; navigates Account on success |
-| StorePlanScreen | `/admin/stores/plan` | Seller Subscription | `GET /seller/shops/{id}/subscription` | `StorePlanModels.kt` | `StorePlanViewModel` | Yes | Per-shop plan |
-| StorePlanUpgradeScreen | `/admin/stores/plan/upgrade` | Seller Subscription | Plans public + purchase | `StorePlanModels.kt` | `StorePlanUpgradeViewModel` | Yes | |
+| StorePlanScreen | `/admin/stores/plan` | Seller Subscription | `GET /seller/shops/{id}/subscription` | Preview fixtures | `StorePlanViewModel` ✅ | Yes | Per-shop; billing history deferred |
+| StorePlanUpgradeScreen | `/admin/stores/plan/upgrade` | Seller Subscription | Plans public + purchase | Preview fixtures | `StorePlanUpgradeViewModel` ✅ | Yes | External payment handoff + verify; no yearly toggle |
 | AdminPlansScreen | `/admin/plans` | Admin Plans | `GET/POST/PATCH/DELETE /admin/plans` | `AdminPlansModels.kt` | `AdminPlansViewModel` | Yes | Platform admin |
 | CreateProductScreen | `/admin/products/new` | Seller Product | `POST /seller/shops/{id}/products` multipart, `GET /categories` | Preview mocks only (`CreateProductMocks`); unsupported fields local-only | `CreateProductViewModel` ✅, `TaxonomyPickerViewModel` ✅ | Real create + taxonomy + `ImagePicker`; no list/edit UI yet |
 | CreateCategoryScreen | `/admin/categories/new` | Admin Catalog / Taxonomy | `GET /categories` | `ProductTaxonomyMocks.kt` (Preview only) | `TaxonomyPickerViewModel` | Real API — taxonomy tree | Standard taxonomy picker |
@@ -73,7 +73,10 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 | AccountScreen | `SessionRepository` + `AccountRepository`; seller/admin role gates |
 | CreateStoreScreen | Session update after shop create via `CreateShopUseCase` (not Auth ViewModel) |
 | Seller list / edit / details / API key | ViewModels in `:feature:seller` ready; Compose screens deferred |
-| StorePlanScreen | Shop context + `SubscriptionRepository` per shop (Phase 9) |
+| StorePlanScreen | Wired Phase 9 — shop from SellerShopRepository; SubscriptionRepository |
+| StorePlanUpgradeScreen | Wired Phase 9 — PlanRepository + PurchasePlan + VerifyPendingPayment |
+| ReferralsScreen | Wired Phase 9 — ReferralRepository + ApplyReferralCredit |
+| AdminPlansScreen | Phase 11 — mock only |
 | HomeScreen / CategoriesScreen / PDP / Store | `:feature:marketplace` + `MarketplaceUiMapper`; omnibox → search |
 | App chrome | `SessionState` + `CurrentUserState` in `App.kt` via `AppSessionCoordinator` |
 
@@ -91,7 +94,8 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 | `AccountProfileModels.kt`, `ReferralModels.kt` | Runtime temporary | Account flows |
 | `AccountUserModels.kt`, `AccountCityModels.kt` | Runtime temporary | Admin account screens |
 | `CreateStoreModels.kt`, `CreateProductModels.kt` | Runtime temporary | Seller admin |
-| `StorePlanModels.kt`, `AdminPlansModels.kt` | Runtime temporary | Plan screens |
+| `StorePlanModels.kt`, `AdminPlansModels.kt` | Preview fixtures + AdminPlans runtime temporary | Plan screens; AdminPlans Phase 11 |
+| `ReferralModels.kt` | Preview fixtures | ReferralsScreen uses API mapper at runtime |
 | `AboutModels.kt` | Runtime temporary | AboutScreen |
 | `ProductTaxonomyMocks.kt` | Runtime temporary | CreateCategoryScreen |
 | `OmniboxModels.kt` | Runtime temporary | Hero search |

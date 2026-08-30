@@ -60,6 +60,8 @@ data class StorePlanFeatureBullet(
 @Immutable
 data class StorePlanTier(
     val id: StorePlanTierId,
+    /** Backend plan id for purchase; 0 for preview/mock. */
+    val planId: Long = 0L,
     val title: String,
     val tagline: String,
     val monthlyPriceToman: Int,

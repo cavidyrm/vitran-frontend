@@ -17,9 +17,11 @@ import com.vitran.shop.feature.seller.product.domain.model.UpdateProductCommand
 import com.vitran.shop.feature.seller.product.domain.query.SellerProductListQuery
 import com.vitran.shop.feature.seller.product.domain.repository.SellerProductRepository
 import com.vitran.shop.feature.seller.product.domain.usecase.CreateProductUseCase
+import com.vitran.shop.feature.seller.plan.domain.model.PlanId
 import com.vitran.shop.feature.seller.shop.domain.model.SellerShopSummary
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopListQuery
 import com.vitran.shop.feature.seller.shop.domain.repository.SellerShopRepository
+import com.vitran.shop.feature.seller.subscription.domain.usecase.GetShopEntitlementsUseCase
 import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -52,6 +54,7 @@ class CreateProductViewModelTest {
                         ),
                     ),
                     FakePicker(),
+                    FakeEntitlementsUseCase(),
                 )
             advanceUntilIdle()
             assertEquals(ShopId(9), vm.uiState.value.selectedShopId)
@@ -72,6 +75,7 @@ class CreateProductViewModelTest {
                     CreateProductUseCase(FakeProductRepo()),
                     FakeShopRepo(listOf(SellerShopSummary(ShopId(1), "S", true, true))),
                     picker,
+                    FakeEntitlementsUseCase(),
                 )
             advanceUntilIdle()
             var received: List<LocalProductImage>? = null
@@ -95,6 +99,7 @@ class CreateProductViewModelTest {
                     CreateProductUseCase(FakeProductRepo()),
                     FakeShopRepo(listOf(SellerShopSummary(ShopId(1), "S", true, true))),
                     FakePicker(listOf(file)),
+                    FakeEntitlementsUseCase(),
                 )
             advanceUntilIdle()
             var locals = emptyList<LocalProductImage>()
@@ -120,6 +125,7 @@ class CreateProductViewModelTest {
                     CreateProductUseCase(repo),
                     FakeShopRepo(listOf(SellerShopSummary(ShopId(1), "S", true, true))),
                     FakePicker(),
+                    FakeEntitlementsUseCase(),
                 )
             advanceUntilIdle()
             vm.submit(
@@ -153,6 +159,7 @@ class CreateProductViewModelTest {
                     CreateProductUseCase(repo),
                     FakeShopRepo(listOf(SellerShopSummary(ShopId(1), "S", true, true))),
                     FakePicker(),
+                    FakeEntitlementsUseCase(),
                 )
             advanceUntilIdle()
             vm.submit("T", "", "10", "1", emptyList(), CreateProductSubmitMode.Draft)
@@ -193,6 +200,7 @@ class CreateProductViewModelTest {
                     CreateProductUseCase(repo),
                     FakeShopRepo(listOf(SellerShopSummary(ShopId(1), "S", true, true))),
                     FakePicker(),
+                    FakeEntitlementsUseCase(),
                 )
             advanceUntilIdle()
             vm.submit("T", "", "10", "1", emptyList(), CreateProductSubmitMode.Draft)
@@ -210,6 +218,36 @@ private class FakePicker(
 ) : ImagePicker {
     override suspend fun pickImages(maxCount: Int): List<SelectedFile> = files.take(maxCount)
 }
+
+/** Stub entitlements that fail load — ViewModel keeps default image limits. */
+private fun FakeEntitlementsUseCase(): GetShopEntitlementsUseCase =
+    GetShopEntitlementsUseCase(
+        subscriptionRepository =
+            object : com.vitran.shop.feature.seller.subscription.domain.repository.SubscriptionRepository {
+                override val subscriptionsByShopId =
+                    kotlinx.coroutines.flow.MutableStateFlow(
+                        emptyMap<ShopId, com.vitran.shop.feature.seller.subscription.domain.model.ShopSubscription>(),
+                    )
+                override suspend fun getSubscription(shopId: ShopId, forceRefresh: Boolean) =
+                    AppResult.Failure(AppError.NotFound())
+                override suspend fun refreshSubscription(shopId: ShopId) =
+                    AppResult.Failure(AppError.NotFound())
+                override suspend fun startPlanPurchase(
+                    shopId: ShopId,
+                    planId: PlanId,
+                ) = AppResult.Failure(AppError.Unexpected())
+            },
+        planRepository =
+            object : com.vitran.shop.feature.seller.plan.domain.repository.PlanRepository {
+                override suspend fun getPlans(forceRefresh: Boolean) =
+                    AppResult.Success(emptyList())
+                override suspend fun getPlan(
+                    planId: PlanId,
+                    forceRefresh: Boolean,
+                ) = AppResult.Failure(AppError.NotFound())
+                override suspend fun refreshPlans() = AppResult.Success(emptyList())
+            },
+    )
 
 private class FakeShopRepo(
     private val shops: List<SellerShopSummary>,

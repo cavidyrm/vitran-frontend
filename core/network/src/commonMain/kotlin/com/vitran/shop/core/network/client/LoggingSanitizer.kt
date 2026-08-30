@@ -42,5 +42,21 @@ fun sanitizeLogMessage(message: String): String {
             "$1\"***REDACTED***\"",
         )
     }
+    // Redact payment Authority / Status query params in payment URLs.
+    sanitized =
+        sanitized.replace(
+            Regex("""([?&]Authority=)([^&\s"']+)""", RegexOption.IGNORE_CASE),
+            "$1***REDACTED***",
+        )
+    sanitized =
+        sanitized.replace(
+            Regex("""([?&]authority=)([^&\s"']+)""", RegexOption.IGNORE_CASE),
+            "$1***REDACTED***",
+        )
+    sanitized =
+        sanitized.replace(
+            Regex("""("payment_url"\s*:\s*")([^"]*)(")""", RegexOption.IGNORE_CASE),
+            "$1***REDACTED***$3",
+        )
     return sanitized
 }

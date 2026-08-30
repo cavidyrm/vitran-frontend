@@ -73,6 +73,8 @@ internal fun ProfileReferralHistory(
     referral: ReferralProfile,
     onInviteClick: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onApplyCredit: ((creditId: String) -> Unit)? = null,
+    applyingCreditId: String? = null,
 ) {
     var filter by remember { mutableStateOf(InviteFilter.All) }
     val all = referral.successful + referral.pending
@@ -146,7 +148,11 @@ internal fun ProfileReferralHistory(
             }
         }
         referral.credits.firstOrNull()?.let { credit ->
-            SellerCreditCard(credit = credit)
+            SellerCreditCard(
+                credit = credit,
+                onApply = onApplyCredit?.let { handler -> { handler(credit.id) } },
+                isApplying = applyingCreditId == credit.id,
+            )
         }
     }
 }
@@ -304,7 +310,11 @@ private fun FilterChip(
 }
 
 @Composable
-private fun SellerCreditCard(credit: ReferralCredit) {
+private fun SellerCreditCard(
+    credit: ReferralCredit,
+    onApply: (() -> Unit)? = null,
+    isApplying: Boolean = false,
+) {
     val progress = if (credit.totalDays > 0) {
         (credit.durationDays.toFloat() / credit.totalDays.toFloat()).coerceIn(0f, 1f)
     } else {
@@ -317,28 +327,47 @@ private fun SellerCreditCard(credit: ReferralCredit) {
                 .padding(VitranSpacing.lg),
         ) {
             val sideBySide = maxWidth >= 480.dp
-            if (sideBySide) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(VitranSpacing.lg),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    SellerCreditCopy(
-                        credit = credit,
-                        progress = progress,
-                        modifier = Modifier.weight(1f),
-                    )
-                    SellerPlanBadge(planTitle = credit.planTitle)
+            Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.md)) {
+                if (sideBySide) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(VitranSpacing.lg),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        SellerCreditCopy(
+                            credit = credit,
+                            progress = progress,
+                            modifier = Modifier.weight(1f),
+                        )
+                        SellerPlanBadge(planTitle = credit.planTitle)
+                    }
+                } else {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(VitranSpacing.lg),
+                    ) {
+                        SellerCreditCopy(credit = credit, progress = progress)
+                        SellerPlanBadge(
+                            planTitle = credit.planTitle,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                        )
+                    }
                 }
-            } else {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(VitranSpacing.lg),
-                ) {
-                    SellerCreditCopy(credit = credit, progress = progress)
-                    SellerPlanBadge(
-                        planTitle = credit.planTitle,
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                    )
+                if (credit.isActive && onApply != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(VitranRadius.small))
+                            .background(ShopPurple)
+                            .clickable(enabled = !isApplying, onClick = onApply)
+                            .padding(VitranSpacing.md),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        VitranText(
+                            text = if (isApplying) "…" else "اعمال اعتبار",
+                            style = VitranTextStyle.Label,
+                            color = Color.White,
+                        )
+                    }
                 }
             }
         }

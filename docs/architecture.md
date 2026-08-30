@@ -1,6 +1,6 @@
 # VitranShop Architecture
 
-Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`); **Phase 7 adds seller shop management** (`:feature:seller`); **Phase 8 adds seller product management** (same `:feature:seller` module, `product/` package) plus `:core:platform` `SelectedFile` / `ImagePicker`.
+Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`); **Phase 7 adds seller shop management** (`:feature:seller`); **Phase 8 adds seller product management** (same `:feature:seller` module, `product/` package) plus `:core:platform` `SelectedFile` / `ImagePicker`; **Phase 9 adds plans, per-shop subscriptions, payment handoff, entitlements, and referrals** (`plan/`, `subscription/`, `referral/` packages in `:feature:seller`).
 
 ## Selected architecture
 

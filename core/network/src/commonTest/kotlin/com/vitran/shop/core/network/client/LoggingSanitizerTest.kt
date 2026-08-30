@@ -50,4 +50,23 @@ class LoggingSanitizerTest {
         assertFalse(sanitized.contains("BINARY_IMAGE_BYTES_SHOULD_NOT_LEAK"))
         assertTrue(sanitized.contains("***BINARY_REDACTED***") || sanitized.contains("name=\"images\""))
     }
+
+    @Test
+    fun paymentAuthorityInUrl_isRedacted() {
+        val raw =
+            """GET http://localhost:8080/payments/callback?Authority=mock-99000&Status=OK"""
+        val sanitized = sanitizeLogMessage(raw)
+        assertFalse(sanitized.contains("mock-99000"))
+        assertTrue(sanitized.contains("***REDACTED***"))
+    }
+
+    @Test
+    fun paymentUrlJsonField_isRedacted() {
+        val sanitized =
+            sanitizeLogMessage(
+                """{"payment_url":"http://localhost:8080/payments/callback?Authority=secret"}""",
+            )
+        assertFalse(sanitized.contains("secret"))
+        assertTrue(sanitized.contains("***REDACTED***"))
+    }
 }

@@ -102,7 +102,7 @@ Built with Ktor `MultiPartFormDataContent` / `formData` on the shared `HttpClien
 
 ## 19. Image validation
 
-Client enforces max **5** images (Postman). MIME passed when known. No invented byte-size limits. Backend enforces plan limits (Phase 9).
+Client enforces max images from `ShopEntitlements.limits.maxImages` when known (fallback 5). MIME passed when known. No invented byte-size limits. Backend remains authoritative for plan limits.
 
 ## 20. Binary logging / security
 

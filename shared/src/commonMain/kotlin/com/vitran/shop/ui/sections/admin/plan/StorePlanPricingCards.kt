@@ -45,8 +45,9 @@ import vitranshop.shared.generated.resources.store_plan_toman
 fun StorePlanPricingCards(
     tiers: List<StorePlanTier>,
     cycle: StorePlanBillingCycle,
-    onSelectPlan: (StorePlanTierId) -> Unit,
+    onSelectPlan: (planId: Long) -> Unit,
     modifier: Modifier = Modifier,
+    purchasingPlanId: Long? = null,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val desktop = maxWidth >= VitranSize.mdBreakpoint
@@ -60,8 +61,9 @@ fun StorePlanPricingCards(
                     StorePlanPricingCard(
                         tier = tier,
                         cycle = cycle,
-                        onSelect = { onSelectPlan(tier.id) },
+                        onSelect = { onSelectPlan(tier.planId) },
                         modifier = Modifier.weight(1f),
+                        isPurchasing = purchasingPlanId == tier.planId && tier.planId != 0L,
                     )
                 }
             }
@@ -74,8 +76,9 @@ fun StorePlanPricingCards(
                     StorePlanPricingCard(
                         tier = tier,
                         cycle = cycle,
-                        onSelect = { onSelectPlan(tier.id) },
+                        onSelect = { onSelectPlan(tier.planId) },
                         modifier = Modifier.fillMaxWidth(),
+                        isPurchasing = purchasingPlanId == tier.planId && tier.planId != 0L,
                     )
                 }
             }
@@ -89,6 +92,7 @@ private fun StorePlanPricingCard(
     cycle: StorePlanBillingCycle,
     onSelect: () -> Unit,
     modifier: Modifier = Modifier,
+    isPurchasing: Boolean = false,
 ) {
     val shape = RoundedCornerShape(StorePlanTokens.CardRadius)
     val borderColor = if (tier.recommended) AdminTokens.Brand else StorePlanTokens.CardBorder
@@ -201,11 +205,20 @@ private fun StorePlanPricingCard(
                         color = AdminTokens.Brand,
                         shape = ctaShape,
                     )
-                    .clickable(role = Role.Button, onClick = onSelect),
+                    .clickable(
+                        enabled = !isPurchasing && tier.planId != 0L,
+                        role = Role.Button,
+                        onClick = onSelect,
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = stringResource(Res.string.store_plan_select_cta),
+                    text =
+                        if (isPurchasing) {
+                            "…"
+                        } else {
+                            stringResource(Res.string.store_plan_select_cta)
+                        },
                     color = if (tier.recommended) AdminTokens.OnBrand else AdminTokens.Brand,
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.SemiBold,

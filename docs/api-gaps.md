@@ -141,10 +141,10 @@ Postman requests **without saved response examples** (15):
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
+| **Status** | Client compatibility workaround (Phase 9) |
 | **Issue** | `features` JSON mixes `Boolean` and `String` (e.g. `"ranking_boost": "slight"`, `"contact_buttons": true`). |
 | **Client impact** | Cannot use `Map<String, Boolean>`. Decode flexible JSON; map known keys to typed domain capabilities. |
-| **Phase 2+ handling** | `JsonObject` or sealed capability parser at data layer. |
+| **Phase 9 handling** | `JsonObject` at DTO → `PlanCapabilitiesMapper` → typed `PlanCapabilities`. Unknown keys ignored. |
 
 ---
 
@@ -152,10 +152,10 @@ Postman requests **without saved response examples** (15):
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
+| **Status** | Open — client workaround (Phase 9) |
 | **Issue** | Collection documents purchase + payment callback; no dedicated client payment-status query endpoint. |
 | **Client impact** | After payment redirect, client may need to refresh shop subscription state. |
-| **Phase 2+ handling** | Poll `GET /seller/shops/{id}/subscription` unless backend adds status API. |
+| **Phase 9 handling** | Verify via `GET /seller/shops/{id}/subscription`. Never call provider callback from app. |
 
 ---
 
@@ -211,6 +211,26 @@ Postman requests **without saved response examples** (15):
 | **Issue** | Fields `price`, `price_amount`, `price_paid`, `amount` with no explicit currency in transport contract. |
 | **Client impact** | Do not assume IRR or any currency in shared domain without product confirmation. |
 | **Phase 5 handling** | `formatMarketplacePrice(Long)` displays raw amounts; domain stores `priceAmount: Long`. |
+| **Phase 9 handling** | Plan `price_amount` stored as `Long`; UI toman formatting is display-only. Currency unit remains **Open**. |
+
+---
+
+## Gap 41 — Phase 9 commercial contract gaps
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open (unless noted) |
+| **Currency** | Open — see Gap 9 |
+| **Complete feature key schema** | Partial — typed keys from Postman examples + `advanced_analytics`; others ignored |
+| **max_shops vs per-shop subscription** | Open — field mapped; create-shop not limited client-side |
+| **payment_url callback path** | Open inconsistency — examples use `/payments/callback` while API is `/api/v1/payments/callback`; client uses returned URL unchanged |
+| **App payment return / deep link** | Open — none documented; resume + manual verify |
+| **Billing history / invoices** | Open — no API; UI payments list empty |
+| **Cancel / downgrade to Free** | Open — no API; actions not faked |
+| **Expired/canceled subscription statuses** | Open — only `active` + `Unknown(raw)` |
+| **Referral credit statuses/sources** | Partial — `available` / `referral_referrer` known; else Unknown |
+| **Credit stacking with early renewal** | Open — refresh subscription after apply; no client math |
+| **Process-death payment recovery** | Open — in-memory pending only |
 
 ---
 

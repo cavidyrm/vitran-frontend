@@ -27,10 +27,10 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Seller Shops | Shops — Seller | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required (auth; seller role not required for first create) |
 | Seller Products | Products — Seller | `SellerProductApi` ✅ | `SellerProductRepository` ✅ | Required (seller) |
 | Seller Analytics / Boosts | Boosts — Seller, analytics | `SellerAnalyticsApi` | `AnalyticsRepository`, `BoostRepository` | Required (seller) |
-| Seller Subscription | Shops — Seller (subscription) | `SellerShopApi` | `SubscriptionRepository` | Required (seller) |
+| Seller Subscription | Shops — Seller (subscription) | `SellerSubscriptionApi` | `SubscriptionRepository` | Required (seller) |
 | Referral | Referrals | `ReferralApi` | `ReferralRepository` | Mixed |
 | Plans | Plans — Public | `PlanApi` | `PlanRepository` | Public |
-| Admin Plans | Plans — Admin | `AdminPlanApi` | `AdminPlanRepository` | Required (admin) |
+| Admin Plans | Plans — Admin | `AdminPlanApi` | `AdminPlanRepository` | Required (admin) — Phase 11 |
 | Payments | Payments — Public | `PaymentApi` | `PaymentRepository` | Public callback |
 | CMS | Static Pages — Public | `ContentApi` | `ContentRepository` | Public |
 | Admin CMS | Static Pages — Admin | `AdminContentApi` | `AdminContentRepository` | Required (admin) |
@@ -40,7 +40,9 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 
 Avoid a single `VitranApi` with 100+ methods. Incremental services:
 
-`AuthApi`, `AccountApi`, `ReferralApi`, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi` ✅, `SellerAnalyticsApi`, `PlanApi`, `PaymentApi`, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
+`AuthApi`, `AccountApi`, `ReferralApi` ✅, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi` ✅, `SellerAnalyticsApi`, `PlanApi` ✅, `SellerSubscriptionApi` ✅, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
+
+Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint; not a normal client operation**.
 
 ## Full endpoint index
 
@@ -83,13 +85,13 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | POST | `/api/v1/events` | Home | Engagement | `UserEventApi` ✅ | `MarketplaceAnalyticsTracker` ✅ | Optional | Yes |
 | GET | `/api/v1/home?city_id=1` | Home | Home | HomeApi | HomeRepository | Optional | Yes |
 | GET | `/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10` | Home | Home | HomeApi | HomeRepository | Public | **Missing** |
-| GET | `/api/v1/payments/callback?Authority=mock-99000&Status=OK` | Payments — Public | Payments | PaymentApi | PaymentRepository | Public | Yes |
-| GET | `/api/v1/admin/plans` | Plans — Admin | Admin Plans | AdminPlanApi | AdminPlanRepository | Public | Yes |
-| POST | `/api/v1/admin/plans` | Plans — Admin | Admin Plans | AdminPlanApi | AdminPlanRepository | Public | Yes |
-| PATCH | `/api/v1/admin/plans/2` | Plans — Admin | Admin Plans | AdminPlanApi | AdminPlanRepository | Public | Yes |
-| DELETE | `/api/v1/admin/plans/5` | Plans — Admin | Admin Plans | AdminPlanApi | AdminPlanRepository | Public | Yes |
-| GET | `/api/v1/plans` | Plans — Public | Plans | PlanApi | PlanRepository | Public | Yes |
-| GET | `/api/v1/plans/2` | Plans — Public | Plans | PlanApi | PlanRepository | Public | Yes |
+| GET | `/api/v1/payments/callback?Authority=mock-99000&Status=OK` | Payments — Public | Payments | — | — | Provider | Backend/provider only — not client |
+| GET | `/api/v1/admin/plans` | Plans — Admin | Admin Plans | AdminPlanApi | AdminPlanRepository | Required | Phase 11 |
+| POST | `/api/v1/admin/plans` | Plans — Admin | Admin Plans | AdminPlanApi | AdminPlanRepository | Required | Phase 11 |
+| PATCH | `/api/v1/admin/plans/2` | Plans — Admin | Admin Plans | AdminPlanApi | AdminPlanRepository | Required | Phase 11 |
+| DELETE | `/api/v1/admin/plans/5` | Plans — Admin | Admin Plans | AdminPlanApi | AdminPlanRepository | Required | Phase 11 |
+| GET | `/api/v1/plans` | Plans — Public | Plans | PlanApi | PlanRepository | Public | Yes (Phase 9) |
+| GET | `/api/v1/plans/2` | Plans — Public | Plans | PlanApi | PlanRepository | Public | Yes (Phase 9) |
 | GET | `/api/v1/admin/products/1` | Products — Admin | Admin Moderation | AdminModerationApi | AdminModerationRepository | Public | Yes |
 | PATCH | `/api/v1/admin/products/1/confirm` | Products — Admin | Admin Moderation | AdminModerationApi | AdminModerationRepository | Public | Yes |
 | GET | `/api/v1/admin/products?per_page=20&active=false&shop_id=1&category_slug=aa-1-2-3-4&user_id=2` | Products — Admin | Admin Moderation | AdminModerationApi | AdminModerationRepository | Public | Yes |
@@ -107,9 +109,9 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | DELETE | `/api/v1/seller/products/1/images/1` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public | Yes |
 | GET | `/api/v1/seller/products?per_page=20&active=false&shop_id=1&category_slug=aa-1-2-3-4` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public | Yes |
 | POST | `/api/v1/seller/shops/1/products` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public (multipart) | Yes |
-| GET | `/api/v1/me/referral` | Referrals | Referral | ReferralApi | ReferralRepository | Public | Yes |
-| POST | `/api/v1/me/referrals/credits/{{referralCreditId}}/apply` | Referrals | Referral | ReferralApi | ReferralRepository | Public | Yes |
-| GET | `/api/v1/referrals/{{referralCode}}` | Referrals | Referral | ReferralApi | ReferralRepository | Public | Yes |
+| GET | `/api/v1/me/referral` | Referrals | Referral | ReferralApi | ReferralRepository | Required | Yes (Phase 9) |
+| POST | `/api/v1/me/referrals/credits/{{referralCreditId}}/apply` | Referrals | Referral | ReferralApi | ReferralRepository | Required | Yes (Phase 9) |
+| GET | `/api/v1/referrals/{{referralCode}}` | Referrals | Referral | ReferralApi | ReferralRepository | Public | Yes (Phase 9) |
 | POST | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | `EngagementApi` ✅ | `FollowRepository` ✅ | Required | **Missing** (empty body) |
 | GET | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | — | — | Required | **Missing — Partially implemented due missing schema** |
 | DELETE | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | `EngagementApi` ✅ | `FollowRepository` ✅ | Required | **Missing** (empty body) |
@@ -128,8 +130,8 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | GET | `/api/v1/seller/shops/1/analytics?period=7d` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Required | **Missing** (Phase 10) |
 | GET | `/api/v1/seller/shops/1/fulfillment-options` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | POST | `/api/v1/seller/shops/1/regenerate-api-key` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
-| GET | `/api/v1/seller/shops/1/subscription` | Shops — Seller | Seller Subscription | SellerShopApi | SubscriptionRepository | Required | Yes (Phase 9) |
-| POST | `/api/v1/seller/shops/1/subscription/purchase` | Shops — Seller | Seller Subscription | SellerShopApi | SubscriptionRepository | Required | Yes (Phase 9) |
+| GET | `/api/v1/seller/shops/1/subscription` | Shops — Seller | Seller Subscription | SellerSubscriptionApi | SubscriptionRepository | Required | Yes (Phase 9) |
+| POST | `/api/v1/seller/shops/1/subscription/purchase` | Shops — Seller | Seller Subscription | SellerSubscriptionApi | SubscriptionRepository | Required | Yes (Phase 9) |
 | GET | `/api/v1/seller/shops/check-slug?slug=my-shop&exclude_id=1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | GET | `/api/v1/seller/shops?per_page=20` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | GET | `/api/v1/admin/static-pages` | Static Pages — Admin | Admin CMS | AdminContentApi | AdminContentRepository | Public | Yes |

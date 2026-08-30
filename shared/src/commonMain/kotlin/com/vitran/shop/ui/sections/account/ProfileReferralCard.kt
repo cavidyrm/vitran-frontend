@@ -81,6 +81,7 @@ import vitranshop.shared.generated.resources.ill_referral_gift_box
 internal fun ProfileReferralCard(
     referral: ReferralProfile,
     modifier: Modifier = Modifier,
+    onShareClick: (() -> Unit)? = null,
 ) {
     val clipboard = LocalClipboardManager.current
     var copiedCode by remember { mutableStateOf(false) }
@@ -109,7 +110,11 @@ internal fun ProfileReferralCard(
                 shared = false
             },
             onShare = {
-                clipboard.setText(AnnotatedString(referral.inviteUrl))
+                if (onShareClick != null) {
+                    onShareClick()
+                } else {
+                    clipboard.setText(AnnotatedString(referral.inviteUrl))
+                }
                 shared = true
                 copiedCode = false
                 copiedLink = false

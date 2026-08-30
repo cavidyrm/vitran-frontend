@@ -80,8 +80,9 @@ flowchart TB
 Future modules (Phase 8+):
 
 ```text
-:feature:seller (products)  → Phase 8
-subscription/payments       → Phase 9
+:feature:seller (products)  → Phase 8 ✅
+subscription/payments/referrals → Phase 9 ✅ (packages under :feature:seller)
+admin plans                 → Phase 11
 ```
 
 `:feature:engagement` → `:feature:marketplace` is **one-way** (IDs + `CursorListController`). Marketplace must not depend on engagement.

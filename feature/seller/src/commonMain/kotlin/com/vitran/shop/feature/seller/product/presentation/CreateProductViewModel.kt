@@ -17,6 +17,7 @@ import com.vitran.shop.feature.seller.shop.domain.model.SellerShopSummary
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopFilter
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopListQuery
 import com.vitran.shop.feature.seller.shop.domain.repository.SellerShopRepository
+import com.vitran.shop.feature.seller.subscription.domain.usecase.GetShopEntitlementsUseCase
 import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -30,7 +31,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-private const val MaxProductImages = 5
+/** Fallback when shop entitlements are not yet loaded. */
+private const val DefaultMaxProductImages = 5
 
 enum class CreateProductSubmitMode {
     Draft,
@@ -59,6 +61,8 @@ data class CreateProductUiState(
     val selectedShopId: ShopId? = null,
     val storeName: String = "",
     val shopsError: AppError? = null,
+    val maxImages: Int = DefaultMaxProductImages,
+    val maxProducts: Int? = null,
     val isPickingImages: Boolean = false,
     val isSubmitting: Boolean = false,
     val fieldErrors: CreateProductFieldErrors = CreateProductFieldErrors(),
@@ -79,6 +83,7 @@ class CreateProductViewModel(
     private val createProductUseCase: CreateProductUseCase,
     private val sellerShopRepository: SellerShopRepository,
     private val imagePicker: ImagePicker,
+    private val getShopEntitlements: GetShopEntitlementsUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateProductUiState())
     val uiState: StateFlow<CreateProductUiState> = _uiState.asStateFlow()
@@ -122,6 +127,7 @@ class CreateProductViewModel(
                                 },
                         )
                     }
+                    selected?.id?.let { refreshEntitlements(it) }
                 }
                 is AppResult.Failure -> {
                     _uiState.update {
@@ -135,6 +141,26 @@ class CreateProductViewModel(
     fun selectShop(shopId: ShopId) {
         val shop = _uiState.value.shops.firstOrNull { it.id == shopId } ?: return
         _uiState.update { it.copy(selectedShopId = shopId, storeName = shop.title) }
+        refreshEntitlements(shopId)
+    }
+
+    private fun refreshEntitlements(shopId: ShopId) {
+        viewModelScope.launch {
+            when (val result = getShopEntitlements(shopId)) {
+                is AppResult.Success -> {
+                    val e = result.value
+                    _uiState.update {
+                        it.copy(
+                            maxImages = e.limits.maxImages.takeIf { n -> n > 0 } ?: DefaultMaxProductImages,
+                            maxProducts = e.limits.maxProducts,
+                        )
+                    }
+                }
+                is AppResult.Failure -> {
+                    // Keep defaults; server remains authoritative on submit.
+                }
+            }
+        }
     }
 
     fun pickImages(
@@ -142,7 +168,8 @@ class CreateProductViewModel(
         onResult: (List<LocalProductImage>) -> Unit,
     ) {
         if (_uiState.value.isPickingImages || _uiState.value.isSubmitting) return
-        val remaining = MaxProductImages - currentMediaCount
+        val maxImages = _uiState.value.maxImages
+        val remaining = maxImages - currentMediaCount
         if (remaining <= 0) return
         pickJob?.cancel()
         pickJob =
@@ -234,6 +261,7 @@ class CreateProductViewModel(
                 images = images,
             )
 
+        val maxImages = _uiState.value.maxImages
         submitJob?.cancel()
         submitJob =
             viewModelScope.launch {
@@ -244,7 +272,7 @@ class CreateProductViewModel(
                         generalError = null,
                     )
                 }
-                when (val result = createProductUseCase(command)) {
+                when (val result = createProductUseCase(command, maxImages = maxImages)) {
                     is AppResult.Success -> {
                         val details = result.value
                         _uiState.update {
