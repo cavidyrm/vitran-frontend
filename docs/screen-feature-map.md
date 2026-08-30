@@ -73,6 +73,7 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 | AccountScreen | `SessionRepository` + `AccountRepository`; seller/admin role gates |
 | CreateStoreScreen | Session update after shop create via `CreateShopUseCase` (not Auth ViewModel) |
 | Seller list / edit / details / API key | ViewModels in `:feature:seller` ready; Compose screens deferred |
+| Seller analytics / boosts | `SellerAnalyticsViewModel`, `SellerBoostsViewModel`, `CreateBoostViewModel` ready; **no new Compose screens** (Phase 10) |
 | StorePlanScreen | Wired Phase 9 — shop from SellerShopRepository; SubscriptionRepository |
 | StorePlanUpgradeScreen | Wired Phase 9 — PlanRepository + PurchasePlan + VerifyPendingPayment |
 | ReferralsScreen | Wired Phase 9 — ReferralRepository + ApplyReferralCredit |

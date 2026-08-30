@@ -175,7 +175,17 @@ Controlled by `NetworkDiagnosticsConfig.enableHttpLogging`:
 
 Mandatory redaction for: `Authorization`, `access_token`, `refresh_token`, `temp_token`, `otp_code`, `password`, `new_password`, `api_key`, payment authority/URLs.
 
-Implemented in `LoggingSanitizer.kt` + Ktor `sanitizeHeader`.
+Implemented in `LoggingSanitizer.kt` + Ktor `sanitizeHeader`. CSV / `Content-Disposition: attachment` bodies are redacted (Phase 10).
+
+## 13b. FileDownloadExecutor (Phase 10)
+
+JSON envelope decoding cannot carry CSV. `FileDownloadExecutor` is a **separate** executor in `:core:network`:
+
+- Success: HTTP 2xx and Content-Type is not HTML → opaque `DownloadResponse` (`ByteArray`).
+- Failure: non-2xx → existing `ApiErrorMapper` (never save error JSON as `.csv`).
+- Do not log bytes. Memory: `ByteArray` (not unlimited streaming).
+
+CSV export uses this path; `ApiRequestExecutor` stays JSON-only.
 
 ## 14. Cursor pagination
 

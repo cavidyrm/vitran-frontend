@@ -6,6 +6,7 @@ import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.core.network.config.ApiEnvironments
 import com.vitran.shop.core.network.config.NetworkConfig
 import com.vitran.shop.core.network.executor.ApiRequestExecutor
+import com.vitran.shop.core.network.executor.FileDownloadExecutor
 import com.vitran.shop.core.network.health.HealthApi
 import com.vitran.shop.core.network.logging.NetworkLogger
 import com.vitran.shop.core.network.logging.NoOpNetworkLogger
@@ -52,6 +53,8 @@ val networkModule = module {
     }
 
     single { ApiRequestExecutor(json = get(), logger = get()) }
+
+    single { FileDownloadExecutor(json = get(), logger = get()) }
 
     single { HealthApi(client = get(), environment = get(), executor = get()) }
 

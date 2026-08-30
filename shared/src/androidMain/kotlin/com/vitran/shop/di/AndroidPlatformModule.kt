@@ -1,6 +1,8 @@
 package com.vitran.shop.di
 
 import android.content.Context
+import com.vitran.shop.core.platform.file.FileSaver
+import com.vitran.shop.core.platform.file.HostedFileSaver
 import com.vitran.shop.core.platform.file.HostedImagePicker
 import com.vitran.shop.core.platform.file.ImagePicker
 import com.vitran.shop.core.platform.serialization.createPlatformJson
@@ -21,4 +23,6 @@ fun androidPlatformModule(context: Context): Module = module {
     single<ShareManager> { AndroidShareManager(get()) }
     single { HostedImagePicker() }
     single<ImagePicker> { get<HostedImagePicker>() }
+    single { HostedFileSaver() }
+    single<FileSaver> { get<HostedFileSaver>() }
 }

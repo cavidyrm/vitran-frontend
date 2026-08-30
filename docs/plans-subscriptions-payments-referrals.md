@@ -111,6 +111,8 @@ See [api-gaps.md](api-gaps.md) Phase 9 section.
 
 ## 35. Phase 10 integration points
 
-Reuse: `PlanId`, `PlanCapabilities` (incl. `advancedAnalytics`), `ShopSubscription`, `ShopEntitlements`, `ShopId`, ExternalUrlLauncher, AppResult, AuthMode.Required, Koin, UDF.
+Phase 10 **reused** `PlanCapabilities.advancedAnalytics` for seller analytics **export UX precheck only**. Export GET remains server-authoritative: a successful CSV is not rejected because local `advancedAnalytics` is stale `false`. No plan-slug checks (`business`). No second capability model.
 
-Do **not** duplicate plan parsing, subscription retrieval, or slug capability spaghetti.
+Reuse: `PlanId`, `PlanCapabilities` (incl. `advancedAnalytics`), `ShopSubscription`, `ShopEntitlements`, `GetShopEntitlementsUseCase`, `ShopId`, AppResult, AuthMode.Required, Koin, UDF. Subscription-store updates re-read entitlements for the selected shop.
+
+Do **not** duplicate plan parsing, subscription retrieval, or slug capability spaghetti. See [seller-analytics-and-boosts.md](seller-analytics-and-boosts.md).

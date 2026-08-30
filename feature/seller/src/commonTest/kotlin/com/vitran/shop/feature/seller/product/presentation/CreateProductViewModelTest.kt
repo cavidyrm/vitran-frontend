@@ -240,12 +240,13 @@ private fun FakeEntitlementsUseCase(): GetShopEntitlementsUseCase =
         planRepository =
             object : com.vitran.shop.feature.seller.plan.domain.repository.PlanRepository {
                 override suspend fun getPlans(forceRefresh: Boolean) =
-                    AppResult.Success(emptyList())
+                    AppResult.Success(emptyList<com.vitran.shop.feature.seller.plan.domain.model.PlanSummary>())
                 override suspend fun getPlan(
                     planId: PlanId,
                     forceRefresh: Boolean,
                 ) = AppResult.Failure(AppError.NotFound())
-                override suspend fun refreshPlans() = AppResult.Success(emptyList())
+                override suspend fun refreshPlans() =
+                    AppResult.Success(emptyList<com.vitran.shop.feature.seller.plan.domain.model.PlanSummary>())
             },
     )
 

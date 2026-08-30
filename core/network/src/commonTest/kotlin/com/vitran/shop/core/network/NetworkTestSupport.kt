@@ -8,6 +8,7 @@ import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.core.network.config.NetworkConfig
 import com.vitran.shop.core.network.config.NetworkDiagnosticsConfig
 import com.vitran.shop.core.network.executor.ApiRequestExecutor
+import com.vitran.shop.core.network.executor.FileDownloadExecutor
 import com.vitran.shop.core.network.logging.NoOpNetworkLogger
 import com.vitran.shop.core.network.serialization.createNetworkJson
 import com.vitran.shop.core.session.SessionReader
@@ -27,6 +28,9 @@ internal fun createTestJson(): Json = createNetworkJson()
 
 internal fun createTestExecutor(json: Json = createTestJson()): ApiRequestExecutor =
     ApiRequestExecutor(json = json, logger = NoOpNetworkLogger)
+
+internal fun createTestDownloadExecutor(json: Json = createTestJson()): FileDownloadExecutor =
+    FileDownloadExecutor(json = json, logger = NoOpNetworkLogger)
 
 internal class FakeSessionAuthCoordinator(
     private val sessionReader: SessionReader = FakeSessionReader(),

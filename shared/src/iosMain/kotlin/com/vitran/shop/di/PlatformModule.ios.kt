@@ -1,5 +1,7 @@
 package com.vitran.shop.di
 
+import com.vitran.shop.core.platform.file.FileSaver
+import com.vitran.shop.core.platform.file.HostedFileSaver
 import com.vitran.shop.core.platform.file.HostedImagePicker
 import com.vitran.shop.core.platform.file.ImagePicker
 import com.vitran.shop.core.platform.serialization.createPlatformJson
@@ -19,4 +21,6 @@ actual fun platformModule(): Module = module {
     single<ShareManager> { IosShareManager(get()) }
     single { HostedImagePicker() }
     single<ImagePicker> { get<HostedImagePicker>() }
+    single { HostedFileSaver() }
+    single<FileSaver> { get<HostedFileSaver>() }
 }

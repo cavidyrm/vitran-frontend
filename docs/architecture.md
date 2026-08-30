@@ -1,6 +1,6 @@
 # VitranShop Architecture
 
-Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`); **Phase 7 adds seller shop management** (`:feature:seller`); **Phase 8 adds seller product management** (same `:feature:seller` module, `product/` package) plus `:core:platform` `SelectedFile` / `ImagePicker`; **Phase 9 adds plans, per-shop subscriptions, payment handoff, entitlements, and referrals** (`plan/`, `subscription/`, `referral/` packages in `:feature:seller`).
+Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`); **Phase 7 adds seller shop management** (`:feature:seller`); **Phase 8 adds seller product management** (same `:feature:seller` module, `product/` package) plus `:core:platform` `SelectedFile` / `ImagePicker`; **Phase 9 adds plans, per-shop subscriptions, payment handoff, entitlements, and referrals** (`plan/`, `subscription/`, `referral/` packages in `:feature:seller`); **Phase 10 adds seller analytics CSV export, `FileDownloadExecutor`, `FileSaver`, and placement-boost transport** (`analytics/`, `boost/` packages; Compose screens deferred).
 
 ## Selected architecture
 
@@ -104,14 +104,15 @@ See [dependency-rules.md](dependency-rules.md). Summary:
 
 - **`core:common`** — genuinely universal helpers only; not a dumping ground
 - **`core:domain`** — cross-feature primitives (`AuthMode`, `UserRole`, `AppError`, `AppResult`, pagination)
-- **`core:network`** — Ktor client, envelope, executor, pagination DTOs, HealthApi ([networking.md](networking.md))
+- **`core:network`** — Ktor client, envelope, `ApiRequestExecutor`, `FileDownloadExecutor` (opaque bytes / CSV), pagination DTOs, HealthApi ([networking.md](networking.md))
 - **`core:session`** — secure credential storage, token refresh, `SessionRepository` (Phase 3)
+- **`core:platform`** — secure storage, `ImagePicker` (upload), `FileSaver` (Phase 10 download)
 - **`feature:location`** — `LocationRepository`, public cities API, in-memory list cache ([reference-data.md](reference-data.md))
 - **`feature:taxonomy`** — `TaxonomyRepository`, public category tree/detail, in-memory cache
 - **`feature:marketplace`** — `ShopRepository`, `ProductRepository`, public shop/product APIs, cursor list ViewModels ([public-marketplace.md](public-marketplace.md))
 - **`feature:home`** — `HomeRepository`, optional-auth home envelope ([public-marketplace.md](public-marketplace.md))
 - **`feature:engagement`** — follow/favorite/wishlist/reviews/comments/contact/analytics ([marketplace-engagement.md](marketplace-engagement.md))
-- **`feature:seller`** — seller shop CRUD, slug check, fulfillment options, API-key regen ([seller-shop-management.md](seller-shop-management.md))
+- **`feature:seller`** — seller shop CRUD, products, plans/subscriptions/referrals, analytics export, boost transport ([seller-shop-management.md](seller-shop-management.md), [seller-analytics-and-boosts.md](seller-analytics-and-boosts.md))
 - **`core:designsystem` / `core:ui`** — deferred; theme lives in `:shared` today
 
 ## Feature responsibility (conceptual packages)
@@ -163,7 +164,7 @@ Default to `commonMain` for domain, ViewModels, repositories, DTOs, and mappers.
 
 ## Platform-specific strategy
 
-Prefer **interface + DI** for replaceable capabilities (`SecureStorage`, `ShareManager`, `FilePicker`). Use **expect/actual** only when a small platform primitive is genuinely needed and DI would be artificial.
+Prefer **interface + DI** for replaceable capabilities (`SecureStorage`, `ShareManager`, `ImagePicker`, `FileSaver`). Use **expect/actual** only when a small platform primitive is genuinely needed and DI would be artificial.
 
 ## Related documents
 
@@ -172,4 +173,5 @@ Prefer **interface + DI** for replaceable capabilities (`SecureStorage`, `ShareM
 - [screen-feature-map.md](screen-feature-map.md)
 - [build-configuration.md](build-configuration.md)
 - [marketplace-engagement.md](marketplace-engagement.md)
+- [seller-analytics-and-boosts.md](seller-analytics-and-boosts.md)
 - [decisions/](decisions/)

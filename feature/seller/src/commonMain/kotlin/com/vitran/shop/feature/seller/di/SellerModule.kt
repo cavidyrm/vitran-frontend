@@ -1,6 +1,19 @@
 package com.vitran.shop.feature.seller.di
 
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
+import com.vitran.shop.feature.seller.analytics.data.remote.SellerAnalyticsApi
+import com.vitran.shop.feature.seller.analytics.data.repository.DefaultSellerAnalyticsRepository
+import com.vitran.shop.feature.seller.analytics.data.state.SellerAnalyticsStateStore
+import com.vitran.shop.feature.seller.analytics.domain.repository.SellerAnalyticsRepository
+import com.vitran.shop.feature.seller.analytics.domain.usecase.ExportSellerAnalyticsUseCase
+import com.vitran.shop.feature.seller.analytics.presentation.SellerAnalyticsViewModel
+import com.vitran.shop.feature.seller.boost.data.remote.SellerBoostApi
+import com.vitran.shop.feature.seller.boost.data.repository.DefaultSellerBoostRepository
+import com.vitran.shop.feature.seller.boost.data.state.SellerBoostStateStore
+import com.vitran.shop.feature.seller.boost.domain.repository.SellerBoostRepository
+import com.vitran.shop.feature.seller.boost.domain.usecase.CreatePlacementBoostUseCase
+import com.vitran.shop.feature.seller.boost.presentation.CreateBoostViewModel
+import com.vitran.shop.feature.seller.boost.presentation.SellerBoostsViewModel
 import com.vitran.shop.feature.seller.plan.data.remote.PlanApi
 import com.vitran.shop.feature.seller.plan.data.repository.DefaultPlanRepository
 import com.vitran.shop.feature.seller.plan.domain.repository.PlanRepository
@@ -65,6 +78,16 @@ val sellerModule = module {
     single { ReferralApi(get(), get(), get()) }
     single<ReferralRepository> { DefaultReferralRepository(get(), get()) }
 
+    // Phase 10 — Seller analytics export (user-scoped; no dashboard DTO)
+    single { SellerAnalyticsStateStore(invalidationListeners = get()) }
+    single { SellerAnalyticsApi(get(), get(), get()) }
+    single<SellerAnalyticsRepository> { DefaultSellerAnalyticsRepository(get(), get()) }
+
+    // Phase 10 — Placement boosts (user-scoped)
+    single { SellerBoostStateStore(invalidationListeners = get()) }
+    single { SellerBoostApi(get(), get(), get()) }
+    single<SellerBoostRepository> { DefaultSellerBoostRepository(get(), get()) }
+
     factory { CreateShopUseCase(get(), get(), get()) }
     factory {
         UpdateShopUseCase(
@@ -103,6 +126,13 @@ val sellerModule = module {
             shopPublicCacheInvalidator = get(),
         )
     }
+    factory { ExportSellerAnalyticsUseCase(get()) }
+    factory {
+        CreatePlacementBoostUseCase(
+            boostRepository = get(),
+            shopPublicCacheInvalidator = get(),
+        )
+    }
 
     viewModel { CreateShopViewModel(get(), get()) }
     viewModel { SellerShopsViewModel(get()) }
@@ -127,6 +157,17 @@ val sellerModule = module {
             subscriptionRepository = get(),
         )
     }
+    viewModel {
+        SellerAnalyticsViewModel(
+            sellerShopRepository = get(),
+            exportSellerAnalytics = get(),
+            getShopEntitlements = get(),
+            subscriptionRepository = get(),
+            fileSaver = get(),
+        )
+    }
+    viewModel { SellerBoostsViewModel(get(), get()) }
+    viewModel { CreateBoostViewModel(get()) }
 
     factory { EditShopViewModelFactory(get(), get()) }
     factory { SellerShopDetailsViewModelFactory(get()) }

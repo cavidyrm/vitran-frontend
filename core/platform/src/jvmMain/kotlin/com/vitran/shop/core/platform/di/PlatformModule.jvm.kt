@@ -6,8 +6,10 @@ import com.vitran.shop.core.platform.share.JvmShareManager
 import com.vitran.shop.core.platform.share.ShareManager
 import com.vitran.shop.core.platform.storage.InMemorySecureSessionStorage
 import com.vitran.shop.core.platform.storage.SecureSessionStorage
+import com.vitran.shop.core.platform.file.FileSaver
 import com.vitran.shop.core.platform.file.ImagePicker
 import com.vitran.shop.core.platform.file.JvmFileImagePicker
+import com.vitran.shop.core.platform.file.JvmFileSaver
 import org.koin.dsl.module
 
 /**
@@ -19,4 +21,5 @@ val jvmPlatformModule = module {
     single<ExternalUrlLauncher> { JvmExternalUrlLauncher() }
     single<ShareManager> { JvmShareManager(get()) }
     single<ImagePicker> { JvmFileImagePicker() }
+    single<FileSaver> { JvmFileSaver() }
 }

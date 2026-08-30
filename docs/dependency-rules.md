@@ -82,6 +82,7 @@ Future modules (Phase 8+):
 ```text
 :feature:seller (products)  → Phase 8 ✅
 subscription/payments/referrals → Phase 9 ✅ (packages under :feature:seller)
+analytics export / boosts   → Phase 10 ✅ (`analytics/`, `boost/` under :feature:seller)
 admin plans                 → Phase 11
 ```
 
@@ -179,6 +180,7 @@ Checklist before adding a module dependency:
 |------------|----------|
 | Secure token storage | `:core:platform` interface; android/ios/jvm actuals |
 | File upload (multipart) | Shared upload abstraction; platform converts picker result |
+| File download / save | `:core:platform` `FileSaver` + DI (`HostedFileSaver` / `JvmFileSaver` / JS Blob); `FileDownloadExecutor` in `:core:network` |
 | Share / external URLs | Interface + DI |
 | Small URL/path helpers on web | expect/actual if needed |
 

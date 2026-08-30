@@ -69,4 +69,19 @@ class LoggingSanitizerTest {
         assertFalse(sanitized.contains("secret"))
         assertTrue(sanitized.contains("***REDACTED***"))
     }
+
+    @Test
+    fun csvAttachmentBody_isRedacted() {
+        val raw =
+            """
+            Content-Type: text/csv
+            Content-Length: 40
+
+            shop_id,period,views
+            1,7d,99
+            """.trimIndent()
+        val sanitized = sanitizeLogMessage(raw)
+        assertFalse(sanitized.contains("shop_id,period,views"))
+        assertTrue(sanitized.contains("***CSV_REDACTED***"))
+    }
 }

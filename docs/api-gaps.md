@@ -234,6 +234,31 @@ Postman requests **without saved response examples** (15):
 
 ---
 
+## Gap 42 — Phase 10 seller analytics & boosts
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open (unless noted) |
+| **GET `/seller/shops/{id}/analytics` response** | **Open — UNRESOLVED, not invented.** No Postman example. Dashboard DTO not implemented. |
+| **Metric IDs / `available_metrics` / `locked_metrics`** | Open — not mapped |
+| **Timeseries / charts schema** | Open |
+| **Complete period set** | Partial — `7d` / `30d` verified; `90d`/`today`/`1y` not added |
+| **CSV columns / header row** | Open — bytes passed through, not parsed |
+| **CSV Content-Disposition / charset** | Partial — filename extracted as untrusted; sanitized in Presentation |
+| **`advanced_analytics` type** | Verified Boolean in Phase 9 `PlanCapabilities`; UX precheck only |
+| **Non-empty boost list item schema** | Open — `Unmapped(count)` only; no `PlacementBoost` fields |
+| **Boost duration allowed set** | Open — `days` is required `Int`; example `7` is not policy |
+| **Boost pricing / `GET /boost-prices`** | **Open — UNRESOLVED, no client invention.** Postman `50000` is payload shape. `CreateBoostViewModel.submit()` does not POST. |
+| **`price_paid` server validation** | Open — backend may trust client amount (security gap) |
+| **Currency for `price_paid`** | Open — see Gap 9 |
+| **Boost eligibility (publication, plan gate)** | Open — not invented |
+| **Boost history / cancel / edit** | Open — no APIs |
+| **Boost payment gateway** | Open — not in Phase 10 |
+
+See [seller-analytics-and-boosts.md](seller-analytics-and-boosts.md).
+
+---
+
 ## Gap 17 — Public shop detail visual fields
 
 | Field | Status |

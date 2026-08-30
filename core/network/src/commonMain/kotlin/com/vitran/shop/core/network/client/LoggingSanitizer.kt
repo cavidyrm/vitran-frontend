@@ -58,5 +58,22 @@ fun sanitizeLogMessage(message: String): String {
             Regex("""("payment_url"\s*:\s*")([^"]*)(")""", RegexOption.IGNORE_CASE),
             "$1***REDACTED***$3",
         )
+    // Redact CSV / attachment download bodies — never log analytics export contents.
+    sanitized =
+        sanitized.replace(
+            Regex(
+                """(Content-Type:\s*(?:text/csv|application/csv|text/comma-separated-values)[^\n]*\n(?:Content-[^\n]*\n)*\r?\n)[\s\S]*""",
+                RegexOption.IGNORE_CASE,
+            ),
+            "$1***CSV_REDACTED***\n",
+        )
+    sanitized =
+        sanitized.replace(
+            Regex(
+                """(Content-Disposition:\s*attachment[^\n]*\n(?:Content-Type:[^\n]*\n)?(?:Content-Length:[^\n]*\n)?\r?\n)[\s\S]*""",
+                RegexOption.IGNORE_CASE,
+            ),
+            "$1***ATTACHMENT_REDACTED***\n",
+        )
     return sanitized
 }

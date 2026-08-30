@@ -26,7 +26,8 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Shop Comments | Comments | `ShopCommentApi` ✅ | `ShopCommentRepository` ✅ | None / Required |
 | Seller Shops | Shops — Seller | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required (auth; seller role not required for first create) |
 | Seller Products | Products — Seller | `SellerProductApi` ✅ | `SellerProductRepository` ✅ | Required (seller) |
-| Seller Analytics / Boosts | Boosts — Seller, analytics | `SellerAnalyticsApi` | `AnalyticsRepository`, `BoostRepository` | Required (seller) |
+| Seller Analytics | Shops — Seller (analytics) | `SellerAnalyticsApi` ✅ | `SellerAnalyticsRepository` ✅ | Required (seller) |
+| Seller Boosts | Boosts — Seller | `SellerBoostApi` ✅ | `SellerBoostRepository` ✅ | Required (seller) |
 | Seller Subscription | Shops — Seller (subscription) | `SellerSubscriptionApi` | `SubscriptionRepository` | Required (seller) |
 | Referral | Referrals | `ReferralApi` | `ReferralRepository` | Mixed |
 | Plans | Plans — Public | `PlanApi` | `PlanRepository` | Public |
@@ -40,7 +41,7 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 
 Avoid a single `VitranApi` with 100+ methods. Incremental services:
 
-`AuthApi`, `AccountApi`, `ReferralApi` ✅, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi` ✅, `SellerAnalyticsApi`, `PlanApi` ✅, `SellerSubscriptionApi` ✅, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
+`AuthApi`, `AccountApi`, `ReferralApi` ✅, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi` ✅, `SellerAnalyticsApi` ✅, `SellerBoostApi` ✅, `PlanApi` ✅, `SellerSubscriptionApi` ✅, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
 
 Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint; not a normal client operation**.
 
@@ -60,8 +61,8 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | POST | `/api/v1/auth/resend-otp` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
 | POST | `/api/v1/auth/reset-password` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
 | POST | `/api/v1/auth/verify` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
-| POST | `/api/v1/seller/shops/1/boosts` | Boosts — Seller | Seller Boosts | SellerAnalyticsApi | BoostRepository | Public | Yes |
-| GET | `/api/v1/seller/shops/1/boosts` | Boosts — Seller | Seller Boosts | SellerAnalyticsApi | BoostRepository | Public | Yes |
+| POST | `/api/v1/seller/shops/1/boosts` | Boosts — Seller | Seller Boosts | `SellerBoostApi` ✅ | `SellerBoostRepository` ✅ | Required | Yes (Phase 10 — transport; purchase blocked) |
+| GET | `/api/v1/seller/shops/1/boosts` | Boosts — Seller | Seller Boosts | `SellerBoostApi` ✅ | `SellerBoostRepository` ✅ | Required | Yes (Phase 10 — empty wrapper; items unmapped) |
 | POST | `/api/v1/admin/cities` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
 | PATCH | `/api/v1/admin/cities/1` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
 | DELETE | `/api/v1/admin/cities/3` | Cities | Location / Cities | LocationApi | LocationRepository | Public | Yes |
@@ -126,8 +127,8 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | POST | `/api/v1/seller/shops` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | PATCH | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | GET | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes (minimal example) |
-| GET | `/api/v1/seller/shops/1/analytics/export?period=30d` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Required | **Missing** (Phase 10) |
-| GET | `/api/v1/seller/shops/1/analytics?period=7d` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Required | **Missing** (Phase 10) |
+| GET | `/api/v1/seller/shops/1/analytics/export?period=30d` | Shops — Seller | Seller Analytics | `SellerAnalyticsApi` ✅ | `SellerAnalyticsRepository` ✅ | Required | Yes (Phase 10 — raw CSV; columns Open) |
+| GET | `/api/v1/seller/shops/1/analytics?period=7d` | Shops — Seller | Seller Analytics | `SellerAnalyticsApi` | — | Required | **Unresolved contract** (Phase 10 — not implemented) |
 | GET | `/api/v1/seller/shops/1/fulfillment-options` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | POST | `/api/v1/seller/shops/1/regenerate-api-key` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | GET | `/api/v1/seller/shops/1/subscription` | Shops — Seller | Seller Subscription | SellerSubscriptionApi | SubscriptionRepository | Required | Yes (Phase 9) |
