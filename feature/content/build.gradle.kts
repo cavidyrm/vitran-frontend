@@ -37,6 +37,7 @@ kotlin {
             implementation(project(":core:network"))
             implementation(project(":core:session"))
             implementation(project(":core:platform"))
+            implementation(project(":core:database"))
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
@@ -47,6 +48,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(project(":core:session"))
+            implementation(project(":core:database"))
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)

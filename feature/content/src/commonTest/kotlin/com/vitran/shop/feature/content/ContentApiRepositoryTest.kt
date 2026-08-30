@@ -1,5 +1,6 @@
 package com.vitran.shop.feature.content
 
+import com.vitran.shop.core.database.createInMemoryVitranDatabase
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.feature.content.data.remote.ContentApi
@@ -37,7 +38,7 @@ class ContentApiRepositoryTest {
             environment = environment,
             executor = createContentTestExecutor(),
         )
-        val repository = DefaultContentRepository(api)
+        val repository = DefaultContentRepository(api, createInMemoryVitranDatabase())
 
         val list = assertIs<AppResult.Success<*>>(repository.getStaticPages()).value
         val page = assertIs<AppResult.Success<*>>(

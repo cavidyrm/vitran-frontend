@@ -1,5 +1,6 @@
 package com.vitran.shop.feature.taxonomy
 
+import com.vitran.shop.core.database.createInMemoryVitranDatabase
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.feature.taxonomy.data.remote.TaxonomyApi
@@ -44,6 +45,7 @@ class CategoryTreeHelpersTest {
                 environment = ApiEnvironment(origin = "http://localhost:8080"),
                 executor = createTaxonomyTestExecutor(),
             ),
+            database = createInMemoryVitranDatabase(),
         )
         return (repository.getCategoryTree() as AppResult.Success).value
     }

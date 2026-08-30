@@ -115,18 +115,21 @@ Reference and content modules must **not** depend on marketplace, seller, home, 
 | From | May depend on |
 |------|----------------|
 | Platform apps (`androidApp`, etc.) | `:shared` |
-| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:home`, `:feature:engagement`, `:feature:seller`, `:feature:content`, `:feature:admin`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
-| `:feature:marketplace` / `:feature:home` | Own domain, `:core:network`, `:core:domain` (+ home: `:core:session`); marketplace also `:feature:location`, `:feature:taxonomy` |
+| `:shared` (presentation) | `:feature:*`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, `:core:database`, design tokens, Koin |
+| `:feature:marketplace` / `:feature:home` | Own domain, `:core:network`, `:core:domain`, `:core:database` (+ home: `:core:session`); marketplace also `:feature:location`, `:feature:taxonomy` |
 | `:feature:engagement` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:feature:marketplace` |
-| `:feature:seller` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:feature:marketplace`, `:feature:location`, `:feature:taxonomy`, `:feature:account` (create orchestration) |
+| `:feature:seller` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:core:database`, `:feature:marketplace`, `:feature:location`, `:feature:taxonomy`, `:feature:account` |
 | `:feature:admin` | Own domain, core modules, `:feature:content`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:engagement`, `:feature:seller` |
-| `:feature:content` | Own domain and core modules only (`:core:domain`, `:core:network`, `:core:session`, `:core:platform`) |
+| `:feature:content` | Own domain, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, `:core:database` |
 | `:feature:auth` / `:feature:account` | Own domain, `:core:network`, `:core:session`, `:core:domain` |
-| `:feature:location` / `:feature:taxonomy` | Own domain, `:core:network`, `:core:domain` |
+| `:feature:location` / `:feature:taxonomy` | Own domain, `:core:network`, `:core:domain`, `:core:database` |
+| `:core:database` | `:core:common`, `:core:domain` (types only if needed — prefer no domain models as entities) |
 | `:core:session` | `:core:domain`, `:core:platform` |
 | `:core:platform` | `:core:domain` |
 | `:core:domain` | `:core:common` |
 | `:core:network` | `:core:common`, `:core:domain`, `:core:session` |
+
+Tokens must never be stored in `:core:database`.
 
 ## Forbidden dependencies
 

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test-and-compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Grant gradlew
+        run: chmod +x gradlew
+
+      - name: Common / JVM unit tests (cores + features)
+        run: |
+          export GRADLE_USER_HOME="$HOME/.gradle"
+          ./gradlew --offline \
+            :core:domain:jvmTest \
+            :core:network:jvmTest \
+            :core:session:jvmTest \
+            :core:platform:jvmTest \
+            :core:database:jvmTest \
+            :feature:location:jvmTest \
+            :feature:taxonomy:jvmTest \
+            :feature:content:jvmTest \
+            :feature:auth:jvmTest \
+            -Dorg.gradle.configuration-cache=false || \
+          ./gradlew \
+            :core:domain:jvmTest \
+            :core:network:jvmTest \
+            :core:session:jvmTest \
+            :core:platform:jvmTest \
+            :core:database:jvmTest \
+            :feature:location:jvmTest \
+            :feature:taxonomy:jvmTest \
+            :feature:content:jvmTest \
+            :feature:auth:jvmTest \
+            -Dorg.gradle.configuration-cache=false
+
+      - name: Compile Android debug
+        run: |
+          export GRADLE_USER_HOME="$HOME/.gradle"
+          ./gradlew :androidApp:compileDebugKotlin -Dorg.gradle.configuration-cache=false
+
+      - name: Compile Desktop JVM
+        run: |
+          export GRADLE_USER_HOME="$HOME/.gradle"
+          ./gradlew :desktopApp:compileKotlin -Dorg.gradle.configuration-cache=false
+
+      - name: Compile Wasm web
+        run: |
+          export GRADLE_USER_HOME="$HOME/.gradle"
+          ./gradlew :webApp:compileKotlinWasmJs -Dorg.gradle.configuration-cache=false
+
+  # iOS framework requires macOS runners — optional / when secrets & Xcode available
+  # ios-compile:
+  #   runs-on: macos-latest
+  #   steps: ... :shared:linkDebugFrameworkIosSimulatorArm64

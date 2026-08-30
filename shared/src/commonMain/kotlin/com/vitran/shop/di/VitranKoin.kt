@@ -1,7 +1,7 @@
 package com.vitran.shop.di
 
+import com.vitran.shop.core.database.di.databaseModule
 import com.vitran.shop.core.network.config.ApiEnvironment
-import com.vitran.shop.core.network.config.ApiEnvironments
 import com.vitran.shop.core.network.di.networkModule
 import com.vitran.shop.core.session.di.sessionModule
 import com.vitran.shop.feature.account.di.accountModule
@@ -22,7 +22,7 @@ import org.koin.dsl.module
 private var koinStarted = false
 
 fun startVitranKoin(
-    apiEnvironment: ApiEnvironment = ApiEnvironments.Production,
+    apiEnvironment: ApiEnvironment = defaultApiEnvironment(),
     extraModules: List<Module> = emptyList(),
 ) {
     if (koinStarted) return
@@ -30,6 +30,9 @@ fun startVitranKoin(
         modules(
             appModule(apiEnvironment),
             platformModule(),
+            *extraModules.toTypedArray(),
+            // After platform + extras so DatabaseFactory is bound (Android supplies it via extraModules).
+            databaseModule,
             sessionModule,
             networkModule,
             authModule,
@@ -43,7 +46,6 @@ fun startVitranKoin(
             contentModule,
             adminModule,
             appCoordinatorModule,
-            *extraModules.toTypedArray(),
         )
     }
     koinStarted = true

@@ -1,5 +1,6 @@
 package com.vitran.shop.feature.location
 
+import com.vitran.shop.core.database.createInMemoryVitranDatabase
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.feature.location.data.mapper.toDomain
@@ -44,6 +45,7 @@ class DefaultLocationRepositoryTest {
                 environment = environment,
                 executor = executor,
             ),
+            database = createInMemoryVitranDatabase(),
         )
 
         val first = repository.getCities()
@@ -69,6 +71,7 @@ class DefaultLocationRepositoryTest {
                 environment = environment,
                 executor = executor,
             ),
+            database = createInMemoryVitranDatabase(),
         )
 
         repository.getCities()
@@ -95,14 +98,16 @@ class DefaultLocationRepositoryTest {
                 environment = environment,
                 executor = executor,
             ),
+            database = createInMemoryVitranDatabase(),
         )
 
         repository.getCities()
         val refreshResult = repository.getCities(forceRefresh = true)
         val cachedResult = repository.getCities()
 
-        assertIs<AppResult.Failure>(refreshResult)
+        assertIs<AppResult.Success<List<City>>>(refreshResult)
         assertIs<AppResult.Success<List<City>>>(cachedResult)
+        assertEquals(2, refreshResult.value.size)
         assertEquals(2, cachedResult.value.size)
     }
 
@@ -116,6 +121,7 @@ class DefaultLocationRepositoryTest {
                 environment = environment,
                 executor = executor,
             ),
+            database = createInMemoryVitranDatabase(),
         )
 
         val result = repository.getCityBySlug(CitySlug("tehran"))

@@ -9,6 +9,6 @@ import org.koin.dsl.module
 
 val homeModule = module {
     single { HomeApi(get(), get(), get()) }
-    single<HomeRepository> { DefaultHomeRepository(get()) }
+    single<HomeRepository> { DefaultHomeRepository(get(), get()) }
     viewModel { HomeViewModel(get(), get(), cityId = null) }
 }

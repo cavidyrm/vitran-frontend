@@ -35,6 +35,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core:domain"))
             implementation(project(":core:network"))
+            implementation(project(":core:database"))
             implementation(project(":feature:location"))
             implementation(project(":feature:taxonomy"))
             implementation(libs.ktor.client.core)
@@ -47,6 +48,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(project(":core:session"))
+            implementation(project(":core:database"))
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)

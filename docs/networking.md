@@ -254,5 +254,5 @@ when (val result = authApi.login(...)) {
 
 - **Android cleartext:** `http://localhost:8080` may require debug-only network security config (not yet added).
 - **Emulator localhost:** Android emulator may need `10.0.2.2` instead of `localhost` — override `ApiEnvironment` at startup, not in shared network code.
-- **Web CORS:** Browser calls require backend CORS — not a client workaround problem.
+- **Web CORS:** Browser uses the page origin (`defaultApiEnvironment`). Production Traefik already routes `/api/*` on `vitran.ir` to the backend; webpack-dev-server and nginx proxy `/api` and `/health` so local/dev is same-origin too. Do not call `https://api.vitran.ir` from the browser.
 - **TLS:** Production uses `https://api.vitran.ir` — never disable certificate validation.

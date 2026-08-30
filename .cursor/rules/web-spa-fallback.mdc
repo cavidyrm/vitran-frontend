@@ -15,7 +15,7 @@ Browser path routing requires SPA fallback support. During development and produ
 - Dev server: `:webApp:wasmJsBrowserDevelopmentRun` / `:webApp:jsBrowserDevelopmentRun` (webpack-dev-server).
 - Kotlin 2.4.x `DevServer` DSL has no `historyApiFallback` property.
 - Enable via [`webApp/webpack.config.d/spa-history-fallback.js`](webApp/webpack.config.d/spa-history-fallback.js) (auto-merged by KotlinWebpack `configDirectory`).
-- That snippet also proxies Shopify CDN paths (`/shopify-assets-proxy`, `/cdn-shopify-proxy`) so Coil on Wasm/JS can load mock hero images without CORS (see `resolveNetworkImageUrl`).
+- That snippet proxies `/api` and `/health` to `VITRAN_API_ORIGIN` (default `https://api.vitran.ir`) so the Wasm/JS client can use `location.origin` without CORS. It also proxies Shopify CDN paths (`/shopify-assets-proxy`, `/cdn-shopify-proxy`) so Coil on Wasm/JS can load mock hero images without CORS (see `resolveNetworkImageUrl`).
 - `resolveNetworkImageUrl` must return **absolute** `http(s)://origin/proxy/...` URLs — Coil ignores relative `/proxy/...` (no scheme → no fetch, silent placeholders).
 - Proxy `headers` should include a browser `User-Agent` (Shopify assets CDN can 403 without one).
 - Restart the browser run task after changing webpack snippets or `resolveNetworkImageUrl`.

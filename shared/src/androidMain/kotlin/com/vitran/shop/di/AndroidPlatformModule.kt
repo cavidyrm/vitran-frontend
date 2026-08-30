@@ -1,6 +1,10 @@
 package com.vitran.shop.di
 
 import android.content.Context
+import com.vitran.shop.core.database.AndroidDatabaseFactory
+import com.vitran.shop.core.database.DatabaseFactory
+import com.vitran.shop.core.platform.crash.CrashReporter
+import com.vitran.shop.core.platform.crash.NoOpCrashReporter
 import com.vitran.shop.core.platform.file.FileSaver
 import com.vitran.shop.core.platform.file.HostedFileSaver
 import com.vitran.shop.core.platform.file.HostedImagePicker
@@ -19,6 +23,8 @@ fun androidPlatformModule(context: Context): Module = module {
     single { createPlatformJson() }
     single { context.applicationContext }
     single<SecureSessionStorage> { AndroidSecureSessionStorage(get(), get()) }
+    single<CrashReporter> { NoOpCrashReporter() }
+    single<DatabaseFactory> { AndroidDatabaseFactory(get()) }
     single<ExternalUrlLauncher> { AndroidExternalUrlLauncher(get()) }
     single<ShareManager> { AndroidShareManager(get()) }
     single { HostedImagePicker() }

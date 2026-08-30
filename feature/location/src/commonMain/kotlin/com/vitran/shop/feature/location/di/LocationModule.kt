@@ -9,6 +9,6 @@ import org.koin.dsl.module
 
 val locationModule = module {
     single { LocationApi(get(), get(), get()) }
-    single<LocationRepository> { DefaultLocationRepository(get()) }
+    single<LocationRepository> { DefaultLocationRepository(get(), get()) }
     viewModel { CreateStoreLocationViewModel(get()) }
 }

@@ -1,9 +1,24 @@
-// Proxy Shopify CDNs through webpack-dev-server so Coil/Ktor fetch on Wasm/JS
-// is same-origin (Shopify does not send Access-Control-Allow-Origin).
+// Same-origin proxies so browser fetch is not subject to API/CDN CORS.
 // Merges into Kotlin-generated webpack config — see KotlinWebpack.configDirectory.
+// Override the API host with VITRAN_API_ORIGIN (e.g. http://127.0.0.1:8080 for a
+// local backend — webpack must then bind a different port than the API).
+const apiOrigin = process.env.VITRAN_API_ORIGIN || "https://api.vitran.ir";
+
 config.devServer = Object.assign({}, config.devServer || {}, {
     historyApiFallback: true,
     proxy: [
+        {
+            context: ["/api"],
+            target: apiOrigin,
+            changeOrigin: true,
+            secure: apiOrigin.startsWith("https://"),
+        },
+        {
+            context: ["/health"],
+            target: apiOrigin,
+            changeOrigin: true,
+            secure: apiOrigin.startsWith("https://"),
+        },
         {
             context: ["/shopify-assets-proxy"],
             target: "https://shopify-assets.shopifycdn.com",

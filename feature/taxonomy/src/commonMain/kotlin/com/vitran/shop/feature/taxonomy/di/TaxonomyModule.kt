@@ -10,7 +10,7 @@ import org.koin.dsl.module
 
 val taxonomyModule = module {
     single { TaxonomyApi(get(), get(), get()) }
-    single<TaxonomyRepository> { DefaultTaxonomyRepository(get()) }
+    single<TaxonomyRepository> { DefaultTaxonomyRepository(get(), get()) }
     viewModel { TaxonomyPickerViewModel(get()) }
     viewModel { CategoriesBrowseViewModel(get()) }
 }

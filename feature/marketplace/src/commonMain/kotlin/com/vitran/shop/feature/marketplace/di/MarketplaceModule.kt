@@ -13,11 +13,11 @@ import org.koin.dsl.module
 val marketplaceModule = module {
     single { PublicShopApi(get(), get(), get()) }
     single { PublicProductApi(get(), get(), get()) }
-    single<ShopRepository> { DefaultShopRepository(get()) }
+    single<ShopRepository> { DefaultShopRepository(get(), get()) }
     single<ShopPublicCacheInvalidator> {
         ShopPublicCacheInvalidator { shopId -> get<ShopRepository>().invalidateShop(shopId) }
     }
-    single<ProductRepository> { DefaultProductRepository(get()) }
+    single<ProductRepository> { DefaultProductRepository(get(), get()) }
     single<ProductPublicCacheInvalidator> {
         ProductPublicCacheInvalidator { productId -> get<ProductRepository>().invalidateProduct(productId) }
     }

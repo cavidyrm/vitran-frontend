@@ -57,5 +57,14 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.kvault)
         }
+        jvmMain.dependencies {
+            implementation(project(":core:database"))
+        }
+        wasmJsMain.dependencies {
+            implementation(project(":core:database"))
+        }
+        jsMain.dependencies {
+            implementation(project(":core:database"))
+        }
     }
 }

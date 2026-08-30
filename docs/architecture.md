@@ -39,8 +39,9 @@ VitranShop/
 │   ├── common/          # Universal Kotlin primitives (minimal)
 │   ├── domain/          # Cross-feature domain types (AuthMode, UserRole)
 │   ├── network/         # Ktor client, envelope, executor, health API (Phase 2)
-│   ├── platform/        # Secure storage, platform JSON (Phase 3)
-│   └── session/         # Session lifecycle, token refresh (Phase 3)
+│   ├── platform/        # Secure storage, CrashReporter, platform JSON (Phase 3/12)
+│   ├── session/         # Session lifecycle, token refresh (Phase 3)
+│   └── database/        # Room 3.0 cache DB, DAOs, DatabaseFactory (Phase 12)
 ├── feature/
 │   ├── auth/            # Auth flows (Phase 3)
 │   ├── account/         # Profile / current user (Phase 3)

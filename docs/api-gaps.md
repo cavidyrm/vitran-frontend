@@ -174,10 +174,10 @@ Postman requests **without saved response examples** (15):
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
-| **Issue** | JS/Wasm and JVM desktop use `InMemorySecureSessionStorage` — sessions lost on restart. |
-| **Client impact** | Users must re-login after app restart on Web/Desktop dev builds. |
-| **Phase 3+ handling** | Evaluate OS keychain / encrypted file storage per platform. |
+| **Status** | Partially resolved (Desktop); Open (Web) |
+| **Issue** | JS/Wasm use `InMemorySecureSessionStorage` — sessions lost on restart. Desktop now uses AES-GCM encrypted files under the user config directory (`JvmSecureSessionStorage`). |
+| **Client impact** | Web users must re-login after refresh. Desktop credentials persist encrypted at rest. |
+| **Phase 12 handling** | Web: intentional no localStorage bearer (P12-001). Desktop: encrypted file store (not OS Keychain yet). |
 
 ---
 

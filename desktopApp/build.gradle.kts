@@ -22,7 +22,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.vitran.shop"
-            packageVersion = "1.0.0"
+            packageVersion = (findProperty("vitran.versionName") as String?) ?: "1.0.0"
         }
     }
 }

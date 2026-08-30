@@ -13,7 +13,7 @@ import org.koin.dsl.module
 val contentModule = module {
     single<HtmlSanitizer> { AllowlistHtmlSanitizer() }
     single { ContentApi(get(), get(), get()) }
-    single<ContentRepository> { DefaultContentRepository(get()) }
+    single<ContentRepository> { DefaultContentRepository(get(), get()) }
     single<ContentCacheInvalidator> {
         ContentCacheInvalidator { get<ContentRepository>().invalidate() }
     }

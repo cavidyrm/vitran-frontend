@@ -66,7 +66,7 @@ val sellerModule = module {
 
     // Phase 9 — Plans (public cache, not user-scoped)
     single { PlanApi(get(), get(), get()) }
-    single<PlanRepository> { DefaultPlanRepository(get()) }
+    single<PlanRepository> { DefaultPlanRepository(get(), get()) }
 
     // Phase 9 — Subscriptions (user-scoped)
     single { SubscriptionStateStore(invalidationListeners = get()) }

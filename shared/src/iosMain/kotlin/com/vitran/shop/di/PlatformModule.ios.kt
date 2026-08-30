@@ -1,5 +1,9 @@
 package com.vitran.shop.di
 
+import com.vitran.shop.core.database.DatabaseFactory
+import com.vitran.shop.core.database.IosDatabaseFactory
+import com.vitran.shop.core.platform.crash.CrashReporter
+import com.vitran.shop.core.platform.crash.NoOpCrashReporter
 import com.vitran.shop.core.platform.file.FileSaver
 import com.vitran.shop.core.platform.file.HostedFileSaver
 import com.vitran.shop.core.platform.file.HostedImagePicker
@@ -17,6 +21,8 @@ import org.koin.dsl.module
 actual fun platformModule(): Module = module {
     single { createPlatformJson() }
     single<SecureSessionStorage> { IosSecureSessionStorage(get()) }
+    single<CrashReporter> { NoOpCrashReporter() }
+    single<DatabaseFactory> { IosDatabaseFactory() }
     single<ExternalUrlLauncher> { IosExternalUrlLauncher() }
     single<ShareManager> { IosShareManager(get()) }
     single { HostedImagePicker() }

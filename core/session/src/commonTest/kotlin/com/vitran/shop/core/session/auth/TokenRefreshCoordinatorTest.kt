@@ -101,6 +101,44 @@ class TokenRefreshCoordinatorTest {
         assertIs<AppError.Authentication.SessionExpired>(result.error)
     }
 
+    @Test
+    fun concurrentRefresh_stormOfManyCallers_stillSingleFlight() = runTest {
+        val refreshRemote = CountingRefreshRemote(
+            result = AppResult.Success(freshCredentials("access-storm", "refresh-storm")),
+            delayMs = 50,
+        )
+        val coordinator = DefaultTokenRefreshCoordinator(sessionRepository, refreshRemote, clock)
+        seedExpiredSession()
+
+        val outcomes = (1..50).map {
+            async { coordinator.refreshIfNeeded(force = false) }
+        }.awaitAll()
+
+        assertEquals(1, refreshRemote.callCount)
+        assertTrue(outcomes.all { it is RefreshOutcome.Success })
+        assertEquals("access-storm", sessionRepository.readCredentials()?.accessToken)
+        assertEquals("refresh-storm", sessionRepository.readCredentials()?.refreshToken)
+    }
+
+    @Test
+    fun terminalRefreshFailure_underConcurrency_invalidatesOnce() = runTest {
+        val refreshRemote = CountingRefreshRemote(
+            result = AppResult.Failure(AppError.Authentication.Unauthorized(httpStatus = 401)),
+            delayMs = 30,
+        )
+        val coordinator = DefaultTokenRefreshCoordinator(sessionRepository, refreshRemote, clock)
+        seedExpiredSession()
+
+        val outcomes = (1..20).map {
+            async { coordinator.refreshIfNeeded(force = true) }
+        }.awaitAll()
+
+        assertEquals(1, refreshRemote.callCount)
+        assertTrue(outcomes.all { it == RefreshOutcome.TerminalFailure })
+        assertEquals(SessionState.Anonymous, sessionRepository.sessionState.value)
+        assertNull(sessionRepository.readCredentials())
+    }
+
     private suspend fun seedExpiredSession() {
         val credentials = SessionCredentials(
             accessToken = "access-old",
@@ -118,12 +156,13 @@ class TokenRefreshCoordinatorTest {
 
     private class CountingRefreshRemote(
         private val result: AppResult<SessionCredentials>,
+        private val delayMs: Long = 25,
     ) : TokenRefreshRemoteDataSource {
         var callCount = 0
 
         override suspend fun refresh(refreshToken: String): AppResult<SessionCredentials> {
             callCount++
-            delay(25)
+            delay(delayMs)
             return result
         }
     }

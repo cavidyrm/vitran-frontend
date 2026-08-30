@@ -1,5 +1,6 @@
 package com.vitran.shop.feature.taxonomy
 
+import com.vitran.shop.core.database.createInMemoryVitranDatabase
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.feature.taxonomy.data.mapper.toDomain
@@ -9,8 +10,6 @@ import com.vitran.shop.feature.taxonomy.data.repository.DefaultTaxonomyRepositor
 import com.vitran.shop.feature.taxonomy.domain.model.CategoryDetails
 import com.vitran.shop.feature.taxonomy.domain.model.CategoryNode
 import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
-import com.vitran.shop.feature.taxonomy.domain.model.collectLeafCategories
-import com.vitran.shop.feature.taxonomy.domain.model.findBySlug
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
@@ -25,6 +24,14 @@ class DefaultTaxonomyRepositoryTest {
     private val environment = ApiEnvironment(origin = "http://localhost:8080")
     private val executor = createTaxonomyTestExecutor()
 
+    private fun createRepository(engine: MockEngine) = DefaultTaxonomyRepository(
+        taxonomyApi = TaxonomyApi(
+            client = createTaxonomyTestClient(engine),
+            environment = environment,
+            executor = executor,
+        ),
+        database = createInMemoryVitranDatabase(),
+    )
     @Test
     fun treeNode_mapsRecursively() {
         val root = CategoryTreeNodeDto(
@@ -67,17 +74,11 @@ class DefaultTaxonomyRepositoryTest {
     @Test
     fun getCategoryTree_cachesSecondCall() = runTest {
         var requestCount = 0
-        val repository = DefaultTaxonomyRepository(
-            taxonomyApi = TaxonomyApi(
-                client = createTaxonomyTestClient(
-                    MockEngine {
-                        requestCount++
-                        jsonResponse(HttpStatusCode.OK, categoryTreeEnvelope)
-                    },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
+        val repository = createRepository(
+            MockEngine {
+                requestCount++
+                jsonResponse(HttpStatusCode.OK, categoryTreeEnvelope)
+            },
         )
 
         repository.getCategoryTree()
@@ -89,17 +90,11 @@ class DefaultTaxonomyRepositoryTest {
     @Test
     fun getCategory_detailCachedBySlug() = runTest {
         var requestCount = 0
-        val repository = DefaultTaxonomyRepository(
-            taxonomyApi = TaxonomyApi(
-                client = createTaxonomyTestClient(
-                    MockEngine {
-                        requestCount++
-                        jsonResponse(HttpStatusCode.OK, categoryDetailEnvelope)
-                    },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
+        val repository = createRepository(
+            MockEngine {
+                requestCount++
+                jsonResponse(HttpStatusCode.OK, categoryDetailEnvelope)
+            },
         )
 
         val slug = CategorySlug("aa-1-2-3-4")
@@ -111,14 +106,8 @@ class DefaultTaxonomyRepositoryTest {
 
     @Test
     fun getCategory_mapsDetailFields() = runTest {
-        val repository = DefaultTaxonomyRepository(
-            taxonomyApi = TaxonomyApi(
-                client = createTaxonomyTestClient(
-                    MockEngine { jsonResponse(HttpStatusCode.OK, categoryDetailEnvelope) },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
+        val repository = createRepository(
+            MockEngine { jsonResponse(HttpStatusCode.OK, categoryDetailEnvelope) },
         )
 
         val result = repository.getCategory(CategorySlug("aa-1-2-3-4"))
@@ -135,14 +124,8 @@ class DefaultTaxonomyRepositoryTest {
 
     @Test
     fun nestedTree_fromApiEnvelope() = runTest {
-        val repository = DefaultTaxonomyRepository(
-            taxonomyApi = TaxonomyApi(
-                client = createTaxonomyTestClient(
-                    MockEngine { jsonResponse(HttpStatusCode.OK, categoryTreeEnvelope) },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
+        val repository = createRepository(
+            MockEngine { jsonResponse(HttpStatusCode.OK, categoryTreeEnvelope) },
         )
 
         val result = repository.getCategoryTree()

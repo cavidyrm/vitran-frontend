@@ -1,5 +1,6 @@
 package com.vitran.shop.feature.seller.plan.data
 
+import com.vitran.shop.core.database.createInMemoryVitranDatabase
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
@@ -90,7 +91,7 @@ class PlanApiRepositoryTest {
     private fun createPlanRepository(engine: MockEngine): DefaultPlanRepository {
         val client = createSellerTestClient(engine)
         val api = PlanApi(client, ApiEnvironment(origin = "http://localhost:8080"), createSellerTestExecutor())
-        return DefaultPlanRepository(api)
+        return DefaultPlanRepository(api, createInMemoryVitranDatabase())
     }
 }
 
