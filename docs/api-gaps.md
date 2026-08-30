@@ -21,10 +21,10 @@ Status values: `Open` | `Verified from backend source` | `Resolved by backend up
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
+| **Status** | Client compatibility workaround |
 | **Issue** | Create/update examples send `active=true`; sample responses show `active=false`, `confirmed=false`. Moderation/reapproval rules in descriptions. |
-| **Client impact** | Preserve `active` and `confirmed` as distinct states. Do not guess authoritative create response. |
-| **Phase 2+ handling** | Map to domain lifecycle (`PendingApproval`, `ApprovedHidden`, `Live`) after backend confirmation. |
+| **Client impact** | Preserve `active` and `confirmed` as distinct states. Map via `ProductPublicationState`. Always trust response over request. |
+| **Phase 8 handling** | Create/Update repositories store response flags only. `SetProductActiveUseCase` blocks publish when local `confirmed=false`. |
 
 ---
 
@@ -98,9 +98,20 @@ Postman requests **without saved response examples** (15):
 | GET | `/api/v1/me/follows/shops/{id}` | Get followed shop |
 | DELETE | `/api/v1/me/follows/shops/{id}` | Unfollow shop |
 
-**Category attributes:** `GET /categories/{slug}/attributes` has an example but only `"attributes": []` — **non-empty item schema unverified (Phase 4 deferred).**
+**Category attributes:** `GET /categories/{slug}/attributes` has an example but only `"attributes": []` — **non-empty item schema unverified (Phase 4 deferred).** Seller product create/update multipart has **no attributes fields** (Postman-verified) — Phase 8 does not invent attribute encoding.
 
-**Client impact:** Do not invent response DTOs. Phase 6 implements follow POST/DELETE only (`executeEmpty()`). List and GET-by-id stay unimplemented — **Partially implemented due missing schema**.
+---
+
+## Gap 40 — Seller Product multipart & filters (Phase 8)
+
+| Field | Status |
+|-------|--------|
+| **Status** | Verified from Postman collection |
+| **Create/Update fields** | `title`, `category_slug`, `price`, `description`, `active`, `images` (file, repeat, ≤5) |
+| **Image key** | `images` (not `image`) |
+| **Update images** | Appended; total ≤ 5 (collection description) |
+| **List filters** | `active`, `shop_id`, `category_slug` (+ cursor pagination); `confirmed` accepted as optional client query when used |
+| **Open** | Exact server error reasons for publish-unapproved / plan limits; seller list item fields beyond Postman example; GET detail may omit `description` |
 
 ---
 

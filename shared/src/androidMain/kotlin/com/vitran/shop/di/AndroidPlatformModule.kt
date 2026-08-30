@@ -1,6 +1,8 @@
 package com.vitran.shop.di
 
 import android.content.Context
+import com.vitran.shop.core.platform.file.HostedImagePicker
+import com.vitran.shop.core.platform.file.ImagePicker
 import com.vitran.shop.core.platform.serialization.createPlatformJson
 import com.vitran.shop.core.platform.share.AndroidExternalUrlLauncher
 import com.vitran.shop.core.platform.share.AndroidShareManager
@@ -17,4 +19,6 @@ fun androidPlatformModule(context: Context): Module = module {
     single<SecureSessionStorage> { AndroidSecureSessionStorage(get(), get()) }
     single<ExternalUrlLauncher> { AndroidExternalUrlLauncher(get()) }
     single<ShareManager> { AndroidShareManager(get()) }
+    single { HostedImagePicker() }
+    single<ImagePicker> { get<HostedImagePicker>() }
 }

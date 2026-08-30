@@ -67,6 +67,7 @@ data class AdminMediaTile(
     val url: String,
     val uploading: Boolean = false,
     val isPrimary: Boolean = false,
+    val previewBytes: ByteArray? = null,
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -202,7 +203,7 @@ private fun MediaThumb(
             .border(1.dp, AdminTokens.CardBorder, shape),
     ) {
         AsyncImage(
-            model = resolveNetworkImageUrl(tile.url),
+            model = tile.previewBytes ?: resolveNetworkImageUrl(tile.url),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,

@@ -25,7 +25,7 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Product Reviews | Products — Public (reviews) | `ProductReviewApi` ✅ | `ProductReviewRepository` ✅ | None / Required |
 | Shop Comments | Comments | `ShopCommentApi` ✅ | `ShopCommentRepository` ✅ | None / Required |
 | Seller Shops | Shops — Seller | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required (auth; seller role not required for first create) |
-| Seller Products | Products — Seller | `SellerProductApi` | `SellerProductRepository` | Required (seller) |
+| Seller Products | Products — Seller | `SellerProductApi` ✅ | `SellerProductRepository` ✅ | Required (seller) |
 | Seller Analytics / Boosts | Boosts — Seller, analytics | `SellerAnalyticsApi` | `AnalyticsRepository`, `BoostRepository` | Required (seller) |
 | Seller Subscription | Shops — Seller (subscription) | `SellerShopApi` | `SubscriptionRepository` | Required (seller) |
 | Referral | Referrals | `ReferralApi` | `ReferralRepository` | Mixed |
@@ -40,7 +40,7 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 
 Avoid a single `VitranApi` with 100+ methods. Incremental services:
 
-`AuthApi`, `AccountApi`, `ReferralApi`, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi`, `SellerAnalyticsApi`, `PlanApi`, `PaymentApi`, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
+`AuthApi`, `AccountApi`, `ReferralApi`, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi` ✅, `SellerAnalyticsApi`, `PlanApi`, `PaymentApi`, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
 
 ## Full endpoint index
 

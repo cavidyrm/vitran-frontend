@@ -12,4 +12,7 @@ interface ProductRepository {
     suspend fun getProducts(query: ProductBrowseQuery): AppResult<CursorPage<ProductSummary>>
     suspend fun searchProducts(query: ProductSearchQuery): AppResult<CursorPage<ProductSummary>>
     suspend fun getProduct(id: ProductId): AppResult<ProductDetails>
+
+    /** Drop cached public detail after seller mutations that affect marketplace visibility. */
+    suspend fun invalidateProduct(id: ProductId)
 }

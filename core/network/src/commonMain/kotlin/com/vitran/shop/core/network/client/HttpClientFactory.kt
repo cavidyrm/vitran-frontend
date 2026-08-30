@@ -69,11 +69,15 @@ private fun buildHttpClient(
 
         install(HttpRequestRetry) {
             maxRetries = config.maxRetryCount
-            retryOnExceptionIf { _, cause ->
-                cause is HttpRequestTimeoutException ||
-                    cause is ConnectTimeoutException ||
-                    cause is SocketTimeoutException ||
-                    cause is IOException
+            retryOnExceptionIf { request, cause ->
+                val method = request.method
+                val isSafeMethod = method == HttpMethod.Get || method == HttpMethod.Head
+                isSafeMethod && (
+                    cause is HttpRequestTimeoutException ||
+                        cause is ConnectTimeoutException ||
+                        cause is SocketTimeoutException ||
+                        cause is IOException
+                    )
             }
             retryIf { _, response ->
                 val method = response.call.request.method
@@ -90,7 +94,10 @@ private fun buildHttpClient(
                         networkLogger.debug(sanitizeLogMessage(message))
                     }
                 }
-                level = if (config.diagnostics.logBodies) LogLevel.ALL else LogLevel.HEADERS
+                // Never dump binary multipart bodies (product images). Headers-only when
+                // logBodies is false; when true, sanitizeLogMessage still redacts secrets
+                // and strips multipart binary sections.
+                level = if (config.diagnostics.logBodies) LogLevel.BODY else LogLevel.HEADERS
                 sanitizeHeader { header ->
                     header.lowercase() in SENSITIVE_HEADER_NAMES
                 }

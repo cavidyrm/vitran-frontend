@@ -97,7 +97,7 @@ Reference modules must **not** depend on marketplace, seller, home, or engagemen
 | `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:home`, `:feature:engagement`, `:feature:seller`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
 | `:feature:marketplace` / `:feature:home` | Own domain, `:core:network`, `:core:domain` (+ home: `:core:session`); marketplace also `:feature:location`, `:feature:taxonomy` |
 | `:feature:engagement` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:feature:marketplace` |
-| `:feature:seller` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:feature:marketplace`, `:feature:location`, `:feature:taxonomy`, `:feature:account` (create orchestration) |
+| `:feature:seller` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:feature:marketplace`, `:feature:location`, `:feature:taxonomy`, `:feature:account` (create orchestration) |
 | `:feature:auth` / `:feature:account` | Own domain, `:core:network`, `:core:session`, `:core:domain` |
 | `:feature:location` / `:feature:taxonomy` | Own domain, `:core:network`, `:core:domain` |
 | `:core:session` | `:core:domain`, `:core:platform` |

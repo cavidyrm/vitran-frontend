@@ -25,7 +25,29 @@ data class ProductMediaItem(
     val url: String,
     val alt: String = "",
     val uploading: Boolean = false,
-)
+    /** Local preview bytes for newly picked images (not yet uploaded). */
+    val previewBytes: ByteArray? = null,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as ProductMediaItem
+        return id == other.id &&
+            url == other.url &&
+            alt == other.alt &&
+            uploading == other.uploading &&
+            previewBytes.contentEquals(other.previewBytes)
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + url.hashCode()
+        result = 31 * result + alt.hashCode()
+        result = 31 * result + uploading.hashCode()
+        result = 31 * result + (previewBytes?.contentHashCode() ?: 0)
+        return result
+    }
+}
 
 @Immutable
 data class CreateProductOptionDraft(
@@ -116,7 +138,7 @@ data class CreateProductFormState(
     fun clearedErrors(): CreateProductFormState = copy(errors = ProductFieldErrors())
 
     fun addMedia(item: ProductMediaItem): CreateProductFormState =
-        if (media.any { it.url == item.url && !it.uploading }) this
+        if (media.any { it.id == item.id }) this
         else copy(media = media + item, dirty = true, savePhase = ProductSavePhase.Idle)
 
     fun finishUpload(id: String): CreateProductFormState =

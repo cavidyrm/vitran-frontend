@@ -45,4 +45,8 @@ internal class DefaultProductRepository(
             is AppResult.Failure -> AppResult.Failure(result.error.toProductResultError())
         }
     }
+
+    override suspend fun invalidateProduct(id: ProductId) {
+        detailMutex.withLock { detailById.remove(id) }
+    }
 }

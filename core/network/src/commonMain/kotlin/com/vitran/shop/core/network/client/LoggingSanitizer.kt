@@ -23,6 +23,15 @@ fun sanitizeHeaderValue(name: String, value: String): String =
 
 fun sanitizeLogMessage(message: String): String {
     var sanitized = message
+    // Redact multipart binary payloads (file parts) — keep field names only.
+    sanitized =
+        sanitized.replace(
+            Regex(
+                """Content-Disposition:\s*form-data;\s*name="images"[^\n]*\n(?:Content-Type:[^\n]*\n)?(?:Content-Length:[^\n]*\n)?\r?\n[\s\S]*?(?=\r?\n--|\z)""",
+                RegexOption.IGNORE_CASE,
+            ),
+            "Content-Disposition: form-data; name=\"images\"\n\n***BINARY_REDACTED***\n",
+        )
     SENSITIVE_JSON_KEYS.forEach { key ->
         sanitized = sanitized.replace(
             Regex("""("$key"\s*:\s*")([^"]*)(")""", RegexOption.IGNORE_CASE),

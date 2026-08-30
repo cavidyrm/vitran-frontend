@@ -37,6 +37,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.seller.product.presentation.CreateProductSubmitMode
+import com.vitran.shop.feature.seller.product.presentation.CreateProductUiEffect
+import com.vitran.shop.feature.seller.product.presentation.CreateProductViewModel
 import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerUiState
 import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
 import com.vitran.shop.ui.components.admin.AdminPrimaryButton
@@ -49,6 +52,8 @@ import com.vitran.shop.ui.sections.admin.CreateProductMainColumn
 import com.vitran.shop.ui.sections.admin.CreateProductOrganizationCard
 import com.vitran.shop.ui.sections.admin.CreateProductPreviewCard
 import com.vitran.shop.ui.sections.admin.CreateProductStatusCard
+import com.vitran.shop.ui.sections.admin.ProductFieldErrors
+import com.vitran.shop.ui.sections.admin.ProductMediaItem
 import com.vitran.shop.ui.sections.admin.ProductPublishStatus
 import com.vitran.shop.ui.sections.admin.ProductSaveMode
 import com.vitran.shop.ui.sections.admin.ProductSavePhase
@@ -57,7 +62,6 @@ import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
@@ -68,7 +72,7 @@ import vitranshop.shared.generated.resources.admin_create_product_leave_title
 /**
  * Merchant admin — add a product. Route `/admin/products/new`.
  *
- * Shopify-admin two-column form. Mock state only.
+ * Shopify-admin two-column form. Wired to seller Create Product API.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -76,6 +80,7 @@ fun CreateProductScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
+    createProductViewModel: CreateProductViewModel = vitranKoinViewModel(),
 ) {
     var state by remember { mutableStateOf(CreateProductFormState()) }
     var leaveDialog by remember { mutableStateOf(false) }
@@ -84,6 +89,7 @@ fun CreateProductScreen(
     val priceAnchor = remember { BringIntoViewRequester() }
     val categoryAnchor = remember { BringIntoViewRequester() }
     val taxonomyState by taxonomyViewModel.uiState.collectAsStateWithLifecycle()
+    val createUi by createProductViewModel.uiState.collectAsStateWithLifecycle()
     val taxonomyRoots = when (val current = taxonomyState) {
         is TaxonomyPickerUiState.Content -> current.roots.toAdminTaxonomyNodes()
         else -> emptyList()
@@ -91,18 +97,57 @@ fun CreateProductScreen(
     val taxonomyLoading = taxonomyState is TaxonomyPickerUiState.Loading
     val taxonomyError = (taxonomyState as? TaxonomyPickerUiState.Error)?.message
 
-    val uploadingIds = state.media.filter { it.uploading }.map { it.id }
-    LaunchedEffect(uploadingIds) {
-        uploadingIds.forEach { id ->
-            delay(800)
-            state = state.finishUpload(id)
+    LaunchedEffect(createUi.storeName) {
+        if (createUi.storeName.isNotBlank() && state.storeName != createUi.storeName) {
+            state = state.copy(storeName = createUi.storeName)
         }
     }
 
-    LaunchedEffect(state.savePhase) {
-        if (state.savePhase != ProductSavePhase.Saving) return@LaunchedEffect
-        delay(700)
-        state = state.copy(savePhase = ProductSavePhase.Saved, dirty = false)
+    LaunchedEffect(createUi.isSubmitting, createUi.createdProduct) {
+        state =
+            state.copy(
+                savePhase =
+                    when {
+                        createUi.isSubmitting -> ProductSavePhase.Saving
+                        createUi.createdProduct != null -> ProductSavePhase.Saved
+                        else -> state.savePhase.takeUnless { it == ProductSavePhase.Saving }
+                            ?: ProductSavePhase.Idle
+                    },
+                dirty = if (createUi.createdProduct != null) false else state.dirty,
+            )
+    }
+
+    LaunchedEffect(createUi.fieldErrors, createUi.generalError) {
+        val fe = createUi.fieldErrors
+        if (fe.hasAny || createUi.generalError != null) {
+            state =
+                state.copy(
+                    errors =
+                        ProductFieldErrors(
+                            title = fe.title,
+                            price = fe.price,
+                            category = fe.category,
+                            summary = fe.summary ?: createUi.generalError?.message,
+                        ),
+                )
+            scope.launch {
+                when {
+                    fe.title != null -> titleAnchor.bringIntoView()
+                    fe.price != null -> priceAnchor.bringIntoView()
+                    fe.category != null -> categoryAnchor.bringIntoView()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(createProductViewModel) {
+        createProductViewModel.effects.collect { effect ->
+            when (effect) {
+                is CreateProductUiEffect.ProductCreated -> {
+                    // Stay on screen showing Saved; user can leave via back.
+                }
+            }
+        }
     }
 
     fun requestLeave() {
@@ -126,16 +171,49 @@ fun CreateProductScreen(
             }
             return
         }
-        val nextStatus = if (mode == ProductSaveMode.Publish) {
-            ProductPublishStatus.Active
-        } else {
-            ProductPublishStatus.Draft
-        }
-        state = state.copy(
-            status = nextStatus,
-            savePhase = ProductSavePhase.Saving,
-            errors = errors,
+        val nextStatus =
+            if (mode == ProductSaveMode.Publish) {
+                ProductPublishStatus.Active
+            } else {
+                ProductPublishStatus.Draft
+            }
+        state =
+            state.copy(
+                status = nextStatus,
+                errors = ProductFieldErrors(),
+            )
+        createProductViewModel.submit(
+            title = state.title,
+            description = state.description,
+            priceText = state.price,
+            categoryId = state.categoryId,
+            orderedMediaIds = state.media.map { it.id },
+            mode =
+                if (mode == ProductSaveMode.Publish) {
+                    CreateProductSubmitMode.Publish
+                } else {
+                    CreateProductSubmitMode.Draft
+                },
         )
+    }
+
+    fun onPickImages() {
+        createProductViewModel.pickImages(state.media.size) { locals ->
+            var next = state
+            for (local in locals) {
+                next =
+                    next.addMedia(
+                        ProductMediaItem(
+                            id = local.id,
+                            url = "",
+                            alt = local.fileName,
+                            uploading = false,
+                            previewBytes = local.previewBytes,
+                        ),
+                    )
+            }
+            state = next
+        }
     }
 
     BoxWithConstraints(
@@ -147,7 +225,7 @@ fun CreateProductScreen(
         val horizontalPad = if (twoColumn) VitranSpacing.xxl else VitranSpacing.lg
         Column(modifier = Modifier.fillMaxSize()) {
             CreateProductHeaderBar(
-                storeName = state.storeName,
+                storeName = state.storeName.ifBlank { createUi.storeName },
                 onBack = { requestLeave() },
                 modifier = Modifier.drawBehind {
                     drawLine(
@@ -173,7 +251,12 @@ fun CreateProductScreen(
                 ) {
                     CreateProductMainColumn(
                         state = state,
-                        onStateChange = { state = it },
+                        onStateChange = { next ->
+                            val removed =
+                                state.media.map { it.id }.toSet() - next.media.map { it.id }.toSet()
+                            removed.forEach { createProductViewModel.removeLocalImage(it) }
+                            state = next
+                        },
                         titleAnchor = titleAnchor,
                         priceAnchor = priceAnchor,
                         categoryAnchor = categoryAnchor,
@@ -181,6 +264,8 @@ fun CreateProductScreen(
                         taxonomyLoading = taxonomyLoading,
                         taxonomyError = taxonomyError,
                         onTaxonomyRetry = taxonomyViewModel::retry,
+                        onUploadImages = { onPickImages() },
+                        onSelectExistingImages = { onPickImages() },
                         modifier = Modifier
                             .weight(1f, fill = false)
                             .widthIn(max = AdminTokens.ProductFormMaxWidth)
@@ -229,7 +314,12 @@ fun CreateProductScreen(
                     )
                     CreateProductMainColumn(
                         state = state,
-                        onStateChange = { state = it },
+                        onStateChange = { next ->
+                            val removed =
+                                state.media.map { it.id }.toSet() - next.media.map { it.id }.toSet()
+                            removed.forEach { createProductViewModel.removeLocalImage(it) }
+                            state = next
+                        },
                         titleAnchor = titleAnchor,
                         priceAnchor = priceAnchor,
                         categoryAnchor = categoryAnchor,
@@ -237,6 +327,8 @@ fun CreateProductScreen(
                         taxonomyLoading = taxonomyLoading,
                         taxonomyError = taxonomyError,
                         onTaxonomyRetry = taxonomyViewModel::retry,
+                        onUploadImages = { onPickImages() },
+                        onSelectExistingImages = { onPickImages() },
                     )
                     CreateProductOrganizationCard(
                         state = state,
@@ -288,6 +380,16 @@ fun CreateProductScreen(
 @Composable
 private fun CreateProductScreenPreview() {
     VitranTheme {
-        CreateProductScreen(onBack = {})
+        // Preview uses taxonomy + form mocks only; avoid real Koin create VM in tooling.
+        CreateProductScreenContentPreview()
     }
+}
+
+@Composable
+private fun CreateProductScreenContentPreview() {
+    CreateProductFormState()
+    Text(
+        text = "Create product preview — use runtime screen with Koin",
+        modifier = Modifier.padding(VitranSpacing.lg),
+    )
 }

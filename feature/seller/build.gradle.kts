@@ -36,6 +36,7 @@ kotlin {
             implementation(project(":core:domain"))
             implementation(project(":core:network"))
             implementation(project(":core:session"))
+            implementation(project(":core:platform"))
             implementation(project(":feature:marketplace"))
             implementation(project(":feature:location"))
             implementation(project(":feature:taxonomy"))

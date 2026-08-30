@@ -23,6 +23,10 @@ import com.vitran.shop.feature.seller.shop.data.remote.SellerShopApi
 import com.vitran.shop.feature.seller.shop.data.repository.DefaultSellerShopRepository
 import com.vitran.shop.feature.seller.shop.data.state.SellerShopStateStore
 import com.vitran.shop.feature.seller.shop.domain.repository.SellerShopRepository
+import com.vitran.shop.feature.seller.product.data.remote.SellerProductApi
+import com.vitran.shop.feature.seller.product.data.repository.DefaultSellerProductRepository
+import com.vitran.shop.feature.seller.product.data.state.SellerProductStateStore
+import com.vitran.shop.feature.seller.product.domain.repository.SellerProductRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -304,5 +308,137 @@ internal val slugConflictBody = """
   "code": 409,
   "data": null,
   "errors": [{ "reason": "slug", "messages": ["taken"] }]
+}
+""".trimIndent()
+
+internal fun createSellerProductRepository(
+    mockEngine: MockEngine,
+    tokenProvider: () -> String? = { "OLD_ACCESS" },
+    stateStore: SellerProductStateStore = SellerProductStateStore(mutableListOf()),
+): Pair<SellerProductRepository, SellerProductStateStore> {
+    val client = createSellerTestClient(mockEngine, tokenProvider)
+    val api = SellerProductApi(client, ApiEnvironment(origin = "http://localhost:8080"), createSellerTestExecutor())
+    return DefaultSellerProductRepository(api, stateStore) to stateStore
+}
+
+internal val sellerProductListBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "products": {
+      "per_page": 20,
+      "has_more": true,
+      "next_cursor": "42",
+      "results": [
+        { "id": 1, "shop_id": 1, "title": "Blue Widget", "active": false, "confirmed": false }
+      ]
+    }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+internal val sellerProductCreatePendingBody = """
+{
+  "success": true,
+  "message": "created",
+  "code": 1,
+  "data": {
+    "product": {
+      "id": 1,
+      "shop_id": 1,
+      "category_slug": 1,
+      "title": "Blue Widget",
+      "description": "High quality widget",
+      "price": 150000,
+      "active": false,
+      "confirmed": false,
+      "images": [
+        { "id": 1, "url": "http://localhost/img.jpg", "sort_order": 0 }
+      ],
+      "created_at": "2026-06-09T12:00:00Z",
+      "updated_at": "2026-06-09T12:00:00Z"
+    }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+internal val sellerProductDetailPendingBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "product": {
+      "id": 1,
+      "shop_id": 1,
+      "category_slug": 1,
+      "title": "Blue Widget",
+      "price": 150000,
+      "active": false,
+      "confirmed": false,
+      "images": [],
+      "created_at": "2026-06-09T12:00:00Z",
+      "updated_at": "2026-06-09T12:00:00Z"
+    }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+internal val sellerProductUpdateReapprovalBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "product": {
+      "id": 1,
+      "shop_id": 1,
+      "title": "Blue Widget Pro",
+      "price": 175000,
+      "active": false,
+      "confirmed": false,
+      "images": []
+    }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+internal val sellerProductSetActiveLiveBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "product": { "id": 1, "active": true, "confirmed": true }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+internal val sellerProductDeleteOkBody = """
+{
+  "success": true,
+  "message": "deleted",
+  "code": 1,
+  "data": {},
+  "errors": []
+}
+""".trimIndent()
+
+internal val sellerProductDeleteImageBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "product": { "id": 1, "images": [] }
+  },
+  "errors": []
 }
 """.trimIndent()

@@ -100,6 +100,8 @@ fun CreateProductMainColumn(
     taxonomyLoading: Boolean = false,
     taxonomyError: String? = null,
     onTaxonomyRetry: () -> Unit = {},
+    onUploadImages: (() -> Unit)? = null,
+    onSelectExistingImages: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -115,7 +117,12 @@ fun CreateProductMainColumn(
             )
         }
         TitleDescriptionCard(state, onStateChange, titleAnchor)
-        MediaCard(state, onStateChange)
+        MediaCard(
+            state = state,
+            onStateChange = onStateChange,
+            onUploadImages = onUploadImages,
+            onSelectExistingImages = onSelectExistingImages,
+        )
         CategoryCard(
             state = state,
             onStateChange = onStateChange,
@@ -174,6 +181,8 @@ private fun TitleDescriptionCard(
 private fun MediaCard(
     state: CreateProductFormState,
     onStateChange: (CreateProductFormState) -> Unit,
+    onUploadImages: (() -> Unit)? = null,
+    onSelectExistingImages: (() -> Unit)? = null,
 ) {
     AdminFormCard(title = stringResource(Res.string.admin_product_card_media)) {
         AdminMediaUploadPanel(
@@ -183,15 +192,26 @@ private fun MediaCard(
                     url = item.url,
                     uploading = item.uploading,
                     isPrimary = index == 0,
+                    previewBytes = item.previewBytes,
                 )
             },
             onUpload = {
-                val url = CreateProductMocks.nextMediaUrl(state.mediaUrls)
-                onStateChange(state.addMedia(CreateProductMocks.newMedia(url, uploading = true)))
+                if (onUploadImages != null) {
+                    onUploadImages()
+                } else {
+                    val url = CreateProductMocks.nextMediaUrl(state.mediaUrls)
+                    onStateChange(state.addMedia(CreateProductMocks.newMedia(url, uploading = true)))
+                }
             },
             onSelectExisting = {
-                val url = CreateProductMocks.existingMediaUrl(state.mediaUrls)
-                onStateChange(state.addMedia(CreateProductMocks.newMedia(url, uploading = false)))
+                if (onSelectExistingImages != null) {
+                    onSelectExistingImages()
+                } else if (onUploadImages != null) {
+                    onUploadImages()
+                } else {
+                    val url = CreateProductMocks.existingMediaUrl(state.mediaUrls)
+                    onStateChange(state.addMedia(CreateProductMocks.newMedia(url, uploading = false)))
+                }
             },
             onRemove = { id -> onStateChange(state.removeMedia(id)) },
             onSetPrimary = { id -> onStateChange(state.setPrimaryMedia(id)) },
