@@ -40,6 +40,8 @@ import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.ic_star_filled
 import vitranshop.shared.generated.resources.product_detail_follow
 import vitranshop.shared.generated.resources.product_detail_follow_a11y
+import vitranshop.shared.generated.resources.product_detail_following
+import vitranshop.shared.generated.resources.product_detail_following_a11y
 import vitranshop.shared.generated.resources.product_detail_merchant_rating_a11y
 
 /**
@@ -53,9 +55,19 @@ fun ProductDetailMerchantFollowStrip(
     coverImageUrl: String,
     modifier: Modifier = Modifier,
     onFollowClick: () -> Unit = {},
+    isFollowed: Boolean = false,
+    isFollowPending: Boolean = false,
 ) {
-    val followLabel = stringResource(Res.string.product_detail_follow)
-    val followA11y = stringResource(Res.string.product_detail_follow_a11y, merchant.name)
+    val followLabel = if (isFollowed) {
+        stringResource(Res.string.product_detail_following)
+    } else {
+        stringResource(Res.string.product_detail_follow)
+    }
+    val followA11y = if (isFollowed) {
+        stringResource(Res.string.product_detail_following_a11y, merchant.name)
+    } else {
+        stringResource(Res.string.product_detail_follow_a11y, merchant.name)
+    }
     val ratingA11y = stringResource(
         Res.string.product_detail_merchant_rating_a11y,
         merchant.ratingLabel,
@@ -165,7 +177,7 @@ fun ProductDetailMerchantFollowStrip(
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(percent = 50),
                     )
-                    .clickable(role = Role.Button, onClick = onFollowClick)
+                    .clickable(role = Role.Button, enabled = !isFollowPending, onClick = onFollowClick)
                     .semantics { contentDescription = followA11y }
                     .padding(horizontal = VitranSpacing.lg, vertical = VitranSpacing.sm),
             )

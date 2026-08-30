@@ -22,11 +22,11 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | HomeScreen | `/` | Home | `GET /home`, `POST /events` | Category rows, mosaics, shop feeds (`HomeCategory*.kt`, `HeroCollageModels.kt`) when API items unverified | `HomeViewModel` ✅ | Yes | Omnibox → `Route.Search`; API sections deferred |
 | CategoriesScreen | `/categories` | Catalog / Marketplace | Taxonomy ✅, `GET /shops/browse`, `GET /products?category_slug=` | Visual fallbacks in `BrowseCategoryVisuals.kt`; mock when feeds empty | `CategoriesBrowseViewModel` ✅, `ShopBrowseViewModel` ✅, `ProductListViewModel` ✅ | Partial | Explore / browse |
 | OffersScreen | `/offers` | Deals | TBD — no dedicated API in collection | `PlaceholderScreen` | `OffersViewModel` | — | Placeholder only |
-| SavedScreen | `/saved` | Engagement / Wishlist | `GET /me/favorites/products` | `PlaceholderScreen` | `SavedViewModel` | — | Placeholder only |
+| SavedScreen | `/saved` | Engagement / Wishlist | `GET /me/favorites/products` | `PlaceholderScreen` | `WishlistViewModel` ✅ (unconnected) | — | Placeholder only — API exists |
 | AccountScreen | `/account` | Account | `GET /auth/me` | Hub extras still mock | `AccountRepository` ✅ (hub identity) | Yes | Wired to `CurrentUserState` |
 | ProfileScreen | `/account/profile` | Account | `GET/PUT /auth/profile` | Preview fixtures only | `ProfileViewModel` ✅ | Yes | |
 | ReferralsScreen | `/account/referrals` | Referral | `GET /me/referral`, credits apply | `ReferralModels.kt` | `ReferralsViewModel` | Yes | |
-| FollowingScreen | `/account/following` | Engagement (follows) | `GET /me/follows/shops` | Inline mock in section | `FollowingViewModel` | Yes | Response schema missing in Postman |
+| FollowingScreen | `/account/following` | Engagement (follows) | `GET /me/follows/shops` | Inline mock in section | — | Yes | Schema unresolved — mock kept; follow **mutations** wired on PDP/store |
 | AccountSettingsScreen | `/account/settings` | Account | Profile preferences (partial `/auth/profile`) | Local `remember` state | `AccountSettingsViewModel` | Yes | |
 | AccountUsersScreen | `/account/users` | Admin Users | `GET /admin/users` | `AccountUserModels.kt` | `AccountUsersViewModel` | Yes | Platform admin |
 | AccountUserDetailScreen | `/account/users/{id}` | Admin Users | `GET/PATCH /admin/users/{id}` | `AccountUserModels.kt` | `AccountUserDetailViewModel` | Yes | |
@@ -44,8 +44,8 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | AdminPlansScreen | `/admin/plans` | Admin Plans | `GET/POST/PATCH/DELETE /admin/plans` | `AdminPlansModels.kt` | `AdminPlansViewModel` | Yes | Platform admin |
 | CreateProductScreen | `/admin/products/new` | Seller Product | Seller product CRUD, `GET /categories` | `CreateProductModels.kt`, `ProductTaxonomyMocks.kt` (Preview) | `TaxonomyPickerViewModel` | Real API — category picker | |
 | CreateCategoryScreen | `/admin/categories/new` | Admin Catalog / Taxonomy | `GET /categories` | `ProductTaxonomyMocks.kt` (Preview only) | `TaxonomyPickerViewModel` | Real API — taxonomy tree | Standard taxonomy picker |
-| ProductDetailScreen | `/products/{id}/{slug}` | Public Product | `GET /products/{id}` | Preview fixtures only; reviews deferred | `ProductDetailsViewModel` ✅ | Yes | No purchase CTAs |
-| StoreScreen | `/m/{shopId}` | Public Shop | `GET /shops/{id}` or slug + products list | Cover, collections, menu mocks | `ShopDetailsViewModel` ✅ | Yes | |
+| ProductDetailScreen | `/products/{id}/{slug}` | Public Product | `GET /products/{id}`, reviews, save/follow | Preview fixtures only | `ProductDetailsViewModel` ✅, `ProductEngagementViewModel` ✅, `ProductReviewsViewModel` ✅ | Yes | No purchase CTAs; reviews hide unverified meta |
+| StoreScreen | `/m/{shopId}` | Public Shop | `GET /shops/{id}` or slug + products list | Cover, collections, menu mocks | `ShopDetailsViewModel` ✅, `ShopEngagementViewModel` ✅ | Yes | Follow wired; mock product-review sheet not opened |
 | SearchResultsScreen | `/search?q=` | Marketplace search | `GET /products/search` | — | `ProductSearchViewModel` ✅ | — | New in Phase 5 |
 | AboutScreen | `/about` | CMS | `GET /static-pages/slug/about-us` | `AboutModels.kt` | `AboutViewModel` | Yes | Marketing page |
 | PlaceholderScreen | — | — | — | — | — | — | Used by Offers/Saved |

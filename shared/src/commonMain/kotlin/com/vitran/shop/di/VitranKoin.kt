@@ -6,6 +6,7 @@ import com.vitran.shop.core.network.di.networkModule
 import com.vitran.shop.core.session.di.sessionModule
 import com.vitran.shop.feature.account.di.accountModule
 import com.vitran.shop.feature.auth.di.authModule
+import com.vitran.shop.feature.engagement.di.engagementModule
 import com.vitran.shop.feature.home.di.homeModule
 import com.vitran.shop.feature.location.di.locationModule
 import com.vitran.shop.feature.marketplace.di.marketplaceModule
@@ -34,6 +35,7 @@ fun startVitranKoin(
             taxonomyModule,
             marketplaceModule,
             homeModule,
+            engagementModule,
             appCoordinatorModule,
             *extraModules.toTypedArray(),
         )

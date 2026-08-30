@@ -94,6 +94,7 @@ fun ProductDetailReviewsSection(
             title = title,
             reviews = reviews,
             histogramA11y = histogramA11y,
+            showSummaryMetrics = reviews.showSummaryMetrics,
             modifier = Modifier.padding(horizontal = CardPad),
         )
 
@@ -137,6 +138,7 @@ private fun ReviewsSummaryHeader(
     title: String,
     reviews: ProductReviewsMock,
     histogramA11y: String,
+    showSummaryMetrics: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -156,6 +158,7 @@ private fun ReviewsSummaryHeader(
                     fontSize = 16.sp,
                 ),
             )
+            if (showSummaryMetrics) {
             Text(
                 text = reviews.averageLabel,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -185,8 +188,10 @@ private fun ReviewsSummaryHeader(
                     fontSize = 14.sp,
                 ),
             )
+            }
         }
 
+        if (showSummaryMetrics) {
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -200,6 +205,7 @@ private fun ReviewsSummaryHeader(
                     fraction = reviews.histogram.fractionFor(stars),
                 )
             }
+        }
         }
     }
 }
@@ -337,6 +343,7 @@ private fun ReviewCard(
             )
         }
 
+        if (item.showAuthorMeta) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
@@ -364,6 +371,7 @@ private fun ReviewCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
         }
     }
 }

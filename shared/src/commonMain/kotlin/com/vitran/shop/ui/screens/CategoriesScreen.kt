@@ -29,7 +29,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.di.rememberCatalogEngagementViewModel
 import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.engagement.presentation.ProductEngagementEffect
 import com.vitran.shop.feature.taxonomy.presentation.CategoriesBrowseUiState
 import com.vitran.shop.feature.taxonomy.presentation.CategoriesBrowseViewModel
 import com.vitran.shop.ui.components.FloatingSearchFab
@@ -82,6 +84,7 @@ fun CategoriesScreen(
     onStoreOpen: (shopId: String) -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
+    onLoginRequest: () -> Unit = {},
     modifier: Modifier = Modifier,
     browseViewModel: CategoriesBrowseViewModel = vitranKoinViewModel(),
 ) {
@@ -90,7 +93,16 @@ fun CategoriesScreen(
     val scrollState = rememberScrollState()
     val edits = rememberMockExploreEdits()
     val mockBrowseCategories = rememberMockBrowseCategories()
+    val catalogEngagement = rememberCatalogEngagementViewModel()
     val browseState by browseViewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(catalogEngagement) {
+        catalogEngagement.effects.collect { effect ->
+            when (effect) {
+                ProductEngagementEffect.RequestLogin -> onLoginRequest()
+                is ProductEngagementEffect.Message -> Unit
+            }
+        }
+    }
     val browseCategories = when (val current = browseState) {
         is CategoriesBrowseUiState.Content -> current.rootCategories.toBrowseCategories()
         else -> mockBrowseCategories
@@ -207,6 +219,9 @@ fun CategoriesScreen(
                     onStoreOpen = onStoreOpen,
                     fallbackProductRows = productRows,
                     fallbackMerchantGrids = merchantGrids,
+                    onSaveClick = { product ->
+                        catalogEngagement.onSaveClick(product.id.toLongOrNull() ?: return@CategoriesMarketplaceFeed)
+                    },
                 )
             }
             SiteFooter(

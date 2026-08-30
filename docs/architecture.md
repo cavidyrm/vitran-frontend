@@ -1,6 +1,6 @@
 # VitranShop Architecture
 
-Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`).
+Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`).
 
 ## Selected architecture
 
@@ -47,7 +47,8 @@ VitranShop/
 │   ├── location/        # Public cities reference data (Phase 4)
 │   ├── taxonomy/        # Public category tree (Phase 4)
 │   ├── marketplace/     # Public shops + products (Phase 5)
-│   └── home/            # Home feed envelope (Phase 5)
+│   ├── home/            # Home feed envelope (Phase 5)
+│   └── engagement/      # Follow, favorites, wishlist, reviews, contact, analytics (Phase 6)
 └── shared/              # UI, navigation, DI bootstrap
     └── src/commonMain/kotlin/com/vitran/shop/
         ├── App.kt
@@ -108,6 +109,7 @@ See [dependency-rules.md](dependency-rules.md). Summary:
 - **`feature:taxonomy`** — `TaxonomyRepository`, public category tree/detail, in-memory cache
 - **`feature:marketplace`** — `ShopRepository`, `ProductRepository`, public shop/product APIs, cursor list ViewModels ([public-marketplace.md](public-marketplace.md))
 - **`feature:home`** — `HomeRepository`, optional-auth home envelope ([public-marketplace.md](public-marketplace.md))
+- **`feature:engagement`** — follow/favorite/wishlist/reviews/comments/contact/analytics ([marketplace-engagement.md](marketplace-engagement.md))
 - **`core:designsystem` / `core:ui`** — deferred; theme lives in `:shared` today
 
 ## Feature responsibility (conceptual packages)
@@ -120,6 +122,7 @@ Future packages under `com.vitran.shop.feature.*` (or Gradle modules) own vertic
 | Account | Account hub, Profile, Settings | Users, engagement |
 | Home | HomeScreen | Home |
 | Marketplace | Categories, PDP, Store | Shops/Products public, catalog |
+| Engagement | PDP/store save+follow, reviews list | Favorites, follows, wishlists, reviews, comments, contact, events |
 | Seller | Create store/product, plans | Shops/Products seller, subscription |
 | Admin | Users, cities, plans, category picker | Admin * folders |
 | Referral | ReferralsScreen | Referrals |
@@ -166,4 +169,5 @@ Prefer **interface + DI** for replaceable capabilities (`SecureStorage`, `ShareM
 - [api-contract.md](api-contract.md)
 - [screen-feature-map.md](screen-feature-map.md)
 - [build-configuration.md](build-configuration.md)
+- [marketplace-engagement.md](marketplace-engagement.md)
 - [decisions/](decisions/)

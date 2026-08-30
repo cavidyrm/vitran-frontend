@@ -1,6 +1,6 @@
 # Public Marketplace Integration (Phase 5)
 
-Phase 5 connects existing shopper marketplace UI to Vitran public APIs via `:feature:marketplace` and `:feature:home`. UI visuals are unchanged; Phase 6 engagement actions remain deferred.
+Phase 5 connects existing shopper marketplace UI to Vitran public APIs via `:feature:marketplace` and `:feature:home`. UI visuals are unchanged. Phase 6 engagement lives in [`marketplace-engagement.md`](marketplace-engagement.md).
 
 ## 1. Scope
 
@@ -163,12 +163,7 @@ When Home sections remain empty or unverified, `HomeScreen` keeps mock sections 
 
 ## 17. Phase 6 boundaries
 
-| UI action | Phase 5 behavior |
-|-----------|------------------|
-| Follow / Favorite | No-op / disabled |
-| Reviews | Hidden or empty |
-| Contact seller | Placeholder |
-| Share | Client-side only if present |
+Engagement is implemented in `:feature:engagement`. See [marketplace-engagement.md](marketplace-engagement.md) and [ADR 0008](decisions/0008-engagement-state-and-analytics.md).
 
 ## 18. Known UI/API gaps
 

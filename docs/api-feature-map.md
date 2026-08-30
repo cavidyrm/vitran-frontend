@@ -21,9 +21,9 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Marketplace Shops | Shops — Public | `PublicShopApi` ✅ | `ShopRepository` ✅ | Public |
 | Marketplace Products | Products — Public | `PublicProductApi` ✅ | `ProductRepository` ✅ | Public |
 | Catalog / Search | catalog/search, products/search | `PublicProductApi` ✅ (simple search) | `ProductRepository` ✅ | Public / catalog **deferred** |
-| Engagement | Favorites, Shop follows, Wishlists | `EngagementApi` | `FollowRepository`, `WishlistRepository` | Required / Optional |
-| Product Reviews | Products — Public (reviews) | `PublicProductApi` | `ReviewRepository` | Optional |
-| Shop Comments | Comments | `EngagementApi` | `CommentRepository` | Mixed |
+| Engagement | Favorites, Shop follows, Wishlists | `EngagementApi` ✅ | `FollowRepository` ✅ (mutations), `ShopFavoriteRepository` ✅, `WishlistRepository` ✅ | Required / public wishlist None |
+| Product Reviews | Products — Public (reviews) | `ProductReviewApi` ✅ | `ProductReviewRepository` ✅ | None / Required |
+| Shop Comments | Comments | `ShopCommentApi` ✅ | `ShopCommentRepository` ✅ | None / Required |
 | Seller Shops | Shops — Seller | `SellerShopApi` | `SellerShopRepository` | Required (seller) |
 | Seller Products | Products — Seller | `SellerProductApi` | `SellerProductRepository` | Required (seller) |
 | Seller Analytics / Boosts | Boosts — Seller, analytics | `SellerAnalyticsApi` | `AnalyticsRepository`, `BoostRepository` | Required (seller) |
@@ -40,7 +40,7 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 
 Avoid a single `VitranApi` with 100+ methods. Incremental services:
 
-`AuthApi`, `AccountApi`, `ReferralApi`, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi`, `SellerShopApi`, `SellerProductApi`, `SellerAnalyticsApi`, `PlanApi`, `PaymentApi`, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
+`AuthApi`, `AccountApi`, `ReferralApi`, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi`, `SellerProductApi`, `SellerAnalyticsApi`, `PlanApi`, `PaymentApi`, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
 
 ## Full endpoint index
 
@@ -67,20 +67,20 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | GET | `/api/v1/cities/1` | Cities | Location / Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public | Yes |
 | GET | `/api/v1/cities/slug/tehran` | Cities | Location / Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public | Yes |
 | PATCH | `/api/v1/admin/comments/1/confirm` | Comments | Shop Comments | EngagementApi | CommentRepository | Public | Yes |
-| POST | `/api/v1/shops/1/comments` | Comments | Shop Comments | EngagementApi | CommentRepository | Public | Yes |
-| GET | `/api/v1/shops/1/comments?per_page=20` | Comments | Shop Comments | EngagementApi | CommentRepository | Public | Yes |
-| POST | `/api/v1/me/favorites/products/1` | Favorites — Me | Engagement | EngagementApi | WishlistRepository | Public | Yes |
-| DELETE | `/api/v1/me/favorites/products/1` | Favorites — Me | Engagement | EngagementApi | WishlistRepository | Public | Yes |
-| GET | `/api/v1/me/favorites/products?per_page=20` | Favorites — Me | Engagement | EngagementApi | WishlistRepository | Optional | Yes |
-| POST | `/api/v1/me/favorites/shops/1` | Favorites — Me | Engagement | EngagementApi | WishlistRepository | Public | Yes |
-| DELETE | `/api/v1/me/favorites/shops/1` | Favorites — Me | Engagement | EngagementApi | WishlistRepository | Public | Yes |
-| GET | `/api/v1/me/favorites/shops?per_page=20` | Favorites — Me | Engagement | EngagementApi | WishlistRepository | Optional | Yes |
-| GET | `/api/v1/me/wishlist/share` | Favorites — Me | Engagement | EngagementApi | WishlistRepository | Public | Yes |
-| PUT | `/api/v1/me/wishlist/share` | Favorites — Me | Engagement | EngagementApi | WishlistRepository | Public | Yes |
+| POST | `/api/v1/shops/1/comments` | Comments | Shop Comments | `ShopCommentApi` ✅ | `ShopCommentRepository` ✅ | Required | Yes |
+| GET | `/api/v1/shops/1/comments?per_page=20` | Comments | Shop Comments | `ShopCommentApi` ✅ | `ShopCommentRepository` ✅ | Public | Yes |
+| POST | `/api/v1/me/favorites/products/1` | Favorites — Me | Engagement | `EngagementApi` ✅ | `WishlistRepository` ✅ | Required | Yes |
+| DELETE | `/api/v1/me/favorites/products/1` | Favorites — Me | Engagement | `EngagementApi` ✅ | `WishlistRepository` ✅ | Required | Yes |
+| GET | `/api/v1/me/favorites/products?per_page=20` | Favorites — Me | Engagement | `EngagementApi` ✅ | `WishlistRepository` ✅ | Required | Yes |
+| POST | `/api/v1/me/favorites/shops/1` | Favorites — Me | Engagement | `EngagementApi` ✅ | `ShopFavoriteRepository` ✅ | Required | Yes |
+| DELETE | `/api/v1/me/favorites/shops/1` | Favorites — Me | Engagement | `EngagementApi` ✅ | `ShopFavoriteRepository` ✅ | Required | Yes |
+| GET | `/api/v1/me/favorites/shops?per_page=20` | Favorites — Me | Engagement | `EngagementApi` ✅ | `ShopFavoriteRepository` ✅ | Required | Yes |
+| GET | `/api/v1/me/wishlist/share` | Favorites — Me | Engagement | `EngagementApi` ✅ | `WishlistRepository` ✅ | Required | Yes |
+| PUT | `/api/v1/me/wishlist/share` | Favorites — Me | Engagement | `EngagementApi` ✅ | `WishlistRepository` ✅ | Required | Yes |
 | GET | `/api/v1/health` | Health | Platform | HealthApi | — | Public | Yes |
 | GET | `/api/v2/health` | Health | Platform | HealthApi | — | Public | Yes |
 | GET | `/health` | Health | Platform | HealthApi | — | Public | Yes |
-| POST | `/api/v1/events` | Home | Home | HomeApi | HomeRepository | Optional | Yes |
+| POST | `/api/v1/events` | Home | Engagement | `UserEventApi` ✅ | `MarketplaceAnalyticsTracker` ✅ | Optional | Yes |
 | GET | `/api/v1/home?city_id=1` | Home | Home | HomeApi | HomeRepository | Optional | Yes |
 | GET | `/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10` | Home | Home | HomeApi | HomeRepository | Public | **Missing** |
 | GET | `/api/v1/payments/callback?Authority=mock-99000&Status=OK` | Payments — Public | Payments | PaymentApi | PaymentRepository | Public | Yes |
@@ -95,9 +95,9 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | GET | `/api/v1/admin/products?per_page=20&active=false&shop_id=1&category_slug=aa-1-2-3-4&user_id=2` | Products — Admin | Admin Moderation | AdminModerationApi | AdminModerationRepository | Public | Yes |
 | GET | `/api/v1/catalog/search?category_slug=aa-1-2-3-4&min_price=100000&max_price=500000&min_rating=4&attributes[color]=color__red,color__blue&sort=price_asc&per_page=20` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Public | **Missing** |
 | GET | `/api/v1/products/1` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Public | Yes |
-| POST | `/api/v1/products/1/contact?session_id=visitor-abc-123` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Optional | Yes |
-| POST | `/api/v1/products/1/reviews` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Optional | Yes |
-| GET | `/api/v1/products/1/reviews?per_page=20` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Public | Yes |
+| POST | `/api/v1/products/1/contact?session_id=visitor-abc-123` | Products — Public | Engagement | `ProductContactApi` ✅ | `ProductContactRepository` ✅ | Optional | Yes |
+| POST | `/api/v1/products/1/reviews` | Products — Public | Engagement | `ProductReviewApi` ✅ | `ProductReviewRepository` ✅ | Required | Yes |
+| GET | `/api/v1/products/1/reviews?per_page=20` | Products — Public | Engagement | `ProductReviewApi` ✅ | `ProductReviewRepository` ✅ | Public | Yes |
 | GET | `/api/v1/products/search?q=widget&city_slug=tehran&category_slug=aa-1-2-3-4&per_page=20` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Public | Yes |
 | GET | `/api/v1/products?per_page=20&shop_slug=my-shop&category_slug=aa-1-2-3-4` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Public | Yes |
 | PATCH | `/api/v1/seller/products/1` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public (multipart) | Yes |
@@ -110,14 +110,14 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | GET | `/api/v1/me/referral` | Referrals | Referral | ReferralApi | ReferralRepository | Public | Yes |
 | POST | `/api/v1/me/referrals/credits/{{referralCreditId}}/apply` | Referrals | Referral | ReferralApi | ReferralRepository | Public | Yes |
 | GET | `/api/v1/referrals/{{referralCode}}` | Referrals | Referral | ReferralApi | ReferralRepository | Public | Yes |
-| POST | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | EngagementApi | FollowRepository | Public | **Missing** |
-| GET | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | EngagementApi | FollowRepository | Public | **Missing** |
-| DELETE | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | EngagementApi | FollowRepository | Public | **Missing** |
-| GET | `/api/v1/me/follows/shops?per_page=20` | Shop follows — Me | Engagement | EngagementApi | FollowRepository | Public | **Missing** |
+| POST | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | `EngagementApi` ✅ | `FollowRepository` ✅ | Required | **Missing** (empty body) |
+| GET | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | — | — | Required | **Missing — Partially implemented due missing schema** |
+| DELETE | `/api/v1/me/follows/shops/1` | Shop follows — Me | Engagement | `EngagementApi` ✅ | `FollowRepository` ✅ | Required | **Missing** (empty body) |
+| GET | `/api/v1/me/follows/shops?per_page=20` | Shop follows — Me | Engagement | — | — | Required | **Missing — Partially implemented due missing schema** |
 | PATCH | `/api/v1/admin/shops/1/confirm` | Shops — Admin | Admin Moderation | AdminModerationApi | AdminModerationRepository | Public | Yes |
 | GET | `/api/v1/admin/shops?per_page=20&active=false&city_id=1&category_slug=aa-1-2-3-4&user_id=2` | Shops — Admin | Admin Moderation | AdminModerationApi | AdminModerationRepository | Public | Yes |
 | GET | `/api/v1/shops/1` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
-| POST | `/api/v1/shops/1/analytics/events` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Optional | Yes |
+| POST | `/api/v1/shops/1/analytics/events` | Shops — Public | Engagement | `ShopAnalyticsApi` ✅ | `MarketplaceAnalyticsTracker` ✅ | Public | Yes |
 | GET | `/api/v1/shops/browse?per_page=20&city_slug=tehran&category_slug=aa-1-2-3-4` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
 | GET | `/api/v1/shops/slug/my-shop` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
 | GET | `/api/v1/shops?per_page=20&city_slug=tehran&category_slug=aa-1-2-3-4` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
@@ -151,4 +151,4 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | GET | `/api/v1/categories/slug/aa-1-2-3-4` | Taxonomy | Taxonomy | — (alias) | — | Public | Yes |
 | GET | `/api/v1/auth/me` | Users | Account | AccountApi | AccountRepository | Public | Yes |
 | PUT | `/api/v1/auth/profile` | Users | Account | AccountApi | AccountRepository | Public | Yes |
-| GET | `/api/v1/wishlists/share/wl-a1b2c3d4e5f67890?per_page=20` | Wishlists — Public | Engagement | EngagementApi | WishlistRepository | Optional | Yes |
+| GET | `/api/v1/wishlists/share/wl-a1b2c3d4e5f67890?per_page=20` | Wishlists — Public | Engagement | `EngagementApi` ✅ | `WishlistRepository` ✅ | None | Yes |

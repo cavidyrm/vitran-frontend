@@ -110,6 +110,7 @@ fun AppNavHost(
                     },
                     onSearchSubmit = onSearchSubmit,
                     onFooterLinkClick = onFooterLink,
+                    onLoginRequest = { navigator.navigate(Route.Login) },
                 )
             }
             entry<Route.Offers> { OffersScreen() }
@@ -342,6 +343,7 @@ fun AppNavHost(
                     },
                     onSearchSubmit = onSearchSubmit,
                     onFooterLinkClick = onFooterLink,
+                    onLoginRequest = { navigator.navigate(Route.Login) },
                 )
             }
             entry<Route.Store> { key ->
@@ -350,6 +352,7 @@ fun AppNavHost(
                     onProductOpen = onProductOpen,
                     onSearchSubmit = onSearchSubmit,
                     onFooterLinkClick = onFooterLink,
+                    onLoginRequest = { navigator.navigate(Route.Login) },
                 )
             }
             entry<Route.Search> { key ->

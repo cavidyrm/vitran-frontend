@@ -30,15 +30,20 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.core.platform.share.ShareManager
+import com.vitran.shop.di.rememberCatalogEngagementViewModel
 import com.vitran.shop.di.rememberShopDetailsViewModel
+import com.vitran.shop.di.rememberShopEngagementViewModel
+import com.vitran.shop.feature.engagement.presentation.ProductEngagementEffect
+import com.vitran.shop.feature.engagement.state.FollowStatus
 import com.vitran.shop.feature.marketplace.shop.presentation.ShopDetailsUiState
+import org.koin.compose.koinInject
 import com.vitran.shop.ui.components.FloatingSearchFab
 import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
 import com.vitran.shop.ui.components.SiteFooter
 import com.vitran.shop.ui.components.SiteFooterLinkId
-import com.vitran.shop.ui.sections.product.ProductDetailReviewsSheet
 import com.vitran.shop.ui.sections.store.StoreCategoryChipsBar
 import com.vitran.shop.ui.sections.store.StoreCollectionsSection
 import com.vitran.shop.ui.sections.store.StoreCoverLayer
@@ -86,9 +91,15 @@ fun StoreScreen(
     ) -> Unit = { _, _, _, _, _ -> },
     onSearchSubmit: (String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
+    onLoginRequest: () -> Unit = {},
 ) {
     val viewModel = rememberShopDetailsViewModel(shopId)
     val shopState by viewModel.uiState.collectAsStateWithLifecycle()
+    val numericShopId = (shopState as? ShopDetailsUiState.Content)?.shop?.id?.value ?: 0L
+    val engagementViewModel = rememberShopEngagementViewModel(numericShopId)
+    val catalogEngagement = rememberCatalogEngagementViewModel()
+    val engagementState by engagementViewModel.uiState.collectAsStateWithLifecycle()
+    val shareManager: ShareManager = koinInject()
     val store = when (val state = shopState) {
         is ShopDetailsUiState.Content -> state.shop.toStoreMock()
         else -> null
@@ -98,6 +109,28 @@ fun StoreScreen(
             products = state.products.items.map { it.toCategoriesProduct(state.shop.title) },
         )
         else -> StoreProductsMock(emptyList())
+    }
+
+    LaunchedEffect(shopState) {
+        if (shopState is ShopDetailsUiState.Content && numericShopId != 0L) {
+            engagementViewModel.onShopDisplayed()
+        }
+    }
+    LaunchedEffect(engagementViewModel) {
+        engagementViewModel.effects.collect { effect ->
+            when (effect) {
+                ProductEngagementEffect.RequestLogin -> onLoginRequest()
+                is ProductEngagementEffect.Message -> Unit
+            }
+        }
+    }
+    LaunchedEffect(catalogEngagement) {
+        catalogEngagement.effects.collect { effect ->
+            when (effect) {
+                ProductEngagementEffect.RequestLogin -> onLoginRequest()
+                is ProductEngagementEffect.Message -> Unit
+            }
+        }
     }
 
     if (shopState is ShopDetailsUiState.Loading || store == null) {
@@ -127,7 +160,6 @@ fun StoreScreen(
     var omniboxBoundsInRoot by remember { mutableStateOf(Rect.Zero) }
     var screenOriginInRoot by remember { mutableStateOf(Offset.Zero) }
     var menuOpen by remember { mutableStateOf(false) }
-    var storeReviewsOpen by remember { mutableStateOf(false) }
 
     // Always visible on Store; hide compact FAB only while the sheet is open.
     val showFloatingSearch = isDesktop || !omniboxExpanded
@@ -219,7 +251,9 @@ fun StoreScreen(
                 StoreMenuFollowBar(
                     store = resolvedStore,
                     onMenuClick = { menuOpen = true },
-                    onFollowClick = { /* mock — follow not wired yet */ },
+                    onFollowClick = engagementViewModel::onFollowClick,
+                    isFollowed = engagementState.followStatus == FollowStatus.Followed,
+                    isFollowPending = engagementState.isFollowPending,
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(resolvedStore.brandColor.copy(alpha = collapseProgress)),
@@ -230,7 +264,7 @@ fun StoreScreen(
                 StoreIdentityBlock(
                     store = resolvedStore,
                     coverHeight = coverHeight,
-                    onRatingClick = { storeReviewsOpen = true },
+                    onRatingClick = { /* shop comments UI not present — do not show fake product reviews */ },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -265,6 +299,9 @@ fun StoreScreen(
                             product.storeName,
                             product.priceLabel,
                         )
+                    },
+                    onSaveClick = { product ->
+                        catalogEngagement.onSaveClick(product.id.toLongOrNull() ?: return@StoreProductsSection)
                     },
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -324,21 +361,16 @@ fun StoreScreen(
         }
 
         if (menuOpen) {
+            val shareUrl = (shopState as? ShopDetailsUiState.Content)?.shop?.shareUrl
             StoreMenuSheet(
                 store = resolvedStore,
                 menu = resolvedMenu,
-                onDismiss = {
-                    menuOpen = false
-                    storeReviewsOpen = false
+                onDismiss = { menuOpen = false },
+                onOpenReviews = { /* no shop comments UI — do not show fake product reviews */ },
+                onShareClick = {
+                    engagementViewModel.onShareClick()
+                    shareManager.share(resolvedStore.name, shareUrl)
                 },
-                onOpenReviews = { storeReviewsOpen = true },
-            )
-        }
-
-        if (storeReviewsOpen) {
-            ProductDetailReviewsSheet(
-                reviews = resolvedMenu.fullReviews,
-                onDismiss = { storeReviewsOpen = false },
             )
         }
     }

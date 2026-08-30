@@ -82,6 +82,7 @@ kotlin {
             implementation(project(":feature:taxonomy"))
             implementation(project(":feature:marketplace"))
             implementation(project(":feature:home"))
+            implementation(project(":feature:engagement"))
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)

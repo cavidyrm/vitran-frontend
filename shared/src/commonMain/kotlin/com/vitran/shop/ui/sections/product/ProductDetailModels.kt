@@ -120,6 +120,7 @@ data class ProductReviewItem(
     val title: String? = null,
     /** e.g. "آسیاب‌شده" / "۳T-۴T / آبی" — gray subtitle under the title. */
     val variantLabel: String? = null,
+    val showAuthorMeta: Boolean = true,
 )
 
 /**
@@ -132,6 +133,8 @@ data class ProductReviewsMock(
     val ratingsCountLabel: String,
     val histogram: ProductReviewHistogram,
     val reviews: List<ProductReviewItem>,
+    /** False when API does not provide aggregate/histogram fields. */
+    val showSummaryMetrics: Boolean = true,
 )
 
 /** Default PDP reviews card so every mock product has a filled Reviews section. */

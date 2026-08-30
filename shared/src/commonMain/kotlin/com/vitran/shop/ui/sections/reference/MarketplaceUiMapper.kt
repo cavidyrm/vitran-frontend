@@ -6,9 +6,13 @@ import com.vitran.shop.feature.marketplace.shop.domain.model.ShopDetails
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSummary
 import com.vitran.shop.ui.sections.categories.CategoriesMerchantShop
 import com.vitran.shop.ui.sections.categories.CategoriesProduct
+import com.vitran.shop.feature.engagement.review.domain.model.ProductReview
 import com.vitran.shop.ui.sections.product.ProductDetailMedia
 import com.vitran.shop.ui.sections.product.ProductDetailMerchant
 import com.vitran.shop.ui.sections.product.ProductDetailMock
+import com.vitran.shop.ui.sections.product.ProductReviewHistogram
+import com.vitran.shop.ui.sections.product.ProductReviewItem
+import com.vitran.shop.ui.sections.product.ProductReviewsMock
 import com.vitran.shop.ui.sections.product.productSlug
 import com.vitran.shop.ui.sections.store.StoreMock
 import com.vitran.shop.ui.theme.ShopPurple
@@ -51,6 +55,27 @@ fun ProductDetails.toProductDetailMock(shopTitle: String = "فروشگاه"): Pr
         priceLabel = formatMarketplacePrice(priceAmount),
         description = description,
         reviews = null,
+    )
+}
+
+fun List<ProductReview>.toProductReviewsMock(): ProductReviewsMock? {
+    if (isEmpty()) return null
+    return ProductReviewsMock(
+        averageLabel = "",
+        ratingsCountLabel = "",
+        histogram = ProductReviewHistogram(0f, 0f, 0f, 0f, 0f),
+        reviews = map { review ->
+            ProductReviewItem(
+                rating = review.rating.value,
+                body = review.comment,
+                authorName = "",
+                authorInitial = "",
+                avatarColorArgb = 0xFF888888,
+                dateLabel = "",
+                showAuthorMeta = false,
+            )
+        },
+        showSummaryMetrics = false,
     )
 }
 

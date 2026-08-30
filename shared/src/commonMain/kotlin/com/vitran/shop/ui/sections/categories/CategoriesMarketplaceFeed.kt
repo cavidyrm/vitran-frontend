@@ -30,6 +30,7 @@ fun CategoriesMarketplaceFeed(
     onStoreOpen: (shopId: String) -> Unit,
     fallbackProductRows: List<CategoriesProductRowSection>,
     fallbackMerchantGrids: List<CategoriesMerchantGridSection>,
+    onSaveClick: (CategoriesProduct) -> Unit = {},
 ) {
     val shopFactory: ShopBrowseViewModelFactory = koinInject()
     val productFactory: ProductListViewModelFactory = koinInject()
@@ -73,7 +74,7 @@ fun CategoriesMarketplaceFeed(
                 product.priceLabel,
             )
         },
-        onSaveClick = { _, _ -> /* Phase 6 — favorites */ },
+        onSaveClick = { _, product -> onSaveClick(product) },
     )
     CategoriesMerchantGridsFeed(
         sections = merchantGrids,

@@ -2,7 +2,7 @@
 
 Rules for Gradle modules and Kotlin packages in VitranShop. Phase 1 enforces a small core layer under `:shared`; feature modules arrive incrementally.
 
-## Module dependency graph (Phase 4)
+## Module dependency graph (Phase 6)
 
 ```mermaid
 flowchart TB
@@ -17,6 +17,9 @@ flowchart TB
   featAccount[":feature:account"]
   featLocation[":feature:location"]
   featTaxonomy[":feature:taxonomy"]
+  featMarketplace[":feature:marketplace"]
+  featHome[":feature:home"]
+  featEngagement[":feature:engagement"]
   coreDomain[":core:domain"]
   coreNetwork[":core:network"]
   coreSession[":core:session"]
@@ -28,6 +31,9 @@ flowchart TB
   sharedMod --> featAccount
   sharedMod --> featLocation
   sharedMod --> featTaxonomy
+  sharedMod --> featMarketplace
+  sharedMod --> featHome
+  sharedMod --> featEngagement
   sharedMod --> coreDomain
   sharedMod --> coreNetwork
   sharedMod --> coreSession
@@ -42,6 +48,17 @@ flowchart TB
   featLocation --> coreDomain
   featTaxonomy --> coreNetwork
   featTaxonomy --> coreDomain
+  featMarketplace --> coreNetwork
+  featMarketplace --> coreDomain
+  featMarketplace --> featLocation
+  featMarketplace --> featTaxonomy
+  featHome --> coreNetwork
+  featHome --> coreDomain
+  featHome --> coreSession
+  featEngagement --> coreNetwork
+  featEngagement --> coreDomain
+  featEngagement --> coreSession
+  featEngagement --> featMarketplace
   coreNetwork --> coreDomain
   coreNetwork --> coreSession
   coreNetwork --> coreCommon
@@ -51,22 +68,24 @@ flowchart TB
   coreDomain --> coreCommon
 ```
 
-Future modules (Phase 5+):
+Future modules (Phase 7+):
 
 ```text
-:feature:marketplace  → :feature:location, :feature:taxonomy
 :feature:seller       → :feature:location, :feature:taxonomy
-:feature:home           → :feature:taxonomy (optional :feature:location)
 ```
 
-Reference modules must **not** depend on marketplace, seller, or home features.
+`:feature:engagement` → `:feature:marketplace` is **one-way** (IDs + `CursorListController`). Marketplace must not depend on engagement.
+
+Reference modules must **not** depend on marketplace, seller, home, or engagement features.
 
 ## Allowed dependencies
 
 | From | May depend on |
 |------|----------------|
 | Platform apps (`androidApp`, etc.) | `:shared` |
-| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
+| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:home`, `:feature:engagement`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
+| `:feature:marketplace` / `:feature:home` | Own domain, `:core:network`, `:core:domain` (+ home: `:core:session`); marketplace also `:feature:location`, `:feature:taxonomy` |
+| `:feature:engagement` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:feature:marketplace` |
 | `:feature:auth` / `:feature:account` | Own domain, `:core:network`, `:core:session`, `:core:domain` |
 | `:feature:location` / `:feature:taxonomy` | Own domain, `:core:network`, `:core:domain` |
 | `:core:session` | `:core:domain`, `:core:platform` |

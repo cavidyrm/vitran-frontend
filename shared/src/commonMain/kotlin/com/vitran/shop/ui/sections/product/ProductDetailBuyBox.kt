@@ -58,6 +58,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.ic_favorite_outline
+import vitranshop.shared.generated.resources.ic_nav_saved
 import vitranshop.shared.generated.resources.ic_share
 import vitranshop.shared.generated.resources.ic_star_filled
 import vitranshop.shared.generated.resources.product_detail_option_selected_a11y
@@ -65,6 +66,8 @@ import vitranshop.shared.generated.resources.product_detail_quantity
 import vitranshop.shared.generated.resources.product_detail_quantity_decrease_a11y
 import vitranshop.shared.generated.resources.product_detail_quantity_increase_a11y
 import vitranshop.shared.generated.resources.product_detail_save
+import vitranshop.shared.generated.resources.product_detail_save_unknown_a11y
+import vitranshop.shared.generated.resources.product_detail_saved
 import vitranshop.shared.generated.resources.product_detail_share
 
 /**
@@ -76,6 +79,11 @@ import vitranshop.shared.generated.resources.product_detail_share
 fun ProductDetailBuyBox(
     product: ProductDetailMock,
     modifier: Modifier = Modifier,
+    onSaveClick: () -> Unit = {},
+    onShareClick: () -> Unit = {},
+    isSaved: Boolean = false,
+    isSaveUnknown: Boolean = false,
+    isSavePending: Boolean = false,
 ) {
     var selectedByOption by remember(product.id) {
         mutableStateOf(product.options.associate { it.id to it.selectedIndex })
@@ -208,21 +216,35 @@ fun ProductDetailBuyBox(
             horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
         ) {
             ShopOutlineActionButton(
-                text = stringResource(Res.string.product_detail_save),
-                onClick = {},
+                text = if (isSaved) {
+                    stringResource(Res.string.product_detail_saved)
+                } else {
+                    stringResource(Res.string.product_detail_save)
+                },
+                onClick = { if (!isSavePending) onSaveClick() },
                 modifier = Modifier.weight(1f),
                 icon = {
                     VitranIcon(
-                        painter = painterResource(Res.drawable.ic_favorite_outline),
-                        contentDescription = null,
+                        painter = painterResource(
+                            if (isSaved) Res.drawable.ic_nav_saved else Res.drawable.ic_favorite_outline,
+                        ),
+                        contentDescription = if (isSaveUnknown) {
+                            stringResource(Res.string.product_detail_save_unknown_a11y)
+                        } else {
+                            null
+                        },
                         size = ActionIconSize,
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = if (isSaveUnknown) {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                     )
                 },
             )
             ShopOutlineActionButton(
                 text = stringResource(Res.string.product_detail_share),
-                onClick = {},
+                onClick = onShareClick,
                 modifier = Modifier.weight(1f),
                 icon = {
                     VitranIcon(

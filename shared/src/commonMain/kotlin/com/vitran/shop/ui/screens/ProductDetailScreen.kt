@@ -38,8 +38,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.TextButton
 import com.vitran.shop.ui.components.FloatingSearchFab
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.core.platform.share.ShareManager
 import com.vitran.shop.di.rememberProductDetailsViewModel
+import com.vitran.shop.di.rememberProductEngagementViewModel
+import com.vitran.shop.di.rememberProductReviewsViewModel
+import com.vitran.shop.feature.engagement.presentation.ProductEngagementEffect
+import com.vitran.shop.feature.engagement.state.FollowStatus
+import com.vitran.shop.feature.engagement.state.SaveStatus
 import com.vitran.shop.feature.marketplace.product.presentation.ProductDetailsUiState
+import com.vitran.shop.ui.sections.reference.toProductReviewsMock
+import org.koin.compose.koinInject
 import com.vitran.shop.ui.components.FloatingSearchOmnibox
 import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
@@ -99,12 +107,36 @@ fun ProductDetailScreen(
     onStoreOpen: (shopId: String) -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
+    onLoginRequest: () -> Unit = {},
 ) {
     val viewModel = rememberProductDetailsViewModel(productId)
     val detailsState by viewModel.uiState.collectAsStateWithLifecycle()
+    val loadedProduct = (detailsState as? ProductDetailsUiState.Content)?.product
+    val shopId = loadedProduct?.shopId?.value?.toString()
+    val engagementViewModel = rememberProductEngagementViewModel(productId, shopId)
+    val reviewsViewModel = rememberProductReviewsViewModel(productId)
+    val engagementState by engagementViewModel.uiState.collectAsStateWithLifecycle()
+    val reviewsState by reviewsViewModel.uiState.collectAsStateWithLifecycle()
+    val shareManager: ShareManager = koinInject()
     val product: ProductDetailMock? = when (val state = detailsState) {
-        is ProductDetailsUiState.Content -> state.product.toProductDetailMock()
+        is ProductDetailsUiState.Content -> state.product.toProductDetailMock().copy(
+            reviews = reviewsState.list.items.toProductReviewsMock(),
+        )
         else -> null
+    }
+
+    LaunchedEffect(detailsState) {
+        if (detailsState is ProductDetailsUiState.Content) {
+            engagementViewModel.onProductDisplayed()
+        }
+    }
+    LaunchedEffect(engagementViewModel) {
+        engagementViewModel.effects.collect { effect ->
+            when (effect) {
+                ProductEngagementEffect.RequestLogin -> onLoginRequest()
+                is ProductEngagementEffect.Message -> Unit
+            }
+        }
     }
     val viewportWidth = LocalShellViewportWidth.current
     val isMdUp = viewportWidth >= VitranSize.mdBreakpoint
@@ -275,6 +307,14 @@ fun ProductDetailScreen(
                             onVisitStoreClick = {
                                 resolveStoreId(product.merchant)?.let(onStoreOpen)
                             },
+                            onSaveClick = engagementViewModel::onSaveClick,
+                            onShareClick = { shareManager.share(product.title) },
+                            onFollowClick = engagementViewModel::onFollowClick,
+                            isSaved = engagementState.saveStatus == SaveStatus.Saved,
+                            isSaveUnknown = engagementState.saveStatus == SaveStatus.Unknown,
+                            isSavePending = engagementState.isSavePending,
+                            isFollowed = engagementState.followStatus == FollowStatus.Followed,
+                            isFollowPending = engagementState.isFollowPending,
                             modifier = Modifier
                                 .widthIn(min = BuyColumnMinWidth, max = BuyColumnMaxWidth)
                                 .width(BuyColumnWidth)
@@ -297,6 +337,14 @@ fun ProductDetailScreen(
                         onVisitStoreClick = {
                             resolveStoreId(product.merchant)?.let(onStoreOpen)
                         },
+                        onSaveClick = engagementViewModel::onSaveClick,
+                        onShareClick = { shareManager.share(product.title) },
+                        onFollowClick = engagementViewModel::onFollowClick,
+                        isSaved = engagementState.saveStatus == SaveStatus.Saved,
+                        isSaveUnknown = engagementState.saveStatus == SaveStatus.Unknown,
+                        isSavePending = engagementState.isSavePending,
+                        isFollowed = engagementState.followStatus == FollowStatus.Followed,
+                        isFollowPending = engagementState.isFollowPending,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = VitranSpacing.lg),

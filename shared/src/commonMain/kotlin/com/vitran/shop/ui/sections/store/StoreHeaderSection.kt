@@ -69,6 +69,8 @@ import vitranshop.shared.generated.resources.ic_menu_hamburger
 import vitranshop.shared.generated.resources.ic_star_filled
 import vitranshop.shared.generated.resources.product_detail_follow
 import vitranshop.shared.generated.resources.product_detail_follow_a11y
+import vitranshop.shared.generated.resources.product_detail_following
+import vitranshop.shared.generated.resources.product_detail_following_a11y
 import vitranshop.shared.generated.resources.store_category_a11y
 import vitranshop.shared.generated.resources.store_collection_a11y
 import vitranshop.shared.generated.resources.store_menu_a11y
@@ -245,6 +247,8 @@ fun StoreMenuFollowBar(
     onMenuClick: () -> Unit,
     onFollowClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isFollowed: Boolean = false,
+    isFollowPending: Boolean = false,
 ) {
     val overlayText = if (store.useLightText) Color.White else Color(0xFF1A1A1A)
     val glassyFill = store.brandColor.copy(alpha = 0.85f)
@@ -268,6 +272,8 @@ fun StoreMenuFollowBar(
             glassyFill = glassyFill,
             contentColor = overlayText,
             onClick = onFollowClick,
+            isFollowed = isFollowed,
+            isFollowPending = isFollowPending,
         )
     }
 }
@@ -411,9 +417,16 @@ private fun StoreFollowButton(
     glassyFill: Color,
     contentColor: Color,
     onClick: () -> Unit,
+    isFollowed: Boolean = false,
+    isFollowPending: Boolean = false,
 ) {
-    val label = stringResource(Res.string.product_detail_follow)
-    val a11y = stringResource(Res.string.product_detail_follow_a11y, storeName)
+    val label = stringResource(
+        if (isFollowed) Res.string.product_detail_following else Res.string.product_detail_follow,
+    )
+    val a11y = stringResource(
+        if (isFollowed) Res.string.product_detail_following_a11y else Res.string.product_detail_follow_a11y,
+        storeName,
+    )
     Text(
         text = label,
         color = contentColor,
@@ -423,7 +436,7 @@ private fun StoreFollowButton(
             .shadow(elevation = VitranElevation.small, shape = RoundedCornerShape(percent = 50), spotColor = GlassyShadow, ambientColor = GlassyShadow)
             .clip(RoundedCornerShape(percent = 50))
             .background(glassyFill)
-            .clickable(role = Role.Button, onClick = onClick)
+            .clickable(role = Role.Button, enabled = !isFollowPending, onClick = onClick)
             .semantics { contentDescription = a11y }
             .padding(horizontal = VitranSpacing.lg, vertical = 10.dp),
     )

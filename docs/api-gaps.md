@@ -100,7 +100,7 @@ Postman requests **without saved response examples** (15):
 
 **Category attributes:** `GET /categories/{slug}/attributes` has an example but only `"attributes": []` — **non-empty item schema unverified (Phase 4 deferred).**
 
-**Client impact:** Do not invent response DTOs. Use integration tests or backend verification before implementation.
+**Client impact:** Do not invent response DTOs. Phase 6 implements follow POST/DELETE only (`executeEmpty()`). List and GET-by-id stay unimplemented — **Partially implemented due missing schema**.
 
 ---
 
@@ -110,8 +110,8 @@ Postman requests **without saved response examples** (15):
 |-------|--------|
 | **Status** | Open |
 | **Issue** | `/me/follows/shops` and `/me/favorites/shops` both exist; semantics overlap. |
-| **Client impact** | Keep separate repositories/APIs. `FollowingScreen` may map to follows; favorites may differ. |
-| **Phase 2+ handling** | Confirm product semantics before merging UI or domain concepts. |
+| **Client impact** | Keep separate repositories/APIs and `EngagementStateStore` maps. `FollowingScreen` stays mock. |
+| **Phase 6 handling** | Follow mutations vs `ShopFavoriteRepository` remain distinct. Confirm product semantics before merging UI. |
 
 ---
 
@@ -252,3 +252,102 @@ Postman requests **without saved response examples** (15):
 - **Register with referral:** Same endpoint as register (`POST /auth/register`) with optional `referral_code` — one request model, not duplicate HTTP methods.
 - **Login 403:** Phone verification required — business outcome with `temp_token`, not generic error.
 - **Shop create session mutation:** `data.tokens.access_token` updates JWT roles — session owner is `:core:session`, not Auth ViewModel.
+
+---
+
+## Gap 21 — Follow response schemas
+
+| Field | Status |
+|-------|--------|
+| **Status** | UNRESOLVED — NOT INVENTED |
+| **Issue** | All four follow endpoints lack saved Postman response examples. List description mentions `data.followed_shops` but no item shape. |
+| **Client impact** | `FollowRepository.setFollowed` only. No `FollowedShop` DTO. `FollowingScreen` remains mock. |
+| **Phase 6 handling** | POST/DELETE implemented; list/status not invented. |
+
+---
+
+## Gap 22 — No favorite / wishlist status GET
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | No `GET .../{id}` for favorite shop or wishlist product. Public product/shop details have no `is_favorite`. |
+| **Client impact** | `SaveStatus` / `FavoriteShopStatus` / `FollowStatus` start as `Unknown`. UI must not treat Unknown as false. |
+| **Phase 6 handling** | Optimistic store after successful mutation only. |
+
+---
+
+## Gap 23 — Contact redirect / webhook payloads
+
+| Field | Status |
+|-------|--------|
+| **Status** | UNRESOLVED — NOT INVENTED |
+| **Issue** | Contact description mentions redirect and webhook routing; Postman example is WhatsApp only. |
+| **Client impact** | `ContactRoute.WhatsApp(url) \| Unsupported(rawType)` only. |
+| **Phase 6 handling** | Unknown `routed_via` maps to `Unsupported`. |
+
+---
+
+## Gap 24 — Favorite 409 `reason`
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Postman describes 409 already-favorited with no `FieldError.reason` example. |
+| **Client impact** | Keep `AppError.Conflict`. Do not match Persian/English message text. |
+| **Phase 6 handling** | Optimistic rollback; do not map 409 to Favorited. |
+
+---
+
+## Gap 25 — Public wishlist 403 body
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Public GET returns 403 when private; body shape unverified. |
+| **Client impact** | Repository maps `AppError.Forbidden` → `PublicWishlistResult.Private` (not session forbidden). |
+| **Phase 6 handling** | 404 stays `NotFound`. |
+
+---
+
+## Gap 26 — Analytics per-event context and `category_slug`
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Shop analytics example uses `"category_slug": 1` (int). Per-event extra fields (search query, etc.) unverified. |
+| **Client impact** | DTO `categorySlug: String?`; do not emit `search` / `click_category` until payload verified. |
+| **Phase 6 handling** | Isolated at analytics DTO; domain `CategorySlug` remains String. |
+
+---
+
+## Gap 27 — Wishlist frontend share URL
+
+| Field | Status |
+|-------|--------|
+| **Status** | UNRESOLVED — NOT INVENTED |
+| **Issue** | Backend returns `share_slug`; no documented storefront URL. |
+| **Client impact** | Do not invent `https://vitran.ir/wishlist/{slug}`. Share PDP/store only when `ShopDetails.shareUrl` or in-app route exists. |
+| **Phase 6 handling** | `WishlistShareSettings` stores slug only. |
+
+---
+
+## Gap 28 — Review metadata
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | List items are `id`, `product_id`, `user_id`, `rating`, `comment` only. |
+| **Client impact** | Hide author, date, histogram, helpful, title, variant on PDP. |
+| **Phase 6 handling** | `ProductReview.authorUserId` kept; not displayed. |
+
+---
+
+## Gap 29 — Public comment metadata
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Public list is `id`, `title`, `confirmed` only. |
+| **Client impact** | No description/author/date on public comments. Submitted comments stay pending, never appended. |
+| **Phase 6 handling** | No shop-comments UI invented. |

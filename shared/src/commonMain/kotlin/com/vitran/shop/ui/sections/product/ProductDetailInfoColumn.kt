@@ -25,6 +25,14 @@ fun ProductDetailInfoColumn(
     showMerchantHeader: Boolean = false,
     contentHorizontalPadding: Boolean = true,
     onVisitStoreClick: () -> Unit = {},
+    onSaveClick: () -> Unit = {},
+    onShareClick: () -> Unit = {},
+    onFollowClick: () -> Unit = {},
+    isSaved: Boolean = false,
+    isSaveUnknown: Boolean = false,
+    isSavePending: Boolean = false,
+    isFollowed: Boolean = false,
+    isFollowPending: Boolean = false,
 ) {
     val coverUrl = product.merchantCoverImageUrl ?: product.media.imageUrls.first()
 
@@ -48,7 +56,14 @@ fun ProductDetailInfoColumn(
                 onVisitStoreClick = onVisitStoreClick,
             )
         }
-        ProductDetailBuyBox(product = product)
+        ProductDetailBuyBox(
+            product = product,
+            onSaveClick = onSaveClick,
+            onShareClick = onShareClick,
+            isSaved = isSaved,
+            isSaveUnknown = isSaveUnknown,
+            isSavePending = isSavePending,
+        )
         ProductDetailDescription(description = product.description)
         product.reviews?.let { reviews ->
             ProductDetailReviewsSection(reviews = reviews)
@@ -56,6 +71,9 @@ fun ProductDetailInfoColumn(
         ProductDetailMerchantFollowStrip(
             merchant = product.merchant,
             coverImageUrl = coverUrl,
+            onFollowClick = onFollowClick,
+            isFollowed = isFollowed,
+            isFollowPending = isFollowPending,
         )
     }
 }

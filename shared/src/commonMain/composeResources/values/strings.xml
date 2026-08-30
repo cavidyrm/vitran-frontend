@@ -266,7 +266,12 @@
     <string name="product_detail_reviews_sort_rating_desc">امتیاز: زیاد به کم</string>
     <!-- Product detail / recommendations -->
     <string name="product_detail_follow">دنبال کردن</string>
+    <string name="product_detail_following">در حال دنبال کردن</string>
     <string name="product_detail_follow_a11y">دنبال کردن فروشگاه %1$s</string>
+    <string name="product_detail_following_a11y">لغو دنبال کردن فروشگاه %1$s</string>
+    <string name="product_detail_save_unknown_a11y">وضعیت ذخیره نامشخص</string>
+    <string name="product_detail_saved">ذخیره‌شده</string>
+    <string name="engagement_error_generic">عملیات انجام نشد. دوباره تلاش کنید.</string>
     <string name="product_detail_more_from">بیشتر از %1$s</string>
     <string name="product_detail_related_to">مرتبط با %1$s</string>
     <string name="product_detail_discover_brands">کشف برندهای برتر</string>

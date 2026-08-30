@@ -173,7 +173,7 @@ See [api-feature-map.md](api-feature-map.md) for full endpoint index.
 | Marketplace Shops | Shops — Public |
 | Marketplace Products | Products — Public |
 | Catalog / Search | Catalog search, product search |
-| Engagement | Favorites — Me, Shop follows — Me, Wishlists — Public |
+| Engagement | Favorites — Me, Shop follows — Me, Wishlists — Public, reviews, comments, contact, `/events`, shop analytics |
 | Product Reviews | Products — Public (reviews) |
 | Shop Comments | Comments |
 | Seller Shops / Products / Analytics / Boosts | Shops — Seller, Products — Seller, Boosts — Seller |
