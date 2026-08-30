@@ -255,4 +255,4 @@ when (val result = authApi.login(...)) {
 - **Android cleartext:** `http://localhost:8080` may require debug-only network security config (not yet added).
 - **Emulator localhost:** Android emulator may need `10.0.2.2` instead of `localhost` — override `ApiEnvironment` at startup, not in shared network code.
 - **Web CORS:** Browser calls require backend CORS — not a client workaround problem.
-- **TLS:** Production uses `https://vitran.ir` — never disable certificate validation.
+- **TLS:** Production uses `https://api.vitran.ir` — never disable certificate validation.

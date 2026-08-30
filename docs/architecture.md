@@ -1,6 +1,6 @@
 # VitranShop Architecture
 
-Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`); **Phase 7 adds seller shop management** (`:feature:seller`); **Phase 8 adds seller product management** (same `:feature:seller` module, `product/` package) plus `:core:platform` `SelectedFile` / `ImagePicker`; **Phase 9 adds plans, per-shop subscriptions, payment handoff, entitlements, and referrals** (`plan/`, `subscription/`, `referral/` packages in `:feature:seller`); **Phase 10 adds seller analytics CSV export, `FileDownloadExecutor`, `FileSaver`, and placement-boost transport** (`analytics/`, `boost/` packages; Compose screens deferred).
+Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`); **Phase 7 adds seller shop management** (`:feature:seller`); **Phase 8 adds seller product management** (same `:feature:seller` module, `product/` package) plus `:core:platform` `SelectedFile` / `ImagePicker`; **Phase 9 adds plans, per-shop subscriptions, payment handoff, entitlements, and referrals** (`plan/`, `subscription/`, `referral/` packages in `:feature:seller`); **Phase 10 adds seller analytics CSV export, `FileDownloadExecutor`, `FileSaver`, and placement-boost transport** (`analytics/`, `boost/` packages; Compose screens deferred); **Phase 11 adds the admin platform and CMS** (`:feature:admin`, `:feature:content`) with centralized client RBAC and safe static-page HTML.
 
 ## Selected architecture
 
@@ -49,7 +49,9 @@ VitranShop/
 │   ├── marketplace/     # Public shops + products (Phase 5)
 │   ├── home/            # Home feed envelope (Phase 5)
 │   ├── engagement/      # Follow, favorites, wishlist, reviews, contact, analytics (Phase 6)
-│   └── seller/          # Seller shops: create/list/update, slug, fulfillment, API key (Phase 7)
+│   ├── seller/          # Seller shops/products/plans/analytics/boosts (Phases 7–10)
+│   ├── content/         # Public static pages + sanitization (Phase 11)
+│   └── admin/           # Users, moderation, catalog, plans, CMS, RBAC (Phase 11)
 └── shared/              # UI, navigation, DI bootstrap
     └── src/commonMain/kotlin/com/vitran/shop/
         ├── App.kt
@@ -113,6 +115,8 @@ See [dependency-rules.md](dependency-rules.md). Summary:
 - **`feature:home`** — `HomeRepository`, optional-auth home envelope ([public-marketplace.md](public-marketplace.md))
 - **`feature:engagement`** — follow/favorite/wishlist/reviews/comments/contact/analytics ([marketplace-engagement.md](marketplace-engagement.md))
 - **`feature:seller`** — seller shop CRUD, products, plans/subscriptions/referrals, analytics export, boost transport ([seller-shop-management.md](seller-shop-management.md), [seller-analytics-and-boosts.md](seller-analytics-and-boosts.md))
+- **`feature:content`** — public static pages, in-memory cache, `HtmlContent`, and allowlist sanitization ([admin-and-cms.md](admin-and-cms.md))
+- **`feature:admin`** — users, moderation, location/taxonomy administration, plans, admin CMS, and `AdminPermissions` ([admin-and-cms.md](admin-and-cms.md))
 - **`core:designsystem` / `core:ui`** — deferred; theme lives in `:shared` today
 
 ## Feature responsibility (conceptual packages)
@@ -174,4 +178,5 @@ Prefer **interface + DI** for replaceable capabilities (`SecureStorage`, `ShareM
 - [build-configuration.md](build-configuration.md)
 - [marketplace-engagement.md](marketplace-engagement.md)
 - [seller-analytics-and-boosts.md](seller-analytics-and-boosts.md)
+- [admin-and-cms.md](admin-and-cms.md)
 - [decisions/](decisions/)

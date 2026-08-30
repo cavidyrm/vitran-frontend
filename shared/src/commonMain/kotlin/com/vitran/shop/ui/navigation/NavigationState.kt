@@ -75,11 +75,21 @@ private val routeSavedStateConfiguration: SavedStateConfiguration =
                 subclass(serializer = Route.StorePlan.serializer())
                 subclass(serializer = Route.StorePlanUpgrade.serializer())
                 subclass(serializer = Route.AdminPlans.serializer())
+                subclass(serializer = Route.AdminShops.serializer())
+                subclass(serializer = Route.AdminProducts.serializer())
+                subclass(serializer = Route.AdminProductDetail.serializer())
+                subclass(serializer = Route.AdminComments.serializer())
+                subclass(serializer = Route.AdminTaxonomy.serializer())
+                subclass(serializer = Route.AdminStaticPages.serializer())
+                subclass(serializer = Route.AdminStaticPageEdit.serializer())
                 subclass(serializer = Route.CreateProduct.serializer())
                 subclass(serializer = Route.CreateCategory.serializer())
                 subclass(serializer = Route.ProductDetail.serializer())
                 subclass(serializer = Route.Store.serializer())
                 subclass(serializer = Route.About.serializer())
+                subclass(serializer = Route.Terms.serializer())
+                subclass(serializer = Route.Privacy.serializer())
+                subclass(serializer = Route.ServiceLevels.serializer())
             }
         }
     }

@@ -2,7 +2,7 @@
 
 Rules for Gradle modules and Kotlin packages in VitranShop. Phase 1 enforces a small core layer under `:shared`; feature modules arrive incrementally.
 
-## Module dependency graph (Phase 7)
+## Module dependency graph (Phase 11)
 
 ```mermaid
 flowchart TB
@@ -21,6 +21,8 @@ flowchart TB
   featHome[":feature:home"]
   featEngagement[":feature:engagement"]
   featSeller[":feature:seller"]
+  featContent[":feature:content"]
+  featAdmin[":feature:admin"]
   coreDomain[":core:domain"]
   coreNetwork[":core:network"]
   coreSession[":core:session"]
@@ -36,6 +38,8 @@ flowchart TB
   sharedMod --> featHome
   sharedMod --> featEngagement
   sharedMod --> featSeller
+  sharedMod --> featContent
+  sharedMod --> featAdmin
   sharedMod --> coreDomain
   sharedMod --> coreNetwork
   sharedMod --> coreSession
@@ -68,6 +72,21 @@ flowchart TB
   featSeller --> featLocation
   featSeller --> featTaxonomy
   featSeller --> featAccount
+  featContent --> coreNetwork
+  featContent --> coreDomain
+  featContent --> coreSession
+  featContent --> corePlatform
+  featAdmin --> coreNetwork
+  featAdmin --> coreDomain
+  featAdmin --> coreSession
+  featAdmin --> corePlatform
+  featAdmin --> featContent
+  featAdmin --> featAccount
+  featAdmin --> featLocation
+  featAdmin --> featTaxonomy
+  featAdmin --> featMarketplace
+  featAdmin --> featEngagement
+  featAdmin --> featSeller
   coreNetwork --> coreDomain
   coreNetwork --> coreSession
   coreNetwork --> coreCommon
@@ -83,23 +102,25 @@ Future modules (Phase 8+):
 :feature:seller (products)  → Phase 8 ✅
 subscription/payments/referrals → Phase 9 ✅ (packages under :feature:seller)
 analytics export / boosts   → Phase 10 ✅ (`analytics/`, `boost/` under :feature:seller)
-admin plans                 → Phase 11
+admin platform / CMS       → Phase 11 ✅ (`:feature:admin`, `:feature:content`)
 ```
 
 `:feature:engagement` → `:feature:marketplace` is **one-way** (IDs + `CursorListController`). Marketplace must not depend on engagement.
 `:feature:seller` → `:feature:marketplace` is **one-way** (`ShopId`/`ShopSlug` + public cache invalidator). Marketplace must not depend on seller.
 
-Reference modules must **not** depend on marketplace, seller, home, or engagement features.
+Reference and content modules must **not** depend on marketplace, seller, home, engagement, or admin features.
 
 ## Allowed dependencies
 
 | From | May depend on |
 |------|----------------|
 | Platform apps (`androidApp`, etc.) | `:shared` |
-| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:home`, `:feature:engagement`, `:feature:seller`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
+| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:home`, `:feature:engagement`, `:feature:seller`, `:feature:content`, `:feature:admin`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
 | `:feature:marketplace` / `:feature:home` | Own domain, `:core:network`, `:core:domain` (+ home: `:core:session`); marketplace also `:feature:location`, `:feature:taxonomy` |
 | `:feature:engagement` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:feature:marketplace` |
 | `:feature:seller` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:feature:marketplace`, `:feature:location`, `:feature:taxonomy`, `:feature:account` (create orchestration) |
+| `:feature:admin` | Own domain, core modules, `:feature:content`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:engagement`, `:feature:seller` |
+| `:feature:content` | Own domain and core modules only (`:core:domain`, `:core:network`, `:core:session`, `:core:platform`) |
 | `:feature:auth` / `:feature:account` | Own domain, `:core:network`, `:core:session`, `:core:domain` |
 | `:feature:location` / `:feature:taxonomy` | Own domain, `:core:network`, `:core:domain` |
 | `:core:session` | `:core:domain`, `:core:platform` |

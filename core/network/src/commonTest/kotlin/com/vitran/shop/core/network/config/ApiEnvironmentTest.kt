@@ -7,8 +7,9 @@ class ApiEnvironmentTest {
 
     @Test
     fun productionApiBaseUrlCombinesOriginAndVersionPath() {
-        val env = ApiEnvironment(origin = "https://vitran.ir")
-        assertEquals("https://vitran.ir/api/v1", env.apiBaseUrl)
+        val env = ApiEnvironments.Production
+        assertEquals("https://api.vitran.ir/api/v1", env.apiBaseUrl)
+        assertEquals("https://api.vitran.ir/health", env.originUrl("/health"))
     }
 
     @Test

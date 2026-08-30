@@ -45,4 +45,10 @@ internal class DefaultLocationRepository(
             is AppResult.Success -> AppResult.Success(result.value.city.toDomain())
             is AppResult.Failure -> AppResult.Failure(result.error)
         }
+
+    override suspend fun invalidateCities() {
+        cacheMutex.withLock {
+            cachedCities = null
+        }
+    }
 }

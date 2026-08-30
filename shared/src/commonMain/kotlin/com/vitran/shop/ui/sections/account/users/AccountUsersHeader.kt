@@ -25,6 +25,7 @@ import vitranshop.shared.generated.resources.ic_plus
 internal fun AccountUsersHeader(
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
+    showAdd: Boolean = true,
 ) {
     val isDesktop = LocalDesktopLayout.current
     if (isDesktop) {
@@ -39,11 +40,13 @@ internal fun AccountUsersHeader(
             ) {
                 AccountUsersTitleBlock()
             }
-            AccountPrimaryButton(
-                label = stringResource(Res.string.account_users_add),
-                onClick = onAddClick,
-                icon = painterResource(Res.drawable.ic_plus),
-            )
+            if (showAdd) {
+                AccountPrimaryButton(
+                    label = stringResource(Res.string.account_users_add),
+                    onClick = onAddClick,
+                    icon = painterResource(Res.drawable.ic_plus),
+                )
+            }
         }
     } else {
         Column(
@@ -51,11 +54,13 @@ internal fun AccountUsersHeader(
             verticalArrangement = Arrangement.spacedBy(VitranSpacing.md),
         ) {
             AccountUsersTitleBlock()
-            AccountPrimaryButton(
-                label = stringResource(Res.string.account_users_add),
-                onClick = onAddClick,
-                icon = painterResource(Res.drawable.ic_plus),
-            )
+            if (showAdd) {
+                AccountPrimaryButton(
+                    label = stringResource(Res.string.account_users_add),
+                    onClick = onAddClick,
+                    icon = painterResource(Res.drawable.ic_plus),
+                )
+            }
         }
     }
 }

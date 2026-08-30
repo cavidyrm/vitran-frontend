@@ -75,6 +75,8 @@ internal fun AccountUserEditForm(
     user: AccountUser,
     onUserChange: (AccountUser) -> Unit,
     modifier: Modifier = Modifier,
+    adminMode: Boolean = false,
+    availableRoles: List<AccountUserRole> = AccountUserRole.entries,
 ) {
     val isDesktop = LocalDesktopLayout.current
     AccountCard(modifier = modifier) {
@@ -102,6 +104,7 @@ internal fun AccountUserEditForm(
                             value = user.phone,
                             onValueChange = { onUserChange(user.copy(phone = it)) },
                             required = true,
+                            readOnly = adminMode,
                             modifier = Modifier.weight(1f),
                         )
                         AccountStackedField(
@@ -117,6 +120,7 @@ internal fun AccountUserEditForm(
                                 )
                             },
                             required = true,
+                            readOnly = adminMode,
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -132,6 +136,7 @@ internal fun AccountUserEditForm(
                         value = user.phone,
                         onValueChange = { onUserChange(user.copy(phone = it)) },
                         required = true,
+                        readOnly = adminMode,
                     )
                     AccountStackedField(
                         label = stringResource(Res.string.account_user_detail_field_name),
@@ -146,6 +151,7 @@ internal fun AccountUserEditForm(
                             )
                         },
                         required = true,
+                        readOnly = adminMode,
                     )
                 }
                 AccountStackedField(
@@ -153,12 +159,14 @@ internal fun AccountUserEditForm(
                     value = user.email,
                     onValueChange = { onUserChange(user.copy(email = it)) },
                     placeholder = stringResource(Res.string.account_user_detail_email_placeholder),
+                    readOnly = adminMode,
                 )
             }
             AccountUserFormSection(title = stringResource(Res.string.account_user_detail_roles_title)) {
                 AccountUserRolesField(
                     selected = user.roles,
                     onSelectedChange = { onUserChange(user.copy(roles = it)) },
+                    availableRoles = availableRoles,
                 )
                 VitranText(
                     text = stringResource(Res.string.account_user_detail_roles_hint),
@@ -183,26 +191,30 @@ internal fun AccountUserEditForm(
                         )
                     },
                 )
-                AccountUserToggleRow(
-                    title = stringResource(Res.string.account_user_detail_toggle_verified),
-                    hint = stringResource(Res.string.account_user_detail_toggle_verified_hint),
-                    checked = user.phoneVerified,
-                    onCheckedChange = { onUserChange(user.copy(phoneVerified = it)) },
-                )
-                AccountUserToggleRow(
-                    title = stringResource(Res.string.account_user_detail_toggle_notify),
-                    hint = stringResource(Res.string.account_user_detail_toggle_notify_hint),
-                    checked = user.notificationsEnabled,
-                    onCheckedChange = { onUserChange(user.copy(notificationsEnabled = it)) },
-                )
+                if (!adminMode) {
+                    AccountUserToggleRow(
+                        title = stringResource(Res.string.account_user_detail_toggle_verified),
+                        hint = stringResource(Res.string.account_user_detail_toggle_verified_hint),
+                        checked = user.phoneVerified,
+                        onCheckedChange = { onUserChange(user.copy(phoneVerified = it)) },
+                    )
+                    AccountUserToggleRow(
+                        title = stringResource(Res.string.account_user_detail_toggle_notify),
+                        hint = stringResource(Res.string.account_user_detail_toggle_notify_hint),
+                        checked = user.notificationsEnabled,
+                        onCheckedChange = { onUserChange(user.copy(notificationsEnabled = it)) },
+                    )
+                }
             }
-            AccountUserFormSection(title = stringResource(Res.string.account_user_detail_note_title)) {
-                AccountUserNoteField(
-                    value = user.internalNote,
-                    onValueChange = { note ->
-                        onUserChange(user.copy(internalNote = note.take(AccountUserNoteMaxLength)))
-                    },
-                )
+            if (!adminMode) {
+                AccountUserFormSection(title = stringResource(Res.string.account_user_detail_note_title)) {
+                    AccountUserNoteField(
+                        value = user.internalNote,
+                        onValueChange = { note ->
+                            onUserChange(user.copy(internalNote = note.take(AccountUserNoteMaxLength)))
+                        },
+                    )
+                }
             }
         }
     }
@@ -230,6 +242,7 @@ private fun AccountUserFormSection(
 private fun AccountUserRolesField(
     selected: List<AccountUserRole>,
     onSelectedChange: (List<AccountUserRole>) -> Unit,
+    availableRoles: List<AccountUserRole>,
 ) {
     val customerLabel = AccountUserRole.Customer.label()
     val sellerLabel = AccountUserRole.Seller.label()
@@ -241,12 +254,7 @@ private fun AccountUserRolesField(
         AccountUserRole.Manager to managerLabel,
         AccountUserRole.Support to supportLabel,
     )
-    val allRoles = listOf(
-        AccountUserRole.Customer,
-        AccountUserRole.Seller,
-        AccountUserRole.Manager,
-        AccountUserRole.Support,
-    )
+    val allRoles = availableRoles
     val available = allRoles.filterNot { selected.contains(it) }
     var open by remember { mutableStateOf(false) }
     var fieldWidthPx by remember { mutableIntStateOf(0) }

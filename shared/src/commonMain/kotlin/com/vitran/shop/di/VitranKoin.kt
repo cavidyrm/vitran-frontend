@@ -5,7 +5,9 @@ import com.vitran.shop.core.network.config.ApiEnvironments
 import com.vitran.shop.core.network.di.networkModule
 import com.vitran.shop.core.session.di.sessionModule
 import com.vitran.shop.feature.account.di.accountModule
+import com.vitran.shop.feature.admin.di.adminModule
 import com.vitran.shop.feature.auth.di.authModule
+import com.vitran.shop.feature.content.di.contentModule
 import com.vitran.shop.feature.engagement.di.engagementModule
 import com.vitran.shop.feature.home.di.homeModule
 import com.vitran.shop.feature.location.di.locationModule
@@ -20,7 +22,7 @@ import org.koin.dsl.module
 private var koinStarted = false
 
 fun startVitranKoin(
-    apiEnvironment: ApiEnvironment = ApiEnvironments.Local,
+    apiEnvironment: ApiEnvironment = ApiEnvironments.Production,
     extraModules: List<Module> = emptyList(),
 ) {
     if (koinStarted) return
@@ -38,6 +40,8 @@ fun startVitranKoin(
             homeModule,
             engagementModule,
             sellerModule,
+            contentModule,
+            adminModule,
             appCoordinatorModule,
             *extraModules.toTypedArray(),
         )

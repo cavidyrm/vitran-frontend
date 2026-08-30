@@ -18,6 +18,13 @@ import com.vitran.shop.ui.screens.AccountSettingsScreen
 import com.vitran.shop.ui.screens.AccountUserDetailScreen
 import com.vitran.shop.ui.screens.AccountUsersScreen
 import com.vitran.shop.ui.screens.AdminPlansScreen
+import com.vitran.shop.ui.screens.AdminCommentConfirmScreen
+import com.vitran.shop.ui.screens.AdminProductModerationDetailScreen
+import com.vitran.shop.ui.screens.AdminProductsModerationScreen
+import com.vitran.shop.ui.screens.AdminShopsModerationScreen
+import com.vitran.shop.ui.screens.AdminStaticPageEditorScreen
+import com.vitran.shop.ui.screens.AdminStaticPagesScreen
+import com.vitran.shop.ui.screens.AdminTaxonomyScreen
 import com.vitran.shop.ui.screens.AboutScreen
 import com.vitran.shop.ui.screens.CategoriesScreen
 import com.vitran.shop.ui.screens.CreateCategoryScreen
@@ -39,6 +46,7 @@ import com.vitran.shop.ui.screens.SearchResultsScreen
 import com.vitran.shop.ui.screens.StorePlanScreen
 import com.vitran.shop.ui.screens.StorePlanUpgradeScreen
 import com.vitran.shop.ui.screens.StoreScreen
+import com.vitran.shop.ui.screens.StaticPageScreen
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.product.MockProductCatalog
@@ -125,6 +133,11 @@ fun AppNavHost(
                     onCreateStore = { navigator.push(Route.CreateStore) },
                     onOpenStorePlan = { navigator.push(Route.StorePlan) },
                     onOpenAdminPlans = { navigator.push(Route.AdminPlans) },
+                    onOpenAdminShops = { navigator.push(Route.AdminShops) },
+                    onOpenAdminProducts = { navigator.push(Route.AdminProducts) },
+                    onOpenAdminComments = { navigator.push(Route.AdminComments) },
+                    onOpenAdminTaxonomy = { navigator.push(Route.AdminTaxonomy) },
+                    onOpenAdminContent = { navigator.push(Route.AdminStaticPages) },
                     onSignOut = onSignOut,
                     onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
                         val product = MockProductCatalog.resolve(
@@ -325,6 +338,40 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                 )
             }
+            entry<Route.AdminShops> {
+                AdminShopsModerationScreen(onBack = { navigator.goBack() })
+            }
+            entry<Route.AdminProducts> {
+                AdminProductsModerationScreen(
+                    onBack = { navigator.goBack() },
+                    onProductOpen = { navigator.push(Route.AdminProductDetail(it)) },
+                )
+            }
+            entry<Route.AdminProductDetail> { key ->
+                AdminProductModerationDetailScreen(
+                    productId = key.id,
+                    onBack = { navigator.goBack() },
+                )
+            }
+            entry<Route.AdminComments> {
+                AdminCommentConfirmScreen(onBack = { navigator.goBack() })
+            }
+            entry<Route.AdminTaxonomy> {
+                AdminTaxonomyScreen(onBack = { navigator.goBack() })
+            }
+            entry<Route.AdminStaticPages> {
+                AdminStaticPagesScreen(
+                    onBack = { navigator.goBack() },
+                    onCreate = { navigator.push(Route.AdminStaticPageEdit()) },
+                    onEdit = { navigator.push(Route.AdminStaticPageEdit(it.toString())) },
+                )
+            }
+            entry<Route.AdminStaticPageEdit> { key ->
+                AdminStaticPageEditorScreen(
+                    pageId = key.id?.toLongOrNull(),
+                    onBack = { navigator.goBack() },
+                )
+            }
             entry<Route.CreateProduct> {
                 CreateProductScreen(
                     onBack = { navigator.goBack() },
@@ -369,6 +416,15 @@ fun AppNavHost(
                     onFooterLinkClick = onFooterLink,
                 )
             }
+            entry<Route.Terms> {
+                StaticPageScreen("terms", onFooterLink)
+            }
+            entry<Route.Privacy> {
+                StaticPageScreen("privacy", onFooterLink)
+            }
+            entry<Route.ServiceLevels> {
+                StaticPageScreen("service-levels", onFooterLink)
+            }
         },
     )
 }
@@ -382,6 +438,8 @@ private fun Navigator.handleSiteFooterLink(state: NavigationState, id: SiteFoote
         SiteFooterLinkId.BuildStore,
         SiteFooterLinkId.StartSellingFree,
         -> push(Route.CreateStore)
+        SiteFooterLinkId.Terms -> push(Route.Terms)
+        SiteFooterLinkId.Privacy -> push(Route.Privacy)
         else -> Unit
     }
 }

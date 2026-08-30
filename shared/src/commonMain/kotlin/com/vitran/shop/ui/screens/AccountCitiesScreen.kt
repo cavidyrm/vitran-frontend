@@ -6,16 +6,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.feature.admin.catalog.location.presentation.AdminCitiesUiState
+import com.vitran.shop.feature.admin.catalog.location.presentation.AdminCitiesViewModel
 import com.vitran.shop.ui.components.SiteFooterLinkId
+import com.vitran.shop.ui.components.VitranText
+import com.vitran.shop.ui.components.VitranTextStyle
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountTokens
 import com.vitran.shop.ui.sections.account.cities.AccountCitiesFilters
 import com.vitran.shop.ui.sections.account.cities.AccountCitiesHeader
 import com.vitran.shop.ui.sections.account.cities.AccountCitiesTable
-import com.vitran.shop.ui.sections.account.cities.MockAccountCities
 import com.vitran.shop.ui.sections.account.cities.filterAccountCities
-import com.vitran.shop.ui.sections.account.cities.rememberMockAccountCities
+import com.vitran.shop.ui.sections.account.cities.toAccountCity
+import com.vitran.shop.di.vitranKoinViewModel
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.account_nav_cities
@@ -29,10 +34,10 @@ fun AccountCitiesScreen(
     onAddCity: () -> Unit,
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
+    viewModel: AdminCitiesViewModel = vitranKoinViewModel(),
 ) {
-    val cities = rememberMockAccountCities()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var search by remember { mutableStateOf("") }
-    val filtered = filterAccountCities(cities, search)
 
     AccountPageShell(
         dest = AccountDest.Cities,
@@ -49,12 +54,20 @@ fun AccountCitiesScreen(
             search = search,
             onSearchChange = { search = it },
         )
-        AccountCitiesTable(
-            cities = filtered,
-            onCityClick = { city -> onCityOpen(city.id) },
-            onActiveChange = { city, isActive ->
-                MockAccountCities.update(city.copy(isActive = isActive))
-            },
-        )
+        when (val state = uiState) {
+            is AdminCitiesUiState.Content -> {
+                AccountCitiesTable(
+                    cities = filterAccountCities(state.cities.map { it.toAccountCity() }, search),
+                    onCityClick = { city -> onCityOpen(city.id) },
+                    onActiveChange = { _, _ -> },
+                )
+            }
+            AdminCitiesUiState.Empty ->
+                VitranText("شهری یافت نشد", VitranTextStyle.Body)
+            is AdminCitiesUiState.Error ->
+                VitranText(state.error.message ?: "خطا در دریافت شهرها", VitranTextStyle.Body)
+            AdminCitiesUiState.Loading ->
+                VitranText("در حال دریافت شهرها…", VitranTextStyle.Body)
+        }
     }
 }

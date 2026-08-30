@@ -40,7 +40,7 @@ internal fun AccountUserDetailHeader(
     onUsersClick: () -> Unit,
     onSave: () -> Unit,
     onReset: () -> Unit,
-    onSendResetLink: () -> Unit,
+    onSendResetLink: (() -> Unit)?,
     onToggleActive: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -126,7 +126,7 @@ private fun AccountUserDetailActions(
     isActive: Boolean,
     onSave: () -> Unit,
     onReset: () -> Unit,
-    onSendResetLink: () -> Unit,
+    onSendResetLink: (() -> Unit)?,
     onToggleActive: () -> Unit,
 ) {
     FlowRow(
@@ -145,13 +145,15 @@ private fun AccountUserDetailActions(
             borderColor = ShopPurple,
             contentColor = ShopPurple,
         )
-        AccountOutlinedButton(
-            label = stringResource(Res.string.account_user_detail_send_reset),
-            onClick = onSendResetLink,
-            icon = painterResource(Res.drawable.ic_social_email),
-            borderColor = ShopPurple,
-            contentColor = ShopPurple,
-        )
+        if (onSendResetLink != null) {
+            AccountOutlinedButton(
+                label = stringResource(Res.string.account_user_detail_send_reset),
+                onClick = onSendResetLink,
+                icon = painterResource(Res.drawable.ic_social_email),
+                borderColor = ShopPurple,
+                contentColor = ShopPurple,
+            )
+        }
         AccountOutlinedButton(
             label = stringResource(
                 if (isActive) {

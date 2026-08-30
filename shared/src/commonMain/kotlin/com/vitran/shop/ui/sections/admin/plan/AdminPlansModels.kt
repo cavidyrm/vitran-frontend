@@ -2,8 +2,16 @@ package com.vitran.shop.ui.sections.admin.plan
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import com.vitran.shop.feature.admin.plans.domain.AdminPlan
+import com.vitran.shop.feature.admin.plans.domain.CreatePlanCommand
+import com.vitran.shop.feature.admin.plans.domain.UpdatePlanCommand
+import com.vitran.shop.feature.seller.plan.domain.model.PlanId
+import com.vitran.shop.feature.seller.plan.domain.model.PlanSlug
 import com.vitran.shop.ui.components.admin.AdminSelectOption
 import com.vitran.shop.ui.sections.account.toPersianDigits
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import org.jetbrains.compose.resources.DrawableResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.ic_diamond
@@ -122,6 +130,79 @@ fun AdminPlanFormState.toDefinition(existingIcon: DrawableResource?): AdminPlanD
         icon = existingIcon ?: Res.drawable.ic_star_outline,
     )
 }
+
+fun AdminPlan.toUiDefinition(): AdminPlanDefinition {
+    val basicAnalytics = features["basic_analytics"]?.let { (it as? JsonPrimitive)?.booleanOrNull } == true
+    val advancedAnalytics = features["advanced_analytics"]?.let { (it as? JsonPrimitive)?.booleanOrNull } == true
+    return AdminPlanDefinition(
+        id = id.value.toString(),
+        name = title,
+        slug = slug.rawValue,
+        tagline = description.orEmpty(),
+        monthlyPriceToman = priceAmount.toInt(),
+        yearlyPriceToman = priceAmount.toInt(),
+        productLimit = maxProducts,
+        specialSlots = null,
+        analytics = when {
+            advancedAnalytics -> AdminPlanAnalytics.Advanced
+            basicAnalytics -> AdminPlanAnalytics.Basic
+            else -> AdminPlanAnalytics.Professional
+        },
+        teamMembers = null,
+        status = if (active) AdminPlanStatus.Active else AdminPlanStatus.Archived,
+        popular = false,
+        higherInList = sortOrder < 10,
+        customReports = features.boolean("custom_reports"),
+        prioritySupport = features.boolean("priority_support"),
+        icon = Res.drawable.ic_star_outline,
+    )
+}
+
+fun AdminPlanFormState.toCreateCommand(): CreatePlanCommand =
+    CreatePlanCommand(
+        slug = PlanSlug.of(slug.trim()),
+        title = name.trim(),
+        description = tagline.trim().ifBlank { null },
+        priceAmount = monthlyPrice.toLongOrNull() ?: 0L,
+        durationDays = 30,
+        maxProducts = productLimit.toIntOrNull() ?: 0,
+        maxImages = specialSlots.toIntOrNull() ?: 0,
+        maxShops = teamMembers.toIntOrNull() ?: 1,
+        features = featureObject(JsonObject(emptyMap())),
+        active = statusId == AdminPlanStatus.Active.name,
+        sortOrder = if (higherInList) 0 else 100,
+    )
+
+fun AdminPlanFormState.toUpdateCommand(existing: AdminPlan): UpdatePlanCommand =
+    UpdatePlanCommand(
+        id = PlanId(existing.id.value),
+        slug = PlanSlug.of(slug.trim()),
+        title = name.trim(),
+        description = tagline.trim(),
+        priceAmount = monthlyPrice.toLongOrNull() ?: existing.priceAmount,
+        durationDays = existing.durationDays,
+        maxProducts = productLimit.toIntOrNull() ?: existing.maxProducts,
+        maxImages = specialSlots.toIntOrNull() ?: existing.maxImages,
+        maxShops = teamMembers.toIntOrNull() ?: existing.maxShops,
+        features = featureObject(existing.features),
+        featuresUpdated = true,
+        active = statusId == AdminPlanStatus.Active.name,
+        sortOrder = if (higherInList) 0 else existing.sortOrder.coerceAtLeast(10),
+    )
+
+private fun AdminPlanFormState.featureObject(existing: JsonObject): JsonObject {
+    val values = existing.toMutableMap()
+    values["contact_buttons"] = JsonPrimitive(true)
+    values["basic_analytics"] = JsonPrimitive(analyticsId == AdminPlanAnalytics.Basic.name)
+    values["advanced_analytics"] = JsonPrimitive(analyticsId != AdminPlanAnalytics.Basic.name)
+    values["offers_discounts"] = JsonPrimitive(higherInList)
+    values["custom_reports"] = JsonPrimitive(customReports)
+    values["priority_support"] = JsonPrimitive(prioritySupport)
+    return JsonObject(values)
+}
+
+private fun JsonObject.boolean(key: String): Boolean =
+    (get(key) as? JsonPrimitive)?.booleanOrNull == true
 
 fun AdminPlanAnalytics.label(): String =
     when (this) {

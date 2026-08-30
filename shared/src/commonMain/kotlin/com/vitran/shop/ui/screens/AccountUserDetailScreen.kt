@@ -7,10 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.feature.admin.users.presentation.AdminUserDetailViewModel
 import com.vitran.shop.ui.components.VitranText
 import com.vitran.shop.ui.components.VitranTextStyle
 import com.vitran.shop.ui.sections.account.AccountCard
@@ -25,9 +24,13 @@ import com.vitran.shop.ui.sections.account.users.AccountUserEditForm
 import com.vitran.shop.ui.sections.account.users.AccountUserStatus
 import com.vitran.shop.ui.sections.account.users.AccountUserSummaryRail
 import com.vitran.shop.ui.sections.account.users.AccountUserSummaryStack
-import com.vitran.shop.ui.sections.account.users.findMockAccountUser
+import com.vitran.shop.ui.sections.account.users.toAccountUser
+import com.vitran.shop.ui.sections.account.users.toAccountUserRole
+import com.vitran.shop.ui.sections.account.users.toUserRole
 import com.vitran.shop.ui.shell.LocalDesktopLayout
 import com.vitran.shop.ui.theme.VitranSpacing
+import com.vitran.shop.di.vitranKoinViewModel
+import org.koin.core.parameter.parametersOf
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.account_user_detail_back_list
@@ -42,8 +45,11 @@ fun AccountUserDetailScreen(
     onOpenSaved: () -> Unit,
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
+    viewModel: AdminUserDetailViewModel = vitranKoinViewModel {
+        parametersOf(userId.toLongOrNull() ?: 0L)
+    },
 ) {
-    val initial = remember(userId) { findMockAccountUser(userId) }
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     AccountPageShell(
         dest = AccountDest.Users,
         onDestClick = onDestClick,
@@ -54,59 +60,83 @@ fun AccountUserDetailScreen(
         onFooterLinkClick = onFooterLinkClick,
         modifier = modifier,
     ) {
-        if (initial == null) {
+        val detail = state.detail
+        if (state.isLoading) {
+            VitranText("در حال دریافت کاربر…", VitranTextStyle.Body)
+        } else if (detail == null) {
             AccountUserDetailMissing(onBack = onBack)
         } else {
             AccountUserDetailContent(
-                initial = initial,
+                initial = detail.toAccountUser().copy(
+                    status = if (state.isActive) AccountUserStatus.Active else AccountUserStatus.Inactive,
+                    roles = state.selectedEditableRoles.mapNotNull { it.toAccountUserRole() },
+                ),
+                availableRoles = state.assignableRoles.mapNotNull { it.toAccountUserRole() },
                 onBack = onBack,
+                onReload = viewModel::load,
+                onSubmit = viewModel::submit,
+                onActiveChange = viewModel::setActive,
+                onRoleChange = { role, selected ->
+                    role.toUserRole()?.let { viewModel.setRoleSelected(it, selected) }
+                },
             )
         }
+        state.loadError?.let { VitranText(it, VitranTextStyle.Body) }
+        state.submitError?.let { VitranText(it, VitranTextStyle.Body) }
     }
 }
 
 @Composable
 private fun AccountUserDetailContent(
     initial: AccountUser,
+    availableRoles: List<com.vitran.shop.ui.sections.account.users.AccountUserRole>,
     onBack: () -> Unit,
+    onReload: () -> Unit,
+    onSubmit: () -> Unit,
+    onActiveChange: (Boolean) -> Unit,
+    onRoleChange: (com.vitran.shop.ui.sections.account.users.AccountUserRole, Boolean) -> Unit,
 ) {
-    var saved by remember(initial.id) { mutableStateOf(initial) }
-    var draft by remember(initial.id) { mutableStateOf(initial) }
     val isDesktop = LocalDesktopLayout.current
     AccountUserDetailHeader(
-        isActive = draft.status == AccountUserStatus.Active,
+        isActive = initial.status == AccountUserStatus.Active,
         onUsersClick = onBack,
-        onSave = { saved = draft },
-        onReset = { draft = saved },
-        onSendResetLink = { /* mock */ },
-        onToggleActive = {
-            draft = draft.copy(
-                status = if (draft.status == AccountUserStatus.Active) {
-                    AccountUserStatus.Inactive
-                } else {
-                    AccountUserStatus.Active
-                },
-            )
-        },
+        onSave = onSubmit,
+        onReset = onReload,
+        onSendResetLink = null,
+        onToggleActive = { onActiveChange(initial.status != AccountUserStatus.Active) },
     )
+    val onUserChange: (AccountUser) -> Unit = { changed ->
+        if (changed.status != initial.status) {
+            onActiveChange(changed.status == AccountUserStatus.Active)
+        }
+        availableRoles.forEach { role ->
+            val wasSelected = role in initial.roles
+            val selected = role in changed.roles
+            if (wasSelected != selected) onRoleChange(role, selected)
+        }
+    }
     if (isDesktop) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(VitranSpacing.lg),
         ) {
             AccountUserEditForm(
-                user = draft,
-                onUserChange = { draft = it },
+                user = initial,
+                onUserChange = onUserChange,
+                adminMode = true,
+                availableRoles = availableRoles,
                 modifier = Modifier.weight(1f),
             )
-            AccountUserSummaryRail(user = draft)
+            AccountUserSummaryRail(user = initial)
         }
     } else {
         AccountUserEditForm(
-            user = draft,
-            onUserChange = { draft = it },
+            user = initial,
+            onUserChange = onUserChange,
+            adminMode = true,
+            availableRoles = availableRoles,
         )
-        AccountUserSummaryStack(user = draft)
+        AccountUserSummaryStack(user = initial)
     }
 }
 

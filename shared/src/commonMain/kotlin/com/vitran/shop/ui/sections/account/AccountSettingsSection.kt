@@ -438,3 +438,21 @@ internal fun AccountHubAdminPlansRow(
         )
     }
 }
+
+@Composable
+internal fun AccountHubAdminRow(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AccountCard(modifier = modifier) {
+        SettingsActionRow(
+            title = title,
+            subtitle = subtitle,
+            icon = painterResource(Res.drawable.ic_settings),
+            onClick = onClick,
+            trailing = { SettingsChevron() },
+        )
+    }
+}

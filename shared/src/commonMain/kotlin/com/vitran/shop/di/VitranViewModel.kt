@@ -2,6 +2,7 @@ package com.vitran.shop.di
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
+import org.koin.core.parameter.ParametersHolder
 
 /**
  * Resolves a Koin [ViewModel] in a way that works across all Compose Multiplatform targets.
@@ -9,4 +10,6 @@ import androidx.lifecycle.ViewModel
  * against lifecycle-viewmodel-compose private fields.
  */
 @Composable
-expect inline fun <reified T : ViewModel> vitranKoinViewModel(): T
+expect inline fun <reified T : ViewModel> vitranKoinViewModel(
+    noinline parameters: (() -> ParametersHolder)? = null,
+): T

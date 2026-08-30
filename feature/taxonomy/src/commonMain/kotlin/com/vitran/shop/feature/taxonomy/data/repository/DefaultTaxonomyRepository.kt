@@ -54,4 +54,11 @@ internal class DefaultTaxonomyRepository(
             is AppResult.Failure -> AppResult.Failure(result.error)
         }
     }
+
+    override suspend fun invalidateTaxonomy() {
+        cacheMutex.withLock {
+            cachedTree = null
+            cachedDetails.clear()
+        }
+    }
 }

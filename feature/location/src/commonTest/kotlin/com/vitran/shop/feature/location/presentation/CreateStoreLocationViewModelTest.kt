@@ -92,5 +92,7 @@ class CreateStoreLocationViewModelTest {
 
         override suspend fun getCityBySlug(slug: CitySlug) =
             AppResult.Failure(com.vitran.shop.core.domain.error.AppError.Unexpected())
+
+        override suspend fun invalidateCities() = Unit
     }
 }

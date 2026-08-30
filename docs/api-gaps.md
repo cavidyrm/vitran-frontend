@@ -259,6 +259,21 @@ See [seller-analytics-and-boosts.md](seller-analytics-and-boosts.md).
 
 ---
 
+## Gap 43 — Phase 11 admin and CMS contracts
+
+| Field | Status |
+|-------|--------|
+| **Admin comment discovery/list** | **MISSING / UNRESOLVED.** Only `PATCH /admin/comments/{id}/confirm` exists. The client implements confirm-by-known-ID and does not derive an admin queue from public comments. |
+| **Taxonomy mutation/import responses** | **UNRESOLVED.** Import, category name/icon, attribute name, and value name requests have no verified payload schema. `AdminTaxonomyApi` decodes empty success envelopes and invalidates public taxonomy. |
+| **Plan `features` PATCH** | **UNRESOLVED — MERGE vs REPLACE.** When features are edited, the client sends the complete raw heterogeneous object, preserving unknown keys. When untouched, it omits `features`. |
+| **City delete `CityInUse` reason** | **Client compatibility workaround.** The documented 409 uses non-specific `reason=global`; the city-delete ViewModel maps `AppError.Conflict` to `CityInUse` by endpoint context. |
+| **Free Plan delete reason** | **Open / client workaround.** No stable structured reason is verified. The client blocks normalized `slug == free` before transport and maps delete Conflict to `FreePlanCannotBeDeleted` (with legacy message fallback). |
+| **HTML rich rendering** | Intentional limit: only the `AllowlistHtmlSanitizer`/`SafeHtml` subset is supported. Images, tables, styles, and embeds require an explicit future contract and renderer extension. |
+
+See [admin-and-cms.md](admin-and-cms.md).
+
+---
+
 ## Gap 17 — Public shop detail visual fields
 
 | Field | Status |

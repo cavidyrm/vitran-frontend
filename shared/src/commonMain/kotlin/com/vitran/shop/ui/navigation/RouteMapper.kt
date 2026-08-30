@@ -32,12 +32,23 @@ object RouteMapper {
             Route.StorePlan -> "/admin/stores/plan"
             Route.StorePlanUpgrade -> "/admin/stores/plan/upgrade"
             Route.AdminPlans -> "/admin/plans"
+            Route.AdminShops -> "/admin/moderation/shops"
+            Route.AdminProducts -> "/admin/moderation/products"
+            is Route.AdminProductDetail -> "/admin/moderation/products/${route.id}"
+            Route.AdminComments -> "/admin/moderation/comments"
+            Route.AdminTaxonomy -> "/admin/taxonomy"
+            Route.AdminStaticPages -> "/admin/content/pages"
+            is Route.AdminStaticPageEdit ->
+                route.id?.let { "/admin/content/pages/$it" } ?: "/admin/content/pages/new"
             Route.CreateProduct -> "/admin/products/new"
             Route.CreateCategory -> "/admin/categories/new"
             is Route.ProductDetail -> "/products/${route.productId}/${route.slug}"
             is Route.Store -> "/m/${route.shopId}"
             is Route.Search -> "/search?q=${percentEncode(route.query)}"
             Route.About -> "/about"
+            Route.Terms -> "/terms"
+            Route.Privacy -> "/privacy"
+            Route.ServiceLevels -> "/service-levels"
         }
 
     fun fromPath(path: String): Route? {
@@ -64,14 +75,37 @@ object RouteMapper {
             "/admin/stores/plan" -> Route.StorePlan
             "/admin/stores/plan/upgrade" -> Route.StorePlanUpgrade
             "/admin/plans" -> Route.AdminPlans
+            "/admin/moderation/shops" -> Route.AdminShops
+            "/admin/moderation/products" -> Route.AdminProducts
+            "/admin/moderation/comments" -> Route.AdminComments
+            "/admin/taxonomy" -> Route.AdminTaxonomy
+            "/admin/content/pages" -> Route.AdminStaticPages
+            "/admin/content/pages/new" -> Route.AdminStaticPageEdit()
             "/admin/products/new" -> Route.CreateProduct
             "/admin/categories/new" -> Route.CreateCategory
             "/about" -> Route.About
+            "/terms" -> Route.Terms
+            "/privacy" -> Route.Privacy
+            "/service-levels" -> Route.ServiceLevels
             else -> parseProductPath(normalized)
                 ?: parseStorePath(normalized)
                 ?: parseAccountUserPath(normalized)
                 ?: parseAccountCityPath(normalized)
+                ?: parseAdminProductPath(normalized)
+                ?: parseAdminStaticPagePath(normalized)
         }
+    }
+
+    private fun parseAdminProductPath(path: String): Route.AdminProductDetail? {
+        val parts = path.trim('/').split('/')
+        if (parts.size != 4 || parts.take(3) != listOf("admin", "moderation", "products")) return null
+        return parts[3].toLongOrNull()?.let { Route.AdminProductDetail(it) }
+    }
+
+    private fun parseAdminStaticPagePath(path: String): Route.AdminStaticPageEdit? {
+        val parts = path.trim('/').split('/')
+        if (parts.size != 4 || parts.take(3) != listOf("admin", "content", "pages")) return null
+        return parts[3].takeIf { it.isNotBlank() }?.let { Route.AdminStaticPageEdit(it) }
     }
 
     /**

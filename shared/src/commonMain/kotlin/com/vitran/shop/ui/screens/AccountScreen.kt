@@ -6,9 +6,11 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
+import com.vitran.shop.feature.admin.rbac.AdminPermissions
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountHubAdminPlansRow
+import com.vitran.shop.ui.sections.account.AccountHubAdminRow
 import com.vitran.shop.ui.sections.account.AccountHubCitiesRow
 import com.vitran.shop.ui.sections.account.AccountHubHeader
 import com.vitran.shop.ui.sections.account.AccountHubStorePlanRow
@@ -42,6 +44,11 @@ fun AccountScreen(
     onCreateStore: () -> Unit = {},
     onOpenStorePlan: () -> Unit = {},
     onOpenAdminPlans: () -> Unit = {},
+    onOpenAdminShops: () -> Unit = {},
+    onOpenAdminProducts: () -> Unit = {},
+    onOpenAdminComments: () -> Unit = {},
+    onOpenAdminTaxonomy: () -> Unit = {},
+    onOpenAdminContent: () -> Unit = {},
     onSignOut: () -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     onProductOpen: (
@@ -52,6 +59,7 @@ fun AccountScreen(
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
     accountRepository: AccountRepository = koinInject(),
+    adminPermissions: AdminPermissions = koinInject(),
 ) {
     val currentUser by accountRepository.currentUserState.collectAsStateWithLifecycle()
     val profile = when (val state = currentUser) {
@@ -60,6 +68,8 @@ fun AccountScreen(
     }
     val referral = rememberMockReferralProfile()
     val extras = rememberMockAccountHubExtras()
+    val roles = (currentUser as? CurrentUserState.Available)?.user?.roles.orEmpty()
+    val canAccessAdmin = adminPermissions.canAccessAdmin(roles)
 
     AccountPageShell(
         dest = AccountDest.Hub,
@@ -82,11 +92,38 @@ fun AccountScreen(
             onSavedClick = onOpenSaved,
             onFollowingClick = onOpenFollowing,
         )
-        if (!LocalDesktopLayout.current) {
+        if (canAccessAdmin && !LocalDesktopLayout.current) {
             AccountHubUsersRow(onClick = { onDestClick(AccountDest.Users) })
             AccountHubCitiesRow(onClick = { onDestClick(AccountDest.Cities) })
         }
-        AccountHubAdminPlansRow(onClick = onOpenAdminPlans)
+        if (canAccessAdmin) {
+            AccountHubAdminPlansRow(onClick = onOpenAdminPlans)
+            AccountHubAdminRow(
+                title = "بررسی فروشگاه‌ها",
+                subtitle = "تأیید فروشگاه‌های در انتظار انتشار",
+                onClick = onOpenAdminShops,
+            )
+            AccountHubAdminRow(
+                title = "بررسی محصولات",
+                subtitle = "تأیید محصولات و دیدگاه‌ها",
+                onClick = onOpenAdminProducts,
+            )
+            AccountHubAdminRow(
+                title = "تأیید دیدگاه",
+                subtitle = "تأیید دیدگاه با شناسه",
+                onClick = onOpenAdminComments,
+            )
+            AccountHubAdminRow(
+                title = "طبقه‌بندی",
+                subtitle = "ورود و ویرایش دسته‌بندی و ویژگی‌ها",
+                onClick = onOpenAdminTaxonomy,
+            )
+            AccountHubAdminRow(
+                title = "مدیریت محتوا",
+                subtitle = "ویرایش صفحه‌های ثابت سایت",
+                onClick = onOpenAdminContent,
+            )
+        }
         AccountRecentlyViewedSection(
             items = extras.recentlyViewed,
             onItemClick = { item ->

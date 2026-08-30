@@ -62,6 +62,7 @@ fun AdminPlansEditorCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    canDelete: Boolean = true,
 ) {
     val discount = form.yearlyDiscountPercent()
     Column(
@@ -199,7 +200,7 @@ fun AdminPlansEditorCard(
                     modifier = Modifier.fillMaxWidth(),
                     fillMaxWidth = true,
                 )
-                if (!form.isNew) {
+                if (!form.isNew && canDelete) {
                     DeletePlanButton(onClick = onDelete, fill = true)
                 }
             }
@@ -209,7 +210,7 @@ fun AdminPlansEditorCard(
                 horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (!form.isNew) {
+                if (!form.isNew && canDelete) {
                     DeletePlanButton(onClick = onDelete, fill = false)
                 }
                 AdminPrimaryButton(

@@ -9,4 +9,5 @@ interface LocationRepository {
     suspend fun getCities(forceRefresh: Boolean = false): AppResult<List<City>>
     suspend fun getCityById(id: CityId): AppResult<City>
     suspend fun getCityBySlug(slug: CitySlug): AppResult<City>
+    suspend fun invalidateCities()
 }

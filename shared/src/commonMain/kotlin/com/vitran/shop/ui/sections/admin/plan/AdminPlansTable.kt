@@ -90,6 +90,7 @@ fun AdminPlansTableCard(
     onShowArchive: () -> Unit = {},
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    canDelete: Boolean = true,
 ) {
     Column(
         modifier = modifier
@@ -114,6 +115,7 @@ fun AdminPlansTableCard(
                     onEdit = { onEdit(plan) },
                     onDelete = { onDelete(plan) },
                     onView = { onView(plan) },
+                    canDelete = canDelete,
                 )
                 if (index != plans.lastIndex) {
                     HorizontalDivider(
@@ -131,6 +133,7 @@ fun AdminPlansTableCard(
                 onEdit = onEdit,
                 onDelete = onDelete,
                 onView = onView,
+                canDelete = canDelete,
             )
         }
         Spacer(modifier = Modifier.height(VitranSpacing.md))
@@ -154,6 +157,7 @@ private fun DesktopPlansScrollTable(
     onEdit: (AdminPlanDefinition) -> Unit,
     onDelete: (AdminPlanDefinition) -> Unit,
     onView: (AdminPlanDefinition) -> Unit,
+    canDelete: Boolean,
 ) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
@@ -234,6 +238,7 @@ private fun DesktopPlansScrollTable(
                         onEdit = { onEdit(plan) },
                         onDelete = { onDelete(plan) },
                         onView = { onView(plan) },
+                        canDelete = canDelete,
                     )
                 }
             }
@@ -315,6 +320,7 @@ private fun CompactPlanRow(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onView: () -> Unit,
+    canDelete: Boolean,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val borderColor = if (selected) AdminPlansTokens.PopularBorder else StorePlanTokens.CardBorder
@@ -396,7 +402,7 @@ private fun CompactPlanRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelMedium,
         )
-        PlanActionsRow(onView = onView, onEdit = onEdit, onDelete = onDelete)
+        PlanActionsRow(onView = onView, onEdit = onEdit, onDelete = onDelete, canDelete = canDelete)
     }
 }
 
@@ -408,6 +414,7 @@ private fun DesktopPlanRow(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onView: () -> Unit,
+    canDelete: Boolean,
 ) {
     val shape = RoundedCornerShape(12.dp)
     val borderColor = if (selected) AdminPlansTokens.PopularBorder else StorePlanTokens.CardBorder
@@ -481,6 +488,7 @@ private fun DesktopPlanRow(
             onView = onView,
             onEdit = onEdit,
             onDelete = onDelete,
+            canDelete = canDelete,
             modifier = Modifier.width(120.dp),
         )
         CellText("${formatTomanAmount(plan.monthlyPriceToman)} تومان", Modifier.width(120.dp))
@@ -500,6 +508,7 @@ private fun PlanActionsRow(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    canDelete: Boolean,
 ) {
     Row(
         modifier = modifier,
@@ -518,12 +527,14 @@ private fun PlanActionsRow(
             a11y = stringResource(Res.string.admin_plans_edit_a11y),
             onClick = onEdit,
         )
-        ActionIcon(
-            painter = Res.drawable.ic_delete,
-            tint = StorePlanTokens.FailedBadgeText,
-            a11y = stringResource(Res.string.admin_plans_delete_a11y),
-            onClick = onDelete,
-        )
+        if (canDelete) {
+            ActionIcon(
+                painter = Res.drawable.ic_delete,
+                tint = StorePlanTokens.FailedBadgeText,
+                a11y = stringResource(Res.string.admin_plans_delete_a11y),
+                onClick = onDelete,
+            )
+        }
     }
 }
 

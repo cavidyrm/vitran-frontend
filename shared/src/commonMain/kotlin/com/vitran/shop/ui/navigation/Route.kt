@@ -142,6 +142,27 @@ sealed interface Route : NavKey {
     @Serializable
     data object AdminPlans : Route
 
+    @Serializable
+    data object AdminShops : Route
+
+    @Serializable
+    data object AdminProducts : Route
+
+    @Serializable
+    data class AdminProductDetail(val id: Long) : Route
+
+    @Serializable
+    data object AdminComments : Route
+
+    @Serializable
+    data object AdminTaxonomy : Route
+
+    @Serializable
+    data object AdminStaticPages : Route
+
+    @Serializable
+    data class AdminStaticPageEdit(val id: String? = null) : Route
+
     /**
      * Merchant admin — add product. Path `/admin/products/new`.
      * Child route: pushed onto the stack; no shopper chrome while showing.
@@ -187,6 +208,15 @@ sealed interface Route : NavKey {
      */
     @Serializable
     data object About : Route
+
+    @Serializable
+    data object Terms : Route
+
+    @Serializable
+    data object Privacy : Route
+
+    @Serializable
+    data object ServiceLevels : Route
 }
 
 /** Top-level tab destinations shown in app chrome (side / bottom nav). */
@@ -204,6 +234,13 @@ fun Route.isTopLevel(): Boolean =
         Route.StorePlan,
         Route.StorePlanUpgrade,
         Route.AdminPlans,
+        Route.AdminShops,
+        Route.AdminProducts,
+        is Route.AdminProductDetail,
+        Route.AdminComments,
+        Route.AdminTaxonomy,
+        Route.AdminStaticPages,
+        is Route.AdminStaticPageEdit,
         Route.CreateProduct,
         Route.CreateCategory,
         Route.Profile,
@@ -216,6 +253,9 @@ fun Route.isTopLevel(): Boolean =
         Route.AccountCityCreate,
         is Route.AccountCityDetail,
         Route.About,
+        Route.Terms,
+        Route.Privacy,
+        Route.ServiceLevels,
         -> false
         Route.Home,
         Route.Categories,
@@ -247,5 +287,12 @@ fun Route.hidesChrome(): Boolean =
         this is Route.StorePlan ||
         this is Route.StorePlanUpgrade ||
         this is Route.AdminPlans ||
+        this is Route.AdminShops ||
+        this is Route.AdminProducts ||
+        this is Route.AdminProductDetail ||
+        this is Route.AdminComments ||
+        this is Route.AdminTaxonomy ||
+        this is Route.AdminStaticPages ||
+        this is Route.AdminStaticPageEdit ||
         this is Route.CreateProduct ||
         this is Route.CreateCategory

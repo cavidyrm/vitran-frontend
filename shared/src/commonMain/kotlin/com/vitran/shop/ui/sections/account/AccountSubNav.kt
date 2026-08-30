@@ -8,12 +8,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.feature.account.domain.model.CurrentUserState
+import com.vitran.shop.feature.account.domain.repository.AccountRepository
+import com.vitran.shop.feature.admin.rbac.AdminPermissions
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.account_nav_cities
 import vitranshop.shared.generated.resources.account_nav_following
@@ -29,7 +35,12 @@ internal fun AccountSubNav(
     onDestClick: (AccountDest) -> Unit,
     onSavedClick: () -> Unit,
     modifier: Modifier = Modifier,
+    accountRepository: AccountRepository = koinInject(),
+    adminPermissions: AdminPermissions = koinInject(),
 ) {
+    val currentUser by accountRepository.currentUserState.collectAsStateWithLifecycle()
+    val roles = (currentUser as? CurrentUserState.Available)?.user?.roles.orEmpty()
+    val canAccessAdmin = adminPermissions.canAccessAdmin(roles)
     Column(
         modifier = modifier
             .width(AccountTokens.SubNavWidth)
@@ -61,16 +72,18 @@ internal fun AccountSubNav(
             selected = dest == AccountDest.Settings,
             onClick = { onDestClick(AccountDest.Settings) },
         )
-        AccountSubNavItem(
-            label = stringResource(Res.string.account_nav_users),
-            selected = dest == AccountDest.Users,
-            onClick = { onDestClick(AccountDest.Users) },
-        )
-        AccountSubNavItem(
-            label = stringResource(Res.string.account_nav_cities),
-            selected = dest == AccountDest.Cities,
-            onClick = { onDestClick(AccountDest.Cities) },
-        )
+        if (canAccessAdmin) {
+            AccountSubNavItem(
+                label = stringResource(Res.string.account_nav_users),
+                selected = dest == AccountDest.Users,
+                onClick = { onDestClick(AccountDest.Users) },
+            )
+            AccountSubNavItem(
+                label = stringResource(Res.string.account_nav_cities),
+                selected = dest == AccountDest.Cities,
+                onClick = { onDestClick(AccountDest.Cities) },
+            )
+        }
     }
 }
 

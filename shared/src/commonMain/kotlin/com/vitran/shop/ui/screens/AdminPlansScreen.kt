@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,7 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vitran.shop.feature.admin.plans.presentation.AdminPlansViewModel
 import com.vitran.shop.ui.sections.admin.plan.AdminPlanDefinition
+import com.vitran.shop.ui.sections.admin.plan.AdminPlansStats
 import com.vitran.shop.ui.sections.admin.plan.AdminPlansEditorCard
 import com.vitran.shop.ui.sections.admin.plan.AdminPlansPageHeader
 import com.vitran.shop.ui.sections.admin.plan.AdminPlansPreviewCard
@@ -30,71 +34,66 @@ import com.vitran.shop.ui.sections.admin.plan.AdminPlansTopBar
 import com.vitran.shop.ui.sections.admin.plan.StorePlanTokens
 import com.vitran.shop.ui.sections.admin.plan.emptyAdminPlanForm
 import com.vitran.shop.ui.sections.admin.plan.mockAdminPlans
-import com.vitran.shop.ui.sections.admin.plan.mockAdminPlansStats
-import com.vitran.shop.ui.sections.admin.plan.toDefinition
+import com.vitran.shop.ui.sections.admin.plan.toCreateCommand
 import com.vitran.shop.ui.sections.admin.plan.toFormState
+import com.vitran.shop.ui.sections.admin.plan.toUiDefinition
+import com.vitran.shop.ui.sections.admin.plan.toUpdateCommand
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
+import com.vitran.shop.di.vitranKoinViewModel
 
 /**
  * Platform admin — manage store plan catalog. Route `/admin/plans`.
- * Mock create / edit / delete only; no network.
+ * CRUD is backed by [AdminPlansViewModel].
  * Responsive: compact stack; two-column from [VitranSize.desktopBreakpoint].
  */
 @Composable
 fun AdminPlansScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: AdminPlansViewModel = vitranKoinViewModel(),
 ) {
-    var plans by remember { mutableStateOf(mockAdminPlans()) }
-    var selectedId by remember { mutableStateOf(plans.firstOrNull { it.popular }?.id ?: plans.firstOrNull()?.id) }
-    var form by remember {
-        mutableStateOf(
-            plans.firstOrNull { it.id == selectedId }?.toFormState() ?: emptyAdminPlanForm(),
-        )
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val plans = state.plans.map { it.toUiDefinition() }
+    val selectedId = state.selectedPlanId?.value?.toString()
+    var form by remember { mutableStateOf(emptyAdminPlanForm()) }
+    LaunchedEffect(selectedId, state.plans) {
+        if (!form.isNew || selectedId != null) {
+            form = plans.firstOrNull { it.id == selectedId }?.toFormState() ?: emptyAdminPlanForm()
+        }
     }
-
-    val stats = remember(plans) { mockAdminPlansStats(plans) }
+    val stats = AdminPlansStats(
+        activePlans = state.plans.count { it.active },
+        popularPlanName = state.plans.firstOrNull()?.title.orEmpty(),
+        activeStores = 0,
+        monthlyRevenueToman = 0,
+    )
     val selectedPlan = plans.firstOrNull { it.id == selectedId }
 
     fun selectPlan(plan: AdminPlanDefinition) {
-        selectedId = plan.id
+        viewModel.select(com.vitran.shop.feature.seller.plan.domain.model.PlanId(plan.id.toLong()))
         form = plan.toFormState()
     }
 
     fun startCreate() {
-        selectedId = null
+        viewModel.select(null)
         form = emptyAdminPlanForm()
     }
 
     fun saveForm() {
-        val existingIcon = plans.firstOrNull { it.id == form.id }?.icon
-        val saved = form.toDefinition(existingIcon).let { def ->
-            if (form.isNew) {
-                def.copy(id = "plan-${def.slug}-${plans.size + 1}")
-            } else {
-                def.copy(
-                    popular = plans.firstOrNull { it.id == def.id }?.popular == true,
-                )
-            }
-        }
-        plans = if (form.isNew || plans.none { it.id == saved.id }) {
-            plans + saved
+        val existing = state.plans.firstOrNull { it.id.value.toString() == form.id }
+        if (existing == null || form.isNew) {
+            viewModel.create(form.toCreateCommand())
         } else {
-            plans.map { if (it.id == saved.id) saved else it }
+            viewModel.edit(form.toUpdateCommand(existing))
         }
-        selectedId = saved.id
-        form = saved.toFormState()
     }
 
     fun deleteSelected() {
         val id = form.id ?: return
-        val remaining = plans.filterNot { it.id == id }
-        plans = remaining
-        val next = remaining.firstOrNull()
-        selectedId = next?.id
-        form = next?.toFormState() ?: emptyAdminPlanForm()
+        if (!state.canDelete) return
+        state.plans.firstOrNull { it.id.value.toString() == id }?.let(viewModel::delete)
     }
 
     BoxWithConstraints(
@@ -107,7 +106,7 @@ fun AdminPlansScreen(
 
         Column(modifier = Modifier.fillMaxSize()) {
             AdminPlansTopBar(
-                adminName = "علی محمدی",
+                adminName = "مدیریت",
                 onHomeClick = onBack,
                 compact = !twoColumn,
             )
@@ -149,10 +148,13 @@ fun AdminPlansScreen(
                                     onSelect = ::selectPlan,
                                     onEdit = ::selectPlan,
                                     onDelete = {
-                                        selectPlan(it)
-                                        deleteSelected()
+                                        if (state.canDelete) {
+                                            selectPlan(it)
+                                            deleteSelected()
+                                        }
                                     },
                                     compact = false,
+                                    canDelete = state.canDelete,
                                 )
                                 AdminPlansPreviewCard(
                                     plan = selectedPlan,
@@ -166,6 +168,7 @@ fun AdminPlansScreen(
                                 onSave = ::saveForm,
                                 onDelete = ::deleteSelected,
                                 compact = false,
+                                canDelete = state.canDelete,
                                 modifier = Modifier.weight(1f),
                             )
                         }
@@ -176,10 +179,13 @@ fun AdminPlansScreen(
                             onSelect = ::selectPlan,
                             onEdit = ::selectPlan,
                             onDelete = {
-                                selectPlan(it)
-                                deleteSelected()
+                                if (state.canDelete) {
+                                    selectPlan(it)
+                                    deleteSelected()
+                                }
                             },
                             compact = true,
+                            canDelete = state.canDelete,
                         )
                         AdminPlansEditorCard(
                             form = form,
@@ -187,12 +193,19 @@ fun AdminPlansScreen(
                             onSave = ::saveForm,
                             onDelete = ::deleteSelected,
                             compact = true,
+                            canDelete = state.canDelete,
                         )
                         AdminPlansPreviewCard(
                             plan = selectedPlan,
                             form = form,
                             compact = true,
                         )
+                    }
+                    if (state.freePlanDeleteBlocked) {
+                        androidx.compose.material3.Text("پلن رایگان قابل حذف نیست.")
+                    }
+                    state.error?.let {
+                        androidx.compose.material3.Text(it.message ?: "عملیات پلن انجام نشد")
                     }
                 }
             }
@@ -204,6 +217,10 @@ fun AdminPlansScreen(
 @Composable
 private fun AdminPlansScreenPreview() {
     VitranTheme {
-        AdminPlansScreen(onBack = {})
+        Column {
+            mockAdminPlans().forEach {
+                androidx.compose.material3.Text(it.name)
+            }
+        }
     }
 }

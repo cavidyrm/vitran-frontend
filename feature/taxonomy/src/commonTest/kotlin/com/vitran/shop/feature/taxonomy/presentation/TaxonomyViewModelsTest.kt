@@ -129,4 +129,6 @@ internal class FakeTaxonomyRepository(
 
     override suspend fun getCategory(slug: CategorySlug, forceRefresh: Boolean): AppResult<CategoryDetails> =
         AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun invalidateTaxonomy() = Unit
 }

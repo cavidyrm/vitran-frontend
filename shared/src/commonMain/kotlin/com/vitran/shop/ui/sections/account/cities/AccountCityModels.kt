@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.vitran.shop.feature.location.domain.model.City
 
 @Immutable
 data class AccountCity(
@@ -12,6 +13,13 @@ data class AccountCity(
     val slug: String,
     val isActive: Boolean = true,
 )
+
+fun City.toAccountCity(): AccountCity =
+    AccountCity(
+        id = id.value.toInt(),
+        name = name,
+        slug = slug.value,
+    )
 
 internal object MockAccountCities {
     val items: SnapshotStateList<AccountCity> = mutableStateListOf<AccountCity>().also { list ->

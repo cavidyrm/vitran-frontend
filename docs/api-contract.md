@@ -12,9 +12,9 @@ Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`
 |---------|-------|
 | Collection variable | `baseUrl` = **origin only** (no path suffix) |
 | Local origin | `http://localhost:8080` |
-| Production origin | `https://vitran.ir` |
+| Production origin | `https://api.vitran.ir` |
 | API prefix | `/api/v1` |
-| **Wrong** | `https://vitran.ir/api` as origin |
+| **Wrong** | `https://api.vitran.ir/api` as origin |
 
 Client configuration (`ApiEnvironment` in `:core:network`):
 
@@ -288,3 +288,20 @@ Password recovery: `POST /auth/forgot-password` → `POST /auth/reset-password` 
 ## 14. Known incomplete contracts
 
 See [api-gaps.md](api-gaps.md) for ambiguities and missing response examples. Do not invent DTOs for undocumented responses.
+
+---
+
+## 15. Admin and CMS contract notes
+
+Phase 11 admin endpoints use `AuthMode.Required`; public `ContentApi` static-page reads use `AuthMode.None`.
+
+- City create/update bodies are `{ slug, name }` only.
+- Moderation confirm requests for shops, products, and comments have empty bodies.
+- Admin comment discovery is unavailable; only confirm-by-ID is implemented.
+- Taxonomy import multipart keys are `categories` and `attributes`; category icon uses `image`.
+- Taxonomy mutation/import response schemas are unresolved and decoded as empty success envelopes.
+- Admin plan `features` is heterogeneous JSON. PATCH merge-vs-replace is unresolved, so an edited feature set is sent as a complete object with unknown keys preserved; otherwise `features` is omitted.
+- Public static-page HTML crosses the domain boundary as `HtmlContent`, is sanitized by `AllowlistHtmlSanitizer`, and is rendered by Compose `SafeHtml`.
+- POST/PATCH/PUT/DELETE admin mutations are not automatically retried.
+
+See [admin-and-cms.md](admin-and-cms.md) and ADRs [0012](decisions/0012-admin-rbac-client-policy.md) / [0013](decisions/0013-cms-html-sanitization.md).

@@ -87,15 +87,15 @@ ApiEnvironment(origin = "http://localhost:8080", apiVersionPath = "/api/v1")
 | Environment | Origin | Notes |
 |-------------|--------|-------|
 | Local / development | `http://localhost:8080` | `ApiEnvironments.Local` |
-| Production | `https://vitran.ir` | `ApiEnvironments.Production` |
+| Production | `https://api.vitran.ir` | `ApiEnvironments.Production` (default in `startVitranKoin`) |
 
 **Rules:**
 
-- `origin` is the API host only — **never** `https://vitran.ir/api`
+- `origin` is the API host only — **never** `https://api.vitran.ir/api`
 - API prefix `/api/v1` is separate (`apiVersionPath`)
 - Origins are configuration, not secrets
 
-Phase 2 registers `ApiEnvironments.Local` by default and wires `networkModule` + `sessionModule` via Koin in [`VitranKoin.kt`](../shared/src/commonMain/kotlin/com/vitran/shop/di/VitranKoin.kt). HTTP logging is enabled for local environment only — see [networking.md](networking.md).
+Phase 2 wires `networkModule` + `sessionModule` via Koin in [`VitranKoin.kt`](../shared/src/commonMain/kotlin/com/vitran/shop/di/VitranKoin.kt). The default app environment is `ApiEnvironments.Production`. HTTP logging is enabled for local environment only — see [networking.md](networking.md).
 
 ### Future platform-specific overrides
 

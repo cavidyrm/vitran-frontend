@@ -8,4 +8,5 @@ import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 interface TaxonomyRepository {
     suspend fun getCategoryTree(forceRefresh: Boolean = false): AppResult<List<CategoryNode>>
     suspend fun getCategory(slug: CategorySlug, forceRefresh: Boolean = false): AppResult<CategoryDetails>
+    suspend fun invalidateTaxonomy()
 }
