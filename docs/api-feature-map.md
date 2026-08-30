@@ -24,7 +24,7 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Engagement | Favorites, Shop follows, Wishlists | `EngagementApi` ✅ | `FollowRepository` ✅ (mutations), `ShopFavoriteRepository` ✅, `WishlistRepository` ✅ | Required / public wishlist None |
 | Product Reviews | Products — Public (reviews) | `ProductReviewApi` ✅ | `ProductReviewRepository` ✅ | None / Required |
 | Shop Comments | Comments | `ShopCommentApi` ✅ | `ShopCommentRepository` ✅ | None / Required |
-| Seller Shops | Shops — Seller | `SellerShopApi` | `SellerShopRepository` | Required (seller) |
+| Seller Shops | Shops — Seller | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required (auth; seller role not required for first create) |
 | Seller Products | Products — Seller | `SellerProductApi` | `SellerProductRepository` | Required (seller) |
 | Seller Analytics / Boosts | Boosts — Seller, analytics | `SellerAnalyticsApi` | `AnalyticsRepository`, `BoostRepository` | Required (seller) |
 | Seller Subscription | Shops — Seller (subscription) | `SellerShopApi` | `SubscriptionRepository` | Required (seller) |
@@ -40,7 +40,7 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 
 Avoid a single `VitranApi` with 100+ methods. Incremental services:
 
-`AuthApi`, `AccountApi`, `ReferralApi`, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi`, `SellerProductApi`, `SellerAnalyticsApi`, `PlanApi`, `PaymentApi`, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
+`AuthApi`, `AccountApi`, `ReferralApi`, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi`, `SellerAnalyticsApi`, `PlanApi`, `PaymentApi`, `ContentApi`, `AdminUserApi`, `AdminCatalogApi`, `AdminModerationApi`, `AdminPlanApi`, `AdminContentApi`
 
 ## Full endpoint index
 
@@ -121,17 +121,17 @@ Avoid a single `VitranApi` with 100+ methods. Incremental services:
 | GET | `/api/v1/shops/browse?per_page=20&city_slug=tehran&category_slug=aa-1-2-3-4` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
 | GET | `/api/v1/shops/slug/my-shop` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
 | GET | `/api/v1/shops?per_page=20&city_slug=tehran&category_slug=aa-1-2-3-4` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
-| POST | `/api/v1/seller/shops` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
-| PATCH | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
-| GET | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
-| GET | `/api/v1/seller/shops/1/analytics/export?period=30d` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | **Missing** |
-| GET | `/api/v1/seller/shops/1/analytics?period=7d` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | **Missing** |
-| GET | `/api/v1/seller/shops/1/fulfillment-options` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
-| POST | `/api/v1/seller/shops/1/regenerate-api-key` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
-| GET | `/api/v1/seller/shops/1/subscription` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
-| POST | `/api/v1/seller/shops/1/subscription/purchase` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
-| GET | `/api/v1/seller/shops/check-slug?slug=my-shop&exclude_id=1` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
-| GET | `/api/v1/seller/shops?per_page=20` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Public | Yes |
+| POST | `/api/v1/seller/shops` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| PATCH | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| GET | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes (minimal example) |
+| GET | `/api/v1/seller/shops/1/analytics/export?period=30d` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Required | **Missing** (Phase 10) |
+| GET | `/api/v1/seller/shops/1/analytics?period=7d` | Shops — Seller | Seller Shops | SellerShopApi | SellerShopRepository | Required | **Missing** (Phase 10) |
+| GET | `/api/v1/seller/shops/1/fulfillment-options` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| POST | `/api/v1/seller/shops/1/regenerate-api-key` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| GET | `/api/v1/seller/shops/1/subscription` | Shops — Seller | Seller Subscription | SellerShopApi | SubscriptionRepository | Required | Yes (Phase 9) |
+| POST | `/api/v1/seller/shops/1/subscription/purchase` | Shops — Seller | Seller Subscription | SellerShopApi | SubscriptionRepository | Required | Yes (Phase 9) |
+| GET | `/api/v1/seller/shops/check-slug?slug=my-shop&exclude_id=1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| GET | `/api/v1/seller/shops?per_page=20` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | GET | `/api/v1/admin/static-pages` | Static Pages — Admin | Admin CMS | AdminContentApi | AdminContentRepository | Public | Yes |
 | POST | `/api/v1/admin/static-pages` | Static Pages — Admin | Admin CMS | AdminContentApi | AdminContentRepository | Public | Yes |
 | GET | `/api/v1/admin/static-pages/1` | Static Pages — Admin | Admin CMS | AdminContentApi | AdminContentRepository | Public | Yes |

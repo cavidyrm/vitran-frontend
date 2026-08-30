@@ -5,6 +5,7 @@ import com.vitran.shop.feature.marketplace.product.data.repository.DefaultProduc
 import com.vitran.shop.feature.marketplace.product.domain.repository.ProductRepository
 import com.vitran.shop.feature.marketplace.shop.data.remote.PublicShopApi
 import com.vitran.shop.feature.marketplace.shop.data.repository.DefaultShopRepository
+import com.vitran.shop.feature.marketplace.shop.domain.repository.ShopPublicCacheInvalidator
 import com.vitran.shop.feature.marketplace.shop.domain.repository.ShopRepository
 import org.koin.dsl.module
 
@@ -12,6 +13,9 @@ val marketplaceModule = module {
     single { PublicShopApi(get(), get(), get()) }
     single { PublicProductApi(get(), get(), get()) }
     single<ShopRepository> { DefaultShopRepository(get()) }
+    single<ShopPublicCacheInvalidator> {
+        ShopPublicCacheInvalidator { shopId -> get<ShopRepository>().invalidateShop(shopId) }
+    }
     single<ProductRepository> { DefaultProductRepository(get()) }
 
     factory { ProductDetailsViewModelFactory(get()) }

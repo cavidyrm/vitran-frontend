@@ -2,7 +2,7 @@
 
 Rules for Gradle modules and Kotlin packages in VitranShop. Phase 1 enforces a small core layer under `:shared`; feature modules arrive incrementally.
 
-## Module dependency graph (Phase 6)
+## Module dependency graph (Phase 7)
 
 ```mermaid
 flowchart TB
@@ -20,6 +20,7 @@ flowchart TB
   featMarketplace[":feature:marketplace"]
   featHome[":feature:home"]
   featEngagement[":feature:engagement"]
+  featSeller[":feature:seller"]
   coreDomain[":core:domain"]
   coreNetwork[":core:network"]
   coreSession[":core:session"]
@@ -34,6 +35,7 @@ flowchart TB
   sharedMod --> featMarketplace
   sharedMod --> featHome
   sharedMod --> featEngagement
+  sharedMod --> featSeller
   sharedMod --> coreDomain
   sharedMod --> coreNetwork
   sharedMod --> coreSession
@@ -59,6 +61,13 @@ flowchart TB
   featEngagement --> coreDomain
   featEngagement --> coreSession
   featEngagement --> featMarketplace
+  featSeller --> coreNetwork
+  featSeller --> coreDomain
+  featSeller --> coreSession
+  featSeller --> featMarketplace
+  featSeller --> featLocation
+  featSeller --> featTaxonomy
+  featSeller --> featAccount
   coreNetwork --> coreDomain
   coreNetwork --> coreSession
   coreNetwork --> coreCommon
@@ -68,13 +77,15 @@ flowchart TB
   coreDomain --> coreCommon
 ```
 
-Future modules (Phase 7+):
+Future modules (Phase 8+):
 
 ```text
-:feature:seller       → :feature:location, :feature:taxonomy
+:feature:seller (products)  → Phase 8
+subscription/payments       → Phase 9
 ```
 
 `:feature:engagement` → `:feature:marketplace` is **one-way** (IDs + `CursorListController`). Marketplace must not depend on engagement.
+`:feature:seller` → `:feature:marketplace` is **one-way** (`ShopId`/`ShopSlug` + public cache invalidator). Marketplace must not depend on seller.
 
 Reference modules must **not** depend on marketplace, seller, home, or engagement features.
 
@@ -83,9 +94,10 @@ Reference modules must **not** depend on marketplace, seller, home, or engagemen
 | From | May depend on |
 |------|----------------|
 | Platform apps (`androidApp`, etc.) | `:shared` |
-| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:home`, `:feature:engagement`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
+| `:shared` (presentation) | `:feature:auth`, `:feature:account`, `:feature:location`, `:feature:taxonomy`, `:feature:marketplace`, `:feature:home`, `:feature:engagement`, `:feature:seller`, `:core:domain`, `:core:network`, `:core:session`, `:core:platform`, design tokens, Koin |
 | `:feature:marketplace` / `:feature:home` | Own domain, `:core:network`, `:core:domain` (+ home: `:core:session`); marketplace also `:feature:location`, `:feature:taxonomy` |
 | `:feature:engagement` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:core:platform`, `:feature:marketplace` |
+| `:feature:seller` | Own domain, `:core:network`, `:core:session`, `:core:domain`, `:feature:marketplace`, `:feature:location`, `:feature:taxonomy`, `:feature:account` (create orchestration) |
 | `:feature:auth` / `:feature:account` | Own domain, `:core:network`, `:core:session`, `:core:domain` |
 | `:feature:location` / `:feature:taxonomy` | Own domain, `:core:network`, `:core:domain` |
 | `:core:session` | `:core:domain`, `:core:platform` |

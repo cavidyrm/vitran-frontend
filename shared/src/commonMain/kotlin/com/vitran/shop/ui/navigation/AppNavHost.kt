@@ -306,6 +306,7 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                     onViewStore = { shopId -> navigator.push(Route.Store(shopId = shopId)) },
                     onAddProduct = { navigator.push(Route.CreateProduct) },
+                    onShopCreated = { navigator.navigate(Route.Account) },
                 )
             }
             entry<Route.StorePlan> {

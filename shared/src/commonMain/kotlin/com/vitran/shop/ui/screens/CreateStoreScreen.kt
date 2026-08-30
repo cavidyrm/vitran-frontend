@@ -29,8 +29,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.location.domain.model.CityId
 import com.vitran.shop.feature.location.presentation.CreateStoreLocationUiState
 import com.vitran.shop.feature.location.presentation.CreateStoreLocationViewModel
+import com.vitran.shop.feature.seller.shop.presentation.CreateShopUiEffect
+import com.vitran.shop.feature.seller.shop.presentation.CreateShopViewModel
+import com.vitran.shop.feature.seller.shop.presentation.SlugCheckUiStatus
+import com.vitran.shop.feature.seller.shop.presentation.buildCreateShopCommand
 import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.sections.admin.AutosaveStatus
 import com.vitran.shop.ui.sections.admin.CreateStoreBottomBar
@@ -41,8 +46,9 @@ import com.vitran.shop.ui.sections.admin.CreateStoreStep
 import com.vitran.shop.ui.sections.admin.CreateStoreStepBody
 import com.vitran.shop.ui.sections.admin.CreateStoreStepOrder
 import com.vitran.shop.ui.sections.admin.CreateStoreStepper
-import com.vitran.shop.ui.sections.reference.toAdminSelectOptions
 import com.vitran.shop.ui.sections.admin.CreateStoreSummaryCard
+import com.vitran.shop.ui.sections.admin.StoreSocialKind
+import com.vitran.shop.ui.sections.reference.toAdminSelectOptions
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
@@ -55,15 +61,17 @@ import vitranshop.shared.generated.resources.admin_last_saved_minutes
 /**
  * Merchant admin — create a store. Route `/admin/stores/new`.
  *
- * Wizard + live phone preview. Mock form state only.
+ * Wizard + live phone preview. Wired to [CreateShopViewModel] for Phase 7 create.
  */
 @Composable
 fun CreateStoreScreen(
     onBack: () -> Unit,
     onViewStore: (String) -> Unit = {},
     onAddProduct: () -> Unit = {},
+    onShopCreated: () -> Unit = onBack,
     modifier: Modifier = Modifier,
     locationViewModel: CreateStoreLocationViewModel = vitranKoinViewModel(),
+    createShopViewModel: CreateShopViewModel = vitranKoinViewModel(),
 ) {
     var state by remember { mutableStateOf(CreateStoreFormState()) }
     var step by remember { mutableStateOf(CreateStoreStep.Basics) }
@@ -73,12 +81,35 @@ fun CreateStoreScreen(
     val minutesAgo = stringResource(Res.string.admin_last_saved_minutes)
     var lastSavedLabel by remember { mutableStateOf<String?>(null) }
     val locationState by locationViewModel.uiState.collectAsStateWithLifecycle()
+    val createState by createShopViewModel.uiState.collectAsStateWithLifecycle()
     val cityOptions = when (val current = locationState) {
         is CreateStoreLocationUiState.Content -> current.cities.toAdminSelectOptions()
         else -> emptyList()
     }
     val citiesLoading = locationState is CreateStoreLocationUiState.Loading
     val citiesError = (locationState as? CreateStoreLocationUiState.Error)?.message
+
+    LaunchedEffect(state.slug) {
+        createShopViewModel.onSlugInputChanged(state.slug)
+    }
+
+    LaunchedEffect(createShopViewModel) {
+        createShopViewModel.effects.collect { effect ->
+            when (effect) {
+                is CreateShopUiEffect.ShopCreated -> onShopCreated()
+            }
+        }
+    }
+
+    LaunchedEffect(createState.createdShop) {
+        val shop = createState.createdShop ?: return@LaunchedEffect
+        state = state.copy(published = true, dirty = false)
+        if (shop.slug.value.isNotBlank()) {
+            state = state.copy(slug = shop.slug.value)
+        }
+        autosaveStatus = AutosaveStatus.Saved
+        lastSavedLabel = justNow
+    }
 
     LaunchedEffect(state) {
         if (!state.dirty) return@LaunchedEffect
@@ -124,11 +155,31 @@ fun CreateStoreScreen(
     }
 
     fun publish() {
-        if (!state.canPublish) return
-        state = state.copy(dirty = false, published = true)
-        autosaveStatus = AutosaveStatus.Saved
-        lastSavedLabel = justNow
+        if (!state.canPublish || createState.isSubmitting) return
+        val cityIdValue = state.cityId?.toLongOrNull() ?: return
+        val social = state.socialChannels.associate { it.kind to it.handle }
+        val command =
+            buildCreateShopCommand(
+                title = state.storeName,
+                slug = state.slug,
+                omitSlug = false,
+                description = state.about,
+                address = state.address,
+                phoneNumber = state.phone,
+                cityId = CityId(cityIdValue),
+                whatsapp = social[StoreSocialKind.WhatsApp],
+                telegram = social[StoreSocialKind.Telegram],
+                instagram = social[StoreSocialKind.Instagram],
+                website = social[StoreSocialKind.Website],
+            )
+        createShopViewModel.submit(command)
     }
+
+    val canPublish =
+        state.canPublish &&
+            state.cityId != null &&
+            !createState.isSubmitting &&
+            createState.slugCheck !is SlugCheckUiStatus.Taken
 
     Column(
         modifier = modifier
@@ -267,8 +318,8 @@ fun CreateStoreScreen(
             brandColor = state.theme.primary,
             onBrandColor = state.theme.onPrimary,
             lastSavedLabel = lastSavedLabel,
-            canPublish = state.canPublish,
-            published = state.published,
+            canPublish = canPublish,
+            published = state.published || createState.createdShop != null,
             onBack = { goPrev() },
             onNext = { goNext() },
             onSaveDraft = { saveDraft() },
@@ -281,6 +332,8 @@ fun CreateStoreScreen(
 @Composable
 private fun CreateStoreScreenPreview() {
     VitranTheme {
+        // Preview uses local form state only when Koin is unavailable;
+        // production entry points inject ViewModels via vitranKoinViewModel.
         CreateStoreScreen(onBack = {})
     }
 }

@@ -351,3 +351,58 @@ Postman requests **without saved response examples** (15):
 | **Issue** | Public list is `id`, `title`, `confirmed` only. |
 | **Client impact** | No description/author/date on public comments. Submitted comments stay pending, never appended. |
 | **Phase 6 handling** | No shop-comments UI invented. |
+
+---
+
+## Gap 30 — Seller `category_slugs` numeric vs taxonomy string slugs
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open / blocking |
+| **Issue** | Postman seller create/update/response use `"category_slugs": [1]` (numbers). Public taxonomy exposes only string slugs (`aa-1-2-3-4`) with no numeric CategoryId. |
+| **Client impact** | Transport uses `List<Long>`. Create Store does **not** invent IDs; sends empty list. Do not introduce `CategoryId` until taxonomy exposes mappable IDs. |
+| **Phase 7 handling** | Documented in [seller-shop-management.md](seller-shop-management.md). |
+
+---
+
+## Gap 31 — Seller GET-by-ID detail completeness
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Postman GET `/seller/shops/{id}` example only shows `id`, `slug`, `active`, `confirmed`. Create/update responses include more fields. |
+| **Client impact** | `SellerShopDetails` keeps enrichment fields nullable. Edit form may be under-populated from GET alone. |
+| **Phase 7 handling** | Do not merge public shop data to fabricate missing fields. |
+
+---
+
+## Gap 32 — Shop `type` allowed values
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Postman only proves `"retailer"`. No enum list. |
+| **Client impact** | Domain keeps `type` as `String`; Create Store sends `"retailer"` as the only verified default. |
+| **Phase 7 handling** | No invented wholesaler/manufacturer enum. |
+
+---
+
+## Gap 33 — Seller create/update field nullability and PATCH clearing
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Postman examples do not prove requiredness or how omitted/`null`/`""` clear optional social fields on PATCH. |
+| **Client impact** | Client omits null optionals on create; update sends provided strings without inventing clear semantics. |
+| **Phase 7 handling** | Documented; no invented clearing rules. |
+
+---
+
+## Gap 34 — Fulfillment modes and API-key capability errors
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Sample proves `manual`/`redirect` only. API-key 403 capability reason unverified. |
+| **Client impact** | Unknown modes → `FulfillmentMode.Unknown`. Capability-specific 403 not mapped until verified. |
+| **Phase 7 handling** | No plan-slug hard-coding. |

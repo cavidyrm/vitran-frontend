@@ -14,4 +14,7 @@ interface ShopRepository {
     suspend fun browseShops(query: ShopBrowseQuery): AppResult<CursorPage<ShopSummary>>
     suspend fun getShop(id: ShopId): AppResult<ShopDetails>
     suspend fun getShop(slug: ShopSlug): AppResult<ShopDetails>
+
+    /** Drop cached public detail for [id] (e.g. after seller update → pending). */
+    suspend fun invalidateShop(id: ShopId)
 }

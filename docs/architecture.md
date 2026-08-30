@@ -1,6 +1,6 @@
 # VitranShop Architecture
 
-Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`).
+Phase 1 establishes architectural direction and module ownership. **Existing UI is preserved** in `:shared`. Phase 2 adds shared networking; Phase 3 adds auth/session/account; **Phase 4 adds shared reference data** (`:feature:location`, `:feature:taxonomy`); **Phase 5 adds public marketplace** (`:feature:marketplace`, `:feature:home`); **Phase 6 adds marketplace engagement** (`:feature:engagement`); **Phase 7 adds seller shop management** (`:feature:seller`).
 
 ## Selected architecture
 
@@ -48,7 +48,8 @@ VitranShop/
 │   ├── taxonomy/        # Public category tree (Phase 4)
 │   ├── marketplace/     # Public shops + products (Phase 5)
 │   ├── home/            # Home feed envelope (Phase 5)
-│   └── engagement/      # Follow, favorites, wishlist, reviews, contact, analytics (Phase 6)
+│   ├── engagement/      # Follow, favorites, wishlist, reviews, contact, analytics (Phase 6)
+│   └── seller/          # Seller shops: create/list/update, slug, fulfillment, API key (Phase 7)
 └── shared/              # UI, navigation, DI bootstrap
     └── src/commonMain/kotlin/com/vitran/shop/
         ├── App.kt
@@ -110,6 +111,7 @@ See [dependency-rules.md](dependency-rules.md). Summary:
 - **`feature:marketplace`** — `ShopRepository`, `ProductRepository`, public shop/product APIs, cursor list ViewModels ([public-marketplace.md](public-marketplace.md))
 - **`feature:home`** — `HomeRepository`, optional-auth home envelope ([public-marketplace.md](public-marketplace.md))
 - **`feature:engagement`** — follow/favorite/wishlist/reviews/comments/contact/analytics ([marketplace-engagement.md](marketplace-engagement.md))
+- **`feature:seller`** — seller shop CRUD, slug check, fulfillment options, API-key regen ([seller-shop-management.md](seller-shop-management.md))
 - **`core:designsystem` / `core:ui`** — deferred; theme lives in `:shared` today
 
 ## Feature responsibility (conceptual packages)

@@ -38,7 +38,7 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | RegisterVerifyScreen | `/account/register/verify` | Auth | `POST /auth/verify` | Preview only | `RegisterVerifyViewModel` ✅ | Yes | Challenge from `AuthFlowStateHolder` |
 | ForgotPasswordScreen | `/account/forgot` | Auth | `POST /auth/forgot-password` | Preview only | `ForgotPasswordViewModel` ✅ | Yes | |
 | ResetPasswordScreen | `/account/forgot/reset` | Auth | `POST /auth/reset-password` | Preview only | `ResetPasswordViewModel` ✅ | Yes | |
-| CreateStoreScreen | `/admin/stores/new` | Seller Shop | `POST /seller/shops`, `GET /cities` | `CreateStoreModels.kt` (province mock) | `CreateStoreLocationViewModel` | Partial — city dropdown real API; province mock | No shopper chrome |
+| CreateStoreScreen | `/admin/stores/new` | Seller Shop | `POST /seller/shops`, `GET /cities`, `GET /seller/shops/check-slug` | `CreateStoreModels.kt` (unsupported fields deferred) | `CreateShopViewModel` + `CreateStoreLocationViewModel` | Partial — create+slug+cities real; category IDs / logo / policies deferred | No shopper chrome; navigates Account on success |
 | StorePlanScreen | `/admin/stores/plan` | Seller Subscription | `GET /seller/shops/{id}/subscription` | `StorePlanModels.kt` | `StorePlanViewModel` | Yes | Per-shop plan |
 | StorePlanUpgradeScreen | `/admin/stores/plan/upgrade` | Seller Subscription | Plans public + purchase | `StorePlanModels.kt` | `StorePlanUpgradeViewModel` | Yes | |
 | AdminPlansScreen | `/admin/plans` | Admin Plans | `GET/POST/PATCH/DELETE /admin/plans` | `AdminPlansModels.kt` | `AdminPlansViewModel` | Yes | Platform admin |
@@ -71,8 +71,9 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 | Screen | Depends on |
 |--------|------------|
 | AccountScreen | `SessionRepository` + `AccountRepository`; seller/admin role gates |
-| CreateStoreScreen | Session update after shop create (not Auth ViewModel) |
-| StorePlanScreen | Shop context + `SubscriptionRepository` per shop |
+| CreateStoreScreen | Session update after shop create via `CreateShopUseCase` (not Auth ViewModel) |
+| Seller list / edit / details / API key | ViewModels in `:feature:seller` ready; Compose screens deferred |
+| StorePlanScreen | Shop context + `SubscriptionRepository` per shop (Phase 9) |
 | HomeScreen / CategoriesScreen / PDP / Store | `:feature:marketplace` + `MarketplaceUiMapper`; omnibox → search |
 | App chrome | `SessionState` + `CurrentUserState` in `App.kt` via `AppSessionCoordinator` |
 

@@ -5,7 +5,7 @@ import com.vitran.shop.ui.components.admin.AdminSelectOption
 
 fun City.toAdminSelectOption(): AdminSelectOption =
     AdminSelectOption(
-        id = slug.value,
+        id = id.value.toString(),
         label = name,
     )
 

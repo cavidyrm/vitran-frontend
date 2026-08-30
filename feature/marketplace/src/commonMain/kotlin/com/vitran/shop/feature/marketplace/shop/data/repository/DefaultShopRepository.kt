@@ -61,6 +61,15 @@ internal class DefaultShopRepository(
         }
     }
 
+    override suspend fun invalidateShop(id: ShopId) {
+        detailMutex.withLock {
+            val cached = detailById.remove(id)
+            if (cached != null) {
+                detailBySlug.remove(cached.slug)
+            }
+        }
+    }
+
     private suspend fun cacheDetails(details: ShopDetails) {
         detailMutex.withLock {
             detailById[details.id] = details

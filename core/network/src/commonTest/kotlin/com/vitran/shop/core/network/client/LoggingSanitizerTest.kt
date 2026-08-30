@@ -19,6 +19,13 @@ class LoggingSanitizerTest {
     }
 
     @Test
+    fun apiKeyInJsonBody_isRedacted() {
+        val sanitized = sanitizeLogMessage("""{"api_key":"vt_live_xxxxxxxx","status":"ok"}""")
+        assertFalse(sanitized.contains("vt_live_xxxxxxxx"))
+        assertEquals("""{"api_key":"***REDACTED***","status":"ok"}""", sanitized)
+    }
+
+    @Test
     fun passwordField_isRedacted() {
         val sanitized = sanitizeLogMessage("""{"password":"123456"}""")
         assertFalse(sanitized.contains("123456"))
