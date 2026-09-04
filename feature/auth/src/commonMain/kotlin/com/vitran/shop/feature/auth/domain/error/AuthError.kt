@@ -2,6 +2,8 @@ package com.vitran.shop.feature.auth.domain.error
 
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.error.FieldError
+import com.vitran.shop.core.domain.error.FormFieldErrorSplit
+import com.vitran.shop.core.domain.error.splitForForm
 
 sealed interface AuthError {
     val message: String?
@@ -32,4 +34,21 @@ fun AppError.toAuthError(): AuthError = when (this) {
             AuthError.Unexpected(message)
         }
     }
+}
+
+fun AuthError.splitForForm(
+    knownReasons: Set<String>,
+    reasonAliases: Map<String, String> = emptyMap(),
+    fallbackMessage: String? = message,
+): FormFieldErrorSplit {
+    val errors = when (this) {
+        is AuthError.Validation -> fieldErrors
+        is AuthError.InvalidOtp -> fieldErrors
+        else -> emptyList()
+    }
+    return errors.splitForForm(
+        knownReasons = knownReasons,
+        reasonAliases = reasonAliases,
+        fallbackMessage = fallbackMessage,
+    )
 }

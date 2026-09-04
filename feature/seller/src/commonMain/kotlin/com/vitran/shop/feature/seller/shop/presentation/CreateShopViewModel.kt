@@ -3,6 +3,7 @@ package com.vitran.shop.feature.seller.shop.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.error.AppError
+import com.vitran.shop.core.domain.error.splitForForm
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.location.domain.model.CityId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
@@ -123,21 +124,29 @@ class CreateShopViewModel(
                     }
                     is AppResult.Failure -> {
                         val error = result.error
-                        val fieldErrors =
-                            error.fieldErrors.associate {
-                                it.reason to (it.messages.firstOrNull() ?: it.reason)
-                            }
+                        val split = error.splitForForm(
+                            knownReasons = CreateShopFormReasons,
+                            reasonAliases = CreateShopFormAliases,
+                        )
                         val slugTaken = error.isSlugAlreadyTaken()
+                        val fieldErrors =
+                            if (slugTaken) {
+                                split.fieldErrors + (
+                                    "slug" to (split.fieldErrors["slug"] ?: error.message ?: "slug")
+                                )
+                            } else {
+                                split.fieldErrors
+                            }
                         _uiState.update {
                             it.copy(
                                 isSubmitting = false,
-                                fieldErrors =
-                                    if (slugTaken) {
-                                        fieldErrors + ("slug" to (fieldErrors["slug"] ?: "slug"))
-                                    } else {
-                                        fieldErrors
-                                    },
-                                generalError = if (fieldErrors.isEmpty() && !slugTaken) error else null,
+                                fieldErrors = fieldErrors,
+                                generalError = when {
+                                    fieldErrors.isNotEmpty() && split.generalMessage == null -> null
+                                    split.generalMessage != null ->
+                                        AppError.Validation(message = split.generalMessage)
+                                    else -> error
+                                },
                                 slugCheck =
                                     if (slugTaken && command.slug != null) {
                                         SlugCheckUiStatus.Taken(command.slug)
@@ -153,6 +162,14 @@ class CreateShopViewModel(
 
     fun clearCreatedOutcome() {
         _uiState.update { it.copy(createdShop = null) }
+    }
+
+    fun clearFieldError(reason: String) {
+        val key = reason.lowercase()
+        _uiState.update { state ->
+            if (key !in state.fieldErrors) state
+            else state.copy(fieldErrors = state.fieldErrors - key)
+        }
     }
 }
 
@@ -194,3 +211,22 @@ fun buildCreateShopCommand(
 
 internal fun isLocallyValidSlug(slug: String): Boolean =
     slug.length >= 2 && slug.all { it.isLetterOrDigit() || it == '-' || it == '_' }
+
+internal val CreateShopFormReasons = setOf(
+    "title",
+    "slug",
+    "description",
+    "address",
+    "phone_number",
+    "city_id",
+    "category_slugs",
+    "whatsapp",
+    "telegram",
+    "instagram",
+    "website",
+)
+
+internal val CreateShopFormAliases = mapOf(
+    "phone" to "phone_number",
+    "category" to "category_slugs",
+)

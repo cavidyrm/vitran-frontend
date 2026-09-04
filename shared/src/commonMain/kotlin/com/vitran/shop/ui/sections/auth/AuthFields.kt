@@ -202,10 +202,17 @@ internal fun AuthPasswordField(
     label: String = stringResource(Res.string.auth_password_label),
     placeholder: String = stringResource(Res.string.auth_password_placeholder),
     imeAction: ImeAction = ImeAction.Go,
+    errorMessage: String? = null,
 ) {
     var visible by remember { mutableStateOf(false) }
     var focused by remember { mutableStateOf(false) }
     val strength = passwordStrengthOf(value)
+    val isError = !errorMessage.isNullOrBlank()
+    val borderColor = when {
+        isError -> AuthTokens.OtpError
+        focused -> AuthTokens.FieldBorderFocus
+        else -> AuthTokens.FieldBorder
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -228,7 +235,7 @@ internal fun AuthPasswordField(
                 .background(SurfaceWhite, AuthFieldShape)
                 .border(
                     width = 1.dp,
-                    color = if (focused) AuthTokens.FieldBorderFocus else AuthTokens.FieldBorder,
+                    color = borderColor,
                     shape = AuthFieldShape,
                 ),
             verticalAlignment = Alignment.CenterVertically,
@@ -299,6 +306,17 @@ internal fun AuthPasswordField(
                     tint = AuthTokens.Muted,
                 )
             }
+        }
+        if (isError) {
+            Text(
+                text = errorMessage.orEmpty(),
+                color = AuthTokens.OtpError,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 16.sp,
+                ),
+            )
         }
         AuthPasswordStrengthBar(strength = strength)
     }

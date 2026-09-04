@@ -249,6 +249,9 @@ fun CreateStoreScreen(
                                 },
                                 onPublish = { publish() },
                                 onAddProduct = onAddProduct,
+                                fieldErrors = createState.fieldErrors,
+                                generalError = createState.generalError?.message,
+                                onClearFieldError = createShopViewModel::clearFieldError,
                             )
                         }
                         Column(
@@ -303,6 +306,9 @@ fun CreateStoreScreen(
                             },
                             onPublish = { publish() },
                             onAddProduct = onAddProduct,
+                            fieldErrors = createState.fieldErrors,
+                            generalError = createState.generalError?.message,
+                            onClearFieldError = createShopViewModel::clearFieldError,
                         )
                         CreateStoreSummaryCard(
                             state = state,

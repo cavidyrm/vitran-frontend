@@ -54,10 +54,12 @@ internal fun AccountStackedField(
     supportingText: String? = null,
     supportingPositive: Boolean = false,
     showSupportingCheck: Boolean = false,
+    error: String? = null,
     readOnly: Boolean = false,
     required: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
 ) {
+    val isError = !error.isNullOrBlank()
     val shape = RoundedCornerShape(VitranRadius.small)
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -85,7 +87,7 @@ internal fun AccountStackedField(
                 .fillMaxWidth()
                 .height(AccountTokens.StackedFieldHeight)
                 .clip(shape)
-                .border(1.dp, AccountTokens.CardBorder, shape)
+                .border(1.dp, if (isError) ErrorRed else AccountTokens.CardBorder, shape)
                 .background(MaterialTheme.colorScheme.surface, shape)
                 .padding(horizontal = VitranSpacing.md),
             verticalAlignment = Alignment.CenterVertically,
@@ -118,7 +120,13 @@ internal fun AccountStackedField(
             )
             if (trailing != null) trailing()
         }
-        if (!supportingText.isNullOrBlank()) {
+        if (isError) {
+            VitranText(
+                text = error.orEmpty(),
+                style = VitranTextStyle.Label,
+                color = ErrorRed,
+            )
+        } else if (!supportingText.isNullOrBlank()) {
             val supportColor = if (supportingPositive) {
                 AccountTokens.Success
             } else {

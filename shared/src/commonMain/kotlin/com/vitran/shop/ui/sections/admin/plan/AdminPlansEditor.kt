@@ -63,6 +63,8 @@ fun AdminPlansEditorCard(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
     canDelete: Boolean = true,
+    fieldErrors: Map<String, String> = emptyMap(),
+    onClearFieldError: (String) -> Unit = {},
 ) {
     val discount = form.yearlyDiscountPercent()
     Column(
@@ -82,15 +84,23 @@ fun AdminPlansEditorCard(
         AdminTextField(
             label = stringResource(Res.string.admin_plans_field_name),
             value = form.name,
-            onValueChange = { onFormChange(form.copy(name = it)) },
+            onValueChange = {
+                onClearFieldError("title")
+                onFormChange(form.copy(name = it))
+            },
             required = true,
+            error = fieldErrors["title"],
         )
         AdminTextField(
             label = stringResource(Res.string.admin_plans_field_slug),
             value = form.slug,
-            onValueChange = { onFormChange(form.copy(slug = it)) },
+            onValueChange = {
+                onClearFieldError("slug")
+                onFormChange(form.copy(slug = it))
+            },
             ltr = true,
             required = true,
+            error = fieldErrors["slug"],
         )
         FormPair(
             compact = compact,
@@ -98,9 +108,13 @@ fun AdminPlansEditorCard(
                 AdminTextField(
                     label = stringResource(Res.string.admin_plans_field_monthly),
                     value = form.monthlyPrice,
-                    onValueChange = { onFormChange(form.copy(monthlyPrice = it.filter { ch -> ch.isDigit() })) },
+                    onValueChange = {
+                        onClearFieldError("price_amount")
+                        onFormChange(form.copy(monthlyPrice = it.filter { ch -> ch.isDigit() }))
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = it,
+                    error = fieldErrors["price_amount"],
                 )
             },
             second = {
@@ -131,18 +145,26 @@ fun AdminPlansEditorCard(
                 AdminTextField(
                     label = stringResource(Res.string.admin_plans_field_products),
                     value = form.productLimit,
-                    onValueChange = { onFormChange(form.copy(productLimit = it.filter { ch -> ch.isDigit() })) },
+                    onValueChange = {
+                        onClearFieldError("max_products")
+                        onFormChange(form.copy(productLimit = it.filter { ch -> ch.isDigit() }))
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = it,
+                    error = fieldErrors["max_products"],
                 )
             },
             second = {
                 AdminTextField(
                     label = stringResource(Res.string.admin_plans_field_slots),
                     value = form.specialSlots,
-                    onValueChange = { onFormChange(form.copy(specialSlots = it.filter { ch -> ch.isDigit() })) },
+                    onValueChange = {
+                        onClearFieldError("max_images")
+                        onFormChange(form.copy(specialSlots = it.filter { ch -> ch.isDigit() }))
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = it,
+                    error = fieldErrors["max_images"],
                 )
             },
         )
@@ -170,8 +192,12 @@ fun AdminPlansEditorCard(
         AdminTextField(
             label = stringResource(Res.string.admin_plans_field_team),
             value = form.teamMembers,
-            onValueChange = { onFormChange(form.copy(teamMembers = it.filter { ch -> ch.isDigit() })) },
+            onValueChange = {
+                onClearFieldError("max_shops")
+                onFormChange(form.copy(teamMembers = it.filter { ch -> ch.isDigit() }))
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            error = fieldErrors["max_shops"],
         )
         FeatureToggle(
             label = stringResource(Res.string.admin_plans_feature_higher_list),

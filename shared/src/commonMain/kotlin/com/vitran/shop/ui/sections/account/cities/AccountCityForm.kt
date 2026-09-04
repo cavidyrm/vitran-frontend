@@ -74,6 +74,9 @@ internal fun AccountCityForm(
     onSecondary: () -> Unit,
     modifier: Modifier = Modifier,
     onDelete: (() -> Unit)? = null,
+    nameError: String? = null,
+    slugError: String? = null,
+    onClearFieldError: (String) -> Unit = {},
 ) {
     val isDesktop = LocalDesktopLayout.current
     AccountCard(modifier = modifier) {
@@ -138,16 +141,24 @@ internal fun AccountCityForm(
                     AccountStackedField(
                         label = stringResource(Res.string.account_city_detail_field_name),
                         value = city.name,
-                        onValueChange = { onCityChange(city.copy(name = it)) },
+                        onValueChange = {
+                            onClearFieldError("name")
+                            onCityChange(city.copy(name = it))
+                        },
                         placeholder = stringResource(Res.string.account_city_create_name_placeholder),
                         required = true,
+                        error = nameError,
                     )
                     AccountStackedField(
                         label = stringResource(Res.string.account_city_detail_field_slug),
                         value = city.slug,
-                        onValueChange = { onCityChange(city.copy(slug = it)) },
+                        onValueChange = {
+                            onClearFieldError("slug")
+                            onCityChange(city.copy(slug = it))
+                        },
                         required = true,
                         supportingText = stringResource(Res.string.account_city_create_slug_hint),
+                        error = slugError,
                     )
                     AccountCitySlugPreview(slug = city.slug)
                     AccountCityToggleRow(

@@ -110,12 +110,17 @@ fun AdminMultilineField(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     helper: String? = null,
+    error: String? = null,
     showToolbar: Boolean = false,
 ) {
-    AdminLabeledField(label = label, helper = helper, modifier = modifier) {
+    AdminLabeledField(label = label, helper = helper, error = error, modifier = modifier) {
         val shape = RoundedCornerShape(AdminTokens.FieldRadius)
         var focused by remember { mutableStateOf(false) }
-        val border = if (focused) AdminTokens.FieldBorderFocused else AdminTokens.FieldBorder
+        val border = when {
+            error != null -> AdminTokens.Destructive
+            focused -> AdminTokens.FieldBorderFocused
+            else -> AdminTokens.FieldBorder
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()

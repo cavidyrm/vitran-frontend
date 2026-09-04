@@ -48,6 +48,10 @@ fun RegisterScreen(
             onPrivacyClick = onPrivacyClick,
             isSubmitting = uiState.isSubmitting,
             submitError = uiState.generalError,
+            phoneError = uiState.fieldErrors["phone"],
+            passwordError = uiState.fieldErrors["password"],
+            referralError = uiState.fieldErrors["referral_code"],
+            onClearFieldError = viewModel::clearFieldError,
         )
     }
 }

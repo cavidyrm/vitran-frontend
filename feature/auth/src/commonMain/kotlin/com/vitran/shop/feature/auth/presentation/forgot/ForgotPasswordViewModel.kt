@@ -3,8 +3,10 @@ package com.vitran.shop.feature.auth.presentation.forgot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.feature.auth.domain.error.splitForForm
 import com.vitran.shop.feature.auth.domain.error.toAuthError
 import com.vitran.shop.feature.auth.domain.usecase.RequestPasswordResetUseCase
+import com.vitran.shop.feature.auth.presentation.AuthFormFields
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -17,6 +19,7 @@ import kotlinx.coroutines.launch
 data class ForgotPasswordUiState(
     val isSubmitting: Boolean = false,
     val generalError: String? = null,
+    val fieldErrors: Map<String, String> = emptyMap(),
 )
 
 sealed interface ForgotPasswordUiEffect {
@@ -37,18 +40,38 @@ class ForgotPasswordViewModel(
     fun submit(phone: String) {
         if (_uiState.value.isSubmitting) return
         if (!validatePhone(phone)) {
-            _uiState.update { it.copy(generalError = "شماره موبایل معتبر نیست") }
+            _uiState.update {
+                it.copy(generalError = "شماره موبایل معتبر نیست", fieldErrors = emptyMap())
+            }
             return
         }
         viewModelScope.launch {
-            _uiState.update { it.copy(isSubmitting = true, generalError = null) }
+            _uiState.update { it.copy(isSubmitting = true, generalError = null, fieldErrors = emptyMap()) }
             when (val result = requestPasswordResetUseCase(phone.trim())) {
                 is AppResult.Success -> _effects.emit(ForgotPasswordUiEffect.NavigateToReset(phone.trim()))
-                is AppResult.Failure -> _uiState.update {
-                    it.copy(generalError = result.error.toAuthError().message)
+                is AppResult.Failure -> {
+                    val authError = result.error.toAuthError()
+                    val split = authError.splitForForm(
+                        knownReasons = AuthFormFields.forgot,
+                        fallbackMessage = authError.message,
+                    )
+                    _uiState.update {
+                        it.copy(
+                            fieldErrors = split.fieldErrors,
+                            generalError = split.generalMessage,
+                        )
+                    }
                 }
             }
             _uiState.update { it.copy(isSubmitting = false) }
+        }
+    }
+
+    fun clearFieldError(reason: String) {
+        val key = reason.lowercase()
+        _uiState.update { state ->
+            if (key !in state.fieldErrors) state
+            else state.copy(fieldErrors = state.fieldErrors - key)
         }
     }
 }

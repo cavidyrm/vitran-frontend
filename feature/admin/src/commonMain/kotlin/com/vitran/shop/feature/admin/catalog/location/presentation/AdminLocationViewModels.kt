@@ -3,6 +3,7 @@ package com.vitran.shop.feature.admin.catalog.location.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.error.AppError
+import com.vitran.shop.core.domain.error.splitForForm
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
@@ -68,6 +69,7 @@ data class AdminCityCreateUiState(
     val isSubmitting: Boolean = false,
     val createdCity: City? = null,
     val error: AppError? = null,
+    val fieldErrors: Map<String, String> = emptyMap(),
 )
 
 class AdminCityCreateViewModel(
@@ -83,16 +85,37 @@ class AdminCityCreateViewModel(
 
     fun create(slug: String, name: String) {
         if (_uiState.value.isSubmitting || submitJob?.isActive == true) return
-        _uiState.update { it.copy(isSubmitting = true, createdCity = null, error = null) }
+        _uiState.update { it.copy(isSubmitting = true, createdCity = null, error = null, fieldErrors = emptyMap()) }
         submitJob =
             viewModelScope.launch {
                 when (val result = repository.createCity(CreateCityCommand(slug.trim(), name.trim()))) {
                     is AppResult.Success ->
                         _uiState.update { it.copy(isSubmitting = false, createdCity = result.value) }
-                    is AppResult.Failure ->
-                        _uiState.update { it.copy(isSubmitting = false, error = result.error) }
+                    is AppResult.Failure -> {
+                        val split = result.error.splitForForm(knownReasons = setOf("name", "slug"))
+                        _uiState.update {
+                            it.copy(
+                                isSubmitting = false,
+                                fieldErrors = split.fieldErrors,
+                                error = when {
+                                    split.generalMessage != null ->
+                                        AppError.Validation(message = split.generalMessage)
+                                    split.fieldErrors.isEmpty() -> result.error
+                                    else -> null
+                                },
+                            )
+                        }
+                    }
                 }
             }
+    }
+
+    fun clearFieldError(reason: String) {
+        val key = reason.lowercase()
+        _uiState.update { state ->
+            if (key !in state.fieldErrors) state
+            else state.copy(fieldErrors = state.fieldErrors - key)
+        }
     }
 
     override fun onCleared() {

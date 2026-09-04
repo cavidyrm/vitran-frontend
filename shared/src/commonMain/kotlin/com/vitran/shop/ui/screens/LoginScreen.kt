@@ -88,6 +88,9 @@ fun LoginScreen(
                 onPrivacyClick = onPrivacyClick,
                 isSubmitting = uiState.isSubmitting,
                 submitError = uiState.generalError,
+                phoneError = uiState.fieldErrors["phone"],
+                passwordError = uiState.fieldErrors["password"],
+                onClearFieldError = viewModel::clearFieldError,
             )
         }
     }

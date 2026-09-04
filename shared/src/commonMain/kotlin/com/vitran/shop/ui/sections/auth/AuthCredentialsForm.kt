@@ -33,6 +33,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -111,6 +112,10 @@ fun AuthCredentialsForm(
     onPrivacyClick: () -> Unit = {},
     isSubmitting: Boolean = false,
     submitError: String? = null,
+    phoneError: String? = null,
+    passwordError: String? = null,
+    referralError: String? = null,
+    onClearFieldError: (String) -> Unit = {},
 ) {
     var nationalMobile by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -127,6 +132,10 @@ fun AuthCredentialsForm(
         },
     )
     val canSubmit = credentials.isValidForSubmit()
+
+    LaunchedEffect(referralError) {
+        if (!referralError.isNullOrBlank()) inviteExpanded = true
+    }
 
     val title = when (mode) {
         AuthMode.Login -> stringResource(Res.string.auth_sign_in_title)
@@ -201,19 +210,27 @@ fun AuthCredentialsForm(
         ) {
             AuthMobileField(
                 value = nationalMobile,
-                onValueChange = { nationalMobile = it },
+                onValueChange = {
+                    nationalMobile = it
+                    onClearFieldError("phone")
+                },
+                errorMessage = phoneError,
             )
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 AuthPasswordField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = {
+                        password = it
+                        onClearFieldError("password")
+                    },
                     imeAction = if (mode == AuthMode.Register && inviteExpanded) {
                         ImeAction.Next
                     } else {
                         ImeAction.Go
                     },
                     onSubmit = { if (canSubmit) onSubmit(credentials) },
+                    errorMessage = passwordError,
                 )
                 if (mode == AuthMode.Login) {
                     Text(
@@ -240,8 +257,12 @@ fun AuthCredentialsForm(
                     expanded = inviteExpanded,
                     onExpandedChange = { inviteExpanded = it },
                     inviteCode = inviteCode,
-                    onInviteCodeChange = { inviteCode = it.take(32) },
+                    onInviteCodeChange = {
+                        inviteCode = it.take(32)
+                        onClearFieldError("referral_code")
+                    },
                     onSubmit = { if (canSubmit) onSubmit(credentials) },
+                    errorMessage = referralError,
                 )
             }
 
@@ -403,6 +424,7 @@ private fun AuthInviteCodeSection(
     inviteCode: String,
     onInviteCodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    errorMessage: String? = null,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         if (!expanded) {
@@ -430,6 +452,7 @@ private fun AuthInviteCodeSection(
                 value = inviteCode,
                 onValueChange = onInviteCodeChange,
                 onSubmit = onSubmit,
+                errorMessage = errorMessage,
             )
         }
     }
@@ -440,8 +463,15 @@ private fun AuthInviteCodeField(
     value: String,
     onValueChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    errorMessage: String? = null,
 ) {
     var focused by remember { mutableStateOf(false) }
+    val isError = !errorMessage.isNullOrBlank()
+    val borderColor = when {
+        isError -> AuthTokens.OtpError
+        focused -> AuthTokens.FieldBorderFocus
+        else -> AuthTokens.FieldBorder
+    }
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
@@ -463,7 +493,7 @@ private fun AuthInviteCodeField(
                 .background(SurfaceWhite, AuthFieldShape)
                 .border(
                     width = 1.dp,
-                    color = if (focused) AuthTokens.FieldBorderFocus else AuthTokens.FieldBorder,
+                    color = borderColor,
                     shape = AuthFieldShape,
                 )
                 .padding(horizontal = VitranSpacing.md),
@@ -494,6 +524,17 @@ private fun AuthInviteCodeField(
                         inner = inner,
                     )
                 },
+            )
+        }
+        if (isError) {
+            Text(
+                text = errorMessage.orEmpty(),
+                color = AuthTokens.OtpError,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 16.sp,
+                ),
             )
         }
     }

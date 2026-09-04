@@ -3,9 +3,11 @@ package com.vitran.shop.feature.auth.presentation.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.feature.auth.domain.error.splitForForm
 import com.vitran.shop.feature.auth.domain.error.toAuthError
 import com.vitran.shop.feature.auth.domain.model.RegisterCommand
 import com.vitran.shop.feature.auth.domain.usecase.RegisterUseCase
+import com.vitran.shop.feature.auth.presentation.AuthFormFields
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,6 +20,7 @@ import kotlinx.coroutines.launch
 data class RegisterUiState(
     val isSubmitting: Boolean = false,
     val generalError: String? = null,
+    val fieldErrors: Map<String, String> = emptyMap(),
 )
 
 sealed interface RegisterUiEffect {
@@ -39,18 +42,38 @@ class RegisterViewModel(
     fun submit(phone: String, password: String, referralCode: String?) {
         if (_uiState.value.isSubmitting) return
         if (!validatePhone(phone) || !validatePassword(password)) {
-            _uiState.update { it.copy(generalError = "اطلاعات ثبت‌نام را بررسی کنید") }
+            _uiState.update {
+                it.copy(generalError = "اطلاعات ثبت‌نام را بررسی کنید", fieldErrors = emptyMap())
+            }
             return
         }
         viewModelScope.launch {
-            _uiState.update { it.copy(isSubmitting = true, generalError = null) }
+            _uiState.update { it.copy(isSubmitting = true, generalError = null, fieldErrors = emptyMap()) }
             when (val result = registerUseCase(RegisterCommand(phone.trim(), password, referralCode))) {
                 is AppResult.Success -> _effects.emit(RegisterUiEffect.NavigateToVerification(phone.trim()))
-                is AppResult.Failure -> _uiState.update {
-                    it.copy(generalError = result.error.toAuthError().message ?: "ثبت‌نام ناموفق بود")
+                is AppResult.Failure -> {
+                    val authError = result.error.toAuthError()
+                    val split = authError.splitForForm(
+                        knownReasons = AuthFormFields.register,
+                        fallbackMessage = authError.message ?: "ثبت‌نام ناموفق بود",
+                    )
+                    _uiState.update {
+                        it.copy(
+                            fieldErrors = split.fieldErrors,
+                            generalError = split.generalMessage,
+                        )
+                    }
                 }
             }
             _uiState.update { it.copy(isSubmitting = false) }
+        }
+    }
+
+    fun clearFieldError(reason: String) {
+        val key = reason.lowercase()
+        _uiState.update { state ->
+            if (key !in state.fieldErrors) state
+            else state.copy(fieldErrors = state.fieldErrors - key)
         }
     }
 }

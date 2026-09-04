@@ -54,6 +54,8 @@ fun AuthForgotPasswordForm(
     onBackToLogin: () -> Unit = {},
     isSubmitting: Boolean = false,
     submitError: String? = null,
+    phoneError: String? = null,
+    onClearFieldError: (String) -> Unit = {},
 ) {
     var nationalMobile by remember { mutableStateOf("") }
     val fullMobile = normalizeIranMobile(nationalMobile)
@@ -113,13 +115,15 @@ fun AuthForgotPasswordForm(
         ) {
             AuthMobileField(
                 value = nationalMobile,
-                onValueChange = { nationalMobile = it },
+                onValueChange = {
+                    nationalMobile = it
+                    onClearFieldError("phone")
+                },
                 imeAction = ImeAction.Go,
                 onSubmit = { if (canSubmit) onSendCode(fullMobile) },
-                errorMessage = if (showInvalid) {
-                    stringResource(Res.string.auth_mobile_invalid)
-                } else {
-                    null
+                errorMessage = when {
+                    showInvalid -> stringResource(Res.string.auth_mobile_invalid)
+                    else -> phoneError
                 },
             )
 

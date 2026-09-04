@@ -3,6 +3,7 @@ package com.vitran.shop.feature.admin.plans.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.error.AppError
+import com.vitran.shop.core.domain.error.splitForForm
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.admin.plans.domain.AdminPlan
 import com.vitran.shop.feature.admin.plans.domain.AdminPlanRepository
@@ -25,6 +26,7 @@ data class AdminPlansUiState(
     val canDelete: Boolean = false,
     val freePlanDeleteBlocked: Boolean = false,
     val error: AppError? = null,
+    val fieldErrors: Map<String, String> = emptyMap(),
 )
 
 class AdminPlansViewModel(
@@ -46,7 +48,9 @@ class AdminPlansViewModel(
         refresh()
     }
 
-    fun select(id: PlanId?) = _uiState.update { it.copy(selectedPlanId = id, freePlanDeleteBlocked = false) }
+    fun select(id: PlanId?) = _uiState.update {
+        it.copy(selectedPlanId = id, freePlanDeleteBlocked = false, fieldErrors = emptyMap(), error = null)
+    }
 
     fun refresh() = viewModelScope.launch {
         _uiState.update { it.copy(loading = true, error = null) }
@@ -82,7 +86,7 @@ class AdminPlansViewModel(
 
     private fun mutate(block: suspend () -> AppResult<AdminPlan>) {
         if (_uiState.value.saving) return
-        _uiState.update { it.copy(saving = true, error = null) }
+        _uiState.update { it.copy(saving = true, error = null, fieldErrors = emptyMap()) }
         viewModelScope.launch {
             when (val result = block()) {
                 is AppResult.Success -> _uiState.update {
@@ -91,8 +95,47 @@ class AdminPlansViewModel(
                     } else it.plans + result.value
                     it.copy(plans = plans, selectedPlanId = result.value.id, saving = false)
                 }
-                is AppResult.Failure -> _uiState.update { it.copy(saving = false, error = result.error) }
+                is AppResult.Failure -> {
+                    val split = result.error.splitForForm(
+                        knownReasons = AdminPlanFormReasons,
+                        reasonAliases = AdminPlanFormAliases,
+                    )
+                    _uiState.update {
+                        it.copy(
+                            saving = false,
+                            fieldErrors = split.fieldErrors,
+                            error = when {
+                                split.generalMessage != null ->
+                                    AppError.Validation(message = split.generalMessage)
+                                split.fieldErrors.isEmpty() -> result.error
+                                else -> null
+                            },
+                        )
+                    }
+                }
             }
         }
     }
+
+    fun clearFieldError(reason: String) {
+        val key = reason.lowercase()
+        val mapped = AdminPlanFormAliases[key] ?: key
+        _uiState.update { state ->
+            val next = state.fieldErrors - key - mapped
+            if (next == state.fieldErrors) state else state.copy(fieldErrors = next)
+        }
+    }
 }
+
+private val AdminPlanFormReasons = setOf(
+    "title",
+    "slug",
+    "price_amount",
+    "max_products",
+    "max_images",
+    "max_shops",
+)
+
+private val AdminPlanFormAliases = mapOf(
+    "name" to "title",
+)

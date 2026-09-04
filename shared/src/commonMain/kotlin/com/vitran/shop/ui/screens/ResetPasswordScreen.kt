@@ -37,7 +37,10 @@ fun ResetPasswordScreen(
             liveReset = true,
             isSubmitting = uiState.isSubmitting,
             resetError = uiState.generalError,
+            codeError = uiState.fieldErrors["code"],
+            passwordError = uiState.fieldErrors["password"],
             onSubmit = viewModel::submit,
+            onClearFieldError = viewModel::clearFieldError,
             debugOtpHint = uiState.debugOtpCode,
         )
     }

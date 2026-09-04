@@ -174,15 +174,35 @@ fun CreateStoreStepBody(
     onViewStore: () -> Unit = {},
     onPublish: () -> Unit = {},
     onAddProduct: () -> Unit = {},
+    fieldErrors: Map<String, String> = emptyMap(),
+    generalError: String? = null,
+    onClearFieldError: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
     ) {
+        if (generalError != null) {
+            Text(
+                text = generalError,
+                color = AdminTokens.Destructive,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+            )
+        }
         when (step) {
-            CreateStoreStep.Basics -> CreateStoreBasicsStep(state, onStateChange)
-            CreateStoreStep.Brand -> CreateStoreBrandStep(state, onStateChange)
+            CreateStoreStep.Basics -> CreateStoreBasicsStep(
+                state = state,
+                onStateChange = onStateChange,
+                fieldErrors = fieldErrors,
+                onClearFieldError = onClearFieldError,
+            )
+            CreateStoreStep.Brand -> CreateStoreBrandStep(
+                state = state,
+                onStateChange = onStateChange,
+                fieldErrors = fieldErrors,
+                onClearFieldError = onClearFieldError,
+            )
             CreateStoreStep.Contact -> CreateStoreContactStep(
                 state = state,
                 onStateChange = onStateChange,
@@ -190,6 +210,8 @@ fun CreateStoreStepBody(
                 citiesLoading = citiesLoading,
                 citiesError = citiesError,
                 onCitiesRetry = onCitiesRetry,
+                fieldErrors = fieldErrors,
+                onClearFieldError = onClearFieldError,
             )
             CreateStoreStep.Policies -> CreateStorePoliciesStep(state, onStateChange)
             CreateStoreStep.Publish -> CreateStorePublishStep(
@@ -207,6 +229,8 @@ fun CreateStoreStepBody(
 private fun CreateStoreBasicsStep(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
+    fieldErrors: Map<String, String> = emptyMap(),
+    onClearFieldError: (String) -> Unit = {},
 ) {
     AdminFormCard(
         title = stringResource(Res.string.admin_card_identity),
@@ -216,9 +240,13 @@ private fun CreateStoreBasicsStep(
         AdminTextField(
             label = stringResource(Res.string.admin_field_store_name),
             value = state.storeName,
-            onValueChange = { onStateChange(state.withStoreName(it)) },
+            onValueChange = {
+                onClearFieldError("title")
+                onStateChange(state.withStoreName(it))
+            },
             placeholder = stringResource(Res.string.admin_field_store_name_placeholder),
             required = true,
+            error = fieldErrors["title"],
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -269,6 +297,7 @@ private fun CreateStoreBasicsStep(
                                 shape = RoundedCornerShape(percent = 50),
                             )
                             .clickable(role = Role.Button) {
+                                onClearFieldError("category_slugs")
                                 onStateChange(state.withCategory(category.id))
                             }
                             .padding(horizontal = VitranSpacing.md, vertical = VitranSpacing.sm),
@@ -282,6 +311,13 @@ private fun CreateStoreBasicsStep(
                     }
                 }
             }
+            fieldErrors["category_slugs"]?.let { message ->
+                Text(
+                    text = message,
+                    color = AdminTokens.Destructive,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                )
+            }
         }
     }
     AdminFormCard(
@@ -289,7 +325,12 @@ private fun CreateStoreBasicsStep(
         subtitle = stringResource(Res.string.admin_card_url_sub),
         icon = painterResource(Res.drawable.ic_share),
     ) {
-        CreateStoreUrlBuilder(state = state, onStateChange = onStateChange)
+        CreateStoreUrlBuilder(
+            state = state,
+            onStateChange = onStateChange,
+            slugError = fieldErrors["slug"],
+            onClearSlugError = { onClearFieldError("slug") },
+        )
     }
 }
 
@@ -297,6 +338,8 @@ private fun CreateStoreBasicsStep(
 private fun CreateStoreUrlBuilder(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
+    slugError: String? = null,
+    onClearSlugError: () -> Unit = {},
 ) {
     var copied by remember { mutableStateOf(false) }
     AdminTextField(
@@ -304,11 +347,13 @@ private fun CreateStoreUrlBuilder(
         value = state.slug,
         onValueChange = {
             copied = false
+            onClearSlugError()
             onStateChange(state.withSlug(it))
         },
         prefix = stringResource(Res.string.admin_url_prefix),
         required = true,
         placeholder = "aria-store",
+        error = slugError,
         trailing = {
             Text(
                 text = stringResource(
@@ -336,6 +381,8 @@ private fun CreateStoreUrlBuilder(
 private fun CreateStoreBrandStep(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
+    fieldErrors: Map<String, String> = emptyMap(),
+    onClearFieldError: (String) -> Unit = {},
 ) {
     var editingCover by remember { mutableStateOf(false) }
     var cropPreset by remember { mutableStateOf("wide") }
@@ -476,9 +523,13 @@ private fun CreateStoreBrandStep(
         AdminMultilineField(
             label = stringResource(Res.string.admin_field_about),
             value = state.about,
-            onValueChange = { onStateChange(state.copy(about = it, dirty = true)) },
+            onValueChange = {
+                onClearFieldError("description")
+                onStateChange(state.copy(about = it, dirty = true))
+            },
             placeholder = stringResource(Res.string.admin_field_about_placeholder),
             showToolbar = true,
+            error = fieldErrors["description"],
         )
     }
 }
@@ -670,6 +721,8 @@ private fun CreateStoreContactStep(
     citiesLoading: Boolean,
     citiesError: String?,
     onCitiesRetry: () -> Unit,
+    fieldErrors: Map<String, String> = emptyMap(),
+    onClearFieldError: (String) -> Unit = {},
 ) {
     AdminFormCard(
         title = stringResource(Res.string.admin_card_location),
@@ -691,17 +744,25 @@ private fun CreateStoreContactStep(
             AdminTextField(
                 label = stringResource(Res.string.admin_field_phone),
                 value = state.phone,
-                onValueChange = { onStateChange(state.copy(phone = it, dirty = true)) },
+                onValueChange = {
+                    onClearFieldError("phone_number")
+                    onStateChange(state.copy(phone = it, dirty = true))
+                },
                 placeholder = stringResource(Res.string.admin_field_phone_placeholder),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.weight(1f),
+                error = fieldErrors["phone_number"],
             )
         }
         AdminTextField(
             label = stringResource(Res.string.admin_field_address),
             value = state.address,
-            onValueChange = { onStateChange(state.copy(address = it, dirty = true)) },
+            onValueChange = {
+                onClearFieldError("address")
+                onStateChange(state.copy(address = it, dirty = true))
+            },
             singleLine = false,
+            error = fieldErrors["address"],
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -725,13 +786,17 @@ private fun CreateStoreContactStep(
                         label = stringResource(Res.string.admin_field_city),
                         valueId = state.cityId,
                         options = cityOptions,
-                        onSelect = { onStateChange(state.copy(cityId = it.id, dirty = true)) },
+                        onSelect = {
+                            onClearFieldError("city_id")
+                            onStateChange(state.copy(cityId = it.id, dirty = true))
+                        },
                         placeholder = stringResource(Res.string.admin_field_city_placeholder),
                         helper = if (state.provinceId == null) {
                             stringResource(Res.string.admin_field_city_helper)
                         } else {
                             null
                         },
+                        error = fieldErrors["city_id"],
                         enabled = state.provinceId != null && cityOptions.isNotEmpty(),
                     )
                 }
@@ -754,6 +819,7 @@ private fun CreateStoreContactStep(
                             onStateChange(state.moveSocial(index, index + delta))
                         },
                         onHandleChange = { handle ->
+                            socialReasonFor(channel.kind)?.let(onClearFieldError)
                             onStateChange(
                                 state.copy(
                                     socialChannels = state.socialChannels.map {
@@ -771,6 +837,7 @@ private fun CreateStoreContactStep(
                                 ),
                             )
                         },
+                        error = socialReasonFor(channel.kind)?.let { fieldErrors[it] },
                     )
                 }
             }
@@ -800,6 +867,14 @@ private fun CreateStoreContactStep(
     }
 }
 
+private fun socialReasonFor(kind: StoreSocialKind): String? = when (kind) {
+    StoreSocialKind.Instagram -> "instagram"
+    StoreSocialKind.Telegram -> "telegram"
+    StoreSocialKind.WhatsApp -> "whatsapp"
+    StoreSocialKind.Website -> "website"
+    StoreSocialKind.Email -> null
+}
+
 @Composable
 private fun SocialChannelRow(
     channel: StoreSocialChannel,
@@ -808,6 +883,7 @@ private fun SocialChannelRow(
     onMove: (Int) -> Unit,
     onHandleChange: (String) -> Unit,
     onRemove: () -> Unit,
+    error: String? = null,
 ) {
     val label = when (channel.kind) {
         StoreSocialKind.Instagram -> stringResource(Res.string.admin_field_instagram)
@@ -905,6 +981,7 @@ private fun SocialChannelRow(
             onValueChange = onHandleChange,
             prefix = prefix,
             placeholder = placeholder,
+            error = error,
         )
     }
 }

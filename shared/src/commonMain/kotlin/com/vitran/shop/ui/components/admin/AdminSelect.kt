@@ -60,12 +60,14 @@ fun AdminSelectField(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     helper: String? = null,
+    error: String? = null,
     enabled: Boolean = true,
 ) {
     val selected = options.firstOrNull { it.id == valueId }
     AdminDropdownAnchor(
         label = label,
         helper = helper,
+        error = error,
         displayText = selected?.label,
         placeholder = placeholder,
         enabled = enabled,
@@ -141,6 +143,7 @@ internal fun AdminDropdownAnchor(
     placeholder: String?,
     enabled: Boolean,
     modifier: Modifier,
+    error: String? = null,
     menu: @Composable (dismiss: () -> Unit) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -148,9 +151,13 @@ internal fun AdminDropdownAnchor(
     var anchorHeightPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
 
-    AdminLabeledField(label = label, helper = helper, modifier = modifier) {
+    AdminLabeledField(label = label, helper = helper, error = error, modifier = modifier) {
         val shape = RoundedCornerShape(AdminTokens.FieldRadius)
-        val border = if (expanded) AdminTokens.FieldBorderFocused else AdminTokens.FieldBorder
+        val border = when {
+            error != null -> AdminTokens.Destructive
+            expanded -> AdminTokens.FieldBorderFocused
+            else -> AdminTokens.FieldBorder
+        }
         Box {
             Row(
                 modifier = Modifier

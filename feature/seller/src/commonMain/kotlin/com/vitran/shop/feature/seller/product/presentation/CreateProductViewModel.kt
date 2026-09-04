@@ -3,7 +3,7 @@ package com.vitran.shop.feature.seller.product.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.error.AppError
-import com.vitran.shop.core.domain.error.FieldError
+import com.vitran.shop.core.domain.error.splitForForm
 import com.vitran.shop.core.domain.pagination.CursorPagination
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.platform.file.ImagePicker
@@ -290,11 +290,25 @@ class CreateProductViewModel(
                         )
                     }
                     is AppResult.Failure -> {
+                        val split = result.error.splitForForm(
+                            knownReasons = setOf("title", "price"),
+                            reasonAliases = CreateProductReasonAliases,
+                        )
                         _uiState.update {
                             it.copy(
                                 isSubmitting = false,
-                                fieldErrors = mapFieldErrors(result.error.fieldErrors),
-                                generalError = result.error,
+                                fieldErrors = CreateProductFieldErrors(
+                                    title = split.fieldErrors["title"],
+                                    price = split.fieldErrors["price"],
+                                    category = split.fieldErrors["category"],
+                                    summary = split.fieldErrors["summary"],
+                                ),
+                                generalError = when {
+                                    split.generalMessage != null ->
+                                        AppError.Validation(message = split.generalMessage)
+                                    split.fieldErrors.isEmpty() -> result.error
+                                    else -> null
+                                },
                             )
                         }
                     }
@@ -303,17 +317,10 @@ class CreateProductViewModel(
     }
 }
 
-private fun mapFieldErrors(errors: List<FieldError>): CreateProductFieldErrors {
-    fun messageFor(keys: Set<String>): String? =
-        errors
-            .firstOrNull { it.reason.lowercase() in keys }
-            ?.messages
-            ?.firstOrNull()
-
-    return CreateProductFieldErrors(
-        title = messageFor(setOf("title")),
-        price = messageFor(setOf("price")),
-        category = messageFor(setOf("category_slug", "category")),
-        summary = messageFor(setOf("images", "description", "active")),
-    )
-}
+private val CreateProductReasonAliases = mapOf(
+    "category_slug" to "category",
+    "category" to "category",
+    "images" to "summary",
+    "description" to "summary",
+    "active" to "summary",
+)

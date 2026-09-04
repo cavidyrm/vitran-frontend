@@ -87,6 +87,13 @@ Policy: **`expectSuccess = false`** — read body once, parse envelope, evaluate
 
 `ApiErrorDto` preserves `reason` + `messages[]` for field-level UI.
 
+Presentation policy (`splitForForm` in `:core:domain`):
+
+- When `errors` is non-empty, show each joined `messages` list under the input whose name matches `reason` (case-insensitive). Aliases (e.g. `category_slug` → category, `new_password` → password) live in the feature ViewModel.
+- If every `reason` maps to a visible field, **do not** also show the envelope `message` (e.g. «داده‌های ارسالی نامعتبر است.»).
+- Unmapped reasons (including login `credentials`) stay on the form banner.
+- This applies to form POSTs (and the shared plans editor, which also binds PATCH). Mapping is **not** gated on HTTP method in `ApiErrorMapper`.
+
 ## 7. AppError mapping
 
 Generic hierarchy in `:core:domain/error/AppError.kt`:

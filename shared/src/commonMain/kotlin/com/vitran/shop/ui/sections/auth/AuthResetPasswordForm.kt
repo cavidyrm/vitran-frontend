@@ -77,7 +77,10 @@ fun AuthResetPasswordForm(
     liveReset: Boolean = false,
     isSubmitting: Boolean = false,
     resetError: String? = null,
+    codeError: String? = null,
+    passwordError: String? = null,
     onSubmit: (code: String, password: String) -> Unit = { _, _ -> },
+    onClearFieldError: (String) -> Unit = {},
     debugOtpHint: String? = null,
 ) {
     var code by remember { mutableStateOf("") }
@@ -119,11 +122,11 @@ fun AuthResetPasswordForm(
         }
     }
 
-    LaunchedEffect(isSubmitting, resetError, liveReset) {
+    LaunchedEffect(isSubmitting, resetError, codeError, liveReset) {
         if (!liveReset) return@LaunchedEffect
         phase = when {
             isSubmitting -> ResetUiPhase.Saving
-            resetError != null -> ResetUiPhase.Error
+            codeError != null -> ResetUiPhase.Error
             else -> ResetUiPhase.Idle
         }
     }
@@ -212,6 +215,7 @@ fun AuthResetPasswordForm(
                 onCodeChange = { next ->
                     if (phase == ResetUiPhase.Saving) return@AuthOtpCodeField
                     code = next
+                    onClearFieldError("code")
                     if (phase == ResetUiPhase.Error) phase = ResetUiPhase.Idle
                 },
                 focusRequester = focusRequester,
@@ -220,7 +224,7 @@ fun AuthResetPasswordForm(
             )
             if (phase == ResetUiPhase.Error) {
                 Text(
-                    text = resetError ?: stringResource(Res.string.auth_otp_error),
+                    text = codeError ?: resetError ?: stringResource(Res.string.auth_otp_error),
                     modifier = Modifier.padding(top = VitranSpacing.xs),
                     color = AuthTokens.OtpError,
                     style = MaterialTheme.typography.bodySmall.copy(
@@ -242,14 +246,32 @@ fun AuthResetPasswordForm(
 
         AuthPasswordField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                onClearFieldError("password")
+                onClearFieldError("new_password")
+            },
             onSubmit = {
                 if (canSubmit) {
                     if (liveReset) onSubmit(code, password) else saveRequestId++
                 }
             },
             label = stringResource(Res.string.auth_new_password_label),
+            errorMessage = passwordError,
         )
+
+        if (liveReset && resetError != null && codeError == null) {
+            Text(
+                text = resetError,
+                modifier = Modifier.padding(top = VitranSpacing.sm),
+                color = AuthTokens.OtpError,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 18.sp,
+                ),
+            )
+        }
 
         AuthPasswordRulesChecklist(
             rules = passwordRules,

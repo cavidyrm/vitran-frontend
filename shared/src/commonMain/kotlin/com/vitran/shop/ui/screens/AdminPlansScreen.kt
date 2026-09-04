@@ -169,6 +169,8 @@ fun AdminPlansScreen(
                                 onDelete = ::deleteSelected,
                                 compact = false,
                                 canDelete = state.canDelete,
+                                fieldErrors = state.fieldErrors,
+                                onClearFieldError = viewModel::clearFieldError,
                                 modifier = Modifier.weight(1f),
                             )
                         }
@@ -194,6 +196,8 @@ fun AdminPlansScreen(
                             onDelete = ::deleteSelected,
                             compact = true,
                             canDelete = state.canDelete,
+                            fieldErrors = state.fieldErrors,
+                            onClearFieldError = viewModel::clearFieldError,
                         )
                         AdminPlansPreviewCard(
                             plan = selectedPlan,

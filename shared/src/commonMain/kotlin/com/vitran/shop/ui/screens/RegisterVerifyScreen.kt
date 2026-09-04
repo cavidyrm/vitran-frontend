@@ -40,6 +40,7 @@ fun RegisterVerifyScreen(
             verifyError = uiState.error,
             onVerify = viewModel::verifyCode,
             onResend = viewModel::resendCode,
+            onClearFieldError = viewModel::clearFieldError,
             debugOtpHint = uiState.debugOtpCode,
         )
     }

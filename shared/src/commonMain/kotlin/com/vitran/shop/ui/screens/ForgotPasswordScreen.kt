@@ -34,6 +34,8 @@ fun ForgotPasswordScreen(
             onBackToLogin = onBackToLogin,
             isSubmitting = uiState.isSubmitting,
             submitError = uiState.generalError,
+            phoneError = uiState.fieldErrors["phone"],
+            onClearFieldError = viewModel::clearFieldError,
         )
     }
 }

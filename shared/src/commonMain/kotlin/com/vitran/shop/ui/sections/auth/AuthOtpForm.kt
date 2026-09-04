@@ -83,6 +83,7 @@ fun AuthOtpForm(
     verifyError: String? = null,
     onVerify: (String) -> Unit = {},
     onResend: () -> Unit = {},
+    onClearFieldError: (String) -> Unit = {},
     debugOtpHint: String? = null,
 ) {
     var code by remember { mutableStateOf("") }
@@ -240,6 +241,7 @@ fun AuthOtpForm(
             onCodeChange = { next ->
                 if (phase == OtpUiPhase.Verifying || phase == OtpUiPhase.Success) return@AuthOtpCodeField
                 code = next
+                onClearFieldError("code")
                 if (phase == OtpUiPhase.Error) phase = OtpUiPhase.Idle
             },
             focusRequester = focusRequester,

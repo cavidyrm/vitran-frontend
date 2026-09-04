@@ -67,6 +67,9 @@ fun AccountCityCreateScreen(
                 }
             },
             onSecondary = onBack,
+            nameError = state.fieldErrors["name"],
+            slugError = state.fieldErrors["slug"],
+            onClearFieldError = viewModel::clearFieldError,
         )
         state.error?.let {
             VitranText(it.message ?: "ثبت شهر انجام نشد", VitranTextStyle.Body)

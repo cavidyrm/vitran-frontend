@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.core.network.config.ApiEnvironments
+import com.vitran.shop.feature.auth.domain.error.splitForForm
 import com.vitran.shop.feature.auth.domain.error.toAuthError
 import com.vitran.shop.feature.auth.domain.flow.AuthFlowStateHolder
 import com.vitran.shop.feature.auth.domain.usecase.ResendOtpUseCase
 import com.vitran.shop.feature.auth.domain.usecase.VerifyPhoneUseCase
+import com.vitran.shop.feature.auth.presentation.AuthFormFields
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -75,8 +77,19 @@ class RegisterVerifyViewModel(
             _uiState.update { it.copy(isSubmitting = true, error = null) }
             when (val result = verifyPhoneUseCase(code)) {
                 is AppResult.Success -> _effects.emit(RegisterVerifyUiEffect.Verified)
-                is AppResult.Failure -> _uiState.update {
-                    it.copy(error = result.error.toAuthError().message ?: "کد تأیید نادرست است")
+                is AppResult.Failure -> {
+                    val authError = result.error.toAuthError()
+                    val split = authError.splitForForm(
+                        knownReasons = AuthFormFields.verify,
+                        fallbackMessage = authError.message ?: "کد تأیید نادرست است",
+                    )
+                    _uiState.update {
+                        it.copy(
+                            error = split.fieldErrors[AuthFormFields.Code]
+                                ?: split.generalMessage
+                                ?: "کد تأیید نادرست است",
+                        )
+                    }
                 }
             }
             _uiState.update { it.copy(isSubmitting = false) }
@@ -91,11 +104,17 @@ class RegisterVerifyViewModel(
                 is AppResult.Success -> _uiState.update {
                     it.copy(debugOtpCode = result.value ?: it.debugOtpCode)
                 }
-                is AppResult.Failure -> _uiState.update {
-                    it.copy(error = result.error.toAuthError().message)
+                is AppResult.Failure -> {
+                    val authError = result.error.toAuthError()
+                    _uiState.update { it.copy(error = authError.message) }
                 }
             }
             _uiState.update { it.copy(isResending = false) }
         }
+    }
+
+    fun clearFieldError(reason: String) {
+        if (reason.lowercase() != AuthFormFields.Code) return
+        _uiState.update { if (it.error == null) it else it.copy(error = null) }
     }
 }
