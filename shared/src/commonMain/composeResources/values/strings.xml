@@ -788,6 +788,9 @@
     <string name="account_recently_viewed_item_a11y">%1$s از %2$s، %3$s</string>
     <string name="account_sign_out">خروج از حساب</string>
     <string name="account_sign_out_hint">از حساب ویتران خارج شوید</string>
+    <string name="account_sign_out_in_progress">در حال خروج...</string>
+    <string name="account_sign_out_error_network">خطای اتصال. دوباره تلاش کنید.</string>
+    <string name="account_sign_out_error_generic">خروج از حساب انجام نشد. دوباره تلاش کنید.</string>
     <string name="account_settings_account">اطلاعات حساب</string>
     <string name="account_settings_account_hint">مشاهده و ویرایش اطلاعات شخصی</string>
     <string name="account_settings_security">امنیت</string>

@@ -94,13 +94,21 @@ internal class DefaultAuthRepository(
 
     override suspend fun logout(): AppResult<Unit> {
         val refreshToken = sessionRepository.currentRefreshToken()
-        if (refreshToken != null) {
-            authApi.logout(
+        if (refreshToken == null) {
+            sessionRepository.logoutLocal()
+            return AppResult.Success(Unit)
+        }
+        return when (
+            val result = authApi.logout(
                 com.vitran.shop.feature.auth.data.remote.dto.LogoutRequestDto(refreshToken),
             )
+        ) {
+            is AppResult.Success -> {
+                sessionRepository.logoutLocal()
+                AppResult.Success(Unit)
+            }
+            is AppResult.Failure -> result
         }
-        sessionRepository.logoutLocal()
-        return AppResult.Success(Unit)
     }
 
     private suspend fun establishFromTokens(tokens: TokenSetDto) {

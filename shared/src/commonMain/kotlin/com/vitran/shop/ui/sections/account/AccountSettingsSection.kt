@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -21,11 +23,13 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.components.VitranText
 import com.vitran.shop.ui.components.VitranTextStyle
 import com.vitran.shop.ui.shell.LocalDesktopLayout
 import com.vitran.shop.ui.theme.ErrorRed
+import com.vitran.shop.ui.theme.VitranOpacity
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -60,6 +64,7 @@ import vitranshop.shared.generated.resources.account_settings_security
 import vitranshop.shared.generated.resources.account_settings_security_hint
 import vitranshop.shared.generated.resources.account_sign_out
 import vitranshop.shared.generated.resources.account_sign_out_hint
+import vitranshop.shared.generated.resources.account_sign_out_in_progress
 import vitranshop.shared.generated.resources.account_store_plan_hub_hint
 import vitranshop.shared.generated.resources.account_store_plan_hub_title
 import vitranshop.shared.generated.resources.account_users_hub_hint
@@ -86,6 +91,8 @@ internal fun AccountSettingsSection(
     onPrivacyChange: (AccountPrivacyPrefs) -> Unit,
     onAccountInfoClick: () -> Unit,
     onSignOut: () -> Unit,
+    isSigningOut: Boolean = false,
+    signOutError: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val isDesktop = LocalDesktopLayout.current
@@ -97,6 +104,8 @@ internal fun AccountSettingsSection(
             SettingsMenuCard(
                 onAccountInfoClick = onAccountInfoClick,
                 onSignOut = onSignOut,
+                isSigningOut = isSigningOut,
+                signOutError = signOutError,
                 modifier = Modifier.weight(1f),
             )
             PrivacyCard(
@@ -113,6 +122,8 @@ internal fun AccountSettingsSection(
             SettingsMenuCard(
                 onAccountInfoClick = onAccountInfoClick,
                 onSignOut = onSignOut,
+                isSigningOut = isSigningOut,
+                signOutError = signOutError,
             )
             PrivacyCard(
                 privacy = privacy,
@@ -126,6 +137,8 @@ internal fun AccountSettingsSection(
 private fun SettingsMenuCard(
     onAccountInfoClick: () -> Unit,
     onSignOut: () -> Unit,
+    isSigningOut: Boolean,
+    signOutError: String?,
     modifier: Modifier = Modifier,
 ) {
     AccountCard(modifier = modifier) {
@@ -170,11 +183,39 @@ private fun SettingsMenuCard(
             )
             SettingsActionRow(
                 title = stringResource(Res.string.account_sign_out),
-                subtitle = stringResource(Res.string.account_sign_out_hint),
+                subtitle = if (isSigningOut) {
+                    stringResource(Res.string.account_sign_out_in_progress)
+                } else {
+                    stringResource(Res.string.account_sign_out_hint)
+                },
                 icon = painterResource(Res.drawable.ic_logout),
                 onClick = onSignOut,
+                enabled = !isSigningOut,
                 destructive = true,
+                trailing = if (isSigningOut) {
+                    {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(VitranSize.iconSmall),
+                            strokeWidth = 2.dp,
+                            color = ErrorRed,
+                        )
+                    }
+                } else {
+                    null
+                },
             )
+            if (!signOutError.isNullOrBlank()) {
+                VitranText(
+                    text = signOutError,
+                    style = VitranTextStyle.Body,
+                    color = ErrorRed,
+                    modifier = Modifier.padding(
+                        start = VitranSpacing.lg,
+                        end = VitranSpacing.lg,
+                        bottom = VitranSpacing.md,
+                    ),
+                )
+            }
         }
     }
 }
@@ -271,6 +312,7 @@ private fun SettingsActionRow(
     icon: Painter,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     destructive: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
 ) {
@@ -281,6 +323,9 @@ private fun SettingsActionRow(
         MaterialTheme.colorScheme.onSurfaceVariant
     }
     val rowShape = RoundedCornerShape(VitranRadius.medium)
+    val contentAlpha = if (enabled) 1f else VitranOpacity.INACTIVE
+    val resolvedTitleColor = if (enabled) titleColor else titleColor.copy(alpha = contentAlpha)
+    val resolvedSubtitleColor = if (enabled) subtitleColor else subtitleColor.copy(alpha = contentAlpha)
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -296,7 +341,7 @@ private fun SettingsActionRow(
             )
             .clip(rowShape)
             .background(if (destructive) AccountTokens.DangerSoft else Color.Transparent)
-            .clickable(role = Role.Button, onClick = onClick)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(
                 horizontal = if (destructive) VitranSpacing.md else VitranSpacing.lg,
                 vertical = VitranSpacing.md,
@@ -312,13 +357,13 @@ private fun SettingsActionRow(
             VitranText(
                 text = title,
                 style = VitranTextStyle.Title,
-                color = titleColor,
+                color = resolvedTitleColor,
                 maxLines = 1,
             )
             VitranText(
                 text = subtitle,
                 style = VitranTextStyle.Body,
-                color = subtitleColor,
+                color = resolvedSubtitleColor,
                 maxLines = 2,
             )
         }

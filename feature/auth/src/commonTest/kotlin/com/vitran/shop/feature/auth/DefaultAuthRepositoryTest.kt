@@ -1,6 +1,5 @@
 package com.vitran.shop.feature.auth
 
-import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.auth.jsonResponse
 import com.vitran.shop.core.network.config.ApiEnvironment
@@ -108,26 +107,16 @@ class DefaultAuthRepositoryTest {
     }
 
     @Test
-    fun logout_alwaysClearsLocalSession() = runTest {
-        val sessionRepository = RecordingSessionRepository(
-            credentials = SessionCredentials(
-                accessToken = "a",
-                refreshToken = "refresh-local",
-                accessTokenExpiresAt = Instant.parse("2026-01-01T13:00:00Z"),
-            ),
-        )
-        val repository = DefaultAuthRepository(
-            authApi = AuthApi(
-                client = createAuthTestClient(
-                    MockEngine {
-                        jsonResponse(HttpStatusCode.GatewayTimeout, """{"success":false,"message":"timeout","code":504,"data":null,"errors":[]}""")
-                    },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
+    fun logout_success_clearsLocalSession() = runTest {
+        val sessionRepository = RecordingSessionRepository(credentials = sampleCredentials())
+        val repository = authRepository(
             sessionRepository = sessionRepository,
-            json = json,
+            engine = MockEngine {
+                jsonResponse(
+                    HttpStatusCode.OK,
+                    """{"success":true,"message":"ok","code":1,"data":{},"errors":[]}""",
+                )
+            },
         )
 
         val result = repository.logout()
@@ -135,6 +124,67 @@ class DefaultAuthRepositoryTest {
         assertIs<AppResult.Success<Unit>>(result)
         assertTrue(sessionRepository.logoutCalled)
     }
+
+    @Test
+    fun logout_apiFailure_keepsLocalSession() = runTest {
+        val sessionRepository = RecordingSessionRepository(credentials = sampleCredentials())
+        val repository = authRepository(
+            sessionRepository = sessionRepository,
+            engine = MockEngine {
+                jsonResponse(
+                    HttpStatusCode.GatewayTimeout,
+                    """{"success":false,"message":"timeout","code":504,"data":null,"errors":[]}""",
+                )
+            },
+        )
+
+        val result = repository.logout()
+
+        assertIs<AppResult.Failure>(result)
+        assertEquals(false, sessionRepository.logoutCalled)
+        assertEquals("refresh-local", sessionRepository.credentials?.refreshToken)
+    }
+
+    @Test
+    fun logout_withoutRefreshToken_clearsLocalSessionWithoutHttp() = runTest {
+        val sessionRepository = RecordingSessionRepository(credentials = null)
+        var apiCalled = false
+        val repository = authRepository(
+            sessionRepository = sessionRepository,
+            engine = MockEngine {
+                apiCalled = true
+                jsonResponse(
+                    HttpStatusCode.OK,
+                    """{"success":true,"message":"ok","code":1,"data":{},"errors":[]}""",
+                )
+            },
+        )
+
+        val result = repository.logout()
+
+        assertIs<AppResult.Success<Unit>>(result)
+        assertTrue(sessionRepository.logoutCalled)
+        assertEquals(false, apiCalled)
+    }
+
+    private fun sampleCredentials() = SessionCredentials(
+        accessToken = "a",
+        refreshToken = "refresh-local",
+        accessTokenExpiresAt = Instant.parse("2026-01-01T13:00:00Z"),
+    )
+
+    private fun authRepository(
+        sessionRepository: RecordingSessionRepository,
+        engine: MockEngine,
+    ) = DefaultAuthRepository(
+        authApi = AuthApi(
+            client = createAuthTestClient(engine),
+            environment = environment,
+            executor = executor,
+        ),
+        sessionRepository = sessionRepository,
+        json = json,
+    )
 
     private class RecordingSessionRepository(
         var credentials: SessionCredentials? = null,

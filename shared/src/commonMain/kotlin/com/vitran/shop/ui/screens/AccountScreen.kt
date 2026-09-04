@@ -50,6 +50,8 @@ fun AccountScreen(
     onOpenAdminTaxonomy: () -> Unit = {},
     onOpenAdminContent: () -> Unit = {},
     onSignOut: () -> Unit = {},
+    isSigningOut: Boolean = false,
+    signOutError: String? = null,
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     onProductOpen: (
         id: String,
@@ -139,6 +141,10 @@ fun AccountScreen(
                 AccountSellerSection(onCreateStore = onCreateStore)
             }
         }
-        AccountSignOutRow(onClick = onSignOut)
+        AccountSignOutRow(
+            onClick = onSignOut,
+            isSigningOut = isSigningOut,
+            errorMessage = signOutError,
+        )
     }
 }

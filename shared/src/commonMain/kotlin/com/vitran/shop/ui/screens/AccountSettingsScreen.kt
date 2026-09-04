@@ -26,6 +26,8 @@ fun AccountSettingsScreen(
     onOpenSaved: () -> Unit,
     onOpenProfile: () -> Unit,
     onSignOut: () -> Unit,
+    isSigningOut: Boolean = false,
+    signOutError: String? = null,
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -47,6 +49,8 @@ fun AccountSettingsScreen(
             onPrivacyChange = { privacy = it },
             onAccountInfoClick = onOpenProfile,
             onSignOut = onSignOut,
+            isSigningOut = isSigningOut,
+            signOutError = signOutError,
         )
         ProfilePreferencesSection(
             profile = profile,

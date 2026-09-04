@@ -9,6 +9,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.vitran.shop.core.domain.error.AppError
+import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.feature.auth.domain.error.AuthError
+import com.vitran.shop.feature.auth.domain.error.toAuthError
 import com.vitran.shop.feature.auth.domain.usecase.LogoutUseCase
 import com.vitran.shop.ui.screens.AccountCitiesScreen
 import com.vitran.shop.ui.screens.AccountCityCreateScreen
@@ -52,7 +56,11 @@ import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.product.MockProductCatalog
 import com.vitran.shop.ui.sections.product.productSlug
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.account_sign_out_error_generic
+import vitranshop.shared.generated.resources.account_sign_out_error_network
 
 /**
  * Sole place that maps [Route] → screen UI via Navigation 3 [NavDisplay].
@@ -65,13 +73,29 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
 ) {
     var passwordResetNotice by remember { mutableStateOf(false) }
+    var signingOut by remember { mutableStateOf(false) }
+    var signOutError by remember { mutableStateOf<String?>(null) }
     val logoutUseCase: LogoutUseCase = koinInject()
     val signOutScope = rememberCoroutineScope()
-    val onSignOut: () -> Unit = {
+    val signOutNetworkError = stringResource(Res.string.account_sign_out_error_network)
+    val signOutGenericError = stringResource(Res.string.account_sign_out_error_generic)
+    val onSignOut: () -> Unit = onSignOut@{
+        if (signingOut) return@onSignOut
+        signingOut = true
+        signOutError = null
         signOutScope.launch {
-            logoutUseCase()
+            when (val result = logoutUseCase()) {
+                is AppResult.Success -> navigator.navigate(Route.Login)
+                is AppResult.Failure -> {
+                    signOutError = mapSignOutError(
+                        error = result.error,
+                        networkMessage = signOutNetworkError,
+                        genericMessage = signOutGenericError,
+                    )
+                    signingOut = false
+                }
+            }
         }
-        navigator.navigate(Route.Login)
     }
     val onFooterLink: (SiteFooterLinkId) -> Unit = { id ->
         navigator.handleSiteFooterLink(navState, id)
@@ -139,6 +163,8 @@ fun AppNavHost(
                     onOpenAdminTaxonomy = { navigator.push(Route.AdminTaxonomy) },
                     onOpenAdminContent = { navigator.push(Route.AdminStaticPages) },
                     onSignOut = onSignOut,
+                    isSigningOut = signingOut,
+                    signOutError = signOutError,
                     onProductOpen = { id, title, imageUrl, storeName, priceLabel ->
                         val product = MockProductCatalog.resolve(
                             id = id,
@@ -189,6 +215,8 @@ fun AppNavHost(
                     onOpenSaved = { navigator.navigate(Route.Saved) },
                     onOpenProfile = { navigator.openAccountDest(navState, AccountDest.Profile) },
                     onSignOut = onSignOut,
+                    isSigningOut = signingOut,
+                    signOutError = signOutError,
                     onFooterLinkClick = onFooterLink,
                 )
             }
@@ -427,6 +455,15 @@ fun AppNavHost(
             }
         },
     )
+}
+
+private fun mapSignOutError(
+    error: AppError,
+    networkMessage: String,
+    genericMessage: String,
+): String = when (error.toAuthError()) {
+    is AuthError.Network -> networkMessage
+    else -> error.message?.takeIf { it.isNotBlank() } ?: genericMessage
 }
 
 private fun Navigator.handleSiteFooterLink(state: NavigationState, id: SiteFooterLinkId) {

@@ -60,7 +60,7 @@ internal class AuthApi(
     suspend fun logout(request: LogoutRequestDto): AppResult<Unit> =
         executor.executeEmpty {
             client.post(environment.apiUrl("/auth/logout")) {
-                authMode(AuthMode.None)
+                authMode(AuthMode.Required)
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }

@@ -110,8 +110,12 @@ class LogoutUseCase(
     private val authRepository: AuthRepository,
     private val authFlowStateHolder: AuthFlowStateHolder,
 ) {
-    suspend operator fun invoke(): AppResult<Unit> {
-        authFlowStateHolder.clear()
-        return authRepository.logout()
-    }
+    suspend operator fun invoke(): AppResult<Unit> =
+        when (val result = authRepository.logout()) {
+            is AppResult.Success -> {
+                authFlowStateHolder.clear()
+                result
+            }
+            is AppResult.Failure -> result
+        }
 }
