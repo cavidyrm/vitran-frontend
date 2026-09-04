@@ -301,7 +301,7 @@ fun AuthOtpForm(
         }
         AuthPrimaryButton(
             label = verifyLabel,
-            enabled = code.length == 6 && phase != OtpUiPhase.Success && phase != OtpUiPhase.Verifying,
+            enabled = code.length == 6 && phase != OtpUiPhase.Success,
             loading = phase == OtpUiPhase.Verifying,
             onClick = {
                 if (liveVerification) onVerify(code) else verifyRequestId++

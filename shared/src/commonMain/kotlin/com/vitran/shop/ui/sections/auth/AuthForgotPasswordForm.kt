@@ -120,7 +120,7 @@ fun AuthForgotPasswordForm(
                     onClearFieldError("phone")
                 },
                 imeAction = ImeAction.Go,
-                onSubmit = { if (canSubmit) onSendCode(fullMobile) },
+                onSubmit = { if (canSubmit && !isSubmitting) onSendCode(fullMobile) },
                 errorMessage = when {
                     showInvalid -> stringResource(Res.string.auth_mobile_invalid)
                     else -> phoneError
@@ -138,7 +138,7 @@ fun AuthForgotPasswordForm(
 
             AuthPrimaryButton(
                 label = stringResource(Res.string.auth_forgot_send_code),
-                enabled = canSubmit && !isSubmitting,
+                enabled = canSubmit,
                 loading = isSubmitting,
                 onClick = { onSendCode(fullMobile) },
             )

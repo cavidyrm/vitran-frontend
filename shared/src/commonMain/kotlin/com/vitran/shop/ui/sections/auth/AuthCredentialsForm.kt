@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +62,7 @@ import com.vitran.shop.ui.theme.ShopPurpleDark
 import com.vitran.shop.ui.theme.SurfaceWhite
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranShapes
+import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 import org.jetbrains.compose.resources.painterResource
@@ -229,7 +231,7 @@ fun AuthCredentialsForm(
                     } else {
                         ImeAction.Go
                     },
-                    onSubmit = { if (canSubmit) onSubmit(credentials) },
+                    onSubmit = { if (canSubmit && !isSubmitting) onSubmit(credentials) },
                     errorMessage = passwordError,
                 )
                 if (mode == AuthMode.Login) {
@@ -261,7 +263,7 @@ fun AuthCredentialsForm(
                         inviteCode = it.take(32)
                         onClearFieldError("referral_code")
                     },
-                    onSubmit = { if (canSubmit) onSubmit(credentials) },
+                    onSubmit = { if (canSubmit && !isSubmitting) onSubmit(credentials) },
                     errorMessage = referralError,
                 )
             }
@@ -279,7 +281,8 @@ fun AuthCredentialsForm(
 
             AuthPrimaryButton(
                 label = primaryLabel,
-                enabled = canSubmit && !isSubmitting,
+                enabled = canSubmit,
+                loading = isSubmitting,
                 onClick = { onSubmit(credentials) },
                 modifier = Modifier.padding(top = VitranSpacing.sm),
             )
@@ -554,7 +557,8 @@ internal fun AuthPrimaryButton(
     val shape = RoundedCornerShape(VitranRadius.small)
     val interactive = enabled && !loading
     val targetBg = when {
-        !interactive -> AuthTokens.DisabledCtaFill
+        loading -> MaterialTheme.colorScheme.primary
+        !enabled -> AuthTokens.DisabledCtaFill
         pressed -> ShopPurpleDark
         hovered -> ShopPurpleDark.copy(alpha = 0.92f)
         else -> MaterialTheme.colorScheme.primary
@@ -574,7 +578,7 @@ internal fun AuthPrimaryButton(
         animationSpec = tween(140),
         label = "authCtaElevation",
     )
-    val labelColor = if (interactive) {
+    val labelColor = if (enabled) {
         MaterialTheme.colorScheme.onPrimary
     } else {
         AuthTokens.DisabledCtaLabel
@@ -605,16 +609,24 @@ internal fun AuthPrimaryButton(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = label,
-            color = labelColor,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = (-0.2).sp,
-                lineHeight = 20.sp,
-            ),
-        )
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(VitranSize.iconSmall),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
+        } else {
+            Text(
+                text = label,
+                color = labelColor,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = (-0.2).sp,
+                    lineHeight = 20.sp,
+                ),
+            )
+        }
     }
 }
 
