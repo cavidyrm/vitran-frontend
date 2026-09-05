@@ -7,11 +7,8 @@ import com.vitran.shop.ui.sections.auth.isValidAuthPassword
 import com.vitran.shop.ui.sections.auth.isValidIranMobile
 import com.vitran.shop.ui.sections.auth.resetPasswordRulesOf
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -27,11 +24,8 @@ val appCoordinatorModule = module {
 class AppSessionCoordinator(
     private val sessionRepository: SessionRepository,
     private val accountRepository: AccountRepository,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob()),
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
 ) {
-    private val _sessionState = MutableStateFlow<SessionState>(SessionState.Restoring)
-    val sessionState: StateFlow<SessionState> = _sessionState.asStateFlow()
-
     private var started = false
 
     fun start() {
@@ -42,7 +36,6 @@ class AppSessionCoordinator(
         }
         scope.launch {
             sessionRepository.sessionState.collect { state ->
-                _sessionState.value = state
                 if (state == SessionState.Authenticated) {
                     accountRepository.refreshCurrentUser()
                 }

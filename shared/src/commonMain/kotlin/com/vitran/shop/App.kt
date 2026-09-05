@@ -2,22 +2,21 @@ package com.vitran.shop
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
-import com.vitran.shop.core.session.domain.SessionState
+import com.vitran.shop.core.session.repository.SessionRepository
 import com.vitran.shop.di.AppSessionCoordinator
 import com.vitran.shop.di.startVitranKoin
-import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
 import com.vitran.shop.ui.navigation.AppNavHost
 import com.vitran.shop.ui.navigation.BindBrowserNavigation
-import com.vitran.shop.ui.navigation.NavAuthUiState
 import com.vitran.shop.ui.navigation.Route
 import com.vitran.shop.ui.navigation.hidesChrome
 import com.vitran.shop.ui.navigation.initWebComposeResources
+import com.vitran.shop.ui.navigation.navAuthUiStateOf
 import com.vitran.shop.ui.navigation.rememberInitialRoute
 import com.vitran.shop.ui.navigation.rememberNavigationState
 import com.vitran.shop.ui.navigation.rememberNavigator
@@ -41,9 +40,10 @@ fun App() {
         appSessionCoordinator.start()
     }
 
-    val sessionState by appSessionCoordinator.sessionState.collectAsStateWithLifecycle()
+    val sessionRepository: SessionRepository = koinInject()
+    val sessionState by sessionRepository.sessionState.collectAsState()
     val accountRepository: AccountRepository = koinInject()
-    val currentUser by accountRepository.currentUserState.collectAsStateWithLifecycle()
+    val currentUser by accountRepository.currentUserState.collectAsState()
 
     VitranTheme {
         val startRoute = rememberInitialRoute()
@@ -51,14 +51,7 @@ fun App() {
         val navigator = rememberNavigator(navState)
         BindBrowserNavigation(navState = navState, navigator = navigator)
 
-        val authState = when (sessionState) {
-            SessionState.Restoring -> NavAuthUiState.SignedOut
-            SessionState.Anonymous -> NavAuthUiState.SignedOut
-            SessionState.Authenticated -> {
-                val avatar = (currentUser as? CurrentUserState.Available)?.user?.username
-                NavAuthUiState.SignedIn(avatarUrl = avatar)
-            }
-        }
+        val authState = navAuthUiStateOf(sessionState, currentUser)
 
         AppShell(
             currentRoute = navState.chromeRoute,

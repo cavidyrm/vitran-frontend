@@ -66,6 +66,7 @@ fun AppSideNav(
     val accountLabel = stringResource(Res.string.nav_account)
     val savedSignInA11y = stringResource(Res.string.nav_saved_sign_in_a11y)
     val isLoggedIn = authState is NavAuthUiState.SignedIn
+    val showSignIn = authState is NavAuthUiState.SignedOut
 
     Column(
         modifier = modifier
@@ -105,8 +106,16 @@ fun AppSideNav(
                 showTooltip = true,
                 tooltipText = offersLabel,
             )
-            if (!isLoggedIn) {
-                NavItemButton(
+            when {
+                isLoggedIn -> NavItemButton(
+                    painter = painterResource(Res.drawable.ic_nav_saved),
+                    contentDescription = savedLabel,
+                    selected = currentRoute == Route.Saved,
+                    onClick = { onNavigate(Route.Saved) },
+                    showTooltip = true,
+                    tooltipText = savedLabel,
+                )
+                showSignIn -> NavItemButton(
                     painter = painterResource(Res.drawable.ic_nav_saved),
                     contentDescription = savedSignInA11y,
                     selected = false,
@@ -115,48 +124,50 @@ fun AppSideNav(
                     showTooltip = true,
                     tooltipText = savedLabel,
                 )
-            } else {
-                NavItemButton(
+                else -> NavItemButton(
                     painter = painterResource(Res.drawable.ic_nav_saved),
                     contentDescription = savedLabel,
-                    selected = currentRoute == Route.Saved,
-                    onClick = { onNavigate(Route.Saved) },
-                    showTooltip = true,
+                    selected = false,
+                    enabled = false,
+                    onClick = {},
+                    showTooltip = false,
                     tooltipText = savedLabel,
                 )
             }
         }
 
-        if (!isLoggedIn) {
-            SignInProfileButton(
+        when {
+            showSignIn -> SignInProfileButton(
                 label = signInLabel,
                 onClick = onLoginRequest,
             )
-        } else {
-            val interactionSource = remember { MutableInteractionSource() }
-            val hovered by interactionSource.collectIsHoveredAsState()
-            NavTooltipOverlay(
-                tooltipText = accountLabel,
-                anchorHovered = hovered,
-                enabled = true,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .hoverable(interactionSource)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null,
-                            onClick = { onNavigate(Route.Account) },
-                        )
-                        .padding(VitranSpacing.sm),
-                    contentAlignment = Alignment.Center,
+            isLoggedIn -> {
+                val interactionSource = remember { MutableInteractionSource() }
+                val hovered by interactionSource.collectIsHoveredAsState()
+                NavTooltipOverlay(
+                    tooltipText = accountLabel,
+                    anchorHovered = hovered,
+                    enabled = true,
                 ) {
-                    avatarRenderer.Avatar(
-                        avatarUrl = authState.avatarUrl,
-                        modifier = Modifier.size(VitranSize.avatarMedium),
-                    )
+                    Box(
+                        modifier = Modifier
+                            .hoverable(interactionSource)
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                onClick = { onNavigate(Route.Account) },
+                            )
+                            .padding(VitranSpacing.sm),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        avatarRenderer.Avatar(
+                            avatarUrl = (authState as NavAuthUiState.SignedIn).avatarUrl,
+                            modifier = Modifier.size(VitranSize.avatarMedium),
+                        )
+                    }
                 }
             }
+            else -> Spacer(Modifier.height(VitranSize.profileItemHeight))
         }
     }
 }

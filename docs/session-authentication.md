@@ -110,8 +110,8 @@ interface SecureSessionStorage {
 |----------|----------------|----------------------|
 | Android | `AndroidSecureSessionStorage` (EncryptedSharedPreferences) | Yes |
 | iOS | `IosSecureSessionStorage` (KVault Keychain, ≥1.12.0) | Yes |
-| JVM Desktop | `InMemorySecureSessionStorage` | Dev-only fallback |
-| JS / Wasm | `InMemorySecureSessionStorage` | No persistent auth — documented gap |
+| JVM Desktop | `JvmSecureSessionStorage` (AES-GCM file) | Yes (not OS Keychain) |
+| JS / Wasm | `WebSecureSessionStorage` (`localStorage`) | Persist across refresh; XSS residual vs Cookie/BFF |
 
 `FakeSecureSessionStorage` in `:core:platform` tests.
 

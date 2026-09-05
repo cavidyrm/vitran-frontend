@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -66,6 +67,7 @@ fun AppBottomNav(
     val signInLabel = stringResource(Res.string.nav_sign_in)
     val savedSignInA11y = stringResource(Res.string.nav_saved_sign_in_a11y)
     val isLoggedIn = authState is NavAuthUiState.SignedIn
+    val showSignIn = authState is NavAuthUiState.SignedOut
 
     Row(
         modifier = modifier
@@ -110,26 +112,33 @@ fun AppBottomNav(
             showTooltip = false,
         )
 
-        if (!isLoggedIn) {
-            NavItemButton(
-                painter = painterResource(Res.drawable.ic_nav_saved),
-                contentDescription = savedSignInA11y,
-                selected = false,
-                onClick = onLoginRequest,
-                showTooltip = false,
-            )
-        } else {
-            NavItemButton(
+        when {
+            isLoggedIn -> NavItemButton(
                 painter = painterResource(Res.drawable.ic_nav_saved),
                 contentDescription = savedLabel,
                 selected = currentRoute == Route.Saved,
                 onClick = { onNavigate(Route.Saved) },
                 showTooltip = false,
             )
+            showSignIn -> NavItemButton(
+                painter = painterResource(Res.drawable.ic_nav_saved),
+                contentDescription = savedSignInA11y,
+                selected = false,
+                onClick = onLoginRequest,
+                showTooltip = false,
+            )
+            else -> NavItemButton(
+                painter = painterResource(Res.drawable.ic_nav_saved),
+                contentDescription = savedLabel,
+                selected = false,
+                enabled = false,
+                onClick = {},
+                showTooltip = false,
+            )
         }
 
-        if (!isLoggedIn) {
-            Box(
+        when {
+            showSignIn -> Box(
                 modifier = Modifier
                     .size(VitranSize.touchTarget)
                     .clickable(
@@ -146,8 +155,7 @@ fun AppBottomNav(
                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = VitranOpacity.INACTIVE),
                 )
             }
-        } else {
-            Box(
+            isLoggedIn -> Box(
                 modifier = Modifier
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
@@ -158,10 +166,11 @@ fun AppBottomNav(
                 contentAlignment = Alignment.Center,
             ) {
                 avatarRenderer.Avatar(
-                    avatarUrl = authState.avatarUrl,
+                    avatarUrl = (authState as NavAuthUiState.SignedIn).avatarUrl,
                     modifier = Modifier.size(VitranSize.avatarSmall),
                 )
             }
+            else -> Spacer(Modifier.size(VitranSize.touchTarget))
         }
     }
 }

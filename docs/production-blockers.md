@@ -23,16 +23,16 @@ Do **not** silently invent missing API contracts in client code. Prefer disable/
 
 ## P0 — Release blockers (conditional where noted)
 
-### P12-001 — Web bearer tokens in-memory only
+### P12-001 — Web bearer tokens in localStorage (XSS residual)
 
-- **severity:** P0
+- **severity:** P2 (was P0; `localStorage` persist landed)
 - **owner:** CLIENT / PRODUCT
 - **affected:** Wasm / JS authenticated Web
-- **description:** Access/refresh tokens use `InMemorySecureSessionStorage`. Full page refresh or tab restart clears the session. `localStorage` for bearers is intentionally disallowed.
-- **evidence:** Gap 10; `PlatformModule.wasmJs.kt` / `PlatformModule.js.kt`; [session-authentication.md](session-authentication.md); [security-production-review.md](security-production-review.md)
-- **release impact:** Authenticated Web cannot be claimed production-complete; users appear logged out after reload.
-- **required resolution:** Cookie/BFF or other durable Web session model **or** PRODUCT accepts Web as anonymous/browse-only and removes sticky-auth claims.
-- **workaround:** Re-login each browser session; anonymous browse + Room OPFS cache (when hosting allows) may still work.
+- **description:** Access/refresh tokens persist in `localStorage` via `WebSecureSessionStorage`, so a full page refresh restores the session. Browser XSS can still read bearers; Cookie/BFF remains the durable-secure model.
+- **evidence:** Gap 10; `WebSecureSessionStorage.kt`; `PlatformModule.wasmJs.kt` / `PlatformModule.js.kt`; [session-authentication.md](session-authentication.md); [security-production-review.md](security-production-review.md)
+- **release impact:** Authenticated Web survives reload. Residual XSS risk until httpOnly cookie session.
+- **required resolution:** Cookie/BFF or equivalent httpOnly session for production-grade Web auth.
+- **workaround:** CSP + HTML sanitizer; accept `localStorage` until BFF.
 
 ### P12-002 — Desktop secure storage (partially resolved)
 
@@ -418,7 +418,7 @@ Tracked outside the app repo; required for store/production ops even when client
 |--------|--------|------------------|
 | **Android** | **NO-GO** | Signing EXTERNAL; payment return / commercial gaps if advertised; store privacy EXTERNAL |
 | **iOS** | **NO-GO** | TEAM_ID empty; archive unverified; same commercial gaps |
-| **Web (Wasm)** | **NO-GO** | In-memory auth (P12-001); OPFS worker incomplete; payment return |
+| **Web (Wasm)** | **NO-GO** | OPFS worker incomplete; payment return; localStorage XSS residual (P12-001 P2) |
 | **Desktop** | **NO-GO** | Packaging/signing EXTERNAL; commercial gaps (encrypted file store landed for tokens) |
 
 **Hard rule:** No target with an open **P0** for a feature it advertises is marked **GO**.

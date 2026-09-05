@@ -4,7 +4,7 @@
 
 | Threat | Mitigation |
 |--------|------------|
-| Credential theft | Platform secure storage; never Room/prefs/localStorage for tokens |
+| Credential theft | Platform secure storage on native; Web uses `localStorage` (XSS residual, product-accepted until Cookie/BFF); never Room |
 | Token leakage in logs | `LoggingSanitizer`; release logging gated |
 | API-key leakage | Ephemeral UI; no Room/analytics; clipboard warning |
 | Payment spoofing | Never trust return params; refresh subscription |
@@ -23,7 +23,7 @@
 | Android | EncryptedSharedPreferences + Keystore; backup exclusions |
 | iOS | KVault → Keychain |
 | Desktop | OS-backed store (KVault/file encryption) — release gate |
-| Wasm/JS | In-memory only (intentional; no localStorage bearer) |
+| Wasm/JS | `WebSecureSessionStorage` (`localStorage`); XSS residual until Cookie/BFF |
 
 ## Network / TLS
 
@@ -79,4 +79,4 @@ Keys/passwords external (env / CI secrets). Never commit.
 
 ## Open blockers
 
-See [production-blockers.md](production-blockers.md) — Web auth persistence, payment return, currency, Boost `price_paid` trust, Desktop secure storage until verified.
+See [production-blockers.md](production-blockers.md) — Web `localStorage` XSS residual (P12-001), payment return, currency, Boost `price_paid` trust, Desktop secure storage until verified.

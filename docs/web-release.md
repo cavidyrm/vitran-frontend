@@ -17,8 +17,8 @@ Artifact: `webApp/build/dist/wasmJs/productionExecutable` (see Dockerfile).
 
 ## Credentials
 
-- Bearer tokens: **in-memory only** (no localStorage)
-- Authenticated Web is session-tab scoped — see production-blockers P12-001
+- Bearer tokens: `localStorage` via `WebSecureSessionStorage` (survives refresh)
+- Residual XSS: scripts on origin can read tokens — Cookie/BFF still preferred; see production-blockers P12-001
 
 ## Persistence
 

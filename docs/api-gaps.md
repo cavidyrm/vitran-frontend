@@ -174,10 +174,10 @@ Postman requests **without saved response examples** (15):
 
 | Field | Status |
 |-------|--------|
-| **Status** | Partially resolved (Desktop); Open (Web) |
-| **Issue** | JS/Wasm use `InMemorySecureSessionStorage` — sessions lost on restart. Desktop now uses AES-GCM encrypted files under the user config directory (`JvmSecureSessionStorage`). |
-| **Client impact** | Web users must re-login after refresh. Desktop credentials persist encrypted at rest. |
-| **Phase 12 handling** | Web: intentional no localStorage bearer (P12-001). Desktop: encrypted file store (not OS Keychain yet). |
+| **Status** | Partially resolved (Desktop encrypted file; Web `localStorage`) |
+| **Issue** | JS/Wasm persist bearers in `localStorage` (`WebSecureSessionStorage`) — XSS can steal tokens. Desktop uses AES-GCM files under the user config directory (`JvmSecureSessionStorage`). |
+| **Client impact** | Web session survives refresh. XSS residual until Cookie/BFF. Desktop credentials persist encrypted at rest. |
+| **Phase 12 handling** | Web: product-accepted `localStorage` persist (P12-001 residual XSS). Desktop: encrypted file store (not OS Keychain yet). |
 
 ---
 

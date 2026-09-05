@@ -62,6 +62,7 @@ kotlin {
         }
         wasmJsMain.dependencies {
             implementation(project(":core:database"))
+            implementation(libs.kotlinx.browser)
         }
         jsMain.dependencies {
             implementation(project(":core:database"))

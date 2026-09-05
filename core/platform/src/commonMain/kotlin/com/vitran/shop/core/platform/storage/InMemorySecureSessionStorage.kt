@@ -4,7 +4,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * Development / Web / Desktop fallback — not production-secure for refresh tokens.
+ * In-process fallback for tests and platforms without durable storage.
+ * Not production-secure for refresh tokens.
  */
 class InMemorySecureSessionStorage : SecureSessionStorage {
     private val mutex = Mutex()
