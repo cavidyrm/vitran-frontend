@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -58,6 +59,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vitran.shop.feature.auth.presentation.register.ReferralCodeCheckUiStatus
 import com.vitran.shop.ui.theme.ShopPurpleDark
 import com.vitran.shop.ui.theme.SurfaceWhite
 import com.vitran.shop.ui.theme.VitranRadius
@@ -71,9 +73,13 @@ import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.auth_benefit
 import vitranshop.shared.generated.resources.auth_create_account_cta
 import vitranshop.shared.generated.resources.auth_forgot_password
+import vitranshop.shared.generated.resources.auth_invite_code_check_failed
+import vitranshop.shared.generated.resources.auth_invite_code_checking
+import vitranshop.shared.generated.resources.auth_invite_code_invalid
 import vitranshop.shared.generated.resources.auth_invite_code_label
 import vitranshop.shared.generated.resources.auth_invite_code_placeholder
 import vitranshop.shared.generated.resources.auth_invite_code_toggle
+import vitranshop.shared.generated.resources.auth_invite_code_valid
 import vitranshop.shared.generated.resources.auth_legal_after
 import vitranshop.shared.generated.resources.auth_legal_before
 import vitranshop.shared.generated.resources.auth_legal_mid
@@ -117,6 +123,8 @@ fun AuthCredentialsForm(
     phoneError: String? = null,
     passwordError: String? = null,
     referralError: String? = null,
+    referralCheck: ReferralCodeCheckUiStatus = ReferralCodeCheckUiStatus.Idle,
+    onInviteCodeChange: (String) -> Unit = {},
     onClearFieldError: (String) -> Unit = {},
 ) {
     var nationalMobile by remember { mutableStateOf("") }
@@ -260,11 +268,14 @@ fun AuthCredentialsForm(
                     onExpandedChange = { inviteExpanded = it },
                     inviteCode = inviteCode,
                     onInviteCodeChange = {
-                        inviteCode = it.take(32)
+                        val next = it.take(32)
+                        inviteCode = next
                         onClearFieldError("referral_code")
+                        onInviteCodeChange(next)
                     },
                     onSubmit = { if (canSubmit && !isSubmitting) onSubmit(credentials) },
                     errorMessage = referralError,
+                    referralCheck = referralCheck,
                 )
             }
 
@@ -428,6 +439,7 @@ private fun AuthInviteCodeSection(
     onInviteCodeChange: (String) -> Unit,
     onSubmit: () -> Unit,
     errorMessage: String? = null,
+    referralCheck: ReferralCodeCheckUiStatus = ReferralCodeCheckUiStatus.Idle,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         if (!expanded) {
@@ -456,6 +468,7 @@ private fun AuthInviteCodeSection(
                 onValueChange = onInviteCodeChange,
                 onSubmit = onSubmit,
                 errorMessage = errorMessage,
+                referralCheck = referralCheck,
             )
         }
     }
@@ -467,11 +480,47 @@ private fun AuthInviteCodeField(
     onValueChange: (String) -> Unit,
     onSubmit: () -> Unit,
     errorMessage: String? = null,
+    referralCheck: ReferralCodeCheckUiStatus = ReferralCodeCheckUiStatus.Idle,
 ) {
     var focused by remember { mutableStateOf(false) }
-    val isError = !errorMessage.isNullOrBlank()
+    val helperText: String?
+    val helperColor: Color
+    val isError: Boolean
+    when {
+        referralCheck is ReferralCodeCheckUiStatus.Invalid -> {
+            helperText = stringResource(Res.string.auth_invite_code_invalid)
+            helperColor = AuthTokens.OtpError
+            isError = true
+        }
+        !errorMessage.isNullOrBlank() -> {
+            helperText = errorMessage
+            helperColor = AuthTokens.OtpError
+            isError = true
+        }
+        referralCheck is ReferralCodeCheckUiStatus.Valid -> {
+            helperText = stringResource(Res.string.auth_invite_code_valid)
+            helperColor = AuthTokens.OtpSuccess
+            isError = false
+        }
+        referralCheck is ReferralCodeCheckUiStatus.Checking -> {
+            helperText = stringResource(Res.string.auth_invite_code_checking)
+            helperColor = AuthTokens.Muted
+            isError = false
+        }
+        referralCheck is ReferralCodeCheckUiStatus.Error -> {
+            helperText = stringResource(Res.string.auth_invite_code_check_failed)
+            helperColor = AuthTokens.Muted
+            isError = false
+        }
+        else -> {
+            helperText = null
+            helperColor = AuthTokens.Muted
+            isError = false
+        }
+    }
     val borderColor = when {
         isError -> AuthTokens.OtpError
+        referralCheck is ReferralCodeCheckUiStatus.Valid -> AuthTokens.OtpSuccess
         focused -> AuthTokens.FieldBorderFocus
         else -> AuthTokens.FieldBorder
     }
@@ -529,10 +578,10 @@ private fun AuthInviteCodeField(
                 },
             )
         }
-        if (isError) {
+        if (helperText != null) {
             Text(
-                text = errorMessage.orEmpty(),
-                color = AuthTokens.OtpError,
+                text = helperText,
+                color = helperColor,
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,

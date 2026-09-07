@@ -44,6 +44,7 @@ val authModule = module {
     viewModel {
         RegisterViewModel(
             registerUseCase = get(),
+            referralCodeValidator = get(),
             validatePhone = get(named("validatePhone")),
             validatePassword = get(named("validateAuthPassword")),
         )

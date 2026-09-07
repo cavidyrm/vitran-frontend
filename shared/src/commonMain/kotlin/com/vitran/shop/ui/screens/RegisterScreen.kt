@@ -51,6 +51,8 @@ fun RegisterScreen(
             phoneError = uiState.fieldErrors["phone"],
             passwordError = uiState.fieldErrors["password"],
             referralError = uiState.fieldErrors["referral_code"],
+            referralCheck = uiState.referralCheck,
+            onInviteCodeChange = viewModel::onInviteCodeChanged,
             onClearFieldError = viewModel::clearFieldError,
         )
     }

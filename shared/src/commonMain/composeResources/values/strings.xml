@@ -29,6 +29,10 @@
     <string name="auth_invite_code_toggle">کد دعوت دارید؟</string>
     <string name="auth_invite_code_label">کد دعوت</string>
     <string name="auth_invite_code_placeholder">کد دعوت را وارد کنید</string>
+    <string name="auth_invite_code_checking">در حال بررسی…</string>
+    <string name="auth_invite_code_valid">کد دعوت معتبر است</string>
+    <string name="auth_invite_code_invalid">کد دعوت معتبر نیست</string>
+    <string name="auth_invite_code_check_failed">نتوانستیم کد دعوت را بررسی کنیم</string>
     <string name="auth_forgot_password">رمز عبور را فراموش کرده‌اید؟</string>
     <string name="auth_forgot_subtitle">کد تأیید به شماره موبایل شما ارسال می‌شود</string>
     <string name="auth_forgot_send_code">ارسال کد</string>

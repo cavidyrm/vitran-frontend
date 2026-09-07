@@ -3,6 +3,7 @@ package com.vitran.shop.di
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
 import com.vitran.shop.core.session.domain.SessionState
 import com.vitran.shop.core.session.repository.SessionRepository
+import com.vitran.shop.feature.auth.domain.ReferralCodeValidator
 import com.vitran.shop.ui.sections.auth.isValidAuthPassword
 import com.vitran.shop.ui.sections.auth.isValidIranMobile
 import com.vitran.shop.ui.sections.auth.resetPasswordRulesOf
@@ -15,6 +16,7 @@ import org.koin.dsl.module
 
 val appCoordinatorModule = module {
     single { AppSessionCoordinator(get(), get()) }
+    single<ReferralCodeValidator> { ReferralRepositoryCodeValidator(get()) }
 
     single(named("validatePhone")) { { mobile: String -> isValidIranMobile(mobile) } }
     single(named("validateAuthPassword")) { { password: String -> isValidAuthPassword(password) } }

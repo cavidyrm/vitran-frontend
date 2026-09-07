@@ -92,7 +92,7 @@ Unknown keys ignored. Wrong types do not coerce (`"yes"` ≠ true). No `JsonElem
 - `ApplyReferralCreditUseCase`: available only; Free/Starter eligibility centralized; POST no auto-retry; refresh subscription + profile; no local +30 days
 - Share via `ShareManager`
 - Profile cache user-scoped; clears on logout
-- Register still accepts optional `referral_code` without live prevalidation (avoids auth→seller dep)
+- Register live-validates invite code via `GET /referrals/{code}` (debounced, in-flight cancelled). Invalid is a warning and does not block submit. Auth uses `ReferralCodeValidator` port — no auth→seller dependency.
 
 ## 30–32. Invalidation, logout, privacy
 
