@@ -5,10 +5,12 @@ import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.session.data.remote.TokenRefreshRemoteDataSource
 import com.vitran.shop.core.session.domain.SessionCredentials
+import com.vitran.shop.core.session.domain.SessionState
 import com.vitran.shop.core.session.repository.SessionRepository
 import com.vitran.shop.core.session.time.AppClock
 import com.vitran.shop.core.session.time.TokenExpirationPolicy
 import io.ktor.client.statement.HttpResponse
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -24,6 +26,7 @@ internal class DefaultTokenRefreshCoordinator(
         when (authMode) {
             AuthMode.None -> return AppResult.Success(null)
             AuthMode.Optional -> {
+                awaitRestored()
                 val current = sessionRepository.readCredentials()
                     ?: return AppResult.Success(null)
                 if (isExpiredOrNearExpiry(current)) {
@@ -37,6 +40,7 @@ internal class DefaultTokenRefreshCoordinator(
                 return AppResult.Success(current.accessToken)
             }
             AuthMode.Required -> {
+                awaitRestored()
                 val current = sessionRepository.readCredentials()
                     ?: return AppResult.Failure(
                         AppError.Authentication.SessionExpired(message = "Authentication required"),
@@ -56,6 +60,7 @@ internal class DefaultTokenRefreshCoordinator(
     }
 
     override suspend fun refreshIfNeeded(force: Boolean): RefreshOutcome {
+        awaitRestored()
         val current = sessionRepository.readCredentials() ?: return RefreshOutcome.TerminalFailure
         if (!force && !isExpiredOrNearExpiry(current)) {
             return RefreshOutcome.Success(current)
@@ -89,6 +94,10 @@ internal class DefaultTokenRefreshCoordinator(
         refreshMutex.withLock {
             sessionRepository.invalidateSession()
         }
+    }
+
+    private suspend fun awaitRestored() {
+        sessionRepository.sessionState.first { it != SessionState.Restoring }
     }
 
     private fun isExpiredOrNearExpiry(credentials: SessionCredentials): Boolean {

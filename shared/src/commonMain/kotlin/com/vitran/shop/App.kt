@@ -1,12 +1,18 @@
 package com.vitran.shop
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
+import com.vitran.shop.core.session.domain.SessionState
 import com.vitran.shop.core.session.repository.SessionRepository
 import com.vitran.shop.di.AppSessionCoordinator
 import com.vitran.shop.di.startVitranKoin
@@ -60,7 +66,16 @@ fun App() {
             onLoginRequest = { navigator.push(Route.Login) },
             hideChrome = navState.currentRoute.hidesChrome(),
         ) {
-            AppNavHost(navState = navState, navigator = navigator)
+            if (sessionState == SessionState.Restoring) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                AppNavHost(navState = navState, navigator = navigator)
+            }
         }
     }
 }

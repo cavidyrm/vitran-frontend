@@ -3,6 +3,7 @@ package com.vitran.shop.core.session.auth
 import com.vitran.shop.core.domain.auth.AuthMode
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.core.platform.storage.StoredSessionCredentials
 import com.vitran.shop.core.session.TestSecureSessionStorage
 import com.vitran.shop.core.session.data.CredentialStore
 import com.vitran.shop.core.session.data.SessionCredentialPersistence
@@ -12,16 +13,16 @@ import com.vitran.shop.core.session.domain.SessionState
 import com.vitran.shop.core.session.repository.DefaultSessionRepository
 import com.vitran.shop.core.session.repository.SessionRoleCache
 import com.vitran.shop.core.session.time.FakeAppClock
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -89,6 +90,7 @@ class TokenRefreshCoordinatorTest {
 
     @Test
     fun requiredAuthMode_withoutCredentials_failsFast() = runTest {
+        sessionRepository.restore()
         val coordinator = DefaultTokenRefreshCoordinator(
             sessionRepository,
             CountingRefreshRemote(AppResult.Success(freshCredentials("a", "r"))),
@@ -99,6 +101,33 @@ class TokenRefreshCoordinatorTest {
 
         assertIs<AppResult.Failure>(result)
         assertIs<AppError.Authentication.SessionExpired>(result.error)
+    }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun requiredAuthMode_waitsForRestoreThenSucceeds() = runTest {
+        storage.writeCredentials(
+            StoredSessionCredentials(
+                accessToken = "access-restored",
+                refreshToken = "refresh-restored",
+                accessTokenExpiresAt = "2026-01-01T13:00:00Z",
+            ),
+        )
+        val coordinator = DefaultTokenRefreshCoordinator(
+            sessionRepository,
+            CountingRefreshRemote(AppResult.Success(freshCredentials("a", "r"))),
+            clock,
+        )
+
+        val deferred = async { coordinator.getValidAccessToken(AuthMode.Required) }
+        runCurrent()
+        assertTrue(deferred.isActive)
+        assertEquals(SessionState.Restoring, sessionRepository.sessionState.value)
+
+        sessionRepository.restore()
+
+        val result = deferred.await()
+        assertEquals("access-restored", result.getOrNull())
     }
 
     @Test
