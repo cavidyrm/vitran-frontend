@@ -1,7 +1,6 @@
 package com.vitran.shop.ui.screens
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,22 +46,6 @@ fun AccountUsersScreen(
     val isDesktop = LocalDesktopLayout.current
     var filtersExpanded by remember { mutableStateOf(isDesktop) }
 
-    LaunchedEffect(filters.search, filters.phone) {
-        viewModel.setPhoneFilter(filters.phone.ifBlank { filters.search })
-    }
-    LaunchedEffect(filters.role) {
-        viewModel.setRoleFilter(filters.role.toBackendRole())
-    }
-    LaunchedEffect(filters.status) {
-        viewModel.setActiveFilter(
-            when (filters.status) {
-                AccountUserStatus.Active -> true
-                AccountUserStatus.Inactive -> false
-                null -> null
-            },
-        )
-    }
-
     AccountPageShell(
         dest = AccountDest.Users,
         onDestClick = onDestClick,
@@ -76,7 +59,19 @@ fun AccountUsersScreen(
         AccountUsersHeader(onAddClick = {}, showAdd = false)
         AccountUsersFilters(
             filters = filters,
-            onFiltersChange = { filters = it },
+            onFiltersChange = { next ->
+                val previous = filters
+                filters = next
+                if (next.search != previous.search || next.phone != previous.phone) {
+                    viewModel.setPhoneFilter(next.phone.ifBlank { next.search })
+                }
+                if (next.role != previous.role) {
+                    viewModel.setRoleFilter(next.role.toBackendRole())
+                }
+                if (next.status != previous.status) {
+                    viewModel.setActiveFilter(next.status.toBackendActive())
+                }
+            },
             expanded = filtersExpanded,
             onExpandedChange = { filtersExpanded = it },
         )
@@ -118,5 +113,12 @@ private fun AccountUserRole?.toBackendRole(): String? =
         AccountUserRole.Seller -> "seller"
         AccountUserRole.Manager -> "admin"
         AccountUserRole.Support -> null
+        null -> null
+    }
+
+private fun AccountUserStatus?.toBackendActive(): Boolean? =
+    when (this) {
+        AccountUserStatus.Active -> true
+        AccountUserStatus.Inactive -> false
         null -> null
     }

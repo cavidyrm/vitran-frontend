@@ -76,6 +76,7 @@ class AdminUsersViewModel(
 
     fun setPhoneFilter(phone: String) {
         val query = _uiState.value.query.copy(phone = phone.trim().ifBlank { null }, page = 1)
+        if (query == _uiState.value.query) return
         _uiState.value = _uiState.value.withQuery(query)
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
@@ -85,23 +86,31 @@ class AdminUsersViewModel(
     }
 
     fun setRoleFilter(role: String?) {
+        val query = _uiState.value.query.copy(role = role?.ifBlank { null }, page = 1)
+        if (query == _uiState.value.query) return
         searchJob?.cancel()
-        loadInitial(_uiState.value.query.copy(role = role?.ifBlank { null }, page = 1))
+        loadInitial(query)
     }
 
     fun setActiveFilter(isActive: Boolean?) {
+        val query = _uiState.value.query.copy(isActive = isActive, page = 1)
+        if (query == _uiState.value.query) return
         searchJob?.cancel()
-        loadInitial(_uiState.value.query.copy(isActive = isActive, page = 1))
+        loadInitial(query)
     }
 
     fun setPage(page: Int) {
+        val query = _uiState.value.query.copy(page = page.coerceAtLeast(1))
+        if (query == _uiState.value.query) return
         searchJob?.cancel()
-        loadInitial(_uiState.value.query.copy(page = page.coerceAtLeast(1)))
+        loadInitial(query)
     }
 
     fun setPerPage(perPage: Int) {
+        val query = _uiState.value.query.copy(page = 1, perPage = perPage.coerceAtLeast(1))
+        if (query == _uiState.value.query) return
         searchJob?.cancel()
-        loadInitial(_uiState.value.query.copy(page = 1, perPage = perPage.coerceAtLeast(1)))
+        loadInitial(query)
     }
 
     fun loadNextPage() {
