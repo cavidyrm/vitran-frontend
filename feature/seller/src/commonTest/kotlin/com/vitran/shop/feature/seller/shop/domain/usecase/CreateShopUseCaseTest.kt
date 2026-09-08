@@ -37,7 +37,7 @@ class CreateShopUseCaseTest {
                         phone = "0912",
                         username = null,
                         email = null,
-                        roles = setOf(UserRole.Customer, UserRole.Seller),
+                        roles = setOf(UserRole.User),
                         verified = true,
                         isActive = true,
                         createdAt = Instant.parse("2026-01-01T00:00:00Z"),

@@ -51,7 +51,7 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 |--------|------|----------------|---------------|------------|-------------------|------|---------|
 | GET | `/api/v1/admin/users/2` | Admin — Users | Admin Users | `AdminUserApi` ✅ | `AdminUserRepository` ✅ | Required | Implemented |
 | PATCH | `/api/v1/admin/users/2` | Admin — Users | Admin Users | `AdminUserApi` ✅ | `AdminUserRepository` ✅ | Required | Implemented |
-| GET | `/api/v1/admin/users?per_page=20&role=customer&phone=0912&is_active=true` | Admin — Users | Admin Users | `AdminUserApi` ✅ | `AdminUserRepository` ✅ | Required | Implemented (page mode) |
+| GET | `/api/v1/admin/users?per_page=20&role=user&phone=0912&is_active=true` | Admin — Users | Admin Users | `AdminUserApi` ✅ | `AdminUserRepository` ✅ | Required | Implemented (page mode) |
 | POST | `/api/v1/auth/forgot-password` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
 | POST | `/api/v1/auth/login` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
 | POST | `/api/v1/auth/logout` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |

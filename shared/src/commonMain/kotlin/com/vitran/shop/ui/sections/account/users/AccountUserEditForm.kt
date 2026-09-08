@@ -76,7 +76,7 @@ internal fun AccountUserEditForm(
     onUserChange: (AccountUser) -> Unit,
     modifier: Modifier = Modifier,
     adminMode: Boolean = false,
-    availableRoles: List<AccountUserRole> = AccountUserRole.entries,
+    availableRoles: List<AccountUserRole> = AccountUserRole.entries.filter { it != AccountUserRole.SuperAdmin },
 ) {
     val isDesktop = LocalDesktopLayout.current
     AccountCard(modifier = modifier) {
@@ -244,15 +244,10 @@ private fun AccountUserRolesField(
     onSelectedChange: (List<AccountUserRole>) -> Unit,
     availableRoles: List<AccountUserRole>,
 ) {
-    val customerLabel = AccountUserRole.Customer.label()
-    val sellerLabel = AccountUserRole.Seller.label()
-    val managerLabel = AccountUserRole.Manager.label()
-    val supportLabel = AccountUserRole.Support.label()
     val roleLabels = mapOf(
-        AccountUserRole.Customer to customerLabel,
-        AccountUserRole.Seller to sellerLabel,
-        AccountUserRole.Manager to managerLabel,
-        AccountUserRole.Support to supportLabel,
+        AccountUserRole.User to AccountUserRole.User.label(),
+        AccountUserRole.Admin to AccountUserRole.Admin.label(),
+        AccountUserRole.SuperAdmin to AccountUserRole.SuperAdmin.label(),
     )
     val allRoles = availableRoles
     val available = allRoles.filterNot { selected.contains(it) }

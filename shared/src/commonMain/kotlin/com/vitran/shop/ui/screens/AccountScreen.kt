@@ -13,7 +13,6 @@ import com.vitran.shop.ui.sections.account.AccountHubAdminPlansRow
 import com.vitran.shop.ui.sections.account.AccountHubAdminRow
 import com.vitran.shop.ui.sections.account.AccountHubCitiesRow
 import com.vitran.shop.ui.sections.account.AccountHubHeader
-import com.vitran.shop.ui.sections.account.AccountHubStorePlanRow
 import com.vitran.shop.ui.sections.account.AccountHubUsersRow
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountRecentlyViewedSection
@@ -133,13 +132,8 @@ fun AccountScreen(
             },
             onSaveClick = {},
         )
-        when {
-            profile.isMerchant && profile.hasStore -> {
-                AccountHubStorePlanRow(onClick = onOpenStorePlan)
-            }
-            !profile.isMerchant -> {
-                AccountSellerSection(onCreateStore = onCreateStore)
-            }
+        if (!canAccessAdmin) {
+            AccountSellerSection(onCreateStore = onCreateStore)
         }
         AccountSignOutRow(
             onClick = onSignOut,

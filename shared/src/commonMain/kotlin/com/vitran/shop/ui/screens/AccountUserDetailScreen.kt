@@ -77,7 +77,7 @@ fun AccountUserDetailScreen(
                 onSubmit = viewModel::submit,
                 onActiveChange = viewModel::setActive,
                 onRoleChange = { role, selected ->
-                    role.toUserRole()?.let { viewModel.setRoleSelected(it, selected) }
+                    viewModel.setRoleSelected(role.toUserRole(), selected)
                 },
             )
         }

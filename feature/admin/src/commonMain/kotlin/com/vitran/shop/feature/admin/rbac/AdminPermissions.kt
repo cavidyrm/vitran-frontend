@@ -23,8 +23,7 @@ class AdminPermissions {
         UserRole.SuperAdmin in roles
 
     fun assignableRoles(actorRoles: Set<UserRole>): List<UserRole> = buildList {
-        add(UserRole.Customer)
-        add(UserRole.Seller)
+        add(UserRole.User)
         if (canAssignAdminRole(actorRoles)) add(UserRole.Admin)
     }
 
@@ -33,9 +32,10 @@ class AdminPermissions {
         existingTargetRoles: Set<UserRole>,
         selectedEditableRoles: Set<UserRole>,
     ): List<String> = buildList {
-        if (UserRole.Customer in selectedEditableRoles) add("customer")
-        if (UserRole.Seller in selectedEditableRoles) add("seller")
-        if (UserRole.Admin in selectedEditableRoles && canAssignAdminRole(actorRoles)) add("admin")
-        if (UserRole.SuperAdmin in existingTargetRoles) add("super_admin")
+        if (UserRole.User in selectedEditableRoles) add(UserRole.User.toBackend())
+        if (UserRole.Admin in selectedEditableRoles && canAssignAdminRole(actorRoles)) {
+            add(UserRole.Admin.toBackend())
+        }
+        if (UserRole.SuperAdmin in existingTargetRoles) add(UserRole.SuperAdmin.toBackend())
     }
 }

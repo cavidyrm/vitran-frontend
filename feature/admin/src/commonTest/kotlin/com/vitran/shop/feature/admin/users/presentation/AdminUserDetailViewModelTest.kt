@@ -44,8 +44,8 @@ class AdminUserDetailViewModelTest {
             )
             advanceUntilIdle()
 
-            viewModel.setRoleSelected(UserRole.Customer, false)
-            viewModel.setRoleSelected(UserRole.Seller, true)
+            viewModel.setRoleSelected(UserRole.User, false)
+            viewModel.setRoleSelected(UserRole.Admin, true)
             viewModel.setActive(false)
             viewModel.submit()
             advanceUntilIdle()
@@ -54,7 +54,7 @@ class AdminUserDetailViewModelTest {
                 UpdateAdminUserCommand(
                     userId = 42,
                     isActive = false,
-                    roles = listOf("seller", "super_admin"),
+                    roles = listOf("admin", "super_admin"),
                 ),
                 repository.lastUpdate,
             )
@@ -67,7 +67,7 @@ class AdminUserDetailViewModelTest {
     private fun adminDetails() = AdminUserDetails(
         id = 42,
         phone = "09123456789",
-        roles = setOf(UserRole.Customer, UserRole.SuperAdmin),
+        roles = setOf(UserRole.User, UserRole.SuperAdmin),
         verified = true,
         isActive = true,
         createdAt = Instant.parse("2026-08-01T10:00:00Z"),

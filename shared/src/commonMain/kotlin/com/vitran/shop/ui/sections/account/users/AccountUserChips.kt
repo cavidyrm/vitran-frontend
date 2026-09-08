@@ -30,12 +30,10 @@ import org.jetbrains.compose.resources.painterResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.ic_close
 
-private val SellerChipBg = Color(0xFFE0F2FE)
-private val SellerChipFg = Color(0xFF0369A1)
-private val ManagerChipBg = Color(0xFFFFEDD5)
-private val ManagerChipFg = Color(0xFFC2410C)
-private val SupportChipBg = Color(0xFFCCFBF1)
-private val SupportChipFg = Color(0xFF0F766E)
+private val AdminChipBg = Color(0xFFFFEDD5)
+private val AdminChipFg = Color(0xFFC2410C)
+private val SuperAdminChipBg = Color(0xFFCCFBF1)
+private val SuperAdminChipFg = Color(0xFF0F766E)
 private val ActiveChipBg = Color(0xFFE8F8EF)
 private val ActiveChipFg = Color(0xFF15803D)
 
@@ -46,10 +44,9 @@ internal fun AccountUserRoleChip(
     onRemove: (() -> Unit)? = null,
 ) {
     val (bg, fg) = when (role) {
-        AccountUserRole.Customer -> ShopPurpleTint to ShopPurple
-        AccountUserRole.Seller -> SellerChipBg to SellerChipFg
-        AccountUserRole.Manager -> ManagerChipBg to ManagerChipFg
-        AccountUserRole.Support -> SupportChipBg to SupportChipFg
+        AccountUserRole.User -> ShopPurpleTint to ShopPurple
+        AccountUserRole.Admin -> AdminChipBg to AdminChipFg
+        AccountUserRole.SuperAdmin -> SuperAdminChipBg to SuperAdminChipFg
     }
     Row(
         modifier = modifier

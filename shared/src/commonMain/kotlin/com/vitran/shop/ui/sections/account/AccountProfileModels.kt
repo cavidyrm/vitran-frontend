@@ -89,7 +89,7 @@ data class AccountProfile(
         }
 
     val isMerchant: Boolean
-        get() = roles.any { it.equals("merchant", ignoreCase = true) || it.equals("seller", ignoreCase = true) }
+        get() = hasStore
 }
 
 @Immutable
@@ -128,8 +128,8 @@ fun rememberMockAccountProfile(): AccountProfile = remember {
             email = "user@example.com",
             emailVerified = true,
             phone = "9123456789",
-            roles = listOf("customer", "merchant"),
-            hasStore = true,
+            roles = listOf("user"),
+            hasStore = false,
             gender = AccountGender.Unspecified,
             birthday = "",
             shoeSize = null,

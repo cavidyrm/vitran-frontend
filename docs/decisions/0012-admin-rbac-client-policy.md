@@ -14,7 +14,7 @@ Client role state can be stale or manipulated. It cannot replace server authoriz
 
 1. `AdminPermissions` is the single client policy used for admin navigation and action visibility.
 2. Client checks are UX-only; backend authorization and server `403` responses are authoritative.
-3. Unknown roles, missing account state, customer, and seller roles grant no admin privilege.
+3. Unknown roles, missing account state, and the `user` role grant no admin privilege.
 4. Both Admin and Super Admin may access normal admin workflows.
 5. Assigning the `admin` role is Super Admin-only.
 6. `super_admin` is never offered as an assignable role.

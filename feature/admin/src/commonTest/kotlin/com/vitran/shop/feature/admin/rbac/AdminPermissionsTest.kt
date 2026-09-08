@@ -13,7 +13,7 @@ class AdminPermissionsTest {
     @Test
     fun adminAccess_requiresAdminOrSuperAdmin() {
         assertFalse(permissions.canAccessAdmin(emptySet()))
-        assertFalse(permissions.canAccessAdmin(setOf(UserRole.Customer, UserRole.Seller)))
+        assertFalse(permissions.canAccessAdmin(setOf(UserRole.User)))
         assertTrue(permissions.canAccessAdmin(setOf(UserRole.Admin)))
         assertTrue(permissions.canAccessAdmin(setOf(UserRole.SuperAdmin)))
     }
@@ -37,11 +37,11 @@ class AdminPermissionsTest {
     @Test
     fun onlySuperAdminCanAssignAdmin_andSuperAdminIsNeverAssignable() {
         assertEquals(
-            listOf(UserRole.Customer, UserRole.Seller),
+            listOf(UserRole.User),
             permissions.assignableRoles(setOf(UserRole.Admin)),
         )
         assertEquals(
-            listOf(UserRole.Customer, UserRole.Seller, UserRole.Admin),
+            listOf(UserRole.User, UserRole.Admin),
             permissions.assignableRoles(setOf(UserRole.SuperAdmin)),
         )
     }
@@ -52,24 +52,23 @@ class AdminPermissionsTest {
             actorRoles = setOf(UserRole.Admin),
             existingTargetRoles = emptySet(),
             selectedEditableRoles = setOf(
-                UserRole.Customer,
-                UserRole.Seller,
+                UserRole.User,
                 UserRole.Admin,
                 UserRole.SuperAdmin,
             ),
         )
 
-        assertEquals(listOf("customer", "seller"), payload)
+        assertEquals(listOf("user"), payload)
     }
 
     @Test
     fun rolesPayload_allowsAdminForSuperAdmin_andPreservesExistingSuperAdmin() {
         val payload = permissions.buildRolesUpdatePayload(
             actorRoles = setOf(UserRole.SuperAdmin),
-            existingTargetRoles = setOf(UserRole.Customer, UserRole.SuperAdmin),
-            selectedEditableRoles = setOf(UserRole.Seller, UserRole.Admin),
+            existingTargetRoles = setOf(UserRole.User, UserRole.SuperAdmin),
+            selectedEditableRoles = setOf(UserRole.User, UserRole.Admin),
         )
 
-        assertEquals(listOf("seller", "admin", "super_admin"), payload)
+        assertEquals(listOf("user", "admin", "super_admin"), payload)
     }
 }

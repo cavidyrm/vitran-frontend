@@ -107,10 +107,11 @@ Backend roles (JWT / profile):
 
 | Role | Notes |
 |------|-------|
-| `customer` | Default shopper |
-| `seller` | Shop owner; added on first shop creation if missing |
+| `user` | Default shopper |
 | `admin` | Platform admin |
 | `super_admin` | Highest privilege |
+
+Legacy profile values `customer` and `seller` map to `user` on the client. Shop ownership is not a role.
 
 **Admin assignment rules (from collection):**
 
@@ -148,7 +149,9 @@ Response:
 
 Request: `page=1`, `per_page=20`
 
-Response adds: `page`, `last_page`, `from`, `to`, `total`, `has_more`, `results`
+Response adds: `per_page`, `has_more`, `results`. Optional: `page`, `last_page`, `from`, `to`, `total`.
+
+When `page`, `last_page`, or `total` are omitted, the client infers them (`page` defaults to 1; `last_page` / `total` from the current page size and `has_more`).
 
 **Client guidance:**
 
@@ -225,7 +228,7 @@ Seller updates shop
 
 Future domain concept: `ShopPublicationState` — do not scatter raw booleans in Composables.
 
-**First shop creation:** adds `seller` role; may return `data.tokens.access_token` with updated JWT. Session is updated via `:core:session`, not Auth ViewModel.
+**First shop creation:** may return `data.tokens.access_token` with an updated JWT. Session is updated via `:core:session`, not Auth ViewModel. Shop ownership is not a user role.
 
 ### Product lifecycle
 

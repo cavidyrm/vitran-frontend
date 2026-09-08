@@ -843,10 +843,9 @@
     <string name="account_users_col_joined">تاریخ عضویت</string>
     <string name="account_users_col_actions">عملیات</string>
     <string name="account_users_id">ID: %1$s</string>
-    <string name="account_users_role_customer">مشتری</string>
-    <string name="account_users_role_seller">فروشنده</string>
-    <string name="account_users_role_manager">مدیر</string>
-    <string name="account_users_role_support">پشتیبان</string>
+    <string name="account_users_role_user">کاربر</string>
+    <string name="account_users_role_admin">ادمین</string>
+    <string name="account_users_role_super_admin">سوپرادمین</string>
     <string name="account_users_status_active">فعال</string>
     <string name="account_users_status_inactive">غیرفعال</string>
     <string name="account_users_per_page">%1$s در صفحه</string>

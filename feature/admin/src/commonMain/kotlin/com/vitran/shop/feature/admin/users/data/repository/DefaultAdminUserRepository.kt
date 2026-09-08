@@ -2,6 +2,7 @@ package com.vitran.shop.feature.admin.users.data.repository
 
 import com.vitran.shop.core.domain.pagination.PageResult
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.core.network.pagination.toDomain
 import com.vitran.shop.feature.admin.users.data.mapper.toDomain
 import com.vitran.shop.feature.admin.users.data.remote.AdminUserApi
 import com.vitran.shop.feature.admin.users.data.remote.dto.UpdateAdminUserRequestDto
@@ -16,7 +17,7 @@ internal class DefaultAdminUserRepository(
 ) : AdminUserRepository {
     override suspend fun getUsers(query: AdminUserQuery): AppResult<PageResult<AdminUserSummary>> =
         when (val result = api.getUsers(query)) {
-            is AppResult.Success -> AppResult.Success(result.value.users.toDomain())
+            is AppResult.Success -> AppResult.Success(result.value.users.toDomain { it.toDomain() })
             is AppResult.Failure -> AppResult.Failure(result.error)
         }
 

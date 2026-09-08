@@ -1,7 +1,7 @@
 package com.vitran.shop.feature.admin.moderation.data
 
-import com.vitran.shop.core.domain.pagination.PageResult
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.core.network.pagination.toDomain
 import com.vitran.shop.feature.admin.moderation.domain.AdminModerationQuery
 import com.vitran.shop.feature.admin.moderation.domain.AdminModerationRepository
 import com.vitran.shop.feature.admin.moderation.domain.AdminProductDetails
@@ -23,9 +23,7 @@ internal class DefaultAdminModerationRepository(
 ) : AdminModerationRepository {
     override suspend fun getShops(query: AdminModerationQuery) =
         api.listShops(query).mapSuccess { page ->
-            page.shops.run {
-                PageResult(results.map { it.toDomain() }, this.page, perPage, lastPage, total, hasMore)
-            }
+            page.shops.toDomain { it.toDomain() }
         }
 
     override suspend fun confirmShop(id: ShopId): AppResult<AdminShopSummary> =
@@ -35,9 +33,7 @@ internal class DefaultAdminModerationRepository(
 
     override suspend fun getProducts(query: AdminModerationQuery) =
         api.listProducts(query).mapSuccess { page ->
-            page.products.run {
-                PageResult(results.map { it.toDomain() }, this.page, perPage, lastPage, total, hasMore)
-            }
+            page.products.toDomain { it.toDomain() }
         }
 
     override suspend fun getProduct(id: ProductId) =

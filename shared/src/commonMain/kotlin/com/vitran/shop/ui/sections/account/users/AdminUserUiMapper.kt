@@ -32,18 +32,17 @@ fun AdminUserDetails.toAccountUser(): AccountUser =
 
 fun UserRole.toAccountUserRole(): AccountUserRole? =
     when (this) {
-        UserRole.Customer -> AccountUserRole.Customer
-        UserRole.Seller -> AccountUserRole.Seller
-        UserRole.Admin, UserRole.SuperAdmin -> AccountUserRole.Manager
+        UserRole.User -> AccountUserRole.User
+        UserRole.Admin -> AccountUserRole.Admin
+        UserRole.SuperAdmin -> AccountUserRole.SuperAdmin
         is UserRole.Unknown -> null
     }
 
-fun AccountUserRole.toUserRole(): UserRole? =
+fun AccountUserRole.toUserRole(): UserRole =
     when (this) {
-        AccountUserRole.Customer -> UserRole.Customer
-        AccountUserRole.Seller -> UserRole.Seller
-        AccountUserRole.Manager -> UserRole.Admin
-        AccountUserRole.Support -> null
+        AccountUserRole.User -> UserRole.User
+        AccountUserRole.Admin -> UserRole.Admin
+        AccountUserRole.SuperAdmin -> UserRole.SuperAdmin
     }
 
 private fun Set<UserRole>.toAccountUserRoles(): List<AccountUserRole> =

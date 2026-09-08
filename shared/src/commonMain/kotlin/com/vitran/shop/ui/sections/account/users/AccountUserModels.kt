@@ -6,18 +6,16 @@ import androidx.compose.runtime.remember
 import com.vitran.shop.ui.sections.account.digitsOnly
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
-import vitranshop.shared.generated.resources.account_users_role_customer
-import vitranshop.shared.generated.resources.account_users_role_manager
-import vitranshop.shared.generated.resources.account_users_role_seller
-import vitranshop.shared.generated.resources.account_users_role_support
+import vitranshop.shared.generated.resources.account_users_role_admin
+import vitranshop.shared.generated.resources.account_users_role_super_admin
+import vitranshop.shared.generated.resources.account_users_role_user
 import vitranshop.shared.generated.resources.account_users_status_active
 import vitranshop.shared.generated.resources.account_users_status_inactive
 
 enum class AccountUserRole {
-    Customer,
-    Seller,
-    Manager,
-    Support,
+    User,
+    Admin,
+    SuperAdmin,
 }
 
 enum class AccountUserStatus {
@@ -83,10 +81,9 @@ internal val AccountUsersPageSizeOptions = listOf(10, 20, 50)
 @Composable
 internal fun AccountUserRole.label(): String = stringResource(
     when (this) {
-        AccountUserRole.Customer -> Res.string.account_users_role_customer
-        AccountUserRole.Seller -> Res.string.account_users_role_seller
-        AccountUserRole.Manager -> Res.string.account_users_role_manager
-        AccountUserRole.Support -> Res.string.account_users_role_support
+        AccountUserRole.User -> Res.string.account_users_role_user
+        AccountUserRole.Admin -> Res.string.account_users_role_admin
+        AccountUserRole.SuperAdmin -> Res.string.account_users_role_super_admin
     },
 )
 
@@ -127,57 +124,55 @@ internal fun findMockAccountUser(userId: String): AccountUser? {
 }
 
 private fun mockAccountUsers(): List<AccountUser> {
-    val customer = listOf(AccountUserRole.Customer)
-    val seller = listOf(AccountUserRole.Customer, AccountUserRole.Seller)
-    val manager = listOf(AccountUserRole.Manager)
-    val support = listOf(AccountUserRole.Support)
-    val sellerSupport = listOf(AccountUserRole.Seller, AccountUserRole.Support)
-    val admin = listOf(AccountUserRole.Manager, AccountUserRole.Customer)
+    val user = listOf(AccountUserRole.User)
+    val admin = listOf(AccountUserRole.Admin)
+    val superAdmin = listOf(AccountUserRole.SuperAdmin)
+    val userAdmin = listOf(AccountUserRole.User, AccountUserRole.Admin)
     val active = AccountUserStatus.Active
     val inactive = AccountUserStatus.Inactive
     return listOf(
-        AccountUser(1, "سارا", "احمدی", "09121234501", customer, active, "1403/01/12"),
-        AccountUser(2, "جاوید", "محمدی", "09123456789", seller, active, "1403/03/25"),
-        AccountUser(3, "رضا", "کریمی", "09131234567", customer, active, "1403/02/08"),
-        AccountUser(4, "نرگس", "رضایی", "09351234501", support, active, "1402/11/19"),
-        AccountUser(5, "امیر", "حسینی", "09125551234", manager, active, "1402/08/03"),
-        AccountUser(6, "فاطمه", "موسوی", "09011234567", customer, inactive, "1403/04/14"),
-        AccountUser(7, "مهدی", "نوری", "09139876543", seller, active, "1403/05/02"),
-        AccountUser(8, "زهرا", "کاظمی", "09901234501", customer, active, "1402/12/21"),
-        AccountUser(9, "حسین", "اکبری", "09127654321", admin, active, "1401/09/17"),
-        AccountUser(10, "مریم", "صادقی", "09359871234", customer, inactive, "1403/01/29"),
-        AccountUser(11, "علی", "مرادی", "09124567890", seller, active, "1403/06/11"),
-        AccountUser(12, "الناز", "جعفری", "09136789012", support, active, "1402/10/05"),
-        AccountUser(13, "محمد", "رضوی", "09121230000", customer, active, "1403/03/01"),
-        AccountUser(14, "شیدا", "محمودی", "09019876543", customer, active, "1403/07/18"),
-        AccountUser(15, "پارسا", "عباسی", "09135671234", seller, inactive, "1402/07/22"),
-        AccountUser(16, "یاسمن", "قاسمی", "09351239876", customer, active, "1403/02/27"),
-        AccountUser(17, "کیان", "طاهری", "09127894561", manager, active, "1401/12/09"),
-        AccountUser(18, "هانیه", "شریفی", "09907654321", support, active, "1403/04/03"),
-        AccountUser(19, "آرمان", "نجفی", "09123450011", customer, active, "1403/08/07"),
-        AccountUser(20, "نیلوفر", "حیدری", "09139870022", seller, active, "1402/06/15"),
-        AccountUser(21, "بهرام", "یوسفی", "09121234567", customer, inactive, "1403/05/21"),
-        AccountUser(22, "گلناز", "فرهادی", "09354561230", customer, active, "1403/01/05"),
-        AccountUser(23, "سامان", "رستمی", "09126549870", sellerSupport, active, "1402/04/28"),
-        AccountUser(24, "پریسا", "سلطانی", "09017654321", customer, active, "1403/06/30"),
-        AccountUser(25, "نوید", "اسدی", "09131112233", manager, inactive, "1402/02/11"),
-        AccountUser(26, "حدیث", "باقری", "09128765432", support, active, "1403/03/19"),
-        AccountUser(27, "کامران", "زارعی", "09123450912", customer, active, "1403/07/02"),
-        AccountUser(28, "آیدا", "نیکنام", "09901112233", seller, active, "1402/09/08"),
-        AccountUser(29, "فرهاد", "کمالی", "09134567890", customer, active, "1403/04/25"),
-        AccountUser(30, "سمیرا", "افشار", "09357654321", customer, inactive, "1403/02/14"),
-        AccountUser(31, "احسان", "داودی", "09121239876", admin, active, "1401/05/20"),
-        AccountUser(32, "مهسا", "جلالی", "09136784512", support, active, "1403/08/12"),
-        AccountUser(33, "پویا", "رحیمی", "09125559876", seller, active, "1403/05/09"),
-        AccountUser(34, "ترانه", "میرزایی", "09018889900", customer, active, "1402/11/01"),
-        AccountUser(35, "شایان", "فتحی", "09139871212", customer, active, "1403/06/04"),
-        AccountUser(36, "دنیا", "کرمی", "09351112233", seller, inactive, "1402/03/16"),
-        AccountUser(37, "مسعود", "تقوی", "09127651234", manager, active, "1402/01/23"),
-        AccountUser(38, "لیلا", "بهرامی", "09123457890", customer, active, "1403/07/27"),
-        AccountUser(39, "رامین", "اکبری", "09131230099", support, active, "1403/01/18"),
-        AccountUser(40, "نازنین", "فردوسی", "09904561230", customer, active, "1403/03/08"),
-        AccountUser(41, "کیوان", "شفیعی", "09128760011", seller, active, "1402/08/29"),
-        AccountUser(42, "آرزو", "نعمتی", "09121230912", customer, inactive, "1403/08/01"),
+        AccountUser(1, "سارا", "احمدی", "09121234501", user, active, "1403/01/12"),
+        AccountUser(2, "جاوید", "محمدی", "09123456789", user, active, "1403/03/25"),
+        AccountUser(3, "رضا", "کریمی", "09131234567", user, active, "1403/02/08"),
+        AccountUser(4, "نرگس", "رضایی", "09351234501", superAdmin, active, "1402/11/19"),
+        AccountUser(5, "امیر", "حسینی", "09125551234", admin, active, "1402/08/03"),
+        AccountUser(6, "فاطمه", "موسوی", "09011234567", user, inactive, "1403/04/14"),
+        AccountUser(7, "مهدی", "نوری", "09139876543", user, active, "1403/05/02"),
+        AccountUser(8, "زهرا", "کاظمی", "09901234501", user, active, "1402/12/21"),
+        AccountUser(9, "حسین", "اکبری", "09127654321", userAdmin, active, "1401/09/17"),
+        AccountUser(10, "مریم", "صادقی", "09359871234", user, inactive, "1403/01/29"),
+        AccountUser(11, "علی", "مرادی", "09124567890", user, active, "1403/06/11"),
+        AccountUser(12, "الناز", "جعفری", "09136789012", user, active, "1402/10/05"),
+        AccountUser(13, "محمد", "رضوی", "09121230000", user, active, "1403/03/01"),
+        AccountUser(14, "شیدا", "محمودی", "09019876543", user, active, "1403/07/18"),
+        AccountUser(15, "پارسا", "عباسی", "09135671234", user, inactive, "1402/07/22"),
+        AccountUser(16, "یاسمن", "قاسمی", "09351239876", user, active, "1403/02/27"),
+        AccountUser(17, "کیان", "طاهری", "09127894561", admin, active, "1401/12/09"),
+        AccountUser(18, "هانیه", "شریفی", "09907654321", superAdmin, active, "1403/04/03"),
+        AccountUser(19, "آرمان", "نجفی", "09123450011", user, active, "1403/08/07"),
+        AccountUser(20, "نیلوفر", "حیدری", "09139870022", user, active, "1402/06/15"),
+        AccountUser(21, "بهرام", "یوسفی", "09121234567", user, inactive, "1403/05/21"),
+        AccountUser(22, "گلناز", "فرهادی", "09354561230", user, active, "1403/01/05"),
+        AccountUser(23, "سامان", "رستمی", "09126549870", user, active, "1402/04/28"),
+        AccountUser(24, "پریسا", "سلطانی", "09017654321", user, active, "1403/06/30"),
+        AccountUser(25, "نوید", "اسدی", "09131112233", admin, inactive, "1402/02/11"),
+        AccountUser(26, "حدیث", "باقری", "09128765432", user, active, "1403/03/19"),
+        AccountUser(27, "کامران", "زارعی", "09123450912", user, active, "1403/07/02"),
+        AccountUser(28, "آیدا", "نیکنام", "09901112233", user, active, "1402/09/08"),
+        AccountUser(29, "فرهاد", "کمالی", "09134567890", user, active, "1403/04/25"),
+        AccountUser(30, "سمیرا", "افشار", "09357654321", user, inactive, "1403/02/14"),
+        AccountUser(31, "احسان", "داودی", "09121239876", userAdmin, active, "1401/05/20"),
+        AccountUser(32, "مهسا", "جلالی", "09136784512", user, active, "1403/08/12"),
+        AccountUser(33, "پویا", "رحیمی", "09125559876", user, active, "1403/05/09"),
+        AccountUser(34, "ترانه", "میرزایی", "09018889900", user, active, "1402/11/01"),
+        AccountUser(35, "شایان", "فتحی", "09139871212", user, active, "1403/06/04"),
+        AccountUser(36, "دنیا", "کرمی", "09351112233", user, inactive, "1402/03/16"),
+        AccountUser(37, "مسعود", "تقوی", "09127651234", admin, active, "1402/01/23"),
+        AccountUser(38, "لیلا", "بهرامی", "09123457890", user, active, "1403/07/27"),
+        AccountUser(39, "رامین", "اکبری", "09131230099", user, active, "1403/01/18"),
+        AccountUser(40, "نازنین", "فردوسی", "09904561230", user, active, "1403/03/08"),
+        AccountUser(41, "کیوان", "شفیعی", "09128760011", user, active, "1402/08/29"),
+        AccountUser(42, "آرزو", "نعمتی", "09121230912", user, inactive, "1403/08/01"),
     ).map { it.withMockDetail() }
 }
 

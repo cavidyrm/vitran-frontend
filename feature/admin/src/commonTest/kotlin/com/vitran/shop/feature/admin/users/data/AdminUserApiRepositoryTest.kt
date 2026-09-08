@@ -62,6 +62,25 @@ class AdminUserApiRepositoryTest {
     }
 
     @Test
+    fun getUsers_decodesSlimEnvelopeWithoutPageOrTotals() = runTest {
+        val engine = MockEngine { jsonResponse(HttpStatusCode.OK, slimUsersEnvelope) }
+
+        val result = createRepository(engine).getUsers(AdminUserQuery(page = 1, perPage = 20))
+
+        val page = assertIs<AppResult.Success<*>>(result).value
+            as com.vitran.shop.core.domain.pagination.PageResult<*>
+        assertEquals(1, page.page)
+        assertEquals(1, page.lastPage)
+        assertEquals(2L, page.total)
+        assertEquals(false, page.hasMore)
+        assertEquals(2, page.items.size)
+        val user = page.items.first()
+            as com.vitran.shop.feature.admin.users.domain.model.AdminUserSummary
+        assertEquals(14L, user.id)
+        assertEquals(setOf(UserRole.User), user.roles)
+    }
+
+    @Test
     fun getAndUpdateUser_useIdPath_mapTimestamps_andSerializeExactPatchBody() = runTest {
         var requestCount = 0
         val engine = MockEngine { request ->
@@ -72,7 +91,7 @@ class AdminUserApiRepositoryTest {
                 HttpMethod.Get -> jsonResponse(HttpStatusCode.OK, userEnvelope)
                 HttpMethod.Patch -> {
                     assertEquals(
-                        """{"is_active":false,"roles":["seller","super_admin"]}""",
+                        """{"is_active":false,"roles":["user","super_admin"]}""",
                         (request.body as TextContent).text,
                     )
                     jsonResponse(HttpStatusCode.OK, updatedUserEnvelope)
@@ -91,11 +110,11 @@ class AdminUserApiRepositoryTest {
                 UpdateAdminUserCommand(
                     userId = 42,
                     isActive = false,
-                    roles = listOf("seller", "super_admin"),
+                    roles = listOf("user", "super_admin"),
                 ),
             ),
         ).value as com.vitran.shop.feature.admin.users.domain.model.AdminUserDetails
-        assertEquals(setOf(UserRole.Seller, UserRole.SuperAdmin), updated.roles)
+        assertEquals(setOf(UserRole.User, UserRole.SuperAdmin), updated.roles)
         assertEquals(false, updated.isActive)
         assertEquals(2, requestCount)
     }
@@ -166,11 +185,50 @@ class AdminUserApiRepositoryTest {
                 "user": {
                   "id": 42,
                   "phone": "09123456789",
-                  "roles": ["seller", "super_admin"],
+                  "roles": ["user", "super_admin"],
                   "verified": true,
                   "is_active": false,
                   "created_at": "2026-08-01T10:00:00Z",
                   "updated_at": "2026-08-30T09:00:00Z"
+                }
+              },
+              "errors": []
+            }
+        """.trimIndent()
+
+        val slimUsersEnvelope = """
+            {
+              "success": true,
+              "message": "ok",
+              "code": 1,
+              "data": {
+                "users": {
+                  "per_page": 20,
+                  "has_more": false,
+                  "results": [
+                    {
+                      "id": 14,
+                      "phone": "9147786264",
+                      "wishlist_public": false,
+                      "roles": ["user"],
+                      "shop_types": null,
+                      "verified": true,
+                      "created_at": "2026-09-08T19:47:13.021384Z",
+                      "updated_at": "2026-09-08T19:47:13.021384Z",
+                      "is_active": true
+                    },
+                    {
+                      "id": 13,
+                      "phone": "9330762801",
+                      "wishlist_public": false,
+                      "roles": ["user"],
+                      "shop_types": null,
+                      "verified": true,
+                      "created_at": "2026-09-07T20:08:56.011038Z",
+                      "updated_at": "2026-09-07T20:08:56.011038Z",
+                      "is_active": true
+                    }
+                  ]
                 }
               },
               "errors": []

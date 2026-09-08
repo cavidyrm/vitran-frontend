@@ -1,19 +1,9 @@
 package com.vitran.shop.ui.sections.account
 
-import com.vitran.shop.core.domain.auth.UserRole
 import com.vitran.shop.feature.account.domain.model.User
 
 fun User.toAccountProfile(): AccountProfile {
-    val roleNames = roles.map { role ->
-        when (role) {
-            UserRole.Customer -> "customer"
-            UserRole.Seller -> "seller"
-            UserRole.Admin -> "admin"
-            UserRole.SuperAdmin -> "super_admin"
-            is UserRole.Unknown -> role.rawValue
-        }
-    }
-    val merchant = roles.any { it is UserRole.Seller || it is UserRole.Admin || it is UserRole.SuperAdmin }
+    val roleNames = roles.map { it.toBackend() }
     return AccountProfile(
         id = id.toString(),
         username = username.orEmpty(),
@@ -23,7 +13,7 @@ fun User.toAccountProfile(): AccountProfile {
         emailVerified = verified,
         phone = phone,
         roles = roleNames,
-        hasStore = merchant,
+        hasStore = false,
         gender = AccountGender.Unspecified,
         birthday = "",
         shoeSize = null,

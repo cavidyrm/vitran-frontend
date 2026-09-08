@@ -95,4 +95,49 @@ class PaginationDtoTest {
         assertTrue(domain.hasMore)
         assertEquals(listOf("x"), domain.items)
     }
+
+    @Test
+    fun pageDto_decodesSlimEmptyWithoutTotals() {
+        val dto = json.decodeFromString(
+            PageDto.serializer(String.serializer()),
+            """
+            {
+              "page": 1,
+              "per_page": 20,
+              "has_more": false,
+              "results": []
+            }
+            """.trimIndent(),
+        )
+
+        val domain = dto.toDomain()
+        assertEquals(1, domain.page)
+        assertEquals(20, domain.perPage)
+        assertEquals(1, domain.lastPage)
+        assertEquals(0L, domain.total)
+        assertFalse(domain.hasMore)
+        assertEquals(emptyList(), domain.items)
+    }
+
+    @Test
+    fun pageDto_decodesSlimPopulatedWithoutPageOrTotals() {
+        val dto = json.decodeFromString(
+            PageDto.serializer(String.serializer()),
+            """
+            {
+              "per_page": 20,
+              "has_more": false,
+              "results": ["a", "b"]
+            }
+            """.trimIndent(),
+        )
+
+        val domain = dto.toDomain()
+        assertEquals(1, domain.page)
+        assertEquals(20, domain.perPage)
+        assertEquals(1, domain.lastPage)
+        assertEquals(2L, domain.total)
+        assertFalse(domain.hasMore)
+        assertEquals(listOf("a", "b"), domain.items)
+    }
 }

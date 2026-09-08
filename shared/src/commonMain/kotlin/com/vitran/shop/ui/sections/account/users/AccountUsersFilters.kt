@@ -74,10 +74,9 @@ internal fun AccountUsersFilters(
     val statusAll = stringResource(Res.string.account_users_status_all)
     val roleChoices = listOf(
         null to roleAll,
-        AccountUserRole.Customer to AccountUserRole.Customer.label(),
-        AccountUserRole.Seller to AccountUserRole.Seller.label(),
-        AccountUserRole.Manager to AccountUserRole.Manager.label(),
-        AccountUserRole.Support to AccountUserRole.Support.label(),
+        AccountUserRole.User to AccountUserRole.User.label(),
+        AccountUserRole.Admin to AccountUserRole.Admin.label(),
+        AccountUserRole.SuperAdmin to AccountUserRole.SuperAdmin.label(),
     )
     val statusChoices = listOf(
         null to statusAll,

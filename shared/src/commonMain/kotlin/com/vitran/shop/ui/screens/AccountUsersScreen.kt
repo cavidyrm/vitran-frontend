@@ -24,6 +24,7 @@ import com.vitran.shop.ui.sections.account.users.AccountUsersPagination
 import com.vitran.shop.ui.sections.account.users.AccountUsersSort
 import com.vitran.shop.ui.sections.account.users.AccountUsersTable
 import com.vitran.shop.ui.sections.account.users.toAccountUser
+import com.vitran.shop.ui.sections.account.users.toUserRole
 import com.vitran.shop.ui.shell.LocalDesktopLayout
 import com.vitran.shop.di.vitranKoinViewModel
 import org.jetbrains.compose.resources.stringResource
@@ -108,13 +109,7 @@ fun AccountUsersScreen(
 }
 
 private fun AccountUserRole?.toBackendRole(): String? =
-    when (this) {
-        AccountUserRole.Customer -> "customer"
-        AccountUserRole.Seller -> "seller"
-        AccountUserRole.Manager -> "admin"
-        AccountUserRole.Support -> null
-        null -> null
-    }
+    this?.toUserRole()?.toBackend()
 
 private fun AccountUserStatus?.toBackendActive(): Boolean? =
     when (this) {
