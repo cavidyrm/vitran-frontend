@@ -35,22 +35,24 @@ class AdminPermissionsTest {
     }
 
     @Test
-    fun onlySuperAdminCanAssignAdmin_andSuperAdminIsNeverAssignable() {
+    fun onlySuperAdminCanEditRoles_andSuperAdminIsNeverAssignable() {
         assertEquals(
-            listOf(UserRole.User),
+            emptyList(),
             permissions.assignableRoles(setOf(UserRole.Admin)),
         )
         assertEquals(
             listOf(UserRole.User, UserRole.Admin),
             permissions.assignableRoles(setOf(UserRole.SuperAdmin)),
         )
+        assertFalse(permissions.canEditUserRoles(setOf(UserRole.Admin)))
+        assertTrue(permissions.canEditUserRoles(setOf(UserRole.SuperAdmin)))
     }
 
     @Test
-    fun rolesPayload_filtersAdminForNonSuperAdmin() {
+    fun rolesPayload_omitsRolesForNonSuperAdmin() {
         val payload = permissions.buildRolesUpdatePayload(
             actorRoles = setOf(UserRole.Admin),
-            existingTargetRoles = emptySet(),
+            existingTargetRoles = setOf(UserRole.User, UserRole.Admin),
             selectedEditableRoles = setOf(
                 UserRole.User,
                 UserRole.Admin,
@@ -58,7 +60,7 @@ class AdminPermissionsTest {
             ),
         )
 
-        assertEquals(listOf("user"), payload)
+        assertEquals(null, payload)
     }
 
     @Test
@@ -70,5 +72,27 @@ class AdminPermissionsTest {
         )
 
         assertEquals(listOf("user", "admin", "super_admin"), payload)
+    }
+
+    @Test
+    fun rolesPayload_allowsSuperAdminToRemoveAdmin() {
+        val payload = permissions.buildRolesUpdatePayload(
+            actorRoles = setOf(UserRole.SuperAdmin),
+            existingTargetRoles = setOf(UserRole.User, UserRole.Admin),
+            selectedEditableRoles = setOf(UserRole.User),
+        )
+
+        assertEquals(listOf("user"), payload)
+    }
+
+    @Test
+    fun rolesPayload_preservesUnknownExistingRoles() {
+        val payload = permissions.buildRolesUpdatePayload(
+            actorRoles = setOf(UserRole.SuperAdmin),
+            existingTargetRoles = setOf(UserRole.User, UserRole.Unknown("auditor")),
+            selectedEditableRoles = setOf(UserRole.User),
+        )
+
+        assertEquals(listOf("user", "auditor"), payload)
     }
 }

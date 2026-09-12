@@ -18,6 +18,7 @@ import com.vitran.shop.feature.seller.shop.domain.model.SellerShopDetails
 import com.vitran.shop.feature.seller.shop.domain.model.SellerShopSummary
 import com.vitran.shop.feature.seller.shop.domain.model.ShopApiKey
 import com.vitran.shop.feature.seller.shop.domain.model.ShopSlugAvailability
+import com.vitran.shop.feature.seller.shop.domain.model.ShopTitleAvailability
 import com.vitran.shop.feature.seller.shop.domain.model.UpdateShopCommand
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopListQuery
 import com.vitran.shop.feature.seller.shop.domain.repository.SellerShopRepository
@@ -33,6 +34,15 @@ internal class DefaultSellerShopRepository(
     ): AppResult<ShopSlugAvailability> =
         when (val result = api.checkSlug(slug, excludeId)) {
             is AppResult.Success -> AppResult.Success(result.value.slugCheck.toDomain())
+            is AppResult.Failure -> AppResult.Failure(result.error.toSellerShopAppError())
+        }
+
+    override suspend fun checkTitleAvailability(
+        title: String,
+        excludeId: ShopId?,
+    ): AppResult<ShopTitleAvailability> =
+        when (val result = api.checkTitle(title, excludeId)) {
+            is AppResult.Success -> AppResult.Success(result.value.titleCheck.toDomain())
             is AppResult.Failure -> AppResult.Failure(result.error.toSellerShopAppError())
         }
 

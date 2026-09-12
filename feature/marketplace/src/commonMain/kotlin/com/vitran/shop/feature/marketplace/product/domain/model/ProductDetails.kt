@@ -11,6 +11,7 @@ data class ProductDetails(
     val title: String,
     val description: String,
     val priceAmount: Long,
+    val compareAtPriceAmount: Long? = null,
     val active: Boolean,
     val confirmed: Boolean,
     val images: List<ProductImage>,

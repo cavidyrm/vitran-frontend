@@ -7,6 +7,8 @@ import com.vitran.shop.feature.home.data.mapper.toDomain
 import com.vitran.shop.feature.home.data.remote.HomeApi
 import com.vitran.shop.feature.home.data.remote.dto.HomeSectionsDto
 import com.vitran.shop.feature.home.domain.model.HomeFeed
+import com.vitran.shop.feature.home.domain.model.HomeScreen
+import com.vitran.shop.feature.home.domain.model.HomeSectionPage
 import com.vitran.shop.feature.home.domain.repository.HomeRepository
 import com.vitran.shop.feature.location.domain.model.CityId
 import kotlinx.serialization.json.Json
@@ -53,6 +55,21 @@ internal class DefaultHomeRepository(
             }
         }
     }
+
+    override suspend fun getHomeScreen(cityId: CityId?): AppResult<HomeScreen> =
+        homeApi.getHomeScreen(cityId).mapSuccess { it.toDomain(cityId) }
+
+    override suspend fun getPickedForYouSection(
+        limit: Int,
+        cursor: String?,
+        cityId: CityId?,
+    ): AppResult<HomeSectionPage> =
+        homeApi.getPickedForYouSection(limit, cursor, cityId).mapSuccess { it.section.toDomain() }
+}
+
+private inline fun <T, R> AppResult<T>.mapSuccess(transform: (T) -> R): AppResult<R> = when (this) {
+    is AppResult.Success -> AppResult.Success(transform(value))
+    is AppResult.Failure -> this
 }
 
 private fun CityId?.toCityKey(): String = this?.value?.toString().orEmpty()

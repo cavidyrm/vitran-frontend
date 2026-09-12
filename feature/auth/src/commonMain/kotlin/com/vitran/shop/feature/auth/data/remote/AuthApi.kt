@@ -7,11 +7,12 @@ import com.vitran.shop.core.network.config.apiUrl
 import com.vitran.shop.core.network.executor.ApiRequestExecutor
 import com.vitran.shop.core.network.model.EmptyDataDto
 import com.vitran.shop.core.network.request.authMode
+import com.vitran.shop.feature.auth.data.remote.dto.CheckPhoneDataDto
+import com.vitran.shop.feature.auth.data.remote.dto.CheckPhoneRequestDto
 import com.vitran.shop.feature.auth.data.remote.dto.ForgotPasswordDataDto
 import com.vitran.shop.feature.auth.data.remote.dto.ForgotPasswordRequestDto
 import com.vitran.shop.feature.auth.data.remote.dto.LoginRequestDto
 import com.vitran.shop.feature.auth.data.remote.dto.LoginTokensDataDto
-import com.vitran.shop.feature.auth.data.remote.dto.LogoutRequestDto
 import com.vitran.shop.feature.auth.data.remote.dto.RegisterDataDto
 import com.vitran.shop.feature.auth.data.remote.dto.RegisterRequestDto
 import com.vitran.shop.feature.auth.data.remote.dto.ResendOtpDataDto
@@ -57,12 +58,19 @@ internal class AuthApi(
             }
         }
 
-    suspend fun logout(request: LogoutRequestDto): AppResult<Unit> =
+    suspend fun checkPhone(request: CheckPhoneRequestDto): AppResult<CheckPhoneDataDto> =
+        executor.execute {
+            client.post(environment.apiUrl("/auth/check-phone")) {
+                authMode(AuthMode.None)
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+
+    suspend fun logout(): AppResult<Unit> =
         executor.executeEmpty {
             client.post(environment.apiUrl("/auth/logout")) {
                 authMode(AuthMode.Required)
-                contentType(ContentType.Application.Json)
-                setBody(request)
             }
         }
 

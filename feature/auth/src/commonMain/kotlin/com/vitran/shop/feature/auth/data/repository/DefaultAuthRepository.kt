@@ -12,6 +12,9 @@ import com.vitran.shop.feature.auth.data.remote.dto.TokenSetDto
 import com.vitran.shop.feature.auth.data.remote.dto.VerifyRequestDto
 import com.vitran.shop.feature.auth.domain.model.LoginResult
 import com.vitran.shop.feature.auth.domain.model.PasswordResetContext
+import com.vitran.shop.feature.auth.domain.model.PhoneCheckNextStep
+import com.vitran.shop.feature.auth.domain.model.PhoneCheckResult
+import com.vitran.shop.feature.auth.domain.model.PhoneCheckStatus
 import com.vitran.shop.feature.auth.domain.model.RegisterCommand
 import com.vitran.shop.feature.auth.domain.model.VerificationChallenge
 import com.vitran.shop.feature.auth.domain.repository.AuthRepository
@@ -23,6 +26,14 @@ internal class DefaultAuthRepository(
     private val sessionRepository: SessionRepository,
     private val json: Json,
 ) : AuthRepository {
+
+    override suspend fun checkPhone(phone: String): AppResult<PhoneCheckResult> =
+        when (val result = authApi.checkPhone(
+            com.vitran.shop.feature.auth.data.remote.dto.CheckPhoneRequestDto(phone.toApiPhone()),
+        )) {
+            is AppResult.Success -> AppResult.Success(result.value.toDomain())
+            is AppResult.Failure -> AppResult.Failure(result.error)
+        }
 
     override suspend fun register(command: RegisterCommand): AppResult<VerificationChallenge> {
         val referral = command.referralCode?.trim()?.takeIf { it.isNotEmpty() }
@@ -93,16 +104,12 @@ internal class DefaultAuthRepository(
         }
 
     override suspend fun logout(): AppResult<Unit> {
-        val refreshToken = sessionRepository.currentRefreshToken()
-        if (refreshToken == null) {
+        val accessToken = sessionRepository.readCredentials()?.accessToken
+        if (accessToken.isNullOrBlank()) {
             sessionRepository.logoutLocal()
             return AppResult.Success(Unit)
         }
-        return when (
-            val result = authApi.logout(
-                com.vitran.shop.feature.auth.data.remote.dto.LogoutRequestDto(refreshToken),
-            )
-        ) {
+        return when (val result = authApi.logout()) {
             is AppResult.Success -> {
                 sessionRepository.logoutLocal()
                 AppResult.Success(Unit)
@@ -141,3 +148,18 @@ internal class DefaultAuthRepository(
         return AppResult.Failure(error)
     }
 }
+
+private fun com.vitran.shop.feature.auth.data.remote.dto.CheckPhoneDataDto.toDomain() =
+    PhoneCheckResult(
+        status = PhoneCheckStatus.fromBackend(status),
+        exists = exists,
+        canRegister = canRegister,
+        canLogin = canLogin,
+        canResend = canResend,
+        canResetPassword = canResetPassword,
+        nextStep = PhoneCheckNextStep.fromBackend(nextStep),
+        otpPurpose = otpPurpose,
+        otpTtlSeconds = otpTtl,
+        otpExpiresAt = otpExpiresAt,
+        resendAfterSeconds = resendAfter,
+    )

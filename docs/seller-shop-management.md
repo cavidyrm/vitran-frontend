@@ -6,9 +6,9 @@ Phase 7 seller shop ownership, onboarding, and management. Implementation lives 
 
 Seller endpoints are scoped to shops owned by the authenticated user. Server authorization is authoritative. Client list membership is not security.
 
-## 2. Customer → Seller onboarding
+## 2. First-shop onboarding
 
-An authenticated **customer** may enter Create Store (`/admin/stores/new`). Seller role is **not** required before first shop creation. `POST /seller/shops` may add the `seller` role server-side.
+An authenticated **user** may enter Create Store (`/admin/stores/new`). A dedicated seller role is **not** required (and no longer exists). `POST /seller/shops` requires a `user` (or higher) token; the caller must own the shop for later mutations. `GET /auth/me` `shop_types` is empty for viewers and non-empty when the user owns retail/wholesale shops.
 
 ## 3. First-shop access-token replacement
 
@@ -16,11 +16,11 @@ Create response may include `data.tokens.access_token` + `expires_at` (no refres
 
 ## 4. Why refresh token is preserved
 
-This is a partial JWT role upgrade for the same session, not a new login. Replacing refresh with null would break rotation and force re-auth.
+This is a partial JWT update for the same session (historically a role upgrade), not a new login. Replacing refresh with null would break rotation and force re-auth.
 
 ## 5. Current-user role refresh
 
-After optional token update, `CreateShopUseCase` best-effort calls `AccountRepository.refreshCurrentUser()` (`GET /auth/me`). Roles are never decoded from JWT claims.
+After optional token update, `CreateShopUseCase` best-effort calls `AccountRepository.refreshCurrentUser()` (`GET /auth/me`). Roles and `shop_types` are never decoded from JWT claims.
 
 ## 6. Seller vs Public Shop APIs
 

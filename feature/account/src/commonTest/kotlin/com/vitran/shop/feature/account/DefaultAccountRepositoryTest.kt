@@ -41,7 +41,13 @@ class DefaultAccountRepositoryTest {
                                   "phone": "9123456789",
                                   "username": "javid",
                                   "email": "user@example.com",
+                                  "full_name": "Javid",
+                                  "referral_code": "V2",
+                                  "wishlist_share_slug": "wl-a1b2c3d4e5f67890",
+                                  "wishlist_public": false,
+                                  "product_match_notify": true,
                                   "roles": ["user", "future_role"],
+                                  "shop_types": [],
                                   "verified": true,
                                   "is_active": true,
                                   "created_at": "2026-01-01T12:00:00Z",
@@ -68,6 +74,9 @@ class DefaultAccountRepositoryTest {
         assertIs<CurrentUserState.Available>(state)
         assertTrue(state.user.roles.any { it is UserRole.Unknown && it.rawValue == "future_role" })
         assertTrue(roleCache.roles.any { it is UserRole.Unknown })
+        assertEquals("Javid", state.user.fullName)
+        assertEquals("V2", state.user.referralCode)
+        assertEquals(emptyList(), state.user.shopTypes)
     }
 
     @Test

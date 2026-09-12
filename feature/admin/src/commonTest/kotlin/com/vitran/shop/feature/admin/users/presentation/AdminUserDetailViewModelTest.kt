@@ -64,22 +64,70 @@ class AdminUserDetailViewModelTest {
         }
     }
 
-    private fun adminDetails() = AdminUserDetails(
-        id = 42,
+    @Test
+    fun submit_omitsRolesWhenActorIsAdmin() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val details = adminDetails(
+                id = 2,
+                roles = setOf(UserRole.User, UserRole.Admin),
+            )
+            val repository = FakeAdminUserRepository(details)
+            val viewModel = AdminUserDetailViewModel(
+                userId = 2,
+                repository = repository,
+                accountRepository = FakeAccountRepository(
+                    currentUser(id = 1, roles = setOf(UserRole.Admin)),
+                ),
+                permissions = AdminPermissions(),
+            )
+            advanceUntilIdle()
+
+            viewModel.setRoleSelected(UserRole.User, false)
+            viewModel.setRoleSelected(UserRole.Admin, true)
+            viewModel.submit()
+            advanceUntilIdle()
+
+            assertEquals(
+                UpdateAdminUserCommand(
+                    userId = 2,
+                    isActive = true,
+                    roles = null,
+                ),
+                repository.lastUpdate,
+            )
+            assertEquals(
+                setOf(UserRole.User, UserRole.Admin),
+                viewModel.uiState.value.detail?.roles,
+            )
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    private fun adminDetails(
+        id: Long = 42,
+        roles: Set<UserRole> = setOf(UserRole.User, UserRole.SuperAdmin),
+    ) = AdminUserDetails(
+        id = id,
         phone = "09123456789",
-        roles = setOf(UserRole.User, UserRole.SuperAdmin),
+        roles = roles,
         verified = true,
         isActive = true,
         createdAt = Instant.parse("2026-08-01T10:00:00Z"),
         updatedAt = Instant.parse("2026-08-20T10:00:00Z"),
     )
 
-    private fun currentUser() = User(
-        id = 42,
+    private fun currentUser(
+        id: Long = 42,
+        roles: Set<UserRole> = setOf(UserRole.SuperAdmin),
+    ) = User(
+        id = id,
         phone = "09123456789",
         username = null,
         email = null,
-        roles = setOf(UserRole.SuperAdmin),
+        roles = roles,
         verified = true,
         isActive = true,
         createdAt = Instant.parse("2026-08-01T10:00:00Z"),
@@ -110,7 +158,7 @@ private class FakeAdminUserRepository(
         return AppResult.Success(
             details.copy(
                 isActive = command.isActive,
-                roles = command.roles.map { UserRole.fromBackend(it) }.toSet(),
+                roles = command.roles?.map { UserRole.fromBackend(it) }?.toSet() ?: details.roles,
             ),
         )
     }

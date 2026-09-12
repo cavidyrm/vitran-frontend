@@ -211,6 +211,7 @@ class CreateProductViewModel(
         title: String,
         description: String,
         priceText: String,
+        compareAtPriceText: String,
         categoryId: String?,
         orderedMediaIds: List<String>,
         mode: CreateProductSubmitMode,
@@ -230,10 +231,17 @@ class CreateProductViewModel(
             }
             return
         }
-        val priceAmount = priceText.trim().toLongOrNull()
+        val priceAmount = parseMoneyAmount(priceText)
         if (priceAmount == null || priceAmount < 0) {
             _uiState.update {
                 it.copy(fieldErrors = CreateProductFieldErrors(price = "قیمت نامعتبر است"))
+            }
+            return
+        }
+        val compareAtPriceAmount = parseOptionalMoneyAmount(compareAtPriceText)
+        if (compareAtPriceText.isNotBlank() && compareAtPriceAmount == null) {
+            _uiState.update {
+                it.copy(fieldErrors = CreateProductFieldErrors(price = "قیمت قبل از تخفیف معتبر نیست."))
             }
             return
         }
@@ -256,6 +264,7 @@ class CreateProductViewModel(
                 title = trimmedTitle,
                 description = description,
                 priceAmount = priceAmount,
+                compareAtPriceAmount = compareAtPriceAmount,
                 category = category,
                 desiredActive = mode == CreateProductSubmitMode.Publish,
                 images = images,
@@ -323,4 +332,14 @@ private val CreateProductReasonAliases = mapOf(
     "images" to "summary",
     "description" to "summary",
     "active" to "summary",
+    "compare_at_price" to "price",
 )
+
+private fun parseMoneyAmount(raw: String): Long? =
+    raw.filter { it.isDigit() }.takeIf { it.isNotEmpty() }?.toLongOrNull()
+
+private fun parseOptionalMoneyAmount(raw: String): Long? {
+    val trimmed = raw.trim()
+    if (trimmed.isEmpty()) return null
+    return parseMoneyAmount(trimmed)
+}

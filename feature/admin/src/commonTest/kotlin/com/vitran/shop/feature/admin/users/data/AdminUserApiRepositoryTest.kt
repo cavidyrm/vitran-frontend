@@ -119,6 +119,29 @@ class AdminUserApiRepositoryTest {
         assertEquals(2, requestCount)
     }
 
+    @Test
+    fun updateUser_omitsRolesFromPatchBodyWhenNotProvided() = runTest {
+        val engine = MockEngine { request ->
+            assertEquals(HttpMethod.Patch, request.method)
+            assertEquals(
+                """{"is_active":true}""",
+                (request.body as TextContent).text,
+            )
+            jsonResponse(HttpStatusCode.OK, updatedUserEnvelope)
+        }
+
+        val updated = assertIs<AppResult.Success<*>>(
+            createRepository(engine).updateUser(
+                UpdateAdminUserCommand(
+                    userId = 42,
+                    isActive = true,
+                    roles = null,
+                ),
+            ),
+        ).value as com.vitran.shop.feature.admin.users.domain.model.AdminUserDetails
+        assertEquals(false, updated.isActive)
+    }
+
     private fun createRepository(engine: MockEngine): DefaultAdminUserRepository {
         val api = AdminUserApi(
             client = createAdminTestClient(engine),

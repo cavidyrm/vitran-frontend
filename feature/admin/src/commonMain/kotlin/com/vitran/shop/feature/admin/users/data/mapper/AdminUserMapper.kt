@@ -13,6 +13,7 @@ internal fun AdminUserListItemDto.toDomain() = AdminUserSummary(
     roles = roles.map { UserRole.fromBackend(it) }.toSet(),
     verified = verified,
     isActive = isActive,
+    shopTypes = shopTypes.orEmpty(),
 )
 
 internal fun AdminUserDetailsDto.toDomain() = AdminUserDetails(
@@ -23,4 +24,5 @@ internal fun AdminUserDetailsDto.toDomain() = AdminUserDetails(
     isActive = isActive,
     createdAt = Instant.parse(createdAt),
     updatedAt = Instant.parse(updatedAt),
+    shopTypes = shopTypes.orEmpty(),
 )

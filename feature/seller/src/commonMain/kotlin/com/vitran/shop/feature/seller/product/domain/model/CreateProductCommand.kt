@@ -12,4 +12,5 @@ data class CreateProductCommand(
     val category: CategorySlug,
     val desiredActive: Boolean,
     val images: List<SelectedFile> = emptyList(),
+    val compareAtPriceAmount: Long? = null,
 )

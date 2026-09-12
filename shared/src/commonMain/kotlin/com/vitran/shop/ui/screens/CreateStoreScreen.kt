@@ -93,6 +93,10 @@ fun CreateStoreScreen(
         createShopViewModel.onSlugInputChanged(state.slug)
     }
 
+    LaunchedEffect(state.storeName) {
+        createShopViewModel.onTitleInputChanged(state.storeName)
+    }
+
     LaunchedEffect(createShopViewModel) {
         createShopViewModel.effects.collect { effect ->
             when (effect) {

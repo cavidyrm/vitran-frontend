@@ -16,9 +16,9 @@ Client role state can be stale or manipulated. It cannot replace server authoriz
 2. Client checks are UX-only; backend authorization and server `403` responses are authoritative.
 3. Unknown roles, missing account state, and the `user` role grant no admin privilege.
 4. Both Admin and Super Admin may access normal admin workflows.
-5. Assigning the `admin` role is Super Admin-only.
+5. Assigning roles (and sending `roles` on admin-user PATCH) is Super Admin-only. A normal Admin cannot edit roles and omits `roles` from the body.
 6. `super_admin` is never offered as an assignable role.
-7. Existing `super_admin` is preserved in an admin-user PATCH payload.
+7. When Super Admin sends `roles`, existing target `super_admin` is preserved in the PATCH payload.
 8. City deletion, taxonomy import, plan deletion, and static-page deletion are Super Admin-only client actions.
 9. Updating the current user's roles/status refreshes `AccountRepository` state.
 10. Views must not scatter direct role-set checks when an `AdminPermissions` capability exists.

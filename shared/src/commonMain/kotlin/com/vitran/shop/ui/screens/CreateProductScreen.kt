@@ -186,6 +186,7 @@ fun CreateProductScreen(
             title = state.title,
             description = state.description,
             priceText = state.price,
+            compareAtPriceText = state.compareAtPrice,
             categoryId = state.categoryId,
             orderedMediaIds = state.media.map { it.id },
             mode =

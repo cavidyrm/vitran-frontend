@@ -9,6 +9,7 @@ data class ProductSummary(
     val categorySlug: CategorySlug?,
     val title: String,
     val priceAmount: Long,
+    val compareAtPriceAmount: Long? = null,
     val active: Boolean,
     val confirmed: Boolean,
     val images: List<ProductImage>,

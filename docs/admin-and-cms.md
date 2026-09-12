@@ -50,17 +50,18 @@ Client role checks control navigation and affordances only. A visible or enabled
 | Capability | Admin | Super Admin |
 |------------|-------|-------------|
 | `canAccessAdmin` | Yes | Yes |
+| `canEditUserRoles` | No | Yes |
 | `canAssignAdminRole` | No | Yes |
 | `canDeleteCity` | No | Yes |
 | `canImportTaxonomy` | No | Yes |
 | `canDeletePlan` | No | Yes |
 | `canDeleteStaticPage` | No | Yes |
 
-Customer, seller, empty, and unknown-role sets receive no admin privilege. `assignableRoles` always offers customer/seller and offers admin only to Super Admin. It never offers `super_admin`.
+User, empty, and unknown-role sets receive no admin privilege. `assignableRoles` is empty for a normal Admin (roles are read-only). Super Admin is offered `user` and `admin`. It never offers `super_admin`.
 
 ## 7. Role-update safety
 
-Admin user PATCH sends only `is_active` and `roles`. `buildRolesUpdatePayload` prevents a normal Admin from assigning the admin role and preserves an existing target `super_admin` role even though it is not editable in the form. Updating the current user triggers `AccountRepository.refreshCurrentUser()`.
+Admin user PATCH always sends `is_active`. Only Super Admin may edit roles; that actor includes `roles` in the body (`buildRolesUpdatePayload`). A normal Admin omits `roles` entirely so the backend keeps the current set. Super Admin cannot grant `super_admin`; an existing target `super_admin` (and unknown roles) stay in the array when roles are sent. Updating the current user triggers `AccountRepository.refreshCurrentUser()`.
 
 See [ADR 0012](decisions/0012-admin-rbac-client-policy.md).
 

@@ -132,6 +132,7 @@ class CreateProductViewModelTest {
                 title = "Widget",
                 description = "Desc",
                 priceText = "1000",
+                compareAtPriceText = "1200",
                 categoryId = "aa-1",
                 orderedMediaIds = emptyList(),
                 mode = CreateProductSubmitMode.Publish,
@@ -143,6 +144,7 @@ class CreateProductViewModelTest {
                 vm.uiState.value.createdProduct?.publicationState,
             )
             assertTrue(repo.lastCreate?.desiredActive == true)
+            assertEquals(1200L, repo.lastCreate?.compareAtPriceAmount)
         } finally {
             Dispatchers.resetMain()
         }
@@ -162,10 +164,10 @@ class CreateProductViewModelTest {
                     FakeEntitlementsUseCase(),
                 )
             advanceUntilIdle()
-            vm.submit("T", "", "10", "1", emptyList(), CreateProductSubmitMode.Draft)
+            vm.submit("T", "", "10", "", "1", emptyList(), CreateProductSubmitMode.Draft)
             testScheduler.runCurrent()
             assertTrue(vm.uiState.value.isSubmitting)
-            vm.submit("T2", "", "10", "1", emptyList(), CreateProductSubmitMode.Draft)
+            vm.submit("T2", "", "10", "", "1", emptyList(), CreateProductSubmitMode.Draft)
             assertEquals(1, repo.createCalls)
             repo.completeCreate()
             advanceUntilIdle()
@@ -203,7 +205,7 @@ class CreateProductViewModelTest {
                     FakeEntitlementsUseCase(),
                 )
             advanceUntilIdle()
-            vm.submit("T", "", "10", "1", emptyList(), CreateProductSubmitMode.Draft)
+            vm.submit("T", "", "10", "", "1", emptyList(), CreateProductSubmitMode.Draft)
             advanceUntilIdle()
             assertEquals("عنوان کوتاه است", vm.uiState.value.fieldErrors.title)
             assertNull(vm.uiState.value.createdProduct)
@@ -257,6 +259,9 @@ private class FakeShopRepo(
         slug: com.vitran.shop.feature.marketplace.shop.domain.model.ShopSlug,
         excludeId: ShopId?,
     ) = AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun checkTitleAvailability(title: String, excludeId: ShopId?) =
+        AppResult.Failure(AppError.Unexpected())
 
     override suspend fun createShop(command: com.vitran.shop.feature.seller.shop.domain.model.CreateShopCommand) =
         AppResult.Failure(AppError.Unexpected())

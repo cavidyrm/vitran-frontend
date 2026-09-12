@@ -214,6 +214,9 @@ private open class ThrowingSellerShopRepository : SellerShopRepository {
     override suspend fun checkSlugAvailability(slug: ShopSlug, excludeId: ShopId?) =
         error("unexpected")
 
+    override suspend fun checkTitleAvailability(title: String, excludeId: ShopId?) =
+        error("unexpected")
+
     override suspend fun createShop(command: CreateShopCommand) = error("unexpected")
 
     override suspend fun getMyShops(query: SellerShopListQuery) = error("unexpected")

@@ -52,8 +52,23 @@ internal data class LoginVerificationRequiredDataDto(
 )
 
 @Serializable
-internal data class LogoutRequestDto(
-    @SerialName("refresh_token") val refreshToken: String,
+internal data class CheckPhoneRequestDto(
+    val phone: String,
+)
+
+@Serializable
+internal data class CheckPhoneDataDto(
+    val status: String,
+    val exists: Boolean = false,
+    @SerialName("can_register") val canRegister: Boolean = false,
+    @SerialName("can_login") val canLogin: Boolean = false,
+    @SerialName("can_resend") val canResend: Boolean = false,
+    @SerialName("can_reset_password") val canResetPassword: Boolean = false,
+    @SerialName("next_step") val nextStep: String? = null,
+    @SerialName("otp_purpose") val otpPurpose: String? = null,
+    @SerialName("otp_ttl") val otpTtl: Int = 0,
+    @SerialName("otp_expires_at") val otpExpiresAt: String? = null,
+    @SerialName("resend_after") val resendAfter: Int = 0,
 )
 
 @Serializable

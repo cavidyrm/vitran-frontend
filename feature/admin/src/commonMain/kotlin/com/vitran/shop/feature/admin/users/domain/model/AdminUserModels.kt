@@ -9,6 +9,7 @@ data class AdminUserSummary(
     val roles: Set<UserRole>,
     val verified: Boolean,
     val isActive: Boolean,
+    val shopTypes: List<String> = emptyList(),
 )
 
 data class AdminUserDetails(
@@ -19,6 +20,7 @@ data class AdminUserDetails(
     val isActive: Boolean,
     val createdAt: Instant,
     val updatedAt: Instant,
+    val shopTypes: List<String> = emptyList(),
 )
 
 data class AdminUserQuery(
@@ -32,5 +34,5 @@ data class AdminUserQuery(
 data class UpdateAdminUserCommand(
     val userId: Long,
     val isActive: Boolean,
-    val roles: List<String>,
+    val roles: List<String>? = null,
 )

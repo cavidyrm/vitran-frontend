@@ -24,6 +24,7 @@ import com.vitran.shop.ui.sections.account.users.AccountUserEditForm
 import com.vitran.shop.ui.sections.account.users.AccountUserStatus
 import com.vitran.shop.ui.sections.account.users.AccountUserSummaryRail
 import com.vitran.shop.ui.sections.account.users.AccountUserSummaryStack
+import com.vitran.shop.ui.sections.account.users.displayedAccountUserRoles
 import com.vitran.shop.ui.sections.account.users.toAccountUser
 import com.vitran.shop.ui.sections.account.users.toAccountUserRole
 import com.vitran.shop.ui.sections.account.users.toUserRole
@@ -69,7 +70,11 @@ fun AccountUserDetailScreen(
             AccountUserDetailContent(
                 initial = detail.toAccountUser().copy(
                     status = if (state.isActive) AccountUserStatus.Active else AccountUserStatus.Inactive,
-                    roles = state.selectedEditableRoles.mapNotNull { it.toAccountUserRole() },
+                    roles = displayedAccountUserRoles(
+                        selectedEditableRoles = state.selectedEditableRoles,
+                        existingRoles = detail.roles,
+                        assignableRoles = state.assignableRoles,
+                    ),
                 ),
                 availableRoles = state.assignableRoles.mapNotNull { it.toAccountUserRole() },
                 onBack = onBack,

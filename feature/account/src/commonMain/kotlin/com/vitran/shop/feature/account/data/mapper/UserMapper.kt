@@ -15,4 +15,10 @@ internal fun UserDto.toDomain(): User = User(
     isActive = isActive,
     createdAt = Instant.parse(createdAt),
     updatedAt = Instant.parse(updatedAt),
+    fullName = fullName,
+    referralCode = referralCode,
+    wishlistShareSlug = wishlistShareSlug,
+    wishlistPublic = wishlistPublic,
+    productMatchNotify = productMatchNotify,
+    shopTypes = shopTypes.orEmpty(),
 )

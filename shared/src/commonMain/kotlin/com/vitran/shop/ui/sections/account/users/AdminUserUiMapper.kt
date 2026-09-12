@@ -45,5 +45,19 @@ fun AccountUserRole.toUserRole(): UserRole =
         AccountUserRole.SuperAdmin -> UserRole.SuperAdmin
     }
 
+fun displayedAccountUserRoles(
+    selectedEditableRoles: Set<UserRole>,
+    existingRoles: Set<UserRole>,
+    assignableRoles: Collection<UserRole>,
+): List<AccountUserRole> {
+    val assignable = assignableRoles.toSet()
+    return buildList {
+        addAll(selectedEditableRoles)
+        existingRoles.forEach { role ->
+            if (role !in assignable) add(role)
+        }
+    }.mapNotNull(UserRole::toAccountUserRole).distinct()
+}
+
 private fun Set<UserRole>.toAccountUserRoles(): List<AccountUserRole> =
     mapNotNull(UserRole::toAccountUserRole).distinct()

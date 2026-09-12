@@ -13,6 +13,12 @@ data class User(
     val isActive: Boolean,
     val createdAt: Instant,
     val updatedAt: Instant,
+    val fullName: String? = null,
+    val referralCode: String? = null,
+    val wishlistShareSlug: String? = null,
+    val wishlistPublic: Boolean = false,
+    val productMatchNotify: Boolean = true,
+    val shopTypes: List<String> = emptyList(),
 )
 
 sealed interface CurrentUserState {

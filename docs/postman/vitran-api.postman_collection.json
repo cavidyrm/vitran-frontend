@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Vitran API",
-    "description": "Vitran marketplace backend — **104 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`.\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** then **Verify** (OTP logged when `SMS_OTP_PROVIDER=log`), or **Login**.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (seller) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
+    "description": "Vitran marketplace backend — **116 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Profile & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -28,6 +28,10 @@
     {
       "key": "referralCreditId",
       "value": "1"
+    },
+    {
+      "key": "personId",
+      "value": "2"
     }
   ],
   "item": [
@@ -112,6 +116,52 @@
       "name": "Auth",
       "item": [
         {
+          "name": "Check phone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"9123456789\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/check-phone",
+            "description": "Phone-first availability. **Does not send SMS.** Returns `status` (`available` / `registered` / `pending_verification` / `unverified` / `inactive`), `next_step`, and live `otp_ttl` / `resend_after` when a code or cooldown is active. Call after the user finishes entering a number so the client can route to register, login, or verify without 409/404/429 loops. Rate-limited with login (`RuleLogin`)."
+          },
+          "response": [
+            {
+              "name": "200 Available",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"وضعیت شماره بررسی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"status\": \"available\",\n    \"exists\": false,\n    \"can_register\": true,\n    \"can_login\": false,\n    \"can_resend\": false,\n    \"can_reset_password\": false,\n    \"next_step\": \"register\",\n    \"otp_ttl\": 0,\n    \"resend_after\": 0\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 Pending verification",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"وضعیت شماره بررسی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"status\": \"pending_verification\",\n    \"exists\": false,\n    \"can_register\": false,\n    \"can_login\": false,\n    \"can_resend\": false,\n    \"can_reset_password\": false,\n    \"next_step\": \"verify\",\n    \"otp_purpose\": \"verify\",\n    \"otp_ttl\": 245,\n    \"otp_expires_at\": \"2026-09-06T20:35:00Z\",\n    \"resend_after\": 72\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
           "name": "Register",
           "event": [
             {
@@ -139,7 +189,7 @@
               "raw": "{\n  \"phone\": \"9123456789\",\n  \"password\": \"secret12\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/register",
-            "description": "Optional `referral_code` — use **Register with referral code** instead."
+            "description": "Starts signup: validates phone/password, stores a **pending signup** in Redis (**10 min**, `max(5 min, TEMP_TOKEN_TTL_MIN)`), sends a 6-digit **OTP (5 min TTL)**, returns `temp_token` (**10 min**) plus `otp_ttl`, `otp_expires_at`, and `resend_after` so the client can show a countdown. **No `users` row is created yet.** Prefer **Check phone** first. Next step is **Verify OTP** before the code expires. Optional `referral_code` — or use **Register with referral code**. `otp_code` appears in the body only when `EXPOSE_OTP_IN_RESPONSE=true` (development). Already-verified phone → `409`. Re-register while the OTP is still valid resumes the same code (new `temp_token`, remaining `otp_ttl`) — no extra SMS and no `429`. A new SMS is sent only after the 5-minute OTP expires. Use **Resend OTP** to force a new SMS (90 s cooldown → `429`)."
           },
           "response": [
             {
@@ -153,7 +203,20 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"ثبت‌نام با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"temp_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n    \"otp_code\": \"123456\"\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"ثبت‌نام با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"temp_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n    \"otp_ttl\": 300,\n    \"otp_expires_at\": \"2026-09-06T20:35:00Z\",\n    \"resend_after\": 90\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "409 Phone already registered",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"کاربر از قبل وجود دارد.\",\n  \"code\": 409,\n  \"data\": {},\n  \"errors\": [{ \"reason\": \"_global\", \"messages\": [\"کاربر از قبل وجود دارد.\"] }]\n}"
             }
           ]
         },
@@ -185,7 +248,7 @@
               "raw": "{\n  \"phone\": \"9121111111\",\n  \"password\": \"secret12\",\n  \"referral_code\": \"{{referralCode}}\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/register",
-            "description": "Link new account to referrer. Set `referralCode` from **Referrals → Get my referral profile** (referrer must be logged in first). Rewards trigger on referred user's **first** paid shop plan purchase."
+            "description": "Same as Register: pending signup in Redis (**10 min**) + OTP (**5 min**) + `temp_token` (**10 min**). `referral_code` is stored and attached when **Verify OTP** succeeds (not at register time). Set `referralCode` from **Referrals → Get my referral profile** (referrer must be logged in first). Rewards trigger on the referred user's **first** paid shop plan purchase."
           },
           "response": []
         },
@@ -219,7 +282,7 @@
               "raw": "{\n  \"temp_token\": \"{{tempToken}}\",\n  \"code\": \"{{otpCode}}\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/verify",
-            "description": "Send `temp_token` and 6-digit OTP. While SMS is not connected, `otp_code` is returned in Register / Login (403) / Resend OTP / Forgot password responses when `EXPOSE_OTP_IN_RESPONSE=true` (default in development)."
+            "description": "Complete signup. Body: `temp_token` from Register + 6-digit SMS OTP (`code`). OTP is valid for **5 minutes**; `temp_token` for **10 minutes** (`TEMP_TOKEN_TTL_MIN`). **Correct OTP** → inserts a verified `users` row and returns tokens. **Wrong/expired OTP** → `400`; no account is created. After 5 failed attempts the pending signup is dropped. Expired `temp_token` → `401`. Enter the SMS code in `code` (or `{{otpCode}}` only if you enabled `EXPOSE_OTP_IN_RESPONSE` locally)."
           },
           "response": [
             {
@@ -234,6 +297,19 @@
                 }
               ],
               "body": "{\n  \"success\": true,\n  \"message\": \"شماره تلفن با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"tokens\": {\n      \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n      \"refresh_token\": \"a1b2c3d4-e5f6-...\",\n      \"expires_at\": \"2026-06-09T12:30:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 Wrong OTP",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"کد تأیید نامعتبر یا منقضی شده است.\",\n  \"code\": 400,\n  \"data\": {},\n  \"errors\": [{ \"reason\": \"code\", \"messages\": [\"کد تأیید نامعتبر یا منقضی شده است.\"] }]\n}"
             }
           ]
         },
@@ -268,7 +344,8 @@
               "mode": "raw",
               "raw": "{\n  \"phone\": \"9123456789\",\n  \"password\": \"secret12\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/auth/login"
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "description": "Verified accounts get tokens. Leftover unverified rows (old signup flow) get `403` + a new `temp_token` (**10 min**) and a new OTP (**5 min**) so the client can call **Verify OTP**. New signups never leave an unverified row — they stay in Redis until verify succeeds."
           },
           "response": [
             {
@@ -295,7 +372,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": false,\n  \"message\": \"تأیید شماره تلفن الزامی است\",\n  \"code\": 403,\n  \"data\": {\n    \"temp_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n    \"otp_code\": \"123456\"\n  },\n  \"errors\": [{ \"reason\": \"phone\", \"messages\": [\"شماره تلفن تأیید نشده است.\"] }]\n}"
+              "body": "{\n  \"success\": false,\n  \"message\": \"تأیید شماره تلفن الزامی است\",\n  \"code\": 403,\n  \"data\": {\n    \"temp_token\": \"eyJhbGciOiJIUzI1NiIs...\"\n  },\n  \"errors\": [{ \"reason\": \"phone\", \"messages\": [\"شماره تلفن تأیید نشده است.\"] }]\n}"
             },
             {
               "name": "400 Invalid credentials",
@@ -365,14 +442,10 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
-            },
             "url": "{{baseUrl}}/api/v1/auth/logout"
           },
           "response": [
@@ -405,7 +478,8 @@
               "mode": "raw",
               "raw": "{\n  \"phone\": \"9123456789\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/auth/resend-otp"
+            "url": "{{baseUrl}}/api/v1/auth/resend-otp",
+            "description": "Issues a **new 5-minute** verification OTP for a **pending signup** (Redis) or a leftover unverified user. Success returns `otp_ttl` / `otp_expires_at` / `resend_after`. **90 s** cooldown after the last send (`429` + `Retry-After` + remaining TTL and a fresh `temp_token` if pending). Does not refresh the pending-signup TTL (default 10 min from Register). Unknown or already-verified phones → `404`. `otp_code` only when `EXPOSE_OTP_IN_RESPONSE=true`."
           },
           "response": [
             {
@@ -419,7 +493,20 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"کد تأیید ارسال شد\",\n  \"code\": 1,\n  \"data\": { \"otp_code\": \"123456\" },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"کد تأیید ارسال شد\",\n  \"code\": 1,\n  \"data\": {\n    \"otp_ttl\": 300,\n    \"otp_expires_at\": \"2026-09-06T20:35:00Z\",\n    \"resend_after\": 90\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Unknown phone",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"کاربر یافت نشد.\",\n  \"code\": 404,\n  \"data\": {},\n  \"errors\": [{ \"reason\": \"_global\", \"messages\": [\"کاربر یافت نشد.\"] }]\n}"
             }
           ]
         },
@@ -437,7 +524,8 @@
               "mode": "raw",
               "raw": "{\n  \"phone\": \"9123456789\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/auth/forgot-password"
+            "url": "{{baseUrl}}/api/v1/auth/forgot-password",
+            "description": "Sends a reset OTP (**5 min TTL**) only if the phone belongs to a **verified** user. Success returns `otp_ttl` / `resend_after`. **90 s** cooldown (`429` + `Retry-After`); **10** sends / 24 h (reset purpose). Unknown or unverified phones → `404`. `otp_code` only when `EXPOSE_OTP_IN_RESPONSE=true`."
           },
           "response": [
             {
@@ -451,7 +539,20 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"کد تأیید ارسال شد\",\n  \"code\": 1,\n  \"data\": { \"otp_code\": \"123456\" },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"کد تأیید ارسال شد\",\n  \"code\": 1,\n  \"data\": {\n    \"otp_ttl\": 300,\n    \"otp_expires_at\": \"2026-09-06T20:35:00Z\",\n    \"resend_after\": 90,\n    \"otp_purpose\": \"reset\"\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Unknown phone",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"کاربر یافت نشد.\",\n  \"code\": 404,\n  \"data\": {},\n  \"errors\": [{ \"reason\": \"_global\", \"messages\": [\"کاربر یافت نشد.\"] }]\n}"
             }
           ]
         },
@@ -469,7 +570,8 @@
               "mode": "raw",
               "raw": "{\n  \"phone\": \"9123456789\",\n  \"code\": \"123456\",\n  \"new_password\": \"newsecret12\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/auth/reset-password"
+            "url": "{{baseUrl}}/api/v1/auth/reset-password",
+            "description": "Set a new password using the 6-digit code from **Forgot password** (valid **5 minutes**). Phone must belong to a **verified** user. Wrong/expired code → `400`. After 5 failed guesses the stored code is discarded."
           },
           "response": [
             {
@@ -643,7 +745,8 @@
             },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/auth/me"
+            "url": "{{baseUrl}}/api/v1/auth/me",
+            "description": "Current user. `roles` is the permission rank (`user` / `admin` / `super_admin`). `shop_types` is derived from owned shops: `[]` = viewer only, `retailer` and/or `wholesaler`. The same account can own both types. `product_match_notify` toggles size-match alerts (see **Profile & Persons — Me → Update notification settings**). `wishlist_share_slug` / `wishlist_public` power public wishlist sharing."
           },
           "response": [
             {
@@ -657,7 +760,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات پروفایل با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"roles\": [\"customer\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات پروفایل با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -699,7 +802,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"roles\": [\"customer\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T11:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T11:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         }
@@ -723,7 +826,7 @@
             },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/admin/users?per_page=20&role=customer&phone=0912&is_active=true",
+            "url": "{{baseUrl}}/api/v1/admin/users?per_page=20&role=user&phone=0912&is_active=true",
             "description": "Filter: `role`, `phone`, `is_active`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
           },
           "response": [
@@ -738,7 +841,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"لیست کاربران با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"users\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 2,\n          \"phone\": \"9123456789\",\n          \"roles\": [\n            \"customer\"\n          ],\n          \"verified\": true,\n          \"is_active\": true\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست کاربران با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"users\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 2,\n          \"phone\": \"9123456789\",\n          \"roles\": [\n            \"user\"\n          ],\n          \"verified\": true,\n          \"is_active\": true\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -771,7 +874,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات کاربر با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"roles\": [\"customer\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات کاربر با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -797,10 +900,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"is_active\": true,\n  \"roles\": [\"customer\", \"seller\"]\n}"
+              "raw": "{\n  \"is_active\": true,\n  \"roles\": [\"user\"]\n}"
             },
             "url": "{{baseUrl}}/api/v1/admin/users/2",
-            "description": "Roles: `customer`, `seller`, `admin`, `super_admin`. Only `super_admin` may assign `admin`. Existing `super_admin` users must keep `super_admin` in the roles array; it cannot be granted to new users via API."
+            "description": "Roles are hierarchical: `user` < `admin` < `super_admin`. Only `super_admin` may send `roles` (`user` and/or `admin`; `super_admin` cannot be granted via API). A normal `admin` omits `roles` so the current set is unchanged. Existing `super_admin` users must keep `super_admin` in the roles array when it is sent."
           },
           "response": [
             {
@@ -814,7 +917,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"کاربر با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"roles\": [\"customer\", \"seller\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"کاربر با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"roles\": [\"user\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         }
@@ -1448,7 +1551,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/seller/shops/check-slug?slug=my-shop&exclude_id=1",
-            "description": "Debounce on client (~300–500 ms). `customer` or `seller` token."
+            "description": "Check whether a shop **slug** is available. Debounce on client (~300–500 ms or on blur) — **not** on every keystroke. `user` token (admin and super_admin inherit). No dedicated rate limit; the global API cap applies (`RuleGlobal`, 1200/min per user in production). `429` + `Retry-After` if exceeded. `exclude_id` ignores the shop being edited."
           },
           "response": [
             {
@@ -1476,25 +1579,92 @@
                 }
               ],
               "body": "{\n  \"success\": true,\n  \"message\": \"بررسی نامک انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"slug_check\": {\n      \"slug\": \"my-shop\",\n      \"available\": false\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "429 Global rate limit",
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید.\",\n  \"code\": 429,\n  \"data\": {},\n  \"errors\": [{ \"reason\": \"_global\", \"messages\": [\"تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید.\"] }]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Check title availability",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/check-title?title=My%20Shop&exclude_id=1",
+            "description": "Check whether a shop **name** (`title`) already exists. Case-insensitive, trimmed. Debounce on client (~300–500 ms or on blur) — **not** on every keystroke. `user` token (admin and super_admin inherit). Informational — create still allows duplicate titles; slug is the unique key. No dedicated rate limit; the global API cap applies (`RuleGlobal`, 1200/min per user in production). `429` + `Retry-After` if exceeded. `exclude_id` ignores the shop being edited."
+          },
+          "response": [
+            {
+              "name": "200 Available",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بررسی نام فروشگاه انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"title_check\": {\n      \"title\": \"My Shop\",\n      \"available\": true\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 Taken",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بررسی نام فروشگاه انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"title_check\": {\n      \"title\": \"My Shop\",\n      \"available\": false\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "429 Global rate limit",
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید.\",\n  \"code\": 429,\n  \"data\": {},\n  \"errors\": [{ \"reason\": \"_global\", \"messages\": [\"تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره تلاش کنید.\"] }]\n}"
             }
           ]
         },
         {
           "name": "Create shop",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const j = pm.response.json();",
-                  "if (j.data?.tokens?.access_token) {",
-                  "  pm.collectionVariables.set('accessToken', j.data.tokens.access_token);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "auth": {
               "type": "bearer",
@@ -1518,7 +1688,7 @@
               "raw": "{\n  \"title\": \"My Shop\",\n  \"slug\": \"my-shop\",\n  \"description\": \"Best products in town\",\n  \"address\": \"123 Main St\",\n  \"phone_number\": \"02112345678\",\n  \"support_times\": \"9-18\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1],\n  \"whatsapp\": \"https://wa.me/989123456789\",\n  \"telegram\": \"@myshop\",\n  \"instagram\": \"@myshop\",\n  \"website\": \"https://example.com\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/seller/shops",
-            "description": "Creates with `active=false`, `confirmed=false`. Adds `seller` role when missing. First shop returns `data.tokens.access_token` with updated JWT roles (saved automatically). Then call **List my shops**. Omit `slug` to auto-generate from title."
+            "description": "Creates with `active=false`, `confirmed=false`. Role is unchanged (ownership is `shops.owner_id`). Then call **List my shops**. Omit `slug` to auto-generate from title."
           },
           "response": [
             {
@@ -1532,7 +1702,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"tokens\": {\n      \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\",\n      \"expires_at\": \"2026-06-09T14:00:00Z\"\n    },\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"description\": \"Best products in town\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"qr_code_url\": \"http://localhost:9000/vitran/shops/1/qr.png\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"description\": \"Best products in town\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"qr_code_url\": \"http://localhost:9000/vitran/shops/1/qr.png\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             },
             {
               "name": "409 Slug taken",
@@ -1599,7 +1769,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/seller/shops/1/subscription",
-            "description": "Per-shop subscription. Requires `seller` token and shop ownership. `days_remaining` / `expires_at` are null on Free."
+            "description": "Per-shop subscription. Requires `user` token and shop ownership. `days_remaining` / `expires_at` are null on Free."
           },
           "response": [
             {
@@ -1738,7 +1908,7 @@
               "raw": "{\n  \"title\": \"My Shop Updated\",\n  \"slug\": \"my-shop\",\n  \"description\": \"Updated description\",\n  \"address\": \"456 New St\",\n  \"phone_number\": \"02187654321\",\n  \"support_times\": \"10-20\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1, 2],\n  \"whatsapp\": \"https://wa.me/989123456789\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/seller/shops/1",
-            "description": "Requires `seller` token. Sets `active=false`, `confirmed=false` (needs re-confirmation)."
+            "description": "Requires `user` token (must own the shop). Sets `active=false`, `confirmed=false` (needs re-confirmation)."
           },
           "response": [
             {
@@ -2023,8 +2193,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/catalog/search?category_slug=aa-1-2-3-4&min_price=100000&max_price=500000&min_rating=4&attributes[color]=color__red,color__blue&sort=price_asc&per_page=20",
-            "description": "Shop.app-style discovery: optional `q`/`query` plus combinable filters. Filter-only browse works without text query.\n\n**Filters:** `city_id`/`city_slug`, comma-separated `category_slug`, comma-separated `shop_id`, `min_price`/`max_price`, `min_rating` (1–4 only: 1-and-up … 4-and-up average reviews), `following=true` (JWT — products from followed shops only), `attributes[attr]=value1,value2` or `attr_color=...` (OR within attribute, AND across attributes), `sort` (`relevance`, `newest`, `price_asc`, `price_desc`).\n\nResponse includes `data.filters` echo + `data.products` list page.\n\n**Pagination:** cursor mode (omit `page`) or `page=1` offset mode — same as other list endpoints."
+            "url": "{{baseUrl}}/api/v1/catalog/search?category_slug=aa-1-2-3-4&min_price=100000&max_price=500000&min_rating=4&on_sale=true&attributes[color]=color__red,color__blue&sort=price_asc&per_page=20",
+            "description": "Shop.app-style discovery: optional `q`/`query` plus combinable filters. Filter-only browse works without text query.\n\n**Filters:** `city_id`/`city_slug`, comma-separated `category_slug`, comma-separated `shop_id`, `min_price`/`max_price`, `min_rating` (1–4 only: 1-and-up … 4-and-up average reviews), `following=true` (JWT — products from followed shops only), `on_sale=true` (live products with `compare_at_price > price`), `attributes[attr]=value1,value2` or `attr_color=...` (OR within attribute, AND across attributes), `sort` (`relevance`, `newest`, `price_asc`, `price_desc`).\n\nResponse includes `data.filters` echo + `data.products` list page. Product objects include `compare_at_price` when discounted.\n\n**Pagination:** cursor only (`per_page` / `limit` + optional `cursor`). `?page=` is rejected on this endpoint."
           },
           "response": []
         },
@@ -2034,7 +2204,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/products/search?q=widget&city_slug=tehran&category_slug=aa-1-2-3-4&per_page=20",
-            "description": "Query `q` or `title`. Live products only. SEO filters: `city_id`/`city_slug`, `category_slug`/`category_slug`, `shop_id`/`shop_slug`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+            "description": "Query `q` or `title`. Live products only. SEO filters: `city_id`/`city_slug`, `category_slug`/`category_slug`, `shop_id`/`shop_slug`.\n\n**Pagination:** cursor only (`per_page` / `limit` + optional `cursor`). `?page=` is rejected on this endpoint."
           },
           "response": [
             {
@@ -2275,6 +2445,12 @@
                   "type": "text"
                 },
                 {
+                  "key": "compare_at_price",
+                  "value": "200000",
+                  "type": "text",
+                  "description": "Optional pre-discount price. Product is on sale when this is set and greater than `price`. Omit/empty to clear."
+                },
+                {
                   "key": "description",
                   "value": "High quality widget",
                   "type": "text"
@@ -2294,7 +2470,7 @@
               ]
             },
             "url": "{{baseUrl}}/api/v1/seller/shops/1/products",
-            "description": "Requires `seller` token and shop ownership. Seller sets `active`; `confirmed=false` until admin approves. `category_slug` must belong to the shop."
+            "description": "Requires `user` token and shop ownership. Seller sets `active`; `confirmed=false` until admin approves. `category_slug` must belong to the shop. Optional `compare_at_price` marks a discount (same units as `price`)."
           },
           "response": [
             {
@@ -2344,6 +2520,12 @@
                   "key": "price",
                   "value": "175000",
                   "type": "text"
+                },
+                {
+                  "key": "compare_at_price",
+                  "value": "200000",
+                  "type": "text",
+                  "description": "Optional pre-discount price. Send empty to clear the discount. Omit the field to leave unchanged."
                 },
                 {
                   "key": "description",
@@ -2509,7 +2691,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/seller/products/1",
-            "description": "Requires `seller` token. Returns product if the authenticated user owns the shop (pending or live)."
+            "description": "Requires `user` token (must own the shop). Returns product if the authenticated user owns the shop (pending or live)."
           },
           "response": [
             {
@@ -3125,6 +3307,62 @@
       "name": "Home",
       "item": [
         {
+          "name": "Get home screen (server-driven)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Optional — omit token for guest rails. Authenticated rails (picked-for-you, following, for-you) are omitted for guests."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home/screen?city_id=1",
+            "description": "Server-driven homepage. Render `data.screen.sections` in order; skip unknown `type`/`layout`. Seeded rails include `picked-for-you` (`source=product_matches`) when the user is logged in and has matches. Paginate a rail with `more.path`, e.g. `GET /home/sections/picked-for-you?cursor=…`."
+          },
+          "response": []
+        },
+        {
+          "name": "Paginate home section (picked-for-you)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Required — `picked-for-you` is auth-only (product_matches source)."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home/sections/picked-for-you?limit=20",
+            "description": "Paginate the **picked-for-you** rail from `GET /home/screen` (`more.path`). Same products as **Product Matches — Me → List product matches**, shaped as a home section. Query: `limit` (default 12, max 100), optional `cursor` from previous `next_cursor`, optional `city_id`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"slug\": \"picked-for-you\",\n      \"title\": \"Picked for you\",\n      \"type\": \"product_grid\",\n      \"layout\": \"horizontal_scroll\",\n      \"source\": \"product_matches\",\n      \"per_page\": 20,\n      \"has_more\": false,\n      \"results\": [\n        {\n          \"id\": 501,\n          \"title\": \"Jacket\",\n          \"price\": 890000,\n          \"compare_at_price\": 1200000\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
           "name": "Get home feed",
           "request": {
             "auth": {
@@ -3174,8 +3412,8 @@
             },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10",
-            "description": "Build a personalized home screen by requesting only the sections you need. Each section name is a query param with a limit (default 12, max 100).\n\n**Product sections:** `latest_products`, `following_products`, `favorite_products`, `featured_products`, `personal_products`, `popular_products`.\n\n**Shop sections:** `latest_shops`, `following_shops` (shops you follow), `favorite_shops` (top live shops by rating and analytics views — discovery, not your follow list).\n\n**City filter:** `city_id` / `city_slug` — limits products and shops to those serving the city.\n\n**Pagination:** `{section}_cursor` for cursor mode on paginated sections (e.g. `following_products_cursor`). Response: `data.feed.sections.{section}` with `{ per_page, has_more, next_cursor?, results }`.\n\nReplaces the removed `/me/home/following-products` route — use `following_products` here instead."
+            "url": "{{baseUrl}}/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10&product_matches=12",
+            "description": "Build a personalized home screen by requesting only the sections you need. Each section name is a query param with a limit (default 12, max 100).\n\n**Product sections:** `latest_products`, `following_products`, `favorite_products`, `featured_products`, `personal_products`, `popular_products`, `product_matches` (picked-for-you; requires auth + saved sizing profile).\n\n**Shop sections:** `latest_shops`, `following_shops` (shops you follow), `favorite_shops` (top live shops by rating and analytics views — discovery, not your follow list).\n\n**City filter:** `city_id` / `city_slug` — limits products and shops to those serving the city.\n\n**Pagination:** `{section}_cursor` for cursor mode on paginated sections (e.g. `following_products_cursor`). Response: `data.feed.sections.{section}` with `{ per_page, has_more, next_cursor?, results }`.\n\nReplaces the removed `/me/home/following-products` route — use `following_products` here instead."
           },
           "response": []
         },
@@ -3600,6 +3838,300 @@
                 }
               ],
               "body": "{\n  \"success\": true,\n  \"message\": \"تنظیمات اشتراک‌گذاری لیست علاقه‌مندی به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"share_slug\": \"wl-a1b2c3d4e5f67890\",\n    \"public\": false\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile & Persons — Me",
+      "item": [
+        {
+          "name": "Get sizing profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/profile/sizing",
+            "description": "Returns the authenticated user's sizing profile: `product_match_notify`, all persons (including `self`, each with optional `sex`), and `slots` — the admin-extensible personalization dimensions from `profile_slots` (upper_body, lower_body, shoes, mobile_model, car_model, plus any added later). Clients should render the form from `slots`, not hardcode fields."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل سایزبندی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"profile\": {\n      \"product_match_notify\": true,\n      \"persons\": [\n        {\n          \"id\": 1,\n          \"name\": \"Me\",\n          \"relation\": \"self\",\n          \"sex\": \"male\",\n          \"notify\": true,\n          \"sort_order\": 0,\n          \"sizes\": {\n            \"upper_body\": {\n              \"attribute_slug\": \"size\",\n              \"value_slug\": \"size__m\"\n            },\n            \"shoes\": {\n              \"attribute_slug\": \"shoe-size\",\n              \"value_slug\": \"shoe-size__42\"\n            }\n          }\n        }\n      ],\n      \"slots\": [\n        {\n          \"slot\": \"upper_body\",\n          \"label\": \"Upper body size\",\n          \"default_attribute_slug\": \"size\",\n          \"sort_order\": 1\n        },\n        {\n          \"slot\": \"lower_body\",\n          \"label\": \"Lower body size\",\n          \"default_attribute_slug\": \"size\",\n          \"sort_order\": 2\n        },\n        {\n          \"slot\": \"shoes\",\n          \"label\": \"Shoe size\",\n          \"default_attribute_slug\": \"shoe-size\",\n          \"sort_order\": 3\n        },\n        {\n          \"slot\": \"mobile_model\",\n          \"label\": \"Mobile model\",\n          \"default_attribute_slug\": \"compatible-devices\",\n          \"sort_order\": 4\n        },\n        {\n          \"slot\": \"car_model\",\n          \"label\": \"Car model\",\n          \"default_attribute_slug\": \"vehicle-fitment\",\n          \"sort_order\": 5\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update sizing profile (self)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/me/profile/sizing",
+            "description": "Upserts the `self` person sizing profile (name, optional `sex` = male|female, sizes). Use this endpoint for relation `self` — do not POST `/me/persons` with `relation: self`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Me\",\n  \"relation\": \"self\",\n  \"sex\": \"male\",\n  \"notify\": true,\n  \"sizes\": {\n    \"upper_body\": \"size__l\",\n    \"lower_body\": \"size__34\",\n    \"shoes\": \"shoe-size__43\"\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get notification settings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/profile/notify",
+            "description": "Returns `product_match_notify` for size-match alerts."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"تنظیمات اعلان با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"notify\": {\n      \"product_match_notify\": true\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update notification settings",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/me/profile/notify",
+            "description": "Toggle product size-match notifications.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_match_notify\": true\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"تنظیمات اعلان با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"notify\": {\n      \"product_match_notify\": true\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List persons",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/persons",
+            "description": "Lists saved family/partner persons (excludes detailed self profile — use sizing profile for self)."
+          },
+          "response": []
+        },
+        {
+          "name": "Create person",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/me/persons",
+            "description": "Add a partner/child/other person with optional `sex` (male|female) and size slots. Valid relations: `partner`, `child`, `other` (not `self`).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Partner\",\n  \"relation\": \"partner\",\n  \"sex\": \"female\",\n  \"notify\": true,\n  \"sort_order\": 1,\n  \"sizes\": {\n    \"upper_body\": \"size__m\",\n    \"lower_body\": {\n      \"attribute_slug\": \"size\",\n      \"value_slug\": \"size__32\"\n    },\n    \"shoes\": \"shoe-size__42\"\n  }\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.data?.person?.id) pm.collectionVariables.set('personId', String(j.data.person.id));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update person",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/me/persons/{{personId}}",
+            "description": "Partial update for a non-self person. All fields optional: `name`, `sex` (male|female), `notify`, `sort_order`, `sizes` (same slot map as create).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Partner Updated\",\n  \"sex\": \"female\",\n  \"notify\": false,\n  \"sizes\": {\n    \"upper_body\": \"size__l\",\n    \"shoes\": \"shoe-size__41\"\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete person",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/persons/{{personId}}",
+            "description": "Deletes a non-self person. Self profile cannot be deleted."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Product Matches — Me",
+      "item": [
+        {
+          "name": "List product matches (picked for you)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/matches?limit=20",
+            "description": "In-app **picked for you** feed. Returns products the matching worker recorded for this user (new listings or discounts that share a taxonomy value with a saved person slot). Requires `product_match_notify` on the user and `notify` on the person. `reason` is `new` or `discount`. `limit` default 20, max 100.\n\nAlso surfaced on the homepage: **Home → Paginate home section (picked-for-you)**, **Home → Get home screen**, and **Home → Get home feed (custom sections)** with `product_matches`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست پیشنهادهای شخصی‌سازی‌شده با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"matches\": [\n      {\n        \"id\": 10,\n        \"product_id\": 501,\n        \"product\": {\n          \"id\": 501,\n          \"title\": \"Jacket\",\n          \"price\": 890000,\n          \"compare_at_price\": 1200000\n        },\n        \"person_id\": 3,\n        \"slot\": \"upper_body\",\n        \"reason\": \"new\",\n        \"created_at\": \"2026-09-01T10:00:00Z\"\n      }\n    ]\n  },\n  \"errors\": []\n}"
             }
           ]
         }

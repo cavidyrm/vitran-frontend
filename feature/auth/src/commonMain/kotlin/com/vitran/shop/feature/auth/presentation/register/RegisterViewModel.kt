@@ -6,7 +6,9 @@ import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.auth.domain.ReferralCodeValidator
 import com.vitran.shop.feature.auth.domain.error.splitForForm
 import com.vitran.shop.feature.auth.domain.error.toAuthError
+import com.vitran.shop.feature.auth.domain.model.PhoneCheckNextStep
 import com.vitran.shop.feature.auth.domain.model.RegisterCommand
+import com.vitran.shop.feature.auth.domain.usecase.CheckPhoneUseCase
 import com.vitran.shop.feature.auth.domain.usecase.RegisterUseCase
 import com.vitran.shop.feature.auth.presentation.AuthFormFields
 import kotlinx.coroutines.Job
@@ -37,14 +39,17 @@ data class RegisterUiState(
 
 sealed interface RegisterUiEffect {
     data class NavigateToVerification(val phone: String) : RegisterUiEffect
+    data object NavigateToLogin : RegisterUiEffect
 }
 
 class RegisterViewModel(
     private val registerUseCase: RegisterUseCase,
+    private val checkPhoneUseCase: CheckPhoneUseCase,
     private val referralCodeValidator: ReferralCodeValidator,
     private val validatePhone: (String) -> Boolean,
     private val validatePassword: (String) -> Boolean,
     private val referralDebounceMs: Long = 400L,
+    private val phoneCheckDebounceMs: Long = 400L,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -54,6 +59,24 @@ class RegisterViewModel(
     val effects: SharedFlow<RegisterUiEffect> = _effects.asSharedFlow()
 
     private var referralCheckJob: Job? = null
+    private var phoneCheckJob: Job? = null
+
+    fun onPhoneCompleted(phone: String) {
+        phoneCheckJob?.cancel()
+        val trimmed = phone.trim()
+        if (!validatePhone(trimmed)) return
+        phoneCheckJob =
+            viewModelScope.launch {
+                delay(phoneCheckDebounceMs)
+                when (val result = checkPhoneUseCase(trimmed)) {
+                    is AppResult.Success ->
+                        if (result.value.nextStep == PhoneCheckNextStep.Login) {
+                            _effects.emit(RegisterUiEffect.NavigateToLogin)
+                        }
+                    is AppResult.Failure -> Unit
+                }
+            }
+    }
 
     fun onInviteCodeChanged(raw: String) {
         referralCheckJob?.cancel()

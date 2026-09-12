@@ -32,8 +32,17 @@ sealed class SlugCheckUiStatus {
     data class Error(val error: AppError) : SlugCheckUiStatus()
 }
 
+sealed class TitleCheckUiStatus {
+    data object Idle : TitleCheckUiStatus()
+    data object Checking : TitleCheckUiStatus()
+    data class Available(val title: String) : TitleCheckUiStatus()
+    data class Taken(val title: String) : TitleCheckUiStatus()
+    data class Error(val error: AppError) : TitleCheckUiStatus()
+}
+
 data class CreateShopUiState(
     val slugCheck: SlugCheckUiStatus = SlugCheckUiStatus.Idle,
+    val titleCheck: TitleCheckUiStatus = TitleCheckUiStatus.Idle,
     val isSubmitting: Boolean = false,
     val fieldErrors: Map<String, String> = emptyMap(),
     val generalError: AppError? = null,
@@ -60,7 +69,45 @@ class CreateShopViewModel(
     val effects: SharedFlow<CreateShopUiEffect> = _effects.asSharedFlow()
 
     private var slugCheckJob: Job? = null
+    private var titleCheckJob: Job? = null
     private var submitJob: Job? = null
+
+    fun onTitleInputChanged(rawTitle: String, excludeId: ShopId? = null) {
+        titleCheckJob?.cancel()
+        val trimmed = rawTitle.trim()
+        if (trimmed.isEmpty()) {
+            _uiState.update { it.copy(titleCheck = TitleCheckUiStatus.Idle) }
+            return
+        }
+        titleCheckJob =
+            viewModelScope.launch {
+                _uiState.update { it.copy(titleCheck = TitleCheckUiStatus.Checking) }
+                delay(slugDebounceMs)
+                when (
+                    val result =
+                        sellerShopRepository.checkTitleAvailability(trimmed, excludeId)
+                ) {
+                    is AppResult.Success -> {
+                        val availability = result.value
+                        _uiState.update {
+                            it.copy(
+                                titleCheck =
+                                    if (availability.isAvailable) {
+                                        TitleCheckUiStatus.Available(availability.title)
+                                    } else {
+                                        TitleCheckUiStatus.Taken(availability.title)
+                                    },
+                            )
+                        }
+                    }
+                    is AppResult.Failure -> {
+                        _uiState.update {
+                            it.copy(titleCheck = TitleCheckUiStatus.Error(result.error))
+                        }
+                    }
+                }
+            }
+    }
 
     fun onSlugInputChanged(rawSlug: String, excludeId: ShopId? = null) {
         slugCheckJob?.cancel()

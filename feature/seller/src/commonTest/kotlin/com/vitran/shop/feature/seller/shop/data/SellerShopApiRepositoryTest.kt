@@ -17,6 +17,8 @@ import com.vitran.shop.feature.seller.sellerListBody
 import com.vitran.shop.feature.seller.slugAvailableBody
 import com.vitran.shop.feature.seller.slugConflictBody
 import com.vitran.shop.feature.seller.slugTakenBody
+import com.vitran.shop.feature.seller.titleAvailableBody
+import com.vitran.shop.feature.seller.titleTakenBody
 import com.vitran.shop.feature.seller.updateShopBody
 import com.vitran.shop.feature.seller.shop.data.remote.dto.CreateShopRequestDto
 import com.vitran.shop.feature.seller.shop.data.state.SellerShopStateStore
@@ -73,6 +75,29 @@ class SellerShopApiRepositoryTest {
             }
         val (repo, _) = createSellerRepository(engine)
         repo.checkSlugAvailability(ShopSlug("my-shop"), excludeId = ShopId(12))
+    }
+
+    @Test
+    fun titleCheck_available() = runTest {
+        val engine =
+            MockEngine { request ->
+                assertTrue(request.url.encodedPath.contains("check-title"))
+                assertEquals("My Shop", request.url.parameters["title"])
+                jsonResponse(HttpStatusCode.OK, titleAvailableBody)
+            }
+        val (repo, _) = createSellerRepository(engine)
+        val result = repo.checkTitleAvailability("My Shop")
+        assertIs<AppResult.Success<*>>(result)
+        assertTrue((result as AppResult.Success).value.isAvailable)
+    }
+
+    @Test
+    fun titleCheck_taken() = runTest {
+        val engine = MockEngine { jsonResponse(HttpStatusCode.OK, titleTakenBody) }
+        val (repo, _) = createSellerRepository(engine)
+        val result = repo.checkTitleAvailability("My Shop")
+        assertIs<AppResult.Success<*>>(result)
+        assertFalse((result as AppResult.Success).value.isAvailable)
     }
 
     @Test

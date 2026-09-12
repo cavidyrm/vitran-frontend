@@ -17,6 +17,17 @@ data class SlugCheckDto(
     val available: Boolean,
 )
 
+@Serializable
+data class TitleCheckDataDto(
+    @SerialName("title_check") val titleCheck: TitleCheckDto,
+)
+
+@Serializable
+data class TitleCheckDto(
+    val title: String,
+    val available: Boolean,
+)
+
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class CreateShopRequestDto(

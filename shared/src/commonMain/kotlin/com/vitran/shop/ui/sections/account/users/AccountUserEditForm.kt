@@ -287,9 +287,14 @@ private fun AccountUserRolesField(
                     verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
                 ) {
                     selected.forEach { role ->
+                        val canRemove = role in availableRoles
                         AccountUserRoleChip(
                             role = role,
-                            onRemove = { onSelectedChange(selected - role) },
+                            onRemove = if (canRemove) {
+                                { onSelectedChange(selected - role) }
+                            } else {
+                                null
+                            },
                         )
                     }
                 }

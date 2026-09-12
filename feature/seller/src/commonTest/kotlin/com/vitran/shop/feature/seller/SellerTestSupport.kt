@@ -229,6 +229,26 @@ internal val slugTakenBody = """
 }
 """.trimIndent()
 
+internal val titleAvailableBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": { "title_check": { "title": "My Shop", "available": true } },
+  "errors": []
+}
+""".trimIndent()
+
+internal val titleTakenBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": { "title_check": { "title": "My Shop", "available": false } },
+  "errors": []
+}
+""".trimIndent()
+
 internal val sellerListBody = """
 {
   "success": true,

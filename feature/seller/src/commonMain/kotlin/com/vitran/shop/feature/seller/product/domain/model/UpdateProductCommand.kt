@@ -16,4 +16,7 @@ data class UpdateProductCommand(
     val category: CategorySlug? = null,
     val desiredActive: Boolean? = null,
     val images: List<SelectedFile> = emptyList(),
+    /** Null means omit. [clearCompareAtPrice] sends an empty field to clear the discount. */
+    val compareAtPriceAmount: Long? = null,
+    val clearCompareAtPrice: Boolean = false,
 )

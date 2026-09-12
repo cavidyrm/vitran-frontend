@@ -16,6 +16,7 @@ import com.vitran.shop.feature.seller.shop.data.remote.dto.RegenerateApiKeyDataD
 import com.vitran.shop.feature.seller.shop.data.remote.dto.SellerShopDataDto
 import com.vitran.shop.feature.seller.shop.data.remote.dto.SellerShopsDataDto
 import com.vitran.shop.feature.seller.shop.data.remote.dto.SlugCheckDataDto
+import com.vitran.shop.feature.seller.shop.data.remote.dto.TitleCheckDataDto
 import com.vitran.shop.feature.seller.shop.data.remote.dto.UpdateShopRequestDto
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopFilter
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopListQuery
@@ -41,6 +42,20 @@ internal class SellerShopApi(
             client.get(environment.apiUrl("/seller/shops/check-slug")) {
                 authMode(AuthMode.Required)
                 parameter("slug", slug.value)
+                if (excludeId != null) {
+                    parameter("exclude_id", excludeId.value)
+                }
+            }
+        }
+
+    suspend fun checkTitle(
+        title: String,
+        excludeId: ShopId?,
+    ): AppResult<TitleCheckDataDto> =
+        executor.execute {
+            client.get(environment.apiUrl("/seller/shops/check-title")) {
+                authMode(AuthMode.Required)
+                parameter("title", title)
                 if (excludeId != null) {
                     parameter("exclude_id", excludeId.value)
                 }

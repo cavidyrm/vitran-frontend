@@ -34,6 +34,7 @@ data class SellerProductDto(
     val title: String? = null,
     val description: String? = null,
     val price: Long? = null,
+    @SerialName("compare_at_price") val compareAtPrice: Long? = null,
     val active: Boolean? = null,
     val confirmed: Boolean? = null,
     val images: List<SellerProductImageDto> = emptyList(),

@@ -121,6 +121,7 @@ internal suspend fun buildCreateMultipart(command: CreateProductCommand): MultiP
             append("title", command.title)
             append("category_slug", command.category.value)
             append("price", command.priceAmount.toString())
+            command.compareAtPriceAmount?.let { append("compare_at_price", it.toString()) }
             append("description", command.description)
             append("active", command.desiredActive.toString())
             appendPreparedImages(imageParts)
@@ -135,6 +136,11 @@ internal suspend fun buildUpdateMultipart(command: UpdateProductCommand): MultiP
             command.title?.let { append("title", it) }
             command.category?.let { append("category_slug", it.value) }
             command.priceAmount?.let { append("price", it.toString()) }
+            when {
+                command.clearCompareAtPrice -> append("compare_at_price", "")
+                command.compareAtPriceAmount != null ->
+                    append("compare_at_price", command.compareAtPriceAmount.toString())
+            }
             command.description?.let { append("description", it) }
             command.desiredActive?.let { append("active", it.toString()) }
             appendPreparedImages(imageParts)

@@ -6,9 +6,11 @@ import com.vitran.shop.feature.auth.domain.ReferralCodeValidator
 import com.vitran.shop.feature.auth.domain.flow.AuthFlowStateHolder
 import com.vitran.shop.feature.auth.domain.model.LoginResult
 import com.vitran.shop.feature.auth.domain.model.PasswordResetContext
+import com.vitran.shop.feature.auth.domain.model.PhoneCheckResult
 import com.vitran.shop.feature.auth.domain.model.RegisterCommand
 import com.vitran.shop.feature.auth.domain.model.VerificationChallenge
 import com.vitran.shop.feature.auth.domain.repository.AuthRepository
+import com.vitran.shop.feature.auth.domain.usecase.CheckPhoneUseCase
 import com.vitran.shop.feature.auth.domain.usecase.RegisterUseCase
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -151,6 +153,7 @@ class RegisterViewModelTest {
     ): RegisterViewModel =
         RegisterViewModel(
             registerUseCase = RegisterUseCase(authRepository, FakeAuthFlowStateHolder()),
+            checkPhoneUseCase = CheckPhoneUseCase(authRepository),
             referralCodeValidator = validator,
             validatePhone = { true },
             validatePassword = { true },
@@ -160,6 +163,8 @@ class RegisterViewModelTest {
 
 private class RecordingAuthRepository : AuthRepository {
     var lastCommand: RegisterCommand? = null
+
+    override suspend fun checkPhone(phone: String): AppResult<PhoneCheckResult> = unused()
 
     override suspend fun register(command: RegisterCommand): AppResult<VerificationChallenge> {
         lastCommand = command

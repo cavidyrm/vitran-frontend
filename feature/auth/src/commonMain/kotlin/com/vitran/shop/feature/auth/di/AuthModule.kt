@@ -5,6 +5,7 @@ import com.vitran.shop.feature.auth.data.remote.AuthApi
 import com.vitran.shop.feature.auth.data.repository.DefaultAuthRepository
 import com.vitran.shop.feature.auth.domain.flow.AuthFlowStateHolder
 import com.vitran.shop.feature.auth.domain.repository.AuthRepository
+import com.vitran.shop.feature.auth.domain.usecase.CheckPhoneUseCase
 import com.vitran.shop.feature.auth.domain.usecase.LoginUseCase
 import com.vitran.shop.feature.auth.domain.usecase.LogoutUseCase
 import com.vitran.shop.feature.auth.domain.usecase.RegisterUseCase
@@ -26,6 +27,7 @@ val authModule = module {
     single { AuthApi(get(), get(), get()) }
     single<AuthRepository> { DefaultAuthRepository(get(), get(), get()) }
 
+    factory { CheckPhoneUseCase(get()) }
     factory { RegisterUseCase(get(), get()) }
     factory { LoginUseCase(get(), get()) }
     factory { VerifyPhoneUseCase(get(), get()) }
@@ -37,6 +39,7 @@ val authModule = module {
     viewModel {
         LoginViewModel(
             loginUseCase = get(),
+            checkPhoneUseCase = get(),
             validatePhone = get(named("validatePhone")),
             validatePassword = get(named("validateAuthPassword")),
         )
@@ -44,6 +47,7 @@ val authModule = module {
     viewModel {
         RegisterViewModel(
             registerUseCase = get(),
+            checkPhoneUseCase = get(),
             referralCodeValidator = get(),
             validatePhone = get(named("validatePhone")),
             validatePassword = get(named("validateAuthPassword")),

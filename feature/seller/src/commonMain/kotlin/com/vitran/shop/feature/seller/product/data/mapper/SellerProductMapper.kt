@@ -56,6 +56,7 @@ internal fun SellerProductDto.toDomain(
         title = title ?: previous?.title.orEmpty(),
         description = description ?: previous?.description,
         priceAmount = price ?: previous?.priceAmount,
+        compareAtPriceAmount = compareAtPrice ?: previous?.compareAtPriceAmount,
         active = active,
         confirmed = confirmed,
         images = images.map { it.toDomain() }.sortedBy { it.sortOrder },

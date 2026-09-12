@@ -9,6 +9,7 @@ internal data class AdminUserListItemDto(
     val id: Long,
     val phone: String,
     val roles: List<String> = emptyList(),
+    @SerialName("shop_types") val shopTypes: List<String>? = null,
     val verified: Boolean = false,
     @SerialName("is_active") val isActive: Boolean = true,
     @SerialName("created_at") val createdAt: String? = null,
@@ -20,6 +21,7 @@ internal data class AdminUserDetailsDto(
     val id: Long,
     val phone: String,
     val roles: List<String> = emptyList(),
+    @SerialName("shop_types") val shopTypes: List<String>? = null,
     val verified: Boolean = false,
     @SerialName("is_active") val isActive: Boolean = true,
     @SerialName("created_at") val createdAt: String,
@@ -39,5 +41,5 @@ internal data class AdminUserDataDto(
 @Serializable
 internal data class UpdateAdminUserRequestDto(
     @SerialName("is_active") val isActive: Boolean,
-    val roles: List<String>,
+    val roles: List<String>? = null,
 )

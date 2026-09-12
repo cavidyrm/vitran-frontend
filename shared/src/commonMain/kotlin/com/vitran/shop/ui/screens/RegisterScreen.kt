@@ -27,6 +27,7 @@ fun RegisterScreen(
         viewModel.effects.collect { effect ->
             when (effect) {
                 is RegisterUiEffect.NavigateToVerification -> onContinue(effect.phone)
+                RegisterUiEffect.NavigateToLogin -> onSignIn()
             }
         }
     }
@@ -54,6 +55,7 @@ fun RegisterScreen(
             referralCheck = uiState.referralCheck,
             onInviteCodeChange = viewModel::onInviteCodeChanged,
             onClearFieldError = viewModel::clearFieldError,
+            onMobileComplete = viewModel::onPhoneCompleted,
         )
     }
 }

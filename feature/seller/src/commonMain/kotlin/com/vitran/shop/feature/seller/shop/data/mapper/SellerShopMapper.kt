@@ -29,6 +29,12 @@ internal fun SlugCheckDto.toDomain(): ShopSlugAvailability =
         isAvailable = available,
     )
 
+internal fun com.vitran.shop.feature.seller.shop.data.remote.dto.TitleCheckDto.toDomain() =
+    com.vitran.shop.feature.seller.shop.domain.model.ShopTitleAvailability(
+        title = title,
+        isAvailable = available,
+    )
+
 internal fun CreateShopCommand.toRequestDto(): CreateShopRequestDto =
     CreateShopRequestDto(
         title = title,

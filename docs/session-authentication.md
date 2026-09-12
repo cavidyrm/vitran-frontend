@@ -163,15 +163,16 @@ Installed in `HttpClientFactory` (replaces Phase 2 `AuthHeaderPlugin` for token 
 
 ### Domain
 
-- `VerificationChallenge`, `LoginResult`, `RegisterCommand`, `PasswordResetContext`
+- `VerificationChallenge`, `LoginResult`, `RegisterCommand`, `PasswordResetContext`, `PhoneCheckResult`
 - `AuthRepository`, `AuthError` (refines `AppError`)
-- Use cases: Register, Login, Verify, ResendOtp, RequestPasswordReset, ResetPassword, Logout
+- Use cases: Register, Login, Verify, ResendOtp, RequestPasswordReset, ResetPassword, Logout, CheckPhone
 
 ### Data
 
-- `AuthApi` — all auth endpoints with `authMode(None)` except refresh (session-owned)
+- `AuthApi` — all auth endpoints with `authMode(None)` except refresh (session-owned) and logout (`AuthMode.Required`, **no JSON body**)
 - `DefaultAuthRepository` — maps DTOs; login 403 + `errorDataJson` → `VerificationRequired`; success → `sessionRepository.establishSession()`
 - `AuthFlowStateHolder` — in-memory challenge + reset phone (cleared on logout)
+- `otp_code` is optional and present only when `EXPOSE_OTP_IN_RESPONSE=true`
 
 ### Phone format
 
@@ -179,10 +180,11 @@ UI: `normalizeIranMobile()` → `09xxxxxxxxx`. API mapper `toApiPhone()` strips 
 
 ## 13. Account feature (`:feature:account`)
 
-- `User`, `CurrentUserState`, `AccountRepository`
+- `User` (includes `shopTypes`, profile extras from `/auth/me`), `CurrentUserState`, `AccountRepository`
 - `AccountApi`: `GET /auth/me`, `PUT /auth/profile` with `AuthMode.Required`
+- `ProfileApi` / `ProductMatchApi`: sizing, notify, persons, `/me/matches` (data layer; no dedicated screens yet)
 - `DefaultAccountRepository` — `StateFlow` cache; updates on profile PUT; listens to session invalidation
-- `UserRole.fromBackend()` with `Unknown(rawValue)` — never crash on new roles
+- `UserRole.fromBackend()` with `Unknown(rawValue)` — never crash on new roles; `customer`/`seller` map to `User`
 
 ## 14. App shell wiring
 
@@ -222,15 +224,20 @@ Sign-out: `LogoutUseCase` in `AppNavHost` → navigate to login.
 
 ## 15. Auth workflows
 
+### Check phone (before register/login)
+
+1. After the user finishes entering a number, `POST /auth/check-phone` (no SMS)
+2. Route from `next_step` / `status` (`register`, `login`, `verify`, …) to avoid 409/404/429 loops
+
 ### Register + verify
 
-1. `POST /auth/register` → `VerificationChallenge` stored in `AuthFlowStateHolder`
+1. `POST /auth/register` → pending signup in Redis (no `users` row) → `VerificationChallenge` stored in `AuthFlowStateHolder`
 2. Navigate to verify (phone in route only — **never** tempToken in URL)
 3. `POST /auth/verify` → `establishSession()` → home
 
 ### Login with verification required
 
-1. `POST /auth/login` → 403 with `temp_token` in error data
+1. `POST /auth/login` → 403 with `temp_token` in error data (`otp_code` only if exposed)
 2. `LoginResult.VerificationRequired` → verify screen
 3. Same verify flow as registration
 
@@ -241,7 +248,7 @@ Sign-out: `LogoutUseCase` in `AppNavHost` → navigate to login.
 
 ### Logout
 
-1. `POST /auth/logout` with refresh token (best-effort)
+1. `POST /auth/logout` with Bearer access token and **empty body** (best-effort)
 2. Always `logoutLocal()` even if network fails
 
 ## 16. Refresh flow

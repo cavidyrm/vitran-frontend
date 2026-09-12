@@ -7,6 +7,8 @@ import com.vitran.shop.core.network.config.apiUrl
 import com.vitran.shop.core.network.executor.ApiRequestExecutor
 import com.vitran.shop.core.network.request.authMode
 import com.vitran.shop.feature.home.data.remote.dto.HomeDataDto
+import com.vitran.shop.feature.home.data.remote.dto.HomeScreenDataDto
+import com.vitran.shop.feature.home.data.remote.dto.HomeSectionDataDto
 import com.vitran.shop.feature.location.domain.model.CityId
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -21,6 +23,28 @@ internal class HomeApi(
         executor.execute {
             client.get(environment.apiUrl("/home")) {
                 authMode(AuthMode.Optional)
+                cityId?.let { parameter("city_id", it.value) }
+            }
+        }
+
+    suspend fun getHomeScreen(cityId: CityId? = null): AppResult<HomeScreenDataDto> =
+        executor.execute {
+            client.get(environment.apiUrl("/home/screen")) {
+                authMode(AuthMode.Optional)
+                cityId?.let { parameter("city_id", it.value) }
+            }
+        }
+
+    suspend fun getPickedForYouSection(
+        limit: Int = 12,
+        cursor: String? = null,
+        cityId: CityId? = null,
+    ): AppResult<HomeSectionDataDto> =
+        executor.execute {
+            client.get(environment.apiUrl("/home/sections/picked-for-you")) {
+                authMode(AuthMode.Optional)
+                parameter("limit", limit)
+                cursor?.let { parameter("cursor", it) }
                 cityId?.let { parameter("city_id", it.value) }
             }
         }

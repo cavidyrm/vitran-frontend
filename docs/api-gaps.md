@@ -78,7 +78,7 @@ Status values: `Open` | `Verified from backend source` | `Resolved by backend up
 |-------|--------|
 | **Status** | Open |
 
-Postman requests **without saved response examples** (15):
+Postman requests **without saved response examples** (or with incomplete examples):
 
 | Method | Path | Request name |
 |--------|------|--------------|
@@ -92,7 +92,13 @@ Postman requests **without saved response examples** (15):
 | GET | `/api/v1/seller/shops/{id}/analytics` | Shop analytics dashboard |
 | GET | `/api/v1/seller/shops/{id}/analytics/export` | Analytics CSV export |
 | GET | `/api/v1/catalog/search` | Advanced catalog search |
+| GET | `/api/v1/home/screen` | Server-driven home screen |
 | GET | `/api/v1/me/home/feed` | Custom personalized home feed |
+| GET | `/api/v1/me/persons` | List persons |
+| PUT | `/api/v1/me/profile/sizing` | Update sizing profile |
+| POST | `/api/v1/me/persons` | Create person |
+| PATCH | `/api/v1/me/persons/{id}` | Update person |
+| DELETE | `/api/v1/me/persons/{id}` | Delete person |
 | POST | `/api/v1/me/follows/shops/{id}` | Follow shop |
 | GET | `/api/v1/me/follows/shops` | List followed shops |
 | GET | `/api/v1/me/follows/shops/{id}` | Get followed shop |
@@ -107,9 +113,10 @@ Postman requests **without saved response examples** (15):
 | Field | Status |
 |-------|--------|
 | **Status** | Verified from Postman collection |
-| **Create/Update fields** | `title`, `category_slug`, `price`, `description`, `active`, `images` (file, repeat, ≤5) |
+| **Create/Update fields** | `title`, `category_slug`, `price`, optional `compare_at_price`, `description`, `active`, `images` (file, repeat, ≤5) |
 | **Image key** | `images` (not `image`) |
 | **Update images** | Appended; total ≤ 5 (collection description) |
+| **compare_at_price** | Optional pre-discount price. Product is on sale when set and greater than `price`. Update: omit to leave unchanged; send empty to clear. |
 | **List filters** | `active`, `shop_id`, `category_slug` (+ cursor pagination); `confirmed` accepted as optional client query when used |
 | **Open** | Exact server error reasons for publish-unapproved / plan limits; seller list item fields beyond Postman example; GET detail may omit `description` |
 
@@ -321,8 +328,8 @@ See [admin-and-cms.md](admin-and-cms.md).
 ## Additional notes
 
 - **Register with referral:** Same endpoint as register (`POST /auth/register`) with optional `referral_code` — one request model, not duplicate HTTP methods.
-- **Login 403:** Phone verification required — business outcome with `temp_token`, not generic error.
-- **Shop create session mutation:** `data.tokens.access_token` updates JWT roles — session owner is `:core:session`, not Auth ViewModel.
+- **Login 403:** Phone verification required — business outcome with `temp_token`, not generic error. `otp_code` only when `EXPOSE_OTP_IN_RESPONSE=true`.
+- **Shop create session mutation:** `data.tokens.access_token` may update the JWT — session owner is `:core:session`, not Auth ViewModel. Shop ownership is `shop_types` / `shops.owner_id`, not a `seller` role.
 
 ---
 
@@ -477,3 +484,35 @@ See [admin-and-cms.md](admin-and-cms.md).
 | **Issue** | Sample proves `manual`/`redirect` only. API-key 403 capability reason unverified. |
 | **Client impact** | Unknown modes → `FulfillmentMode.Unknown`. Capability-specific 403 not mapped until verified. |
 | **Phase 7 handling** | No plan-slug hard-coding. |
+
+---
+
+## Gap 41 — Server-driven home screen schema
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | `GET /home/screen` has a description (`data.screen.sections`, skip unknown `type`/`layout`, `more.path`) but no saved example. |
+| **Client impact** | Flexible DTO implemented; `HomeViewModel` still uses `GET /home` until a UI pass with a live payload. |
+| **Handling** | Do not invent rails beyond documented `picked-for-you` pagination. |
+
+---
+
+## Gap 42 — Persons list / sizing PUT responses
+
+| Field | Status |
+|-------|--------|
+| **Status** | Client compatibility workaround |
+| **Issue** | `GET /me/persons`, PUT sizing, POST/PATCH/DELETE person lack saved response examples. |
+| **Client impact** | List inferred as `{ persons: [...] }` matching sizing-profile person objects. DELETE uses empty success envelope. PUT sizing decoded as the GET sizing profile shape when present. |
+| **Handling** | Revisit if live responses use cursor pagination or a different wrapper. |
+
+---
+
+## Gap 43 — Catalog `on_sale` filter
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open — catalog search still deferred |
+| **Issue** | `GET /catalog/search` gained `on_sale=true` but still has no response example. |
+| **Client impact** | Documented only. Simple search remains `GET /products/search`. |

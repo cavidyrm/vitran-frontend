@@ -93,6 +93,9 @@ private class FakeShopRepo(
         excludeId: ShopId?,
     ) = AppResult.Failure(AppError.Unexpected())
 
+    override suspend fun checkTitleAvailability(title: String, excludeId: ShopId?) =
+        AppResult.Failure(AppError.Unexpected())
+
     override suspend fun createShop(command: CreateShopCommand) = AppResult.Failure(AppError.Unexpected())
 
     override suspend fun getMyShops(query: SellerShopListQuery) =

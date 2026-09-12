@@ -82,8 +82,7 @@ class DefaultAuthRepositoryTest {
                               "message": "verification required",
                               "code": 403,
                               "data": {
-                                "temp_token": "temp-123",
-                                "otp_code": "123456"
+                                "temp_token": "temp-123"
                               },
                               "errors": []
                             }
@@ -103,7 +102,45 @@ class DefaultAuthRepositoryTest {
         assertIs<AppResult.Success<LoginResult>>(result)
         val challenge = (result.value as LoginResult.VerificationRequired).challenge
         assertEquals("temp-123", challenge.tempToken)
-        assertEquals("123456", challenge.developmentOtp)
+        assertEquals(null, challenge.developmentOtp)
+    }
+
+    @Test
+    fun checkPhone_mapsStatusAndNextStep() = runTest {
+        val repository = authRepository(
+            sessionRepository = RecordingSessionRepository(),
+            engine = MockEngine {
+                jsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "code": 1,
+                      "data": {
+                        "status": "available",
+                        "exists": false,
+                        "can_register": true,
+                        "can_login": false,
+                        "can_resend": false,
+                        "can_reset_password": false,
+                        "next_step": "register",
+                        "otp_ttl": 0,
+                        "resend_after": 0
+                      },
+                      "errors": []
+                    }
+                    """.trimIndent(),
+                )
+            },
+        )
+
+        val result = repository.checkPhone("09123456789")
+        assertIs<AppResult.Success<*>>(result)
+        val check = result.value as com.vitran.shop.feature.auth.domain.model.PhoneCheckResult
+        assertEquals(com.vitran.shop.feature.auth.domain.model.PhoneCheckStatus.Available, check.status)
+        assertEquals(com.vitran.shop.feature.auth.domain.model.PhoneCheckNextStep.Register, check.nextStep)
+        assertEquals(true, check.canRegister)
     }
 
     @Test
@@ -146,7 +183,7 @@ class DefaultAuthRepositoryTest {
     }
 
     @Test
-    fun logout_withoutRefreshToken_clearsLocalSessionWithoutHttp() = runTest {
+    fun logout_withoutAccessToken_clearsLocalSessionWithoutHttp() = runTest {
         val sessionRepository = RecordingSessionRepository(credentials = null)
         var apiCalled = false
         val repository = authRepository(

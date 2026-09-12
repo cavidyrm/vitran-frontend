@@ -48,6 +48,7 @@ fun LoginScreen(
             when (effect) {
                 LoginUiEffect.LoginSucceeded -> onSignedIn()
                 LoginUiEffect.NavigateToVerification -> onVerificationRequired()
+                LoginUiEffect.NavigateToRegister -> onCreateAccount()
             }
         }
     }
@@ -91,6 +92,7 @@ fun LoginScreen(
                 phoneError = uiState.fieldErrors["phone"],
                 passwordError = uiState.fieldErrors["password"],
                 onClearFieldError = viewModel::clearFieldError,
+                onMobileComplete = viewModel::onPhoneCompleted,
             )
         }
     }

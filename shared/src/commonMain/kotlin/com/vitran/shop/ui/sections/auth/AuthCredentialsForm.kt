@@ -126,6 +126,7 @@ fun AuthCredentialsForm(
     referralCheck: ReferralCodeCheckUiStatus = ReferralCodeCheckUiStatus.Idle,
     onInviteCodeChange: (String) -> Unit = {},
     onClearFieldError: (String) -> Unit = {},
+    onMobileComplete: (String) -> Unit = {},
 ) {
     var nationalMobile by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -142,6 +143,12 @@ fun AuthCredentialsForm(
         },
     )
     val canSubmit = credentials.isValidForSubmit()
+
+    LaunchedEffect(fullMobile) {
+        if (isValidIranMobile(fullMobile)) {
+            onMobileComplete(fullMobile)
+        }
+    }
 
     LaunchedEffect(referralError) {
         if (!referralError.isNullOrBlank()) inviteExpanded = true

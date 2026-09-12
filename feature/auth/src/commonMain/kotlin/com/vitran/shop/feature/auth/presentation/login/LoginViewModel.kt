@@ -7,8 +7,12 @@ import com.vitran.shop.feature.auth.domain.error.AuthError
 import com.vitran.shop.feature.auth.domain.error.splitForForm
 import com.vitran.shop.feature.auth.domain.error.toAuthError
 import com.vitran.shop.feature.auth.domain.model.LoginResult
+import com.vitran.shop.feature.auth.domain.model.PhoneCheckNextStep
+import com.vitran.shop.feature.auth.domain.usecase.CheckPhoneUseCase
 import com.vitran.shop.feature.auth.domain.usecase.LoginUseCase
 import com.vitran.shop.feature.auth.presentation.AuthFormFields
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,20 +30,47 @@ data class LoginUiState(
 
 sealed interface LoginUiEffect {
     data object NavigateToVerification : LoginUiEffect
+    data object NavigateToRegister : LoginUiEffect
     data object LoginSucceeded : LoginUiEffect
 }
 
 class LoginViewModel(
     private val loginUseCase: LoginUseCase,
+    private val checkPhoneUseCase: CheckPhoneUseCase,
     private val validatePhone: (String) -> Boolean,
     private val validatePassword: (String) -> Boolean,
+    private val phoneCheckDebounceMs: Long = 400L,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    private val _effects = MutableSharedFlow<LoginUiEffect>()
+    private val _effects = MutableSharedFlow<LoginUiEffect>(extraBufferCapacity = 1)
     val effects: SharedFlow<LoginUiEffect> = _effects.asSharedFlow()
+
+    private var phoneCheckJob: Job? = null
+
+    fun onPhoneCompleted(phone: String) {
+        phoneCheckJob?.cancel()
+        val trimmed = phone.trim()
+        if (!validatePhone(trimmed)) return
+        phoneCheckJob =
+            viewModelScope.launch {
+                delay(phoneCheckDebounceMs)
+                when (val result = checkPhoneUseCase(trimmed)) {
+                    is AppResult.Success ->
+                        when (result.value.nextStep) {
+                            PhoneCheckNextStep.Register,
+                            PhoneCheckNextStep.Verify,
+                            -> _effects.emit(LoginUiEffect.NavigateToRegister)
+                            PhoneCheckNextStep.Login,
+                            PhoneCheckNextStep.Unknown,
+                            -> Unit
+                        }
+                    is AppResult.Failure -> Unit
+                }
+            }
+    }
 
     fun submit(phone: String, password: String) {
         if (_uiState.value.isSubmitting) return

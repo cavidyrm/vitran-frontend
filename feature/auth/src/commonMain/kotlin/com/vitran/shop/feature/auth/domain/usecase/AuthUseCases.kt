@@ -7,6 +7,13 @@ import com.vitran.shop.feature.auth.domain.model.RegisterCommand
 import com.vitran.shop.feature.auth.domain.model.VerificationChallenge
 import com.vitran.shop.feature.auth.domain.repository.AuthRepository
 
+class CheckPhoneUseCase(
+    private val authRepository: AuthRepository,
+) {
+    suspend operator fun invoke(phone: String): AppResult<com.vitran.shop.feature.auth.domain.model.PhoneCheckResult> =
+        authRepository.checkPhone(phone)
+}
+
 class RegisterUseCase(
     private val authRepository: AuthRepository,
     private val authFlowStateHolder: AuthFlowStateHolder,

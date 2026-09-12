@@ -13,7 +13,7 @@ fun User.toAccountProfile(): AccountProfile {
         emailVerified = verified,
         phone = phone,
         roles = roleNames,
-        hasStore = false,
+        hasStore = shopTypes.isNotEmpty(),
         gender = AccountGender.Unspecified,
         birthday = "",
         shoeSize = null,

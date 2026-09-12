@@ -14,6 +14,8 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Auth | Auth | `AuthApi` ✅ | `AuthRepository` ✅ | Public (issues tokens) |
 | Session | Auth refresh, seller shop create | `KtorTokenRefreshRemoteDataSource` ✅ | `SessionRepository` ✅ | Required when mutating session |
 | Account | Users | `AccountApi` ✅ | `AccountRepository` ✅ | Required |
+| Profile / Persons | Profile & Persons — Me | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required |
+| Product Matches | Product Matches — Me | `ProductMatchApi` ✅ | `ProductMatchRepository` ✅ | Required |
 | Admin Users | Admin — Users | `AdminUserApi` ✅ | `AdminUserRepository` ✅ | Required (admin) |
 | Location / Cities | Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public + admin |
 | Taxonomy | Taxonomy | `TaxonomyApi` ✅ (public read) | `TaxonomyRepository` ✅ | Public + admin |
@@ -24,11 +26,11 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Engagement | Favorites, Shop follows, Wishlists | `EngagementApi` ✅ | `FollowRepository` ✅ (mutations), `ShopFavoriteRepository` ✅, `WishlistRepository` ✅ | Required / public wishlist None |
 | Product Reviews | Products — Public (reviews) | `ProductReviewApi` ✅ | `ProductReviewRepository` ✅ | None / Required |
 | Shop Comments | Comments | `ShopCommentApi` ✅ | `ShopCommentRepository` ✅ | None / Required |
-| Seller Shops | Shops — Seller | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required (auth; seller role not required for first create) |
-| Seller Products | Products — Seller | `SellerProductApi` ✅ | `SellerProductRepository` ✅ | Required (seller) |
-| Seller Analytics | Shops — Seller (analytics) | `SellerAnalyticsApi` ✅ | `SellerAnalyticsRepository` ✅ | Required (seller) |
-| Seller Boosts | Boosts — Seller | `SellerBoostApi` ✅ | `SellerBoostRepository` ✅ | Required (seller) |
-| Seller Subscription | Shops — Seller (subscription) | `SellerSubscriptionApi` | `SubscriptionRepository` | Required (seller) |
+| Seller Shops | Shops — Seller | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required (auth; shop ownership for mutations) |
+| Seller Products | Products — Seller | `SellerProductApi` ✅ | `SellerProductRepository` ✅ | Required (shop owner) |
+| Seller Analytics | Shops — Seller (analytics) | `SellerAnalyticsApi` ✅ | `SellerAnalyticsRepository` ✅ | Required (shop owner) |
+| Seller Boosts | Boosts — Seller | `SellerBoostApi` ✅ | `SellerBoostRepository` ✅ | Required (shop owner) |
+| Seller Subscription | Shops — Seller (subscription) | `SellerSubscriptionApi` | `SubscriptionRepository` | Required (shop owner) |
 | Referral | Referrals | `ReferralApi` | `ReferralRepository` | Mixed |
 | Plans | Plans — Public | `PlanApi` | `PlanRepository` | Public |
 | Admin Plans | Plans — Admin | `AdminPlanApi` ✅ | `AdminPlanRepository` ✅ | Required (admin) |
@@ -41,7 +43,7 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 
 Avoid a single `VitranApi` with 100+ methods. Incremental services:
 
-`AuthApi`, `AccountApi`, `ReferralApi` ✅, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi` ✅, `SellerAnalyticsApi` ✅, `SellerBoostApi` ✅, `PlanApi` ✅, `SellerSubscriptionApi` ✅, `ContentApi` ✅, `AdminUserApi` ✅, `AdminLocationApi` ✅, `AdminTaxonomyApi` ✅, `AdminModerationApi` ✅, `AdminPlanApi` ✅, `AdminContentApi` ✅
+`AuthApi`, `AccountApi`, `ProfileApi` ✅, `ProductMatchApi` ✅, `ReferralApi` ✅, `LocationApi`, `TaxonomyApi`, `HomeApi`, `PublicShopApi`, `PublicProductApi`, `EngagementApi` ✅, `ProductReviewApi` ✅, `ShopCommentApi` ✅, `ProductContactApi` ✅, `UserEventApi` ✅, `ShopAnalyticsApi` ✅, `SellerShopApi` ✅, `SellerProductApi` ✅, `SellerAnalyticsApi` ✅, `SellerBoostApi` ✅, `PlanApi` ✅, `SellerSubscriptionApi` ✅, `ContentApi` ✅, `AdminUserApi` ✅, `AdminLocationApi` ✅, `AdminTaxonomyApi` ✅, `AdminModerationApi` ✅, `AdminPlanApi` ✅, `AdminContentApi` ✅
 
 Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint; not a normal client operation**.
 
@@ -52,9 +54,10 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/api/v1/admin/users/2` | Admin — Users | Admin Users | `AdminUserApi` ✅ | `AdminUserRepository` ✅ | Required | Implemented |
 | PATCH | `/api/v1/admin/users/2` | Admin — Users | Admin Users | `AdminUserApi` ✅ | `AdminUserRepository` ✅ | Required | Implemented |
 | GET | `/api/v1/admin/users?per_page=20&role=user&phone=0912&is_active=true` | Admin — Users | Admin Users | `AdminUserApi` ✅ | `AdminUserRepository` ✅ | Required | Implemented (page mode) |
+| POST | `/api/v1/auth/check-phone` | Auth | Auth | `AuthApi` ✅ | `AuthRepository` ✅ | Public | Yes |
 | POST | `/api/v1/auth/forgot-password` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
 | POST | `/api/v1/auth/login` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
-| POST | `/api/v1/auth/logout` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
+| POST | `/api/v1/auth/logout` | Auth | Auth | AuthApi | SessionRepository | Public | Yes (empty body) |
 | POST | `/api/v1/auth/refresh` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
 | POST | `/api/v1/auth/register` | Auth | Auth | AuthApi | SessionRepository | Public | Yes |
 | POST | `/api/v1/auth/register` | Auth | Auth | AuthApi | SessionRepository | Public | **Missing** |
@@ -85,7 +88,9 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/health` | Health | Platform | HealthApi | — | Public | Yes |
 | POST | `/api/v1/events` | Home | Engagement | `UserEventApi` ✅ | `MarketplaceAnalyticsTracker` ✅ | Optional | Yes |
 | GET | `/api/v1/home?city_id=1` | Home | Home | HomeApi | HomeRepository | Optional | Yes |
-| GET | `/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10` | Home | Home | HomeApi | HomeRepository | Public | **Missing** |
+| GET | `/api/v1/home/screen?city_id=1` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | **Missing** (flexible DTO; HomeViewModel still uses `GET /home`) |
+| GET | `/api/v1/home/sections/picked-for-you?limit=20` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Yes |
+| GET | `/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10&product_matches=12` | Home | Home | HomeApi | HomeRepository | Public | **Missing** |
 | GET | `/api/v1/payments/callback?Authority=mock-99000&Status=OK` | Payments — Public | Payments | — | — | Provider | Backend/provider only — not client |
 | GET | `/api/v1/admin/plans` | Plans — Admin | Admin Plans | `AdminPlanApi` ✅ | `AdminPlanRepository` ✅ | Required | Implemented |
 | POST | `/api/v1/admin/plans` | Plans — Admin | Admin Plans | `AdminPlanApi` ✅ | `AdminPlanRepository` ✅ | Required | Implemented |
@@ -96,7 +101,7 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/api/v1/admin/products/1` | Products — Admin | Admin Moderation | `AdminModerationApi` ✅ | `AdminModerationRepository` ✅ | Required | Implemented |
 | PATCH | `/api/v1/admin/products/1/confirm` | Products — Admin | Admin Moderation | `AdminModerationApi` ✅ | `AdminModerationRepository` ✅ | Required | Implemented |
 | GET | `/api/v1/admin/products?per_page=20&active=false&shop_id=1&category_slug=aa-1-2-3-4&user_id=2` | Products — Admin | Admin Moderation | `AdminModerationApi` ✅ | `AdminModerationRepository` ✅ | Required | Implemented |
-| GET | `/api/v1/catalog/search?category_slug=aa-1-2-3-4&min_price=100000&max_price=500000&min_rating=4&attributes[color]=color__red,color__blue&sort=price_asc&per_page=20` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Public | **Missing** |
+| GET | `/api/v1/catalog/search?category_slug=aa-1-2-3-4&min_price=100000&max_price=500000&min_rating=4&on_sale=true&attributes[color]=color__red,color__blue&sort=price_asc&per_page=20` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Public | **Missing** (deferred; `on_sale` added) |
 | GET | `/api/v1/products/1` | Products — Public | Marketplace Products | PublicProductApi | ProductRepository | Public | Yes |
 | POST | `/api/v1/products/1/contact?session_id=visitor-abc-123` | Products — Public | Engagement | `ProductContactApi` ✅ | `ProductContactRepository` ✅ | Optional | Yes |
 | POST | `/api/v1/products/1/reviews` | Products — Public | Engagement | `ProductReviewApi` ✅ | `ProductReviewRepository` ✅ | Required | Yes |
@@ -134,6 +139,7 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/api/v1/seller/shops/1/subscription` | Shops — Seller | Seller Subscription | SellerSubscriptionApi | SubscriptionRepository | Required | Yes (Phase 9) |
 | POST | `/api/v1/seller/shops/1/subscription/purchase` | Shops — Seller | Seller Subscription | SellerSubscriptionApi | SubscriptionRepository | Required | Yes (Phase 9) |
 | GET | `/api/v1/seller/shops/check-slug?slug=my-shop&exclude_id=1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| GET | `/api/v1/seller/shops/check-title?title=My%20Shop&exclude_id=1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | GET | `/api/v1/seller/shops?per_page=20` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
 | GET | `/api/v1/admin/static-pages` | Static Pages — Admin | Admin CMS | `AdminContentApi` ✅ | `AdminContentRepository` ✅ | Required | Implemented |
 | POST | `/api/v1/admin/static-pages` | Static Pages — Admin | Admin CMS | `AdminContentApi` ✅ | `AdminContentRepository` ✅ | Required | Implemented |
@@ -154,4 +160,13 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/api/v1/categories/slug/aa-1-2-3-4` | Taxonomy | Taxonomy | — (alias) | — | Public | Yes |
 | GET | `/api/v1/auth/me` | Users | Account | AccountApi | AccountRepository | Public | Yes |
 | PUT | `/api/v1/auth/profile` | Users | Account | AccountApi | AccountRepository | Public | Yes |
+| GET | `/api/v1/me/profile/sizing` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
+| PUT | `/api/v1/me/profile/sizing` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (request documented) |
+| GET | `/api/v1/me/profile/notify` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
+| PUT | `/api/v1/me/profile/notify` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
+| GET | `/api/v1/me/persons` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (inferred `{ persons: [] }`) |
+| POST | `/api/v1/me/persons` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (request documented) |
+| PATCH | `/api/v1/me/persons/{{personId}}` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (request documented) |
+| DELETE | `/api/v1/me/persons/{{personId}}` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** |
+| GET | `/api/v1/me/matches?limit=20` | Product Matches — Me | Product Matches | `ProductMatchApi` ✅ | `ProductMatchRepository` ✅ | Required | Yes |
 | GET | `/api/v1/wishlists/share/wl-a1b2c3d4e5f67890?per_page=20` | Wishlists — Public | Engagement | `EngagementApi` ✅ | `WishlistRepository` ✅ | None | Yes |
