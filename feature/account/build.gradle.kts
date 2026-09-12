@@ -36,6 +36,7 @@ kotlin {
             implementation(project(":core:domain"))
             implementation(project(":core:network"))
             implementation(project(":core:session"))
+            implementation(project(":feature:location"))
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)

@@ -158,15 +158,16 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/api/v1/categories/aa-1-2-3-4/attributes` | Taxonomy | Taxonomy | — | — | Public | Yes (empty only) **Deferred** |
 | GET | `/api/v1/categories/aa-1-2-3-4/return-reasons` | Taxonomy | Taxonomy | — | — | Public | **Missing** **Deferred** |
 | GET | `/api/v1/categories/slug/aa-1-2-3-4` | Taxonomy | Taxonomy | — (alias) | — | Public | Yes |
-| GET | `/api/v1/auth/me` | Users | Account | AccountApi | AccountRepository | Public | Yes |
-| PUT | `/api/v1/auth/profile` | Users | Account | AccountApi | AccountRepository | Public | Yes |
+| GET | `/api/v1/auth/me` | Users | Account | AccountApi | AccountRepository | Public | Yes (`avatar_url`, `city_id`, nested `city`) |
+| PUT | `/api/v1/auth/profile` | Users | Account | AccountApi | AccountRepository | Public | Yes (`username`, `email`, `full_name`, `avatar_url`, `city_id`; `clear_city_id` to unset city) |
 | GET | `/api/v1/me/profile/sizing` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
 | PUT | `/api/v1/me/profile/sizing` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (request documented) |
 | GET | `/api/v1/me/profile/notify` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
 | PUT | `/api/v1/me/profile/notify` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
-| GET | `/api/v1/me/persons` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (inferred `{ persons: [] }`) |
-| POST | `/api/v1/me/persons` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (request documented) |
-| PATCH | `/api/v1/me/persons/{{personId}}` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (request documented) |
-| DELETE | `/api/v1/me/persons/{{personId}}` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** |
+| GET | `/api/v1/me/persons` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
+| GET | `/api/v1/me/persons/{{personId}}` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
+| POST | `/api/v1/me/persons` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
+| PATCH | `/api/v1/me/persons/{{personId}}` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
+| DELETE | `/api/v1/me/persons/{{personId}}` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
 | GET | `/api/v1/me/matches?limit=20` | Product Matches — Me | Product Matches | `ProductMatchApi` ✅ | `ProductMatchRepository` ✅ | Required | Yes |
 | GET | `/api/v1/wishlists/share/wl-a1b2c3d4e5f67890?per_page=20` | Wishlists — Public | Engagement | `EngagementApi` ✅ | `WishlistRepository` ✅ | None | Yes |

@@ -40,23 +40,24 @@ class NavAuthUiStateTest {
     }
 
     @Test
-    fun authenticated_usesUsernameWhenAvailable() {
+    fun authenticated_usesAvatarUrlWhenAvailable() {
         val state = navAuthUiStateOf(
             SessionState.Authenticated,
-            CurrentUserState.Available(sampleUser(username = "علی")),
+            CurrentUserState.Available(sampleUser(avatarUrl = "https://cdn.example/avatar.png")),
         )
-        assertEquals(NavAuthUiState.SignedIn(avatarUrl = "علی"), state)
+        assertEquals(NavAuthUiState.SignedIn(avatarUrl = "https://cdn.example/avatar.png"), state)
     }
 
-    private fun sampleUser(username: String?) = User(
+    private fun sampleUser(avatarUrl: String?) = User(
         id = 1,
         phone = "09120000000",
-        username = username,
+        username = "علی",
         email = null,
         roles = emptySet(),
         verified = true,
         isActive = true,
         createdAt = Instant.parse("2026-01-01T00:00:00Z"),
         updatedAt = Instant.parse("2026-01-01T00:00:00Z"),
+        avatarUrl = avatarUrl,
     )
 }

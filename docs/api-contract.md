@@ -1,6 +1,6 @@
 # API Contract Summary
 
-Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (119 requests, 116 `/api/v1` business routes).
+Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (121 requests, 118 `/api/v1` business routes).
 
 **Client active version:** `/api/v1` only. `/api/v2` mirror exists in the collection but is not implemented in the client until an explicit migration phase.
 
@@ -69,7 +69,7 @@ Future network layer concept: `AuthMode` in `:core:domain`.
 | Mode | Behavior | Examples |
 |------|----------|----------|
 | **None** | No Bearer token | `GET /cities`, `GET /shops`, `GET /plans`, static pages |
-| **Required** | Bearer access token | `GET /auth/me`, seller CRUD, admin APIs, `GET /me/favorites/*`, `/me/profile/*`, `/me/persons`, `/me/matches` |
+| **Required** | Bearer access token | `GET /auth/me`, `PUT /auth/profile`, seller CRUD, admin APIs, `GET /me/favorites/*`, `/me/profile/*`, `/me/persons`, `/me/matches` |
 | **Optional** | Anonymous OK; auth may enrich response | `GET /api/v1/home`, `GET /home/screen`, `POST /api/v1/events`, `POST /products/{id}/contact`, public wishlist share |
 
 Postman saves tokens from auth responses into collection variables: `accessToken`, `refreshToken`, `tempToken`.
@@ -205,7 +205,7 @@ See [api-feature-map.md](api-feature-map.md) for full endpoint index.
 | Layer | Path patterns | Auth |
 |-------|---------------|------|
 | **Public marketplace** | `/shops`, `/products`, `/catalog`, `/plans`, `/static-pages`, `/cities`, `/categories` | Mostly none |
-| **Authenticated consumer** | `/auth/me`, `/me/favorites/*`, `/me/follows/*`, `/me/wishlist/*`, `/me/home/feed`, `/me/profile/*`, `/me/persons`, `/me/matches` | Required |
+| **Authenticated consumer** | `/auth/me`, `/auth/profile`, `/me/favorites/*`, `/me/follows/*`, `/me/wishlist/*`, `/me/home/feed`, `/me/profile/*`, `/me/persons`, `/me/matches` | Required |
 | **Seller** | `/seller/shops/*`, `/seller/products/*`, `/me/referral` | Required (`user`+ token; mutations still require shop ownership) |
 | **Admin** | `/admin/*` | Required (admin/super_admin) |
 

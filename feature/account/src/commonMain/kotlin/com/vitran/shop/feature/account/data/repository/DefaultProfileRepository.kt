@@ -38,6 +38,9 @@ internal class DefaultProfileRepository(
     override suspend fun listPersons(): AppResult<List<Person>> =
         api.listPersons().mapSuccess { it.persons.map { person -> person.toDomain() } }
 
+    override suspend fun getPerson(id: PersonId): AppResult<Person> =
+        api.getPerson(id).mapSuccess { it.person.toDomain() }
+
     override suspend fun createPerson(command: CreatePersonCommand): AppResult<Person> =
         api.createPerson(command.toRequestDto()).mapSuccess { it.person.toDomain() }
 

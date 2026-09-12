@@ -1,14 +1,16 @@
 package com.vitran.shop.ui.sections.account
 
 import com.vitran.shop.feature.account.domain.model.User
+import com.vitran.shop.feature.account.domain.model.splitFullName
 
 fun User.toAccountProfile(): AccountProfile {
     val roleNames = roles.map { it.toBackend() }
+    val (firstName, lastName) = splitFullName(fullName)
     return AccountProfile(
         id = id.toString(),
         username = username.orEmpty(),
-        firstName = "",
-        lastName = "",
+        firstName = firstName,
+        lastName = lastName,
         email = email.orEmpty(),
         emailVerified = verified,
         phone = phone,
@@ -24,7 +26,9 @@ fun User.toAccountProfile(): AccountProfile {
         skinTone = null,
         hairType = null,
         hairColor = null,
-        avatarUrl = null,
+        avatarUrl = avatarUrl,
+        cityId = cityId,
+        cityName = city?.name,
     )
 }
 

@@ -127,6 +127,26 @@ class ProfileApiRepositoryTest {
     }
 
     @Test
+    fun getPerson_usesIdPath_andMapsPerson() = runTest {
+        val repository = profileRepository(
+            MockEngine { request ->
+                assertEquals(HttpMethod.Get, request.method)
+                assertTrue(request.url.encodedPath.endsWith("/me/persons/2"))
+                jsonResponse(HttpStatusCode.OK, personByIdBody)
+            },
+        )
+
+        val result = repository.getPerson(PersonId(2))
+
+        assertIs<AppResult.Success<*>>(result)
+        val person = (result as AppResult.Success).value
+        assertEquals(PersonId(2), person.id)
+        assertEquals(PersonRelation.Partner, person.relation)
+        assertEquals("size__m", person.sizes["upper_body"]?.valueSlug)
+        assertEquals("size", person.sizes["upper_body"]?.attributeSlug)
+    }
+
+    @Test
     fun listPersons_inferredWrapper() = runTest {
         val repository = profileRepository(
             MockEngine { jsonResponse(HttpStatusCode.OK, personsListBody) },
@@ -290,6 +310,31 @@ private val personBody = """
       "notify": true,
       "sort_order": 1,
       "sizes": { "upper_body": "size__m" }
+    }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+private val personByIdBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "person": {
+      "id": 2,
+      "name": "Partner",
+      "relation": "partner",
+      "sex": "female",
+      "notify": true,
+      "sort_order": 1,
+      "sizes": {
+        "upper_body": {
+          "attribute_slug": "size",
+          "value_slug": "size__m"
+        }
+      }
     }
   },
   "errors": []

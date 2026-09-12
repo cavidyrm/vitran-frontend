@@ -47,7 +47,7 @@ data class AccountUser(
     val internalNote: String = "",
     val events: List<AccountUserEvent> = emptyList(),
 ) {
-    val fullName: String get() = "$firstName $lastName"
+    val fullName: String get() = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ")
     val initial: String get() = firstName.firstOrNull()?.toString().orEmpty()
 }
 

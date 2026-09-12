@@ -33,8 +33,8 @@ Status values: `Open` | `Verified from backend source` | `Resolved by backend up
 | Field | Status |
 |-------|--------|
 | **Status** | Open |
-| **Issue** | Public `GET /cities` returns flat `{ id, slug, name }`. CreateStore UI uses province → city cascade; no `province_id` on city objects. |
-| **Client impact** | Phase 4 loads real cities into city dropdown; province selector remains mock-only. All API cities shown when province is selected. |
+| **Issue** | Public `GET /cities` returns flat `{ id, slug, name }`. CreateStore UI uses province → city cascade; no `province_id` on city objects. Nested `city` on `GET /auth/me` / admin user detail may include optional `province` (display-only string) — that does not add a public cities hierarchy. |
+| **Client impact** | Phase 4 loads real cities into city dropdown; province selector remains mock-only. All API cities shown when province is selected. Profile city picker is a flat list. |
 | **Phase 4 handling** | Documented in [reference-data.md](reference-data.md). Resolve when backend adds province or nested geography. |
 
 ---
@@ -94,11 +94,7 @@ Postman requests **without saved response examples** (or with incomplete example
 | GET | `/api/v1/catalog/search` | Advanced catalog search |
 | GET | `/api/v1/home/screen` | Server-driven home screen |
 | GET | `/api/v1/me/home/feed` | Custom personalized home feed |
-| GET | `/api/v1/me/persons` | List persons |
 | PUT | `/api/v1/me/profile/sizing` | Update sizing profile |
-| POST | `/api/v1/me/persons` | Create person |
-| PATCH | `/api/v1/me/persons/{id}` | Update person |
-| DELETE | `/api/v1/me/persons/{id}` | Delete person |
 | POST | `/api/v1/me/follows/shops/{id}` | Follow shop |
 | GET | `/api/v1/me/follows/shops` | List followed shops |
 | GET | `/api/v1/me/follows/shops/{id}` | Get followed shop |
@@ -192,10 +188,10 @@ Postman requests **without saved response examples** (or with incomplete example
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
-| **Issue** | Whether omitted null fields clear username/email vs leave unchanged is not documented. |
-| **Client impact** | Profile editor sends explicit null for blank fields; confirm backend behavior. |
-| **Phase 3 handling** | Monitor integration test results before changing mapper. |
+| **Status** | Partially resolved |
+| **Issue** | `PUT /auth/profile` now documents editable fields: `username`, `email`, `full_name`, `avatar_url`, `city_id`. Omit `city_id` to keep the current city; send `clear_city_id: true` to unset. Other omitted keys are not documented as “clear vs keep”. |
+| **Client impact** | Client uses `explicitNulls = false` so nulls are omitted. Profile save sends current username/email/`full_name`/`avatar_url`, sends `city_id` when a city is selected, and sends `clear_city_id: true` only when the user clears city. |
+| **Phase 3 handling** | City clear is explicit. Remaining omit-vs-clear risk is limited to blank username/email/`full_name`/`avatar_url`. |
 
 ---
 
@@ -502,10 +498,10 @@ See [admin-and-cms.md](admin-and-cms.md).
 
 | Field | Status |
 |-------|--------|
-| **Status** | Client compatibility workaround |
-| **Issue** | `GET /me/persons`, PUT sizing, POST/PATCH/DELETE person lack saved response examples. |
-| **Client impact** | List inferred as `{ persons: [...] }` matching sizing-profile person objects. DELETE uses empty success envelope. PUT sizing decoded as the GET sizing profile shape when present. |
-| **Handling** | Revisit if live responses use cursor pagination or a different wrapper. |
+| **Status** | Partially resolved |
+| **Issue** | `GET /me/persons`, `GET /me/persons/{id}`, POST/PATCH/DELETE person now have saved examples (`data.persons` / `data.person`, empty DELETE envelope). `PUT /me/profile/sizing` still has no saved response example. |
+| **Client impact** | List/get/create/update decode the documented person shape. PUT sizing still decoded as the GET sizing profile shape when present. |
+| **Handling** | Revisit sizing PUT if live responses use a different wrapper. |
 
 ---
 

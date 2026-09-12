@@ -20,6 +20,8 @@ interface ProfileRepository {
 
     suspend fun listPersons(): AppResult<List<Person>>
 
+    suspend fun getPerson(id: PersonId): AppResult<Person>
+
     suspend fun createPerson(command: CreatePersonCommand): AppResult<Person>
 
     suspend fun updatePerson(command: UpdatePersonCommand): AppResult<Person>

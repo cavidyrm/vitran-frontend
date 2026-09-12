@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,9 +38,7 @@ import vitranshop.shared.generated.resources.account_edit_profile
 import vitranshop.shared.generated.resources.account_open_profile_a11y
 import vitranshop.shared.generated.resources.ic_chevron_right
 import vitranshop.shared.generated.resources.ic_edit
-import vitranshop.shared.generated.resources.ic_nav_profile
 
-private val AvatarSoftBg = Color(0xFFEEEAFF)
 private val EditPillBg = Color(0xFFEEEAFF)
 private val ChevronBtnBg = Color(0xFFF5F2FF)
 private val ChevronBtnBorder = Color(0xFFE0D9F5)
@@ -69,20 +66,10 @@ internal fun AccountHubHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(AccountTokens.AvatarHubHeader)
-                    .clip(CircleShape)
-                    .background(AvatarSoftBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                VitranIcon(
-                    painter = painterResource(Res.drawable.ic_nav_profile),
-                    contentDescription = null,
-                    size = VitranSize.iconLarge,
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-            }
+            AccountCircleAvatar(
+                avatarUrl = profile.avatarUrl,
+                modifier = Modifier.size(AccountTokens.AvatarHubHeader),
+            )
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),

@@ -4,12 +4,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+internal data class UserCityDto(
+    val id: Long,
+    val slug: String,
+    val name: String,
+    val province: String? = null,
+)
+
+@Serializable
 internal data class UserDto(
     val id: Long,
     val phone: String,
     val username: String? = null,
     val email: String? = null,
     @SerialName("full_name") val fullName: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    @SerialName("city_id") val cityId: Long? = null,
+    val city: UserCityDto? = null,
     @SerialName("referral_code") val referralCode: String? = null,
     @SerialName("wishlist_share_slug") val wishlistShareSlug: String? = null,
     @SerialName("wishlist_public") val wishlistPublic: Boolean = false,
@@ -31,6 +42,10 @@ internal data class GetCurrentUserDataDto(
 internal data class UpdateProfileRequestDto(
     val username: String? = null,
     val email: String? = null,
+    @SerialName("full_name") val fullName: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    @SerialName("city_id") val cityId: Long? = null,
+    @SerialName("clear_city_id") val clearCityId: Boolean? = null,
 )
 
 @Serializable

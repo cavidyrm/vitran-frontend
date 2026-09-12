@@ -14,7 +14,9 @@ import vitranshop.shared.generated.resources.account_birthday_placeholder
 import vitranshop.shared.generated.resources.account_email_change
 import vitranshop.shared.generated.resources.account_email_change_hint
 import vitranshop.shared.generated.resources.account_email_locked_a11y
+import vitranshop.shared.generated.resources.account_city_placeholder
 import vitranshop.shared.generated.resources.account_field_birthday
+import vitranshop.shared.generated.resources.account_field_city
 import vitranshop.shared.generated.resources.account_field_email
 import vitranshop.shared.generated.resources.account_field_first_name
 import vitranshop.shared.generated.resources.account_field_gender
@@ -38,13 +40,22 @@ import vitranshop.shared.generated.resources.ic_nav_profile
 internal fun ProfilePersonalInfoCard(
     profile: AccountProfile,
     onProfileChange: (AccountProfile) -> Unit,
+    cities: List<AccountCityOption>,
+    clearCityLabel: String,
+    onCitySelect: (Long?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AccountTokens.SectionGap),
     ) {
-        PersonalFieldsCard(profile = profile, onProfileChange = onProfileChange)
+        PersonalFieldsCard(
+            profile = profile,
+            onProfileChange = onProfileChange,
+            cities = cities,
+            clearCityLabel = clearCityLabel,
+            onCitySelect = onCitySelect,
+        )
         ContactFieldsCard(profile = profile)
     }
 }
@@ -53,6 +64,9 @@ internal fun ProfilePersonalInfoCard(
 private fun PersonalFieldsCard(
     profile: AccountProfile,
     onProfileChange: (AccountProfile) -> Unit,
+    cities: List<AccountCityOption>,
+    clearCityLabel: String,
+    onCitySelect: (Long?) -> Unit,
 ) {
     val genderUnspecified = AccountGender.Unspecified.label()
     val genderFemale = AccountGender.Female.label()
@@ -109,6 +123,22 @@ private fun PersonalFieldsCard(
                         painter = painterResource(Res.drawable.ic_calendar),
                         contentDescription = null,
                     )
+                },
+            )
+            val cityOptions = listOf(clearCityLabel) + cities.map { it.name }
+            val selectedCityName = cities.firstOrNull { it.id == profile.cityId }?.name
+                ?: profile.cityName.orEmpty()
+            AccountDropdownField(
+                label = stringResource(Res.string.account_field_city),
+                value = selectedCityName,
+                placeholder = stringResource(Res.string.account_city_placeholder),
+                options = cityOptions,
+                onSelect = { label ->
+                    if (label == clearCityLabel) {
+                        onCitySelect(null)
+                    } else {
+                        onCitySelect(cities.firstOrNull { it.name == label }?.id)
+                    }
                 },
             )
             AccountDropdownField(

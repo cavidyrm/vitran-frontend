@@ -47,6 +47,10 @@ internal class DefaultAccountRepository(
             UpdateProfileRequestDto(
                 username = command.username,
                 email = command.email,
+                fullName = command.fullName,
+                avatarUrl = command.avatarUrl,
+                cityId = command.cityId,
+                clearCityId = command.clearCityId,
             ),
         )) {
             is AppResult.Success -> {

@@ -59,6 +59,8 @@ class AdminUserApiRepositoryTest {
         assertEquals(42L, user.id)
         assertEquals(setOf(UserRole.Admin, UserRole.Unknown("auditor")), user.roles)
         assertEquals(false, user.isActive)
+        assertEquals("Javid", user.fullName)
+        assertEquals("user@example.com", user.email)
     }
 
     @Test
@@ -104,6 +106,9 @@ class AdminUserApiRepositoryTest {
         val loaded = assertIs<AppResult.Success<*>>(repository.getUser(42)).value
             as com.vitran.shop.feature.admin.users.domain.model.AdminUserDetails
         assertEquals(Instant.parse("2026-08-01T10:00:00Z"), loaded.createdAt)
+        assertEquals("Javid", loaded.fullName)
+        assertEquals("https://cdn.example/avatar.png", loaded.avatarUrl)
+        assertEquals("Tehran", loaded.city?.name)
 
         val updated = assertIs<AppResult.Success<*>>(
             repository.updateUser(
@@ -169,6 +174,11 @@ class AdminUserApiRepositoryTest {
                   "results": [{
                     "id": 42,
                     "phone": "09123456789",
+                    "username": "javid",
+                    "email": "user@example.com",
+                    "full_name": "Javid",
+                    "city_id": 1,
+                    "product_match_notify": true,
                     "roles": ["admin", "auditor"],
                     "verified": true,
                     "is_active": false
@@ -188,6 +198,17 @@ class AdminUserApiRepositoryTest {
                 "user": {
                   "id": 42,
                   "phone": "09123456789",
+                  "username": "javid",
+                  "email": "user@example.com",
+                  "full_name": "Javid",
+                  "avatar_url": "https://cdn.example/avatar.png",
+                  "city_id": 1,
+                  "city": {
+                    "id": 1,
+                    "slug": "tehran",
+                    "name": "Tehran",
+                    "province": "Tehran"
+                  },
                   "roles": ["admin", "super_admin"],
                   "verified": true,
                   "is_active": true,

@@ -698,6 +698,11 @@
     <string name="account_section_settings">تنظیمات</string>
     <string name="account_field_first_name">نام</string>
     <string name="account_field_last_name">نام خانوادگی</string>
+    <string name="account_field_city">شهر</string>
+    <string name="account_city_placeholder">انتخاب شهر</string>
+    <string name="account_city_clear">بدون شهر</string>
+    <string name="account_field_avatar_url">نشانی تصویر</string>
+    <string name="account_avatar_url_placeholder">https://…</string>
     <string name="account_field_username">نام کاربری</string>
     <string name="account_username_handle">@%1$s</string>
     <string name="account_username_url">vitran.ir/@%1$s</string>

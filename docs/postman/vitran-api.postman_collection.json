@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Vitran API",
-    "description": "Vitran marketplace backend — **116 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Profile & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
+    "description": "Vitran marketplace backend — **118 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Account profile: **`GET/PUT /auth/profile`** (`username`, `email`, `full_name`, `avatar_url`, `city_id`). Sizing & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -746,7 +746,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/auth/me",
-            "description": "Current user. `roles` is the permission rank (`user` / `admin` / `super_admin`). `shop_types` is derived from owned shops: `[]` = viewer only, `retailer` and/or `wholesaler`. The same account can own both types. `product_match_notify` toggles size-match alerts (see **Profile & Persons — Me → Update notification settings**). `wishlist_share_slug` / `wishlist_public` power public wishlist sharing."
+            "description": "Current user (`users` row). Editable account fields are updated via **Update profile**; sizing/family via **Profile & Persons — Me**.\n\nIncludes: `username`, `email`, `full_name`, `avatar_url`, `city_id`, nested `city`, `wishlist_share_slug`, `wishlist_public`, `referral_code`, `product_match_notify`, `roles`, derived `shop_types` (`[]` / `retailer` / `wholesaler`), `verified`, `is_active`. Password is never returned."
           },
           "response": [
             {
@@ -760,7 +760,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات پروفایل با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات پروفایل با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"avatar_url\": \"https://cdn.example/avatar.png\",\n      \"city_id\": 1,\n      \"city\": {\n        \"id\": 1,\n        \"slug\": \"tehran\",\n        \"name\": \"Tehran\",\n        \"province\": \"Tehran\"\n      },\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -786,9 +786,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"javid\",\n  \"email\": \"user@example.com\"\n}"
+              "raw": "{\n  \"username\": \"javid\",\n  \"email\": \"user@example.com\",\n  \"full_name\": \"Javid\",\n  \"avatar_url\": \"https://cdn.example/avatar.png\",\n  \"city_id\": 1\n}"
             },
-            "url": "{{baseUrl}}/api/v1/auth/profile"
+            "url": "{{baseUrl}}/api/v1/auth/profile",
+            "description": "Updates editable `users` profile fields: `username`, `email`, `full_name`, `avatar_url`, `city_id`. `avatar_url` must be a valid URL when non-empty. `city_id` must exist (`GET /cities`). Omit `city_id` to keep the current city; set **`clear_city_id`: true** to unset.\n\nNot handled here: `phone`, `password`, `product_match_notify` (**Profile & Persons — Me → Update notification settings**), wishlist (**Favorites — Me → Update wishlist share**), referral fields. Response matches **Get profile (me)**."
           },
           "response": [
             {
@@ -802,9 +803,38 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T11:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"avatar_url\": \"https://cdn.example/avatar.png\",\n      \"city_id\": 1,\n      \"city\": {\n        \"id\": 1,\n        \"slug\": \"tehran\",\n        \"name\": \"Tehran\",\n        \"province\": \"Tehran\"\n      },\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T11:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
+        },
+        {
+          "name": "Update profile (clear city)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"javid\",\n  \"email\": \"user@example.com\",\n  \"full_name\": \"Javid\",\n  \"clear_city_id\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/profile",
+            "description": "Same as **Update profile**, but removes `city_id` without sending a new city."
+          },
+          "response": []
         }
       ]
     },
@@ -827,7 +857,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/admin/users?per_page=20&role=user&phone=0912&is_active=true",
-            "description": "Filter: `role`, `phone`, `is_active`.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
+            "description": "Filter: `role`, `phone`, `is_active`. Each user in `results` includes full profile columns (same as **Users → Get profile (me)**), without password.\n\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`."
           },
           "response": [
             {
@@ -841,7 +871,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"لیست کاربران با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"users\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 2,\n          \"phone\": \"9123456789\",\n          \"roles\": [\n            \"user\"\n          ],\n          \"verified\": true,\n          \"is_active\": true\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست کاربران با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"users\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 2,\n          \"phone\": \"9123456789\",\n          \"username\": \"javid\",\n          \"email\": \"user@example.com\",\n          \"full_name\": \"Javid\",\n          \"city_id\": 1,\n          \"product_match_notify\": true,\n          \"roles\": [\"user\"],\n          \"verified\": true,\n          \"is_active\": true\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -860,7 +890,8 @@
             },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/admin/users/2"
+            "url": "{{baseUrl}}/api/v1/admin/users/2",
+            "description": "Full `users` profile + `roles` (no password). End-user edits use **Users → Update profile**; this route is read-only for profile fields."
           },
           "response": [
             {
@@ -874,7 +905,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات کاربر با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات کاربر با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"avatar_url\": \"https://cdn.example/avatar.png\",\n      \"city_id\": 1,\n      \"city\": {\n        \"id\": 1,\n        \"slug\": \"tehran\",\n        \"name\": \"Tehran\",\n        \"province\": \"Tehran\"\n      },\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -903,7 +934,7 @@
               "raw": "{\n  \"is_active\": true,\n  \"roles\": [\"user\"]\n}"
             },
             "url": "{{baseUrl}}/api/v1/admin/users/2",
-            "description": "Roles are hierarchical: `user` < `admin` < `super_admin`. Only `super_admin` may send `roles` (`user` and/or `admin`; `super_admin` cannot be granted via API). A normal `admin` omits `roles` so the current set is unchanged. Existing `super_admin` users must keep `super_admin` in the roles array when it is sent."
+            "description": "Moderation only: `{ \"is_active\"?, \"roles\"? }` (at least one required). Does **not** edit `username`, `full_name`, etc. — use **Users → Update profile** with the user's token.\n\nRoles are hierarchical: `user` < `admin` < `super_admin`. Assign `user` or `admin` (`super_admin` cannot be granted via API). Only `super_admin` may assign `admin`. Existing `super_admin` users must keep `super_admin` in the roles array."
           },
           "response": [
             {
@@ -917,7 +948,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"کاربر با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"roles\": [\"user\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"کاربر با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"roles\": [\"user\"],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         }
@@ -4002,9 +4033,23 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/me/persons",
-            "description": "Lists saved family/partner persons (excludes detailed self profile — use sizing profile for self)."
+            "description": "Lists saved **family** persons (`partner`, `child`, `other`) with their `sizes` (taxonomy favorite attributes per slot). Excludes `self` — use **Get sizing profile** / **Update sizing profile (self)** for your own row."
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست افراد با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"persons\": [\n      {\n        \"id\": 2,\n        \"name\": \"Partner\",\n        \"relation\": \"partner\",\n        \"sex\": \"female\",\n        \"notify\": true,\n        \"sort_order\": 1,\n        \"sizes\": {\n          \"upper_body\": {\n            \"attribute_slug\": \"size\",\n            \"value_slug\": \"size__m\"\n          }\n        }\n      }\n    ]\n  },\n  \"errors\": []\n}"
+            }
+          ]
         },
         {
           "name": "Create person",
@@ -4027,13 +4072,27 @@
               }
             ],
             "url": "{{baseUrl}}/api/v1/me/persons",
-            "description": "Add a partner/child/other person with optional `sex` (male|female) and size slots. Valid relations: `partner`, `child`, `other` (not `self`).",
+            "description": "Create a family person. Required: `name`, `relation` (`partner` | `child` | `other` — not `self`). Optional: `sex`, `notify`, `sort_order`, `sizes` (slot → value_slug or `{ attribute_slug, value_slug }`). Slots must match **Get sizing profile** → `profile.slots`. Saved attributes power **Product Matches — Me**.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Partner\",\n  \"relation\": \"partner\",\n  \"sex\": \"female\",\n  \"notify\": true,\n  \"sort_order\": 1,\n  \"sizes\": {\n    \"upper_body\": \"size__m\",\n    \"lower_body\": {\n      \"attribute_slug\": \"size\",\n      \"value_slug\": \"size__32\"\n    },\n    \"shoes\": \"shoe-size__42\"\n  }\n}"
             }
           },
-          "response": [],
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فرد با موفقیت اضافه شد\",\n  \"code\": 1,\n  \"data\": {\n    \"person\": {\n      \"id\": 2,\n      \"name\": \"Partner\",\n      \"relation\": \"partner\",\n      \"sex\": \"female\",\n      \"notify\": true,\n      \"sort_order\": 1,\n      \"sizes\": {\n        \"upper_body\": {\n          \"attribute_slug\": \"size\",\n          \"value_slug\": \"size__m\"\n        },\n        \"lower_body\": {\n          \"attribute_slug\": \"size\",\n          \"value_slug\": \"size__32\"\n        },\n        \"shoes\": {\n          \"attribute_slug\": \"shoe-size\",\n          \"value_slug\": \"shoe-size__42\"\n        }\n      }\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ],
           "event": [
             {
               "listen": "test",
@@ -4044,6 +4103,40 @@
                 ],
                 "type": "text/javascript"
               }
+            }
+          ]
+        },
+        {
+          "name": "Get person by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me/persons/{{personId}}",
+            "description": "Returns one person (including `self` if you pass that id). Response shape matches create/update: `data.person` with `sizes` map used for product matching."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات فرد با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"person\": {\n      \"id\": 2,\n      \"name\": \"Partner\",\n      \"relation\": \"partner\",\n      \"sex\": \"female\",\n      \"notify\": true,\n      \"sort_order\": 1,\n      \"sizes\": {\n        \"upper_body\": {\n          \"attribute_slug\": \"size\",\n          \"value_slug\": \"size__m\"\n        }\n      }\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -4068,13 +4161,27 @@
               }
             ],
             "url": "{{baseUrl}}/api/v1/me/persons/{{personId}}",
-            "description": "Partial update for a non-self person. All fields optional: `name`, `sex` (male|female), `notify`, `sort_order`, `sizes` (same slot map as create).",
+            "description": "Partial update. All fields optional: `name`, `sex` (male|female), `notify`, `sort_order`, `sizes` (replaces all saved slot attributes when sent — same map as create). Cannot change `relation` to `self` if another self exists. Self row: prefer **Update sizing profile (self)**.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Partner Updated\",\n  \"sex\": \"female\",\n  \"notify\": false,\n  \"sizes\": {\n    \"upper_body\": \"size__l\",\n    \"shoes\": \"shoe-size__41\"\n  }\n}"
             }
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فرد با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"person\": {\n      \"id\": 2,\n      \"name\": \"Partner Updated\",\n      \"relation\": \"partner\",\n      \"sex\": \"female\",\n      \"notify\": false,\n      \"sizes\": {\n        \"upper_body\": {\n          \"attribute_slug\": \"size\",\n          \"value_slug\": \"size__l\"\n        },\n        \"shoes\": {\n          \"attribute_slug\": \"shoe-size\",\n          \"value_slug\": \"shoe-size__41\"\n        }\n      }\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
         },
         {
           "name": "Delete person",
@@ -4092,9 +4199,23 @@
             "method": "DELETE",
             "header": [],
             "url": "{{baseUrl}}/api/v1/me/persons/{{personId}}",
-            "description": "Deletes a non-self person. Self profile cannot be deleted."
+            "description": "Deletes a non-self person. Self profile cannot be deleted (use **Update sizing profile (self)** to clear attributes)."
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فرد با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
         }
       ]
     },

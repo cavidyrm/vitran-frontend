@@ -49,6 +49,12 @@ data class AccountPrivacyPrefs(
 )
 
 @Immutable
+data class AccountCityOption(
+    val id: Long,
+    val name: String,
+)
+
+@Immutable
 data class AccountProfile(
     val id: String,
     val username: String,
@@ -70,6 +76,8 @@ data class AccountProfile(
     val hairType: String?,
     val hairColor: String?,
     val avatarUrl: String?,
+    val cityId: Long? = null,
+    val cityName: String? = null,
 ) {
     val displayName: String
         get() = listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ")

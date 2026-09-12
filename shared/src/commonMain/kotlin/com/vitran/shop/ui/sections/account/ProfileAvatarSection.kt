@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,11 +18,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.components.VitranText
 import com.vitran.shop.ui.components.VitranTextStyle
+import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.theme.VitranElevation
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -30,17 +35,51 @@ import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.account_edit_photo
 import vitranshop.shared.generated.resources.account_edit_photo_a11y
+import vitranshop.shared.generated.resources.account_field_avatar_url
+import vitranshop.shared.generated.resources.account_avatar_url_placeholder
 import vitranshop.shared.generated.resources.ic_camera
 import vitranshop.shared.generated.resources.ic_edit
 import vitranshop.shared.generated.resources.ic_nav_profile
 
 @Composable
+internal fun AccountCircleAvatar(
+    avatarUrl: String?,
+    modifier: Modifier = Modifier,
+    placeholderSize: Dp = VitranSize.iconLarge,
+) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
+    ) {
+        val url = avatarUrl?.takeIf { it.isNotBlank() }
+        if (url != null) {
+            AsyncImage(
+                model = resolveNetworkImageUrl(url),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().clip(CircleShape),
+            )
+        } else {
+            VitranIcon(
+                painter = painterResource(Res.drawable.ic_nav_profile),
+                contentDescription = null,
+                size = placeholderSize,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+@Composable
 internal fun ProfileAvatarSection(
-    @Suppress("UNUSED_PARAMETER") profile: AccountProfile,
+    profile: AccountProfile,
     onEditClick: () -> Unit,
+    showAvatarUrlField: Boolean,
+    onAvatarUrlChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // profile.avatarUrl reserved for a future image loader; soft placeholder for now.
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -57,20 +96,10 @@ internal fun ProfileAvatarSection(
                     onClick = onEditClick,
                 ),
         ) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                VitranIcon(
-                    painter = painterResource(Res.drawable.ic_nav_profile),
-                    contentDescription = null,
-                    size = VitranSize.iconLarge,
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-            }
+            AccountCircleAvatar(
+                avatarUrl = profile.avatarUrl,
+                modifier = Modifier.matchParentSize(),
+            )
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -104,6 +133,15 @@ internal fun ProfileAvatarSection(
                 text = stringResource(Res.string.account_edit_photo),
                 style = VitranTextStyle.Label,
                 color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        if (showAvatarUrlField) {
+            AccountStackedField(
+                label = stringResource(Res.string.account_field_avatar_url),
+                value = profile.avatarUrl.orEmpty(),
+                onValueChange = onAvatarUrlChange,
+                placeholder = stringResource(Res.string.account_avatar_url_placeholder),
+                modifier = Modifier.padding(horizontal = VitranSpacing.lg),
             )
         }
     }

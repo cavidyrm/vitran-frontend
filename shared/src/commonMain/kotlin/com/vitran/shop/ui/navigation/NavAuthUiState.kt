@@ -17,7 +17,7 @@ fun navAuthUiStateOf(
     SessionState.Restoring -> NavAuthUiState.Restoring
     SessionState.Anonymous -> NavAuthUiState.SignedOut
     SessionState.Authenticated -> {
-        val avatar = (currentUser as? CurrentUserState.Available)?.user?.username
+        val avatar = (currentUser as? CurrentUserState.Available)?.user?.avatarUrl
         NavAuthUiState.SignedIn(avatarUrl = avatar)
     }
 }

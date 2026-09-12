@@ -68,6 +68,13 @@ internal class ProfileApi(
             }
         }
 
+    suspend fun getPerson(id: PersonId): AppResult<PersonDataDto> =
+        executor.execute {
+            client.get(environment.apiUrl("/me/persons/${id.value}")) {
+                authMode(AuthMode.Required)
+            }
+        }
+
     suspend fun createPerson(request: PersonWriteRequestDto): AppResult<PersonDataDto> =
         executor.execute {
             client.post(environment.apiUrl("/me/persons")) {

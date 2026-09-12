@@ -5,9 +5,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+internal data class AdminUserCityDto(
+    val id: Long,
+    val slug: String,
+    val name: String,
+    val province: String? = null,
+)
+
+@Serializable
 internal data class AdminUserListItemDto(
     val id: Long,
     val phone: String,
+    val username: String? = null,
+    val email: String? = null,
+    @SerialName("full_name") val fullName: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    @SerialName("city_id") val cityId: Long? = null,
+    @SerialName("product_match_notify") val productMatchNotify: Boolean? = null,
     val roles: List<String> = emptyList(),
     @SerialName("shop_types") val shopTypes: List<String>? = null,
     val verified: Boolean = false,
@@ -20,6 +34,14 @@ internal data class AdminUserListItemDto(
 internal data class AdminUserDetailsDto(
     val id: Long,
     val phone: String,
+    val username: String? = null,
+    val email: String? = null,
+    @SerialName("full_name") val fullName: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    @SerialName("city_id") val cityId: Long? = null,
+    val city: AdminUserCityDto? = null,
+    @SerialName("wishlist_public") val wishlistPublic: Boolean? = null,
+    @SerialName("product_match_notify") val productMatchNotify: Boolean? = null,
     val roles: List<String> = emptyList(),
     @SerialName("shop_types") val shopTypes: List<String>? = null,
     val verified: Boolean = false,

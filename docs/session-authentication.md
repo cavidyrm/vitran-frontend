@@ -180,9 +180,9 @@ UI: `normalizeIranMobile()` → `09xxxxxxxxx`. API mapper `toApiPhone()` strips 
 
 ## 13. Account feature (`:feature:account`)
 
-- `User` (includes `shopTypes`, profile extras from `/auth/me`), `CurrentUserState`, `AccountRepository`
-- `AccountApi`: `GET /auth/me`, `PUT /auth/profile` with `AuthMode.Required`
-- `ProfileApi` / `ProductMatchApi`: sizing, notify, persons, `/me/matches` (data layer; no dedicated screens yet)
+- `User` (includes `shopTypes`, `avatarUrl`, `cityId` / nested `city`, other profile extras from `/auth/me`), `CurrentUserState`, `AccountRepository`
+- `AccountApi`: `GET /auth/me`, `PUT /auth/profile` (`username`, `email`, `full_name`, `avatar_url`, `city_id`, optional `clear_city_id`) with `AuthMode.Required`
+- `ProfileApi` / `ProductMatchApi`: sizing, notify, persons (including `GET /me/persons/{id}`), `/me/matches` (data layer; no dedicated persons screens yet)
 - `DefaultAccountRepository` — `StateFlow` cache; updates on profile PUT; listens to session invalidation
 - `UserRole.fromBackend()` with `Unknown(rawValue)` — never crash on new roles; `customer`/`seller` map to `User`
 
@@ -291,7 +291,7 @@ Run: `./gradlew :core:session:jvmTest :core:network:jvmTest :feature:auth:jvmTes
 
 ## 19. Known gaps
 
-See `docs/api-gaps.md`: phone format, username/email nullability, Web/Desktop persistent storage, profile PUT partial semantics.
+See `docs/api-gaps.md`: phone format, username/email nullability, Web/Desktop persistent storage, profile PUT omit vs `clear_city_id`.
 
 ## 20. Phase 4 readiness
 

@@ -3,6 +3,13 @@ package com.vitran.shop.feature.admin.users.domain.model
 import com.vitran.shop.core.domain.auth.UserRole
 import kotlinx.datetime.Instant
 
+data class AdminUserCity(
+    val id: Long,
+    val slug: String,
+    val name: String,
+    val province: String? = null,
+)
+
 data class AdminUserSummary(
     val id: Long,
     val phone: String,
@@ -10,6 +17,10 @@ data class AdminUserSummary(
     val verified: Boolean,
     val isActive: Boolean,
     val shopTypes: List<String> = emptyList(),
+    val username: String? = null,
+    val email: String? = null,
+    val fullName: String? = null,
+    val cityId: Long? = null,
 )
 
 data class AdminUserDetails(
@@ -21,6 +32,12 @@ data class AdminUserDetails(
     val createdAt: Instant,
     val updatedAt: Instant,
     val shopTypes: List<String> = emptyList(),
+    val username: String? = null,
+    val email: String? = null,
+    val fullName: String? = null,
+    val avatarUrl: String? = null,
+    val cityId: Long? = null,
+    val city: AdminUserCity? = null,
 )
 
 data class AdminUserQuery(

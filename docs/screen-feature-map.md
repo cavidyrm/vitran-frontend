@@ -24,7 +24,7 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | OffersScreen | `/offers` | Deals | TBD — no dedicated API in collection | `PlaceholderScreen` | `OffersViewModel` | — | Placeholder only |
 | SavedScreen | `/saved` | Engagement / Wishlist | `GET /me/favorites/products` | `PlaceholderScreen` | `WishlistViewModel` ✅ (unconnected) | — | Placeholder only — API exists |
 | AccountScreen | `/account` | Account | `GET /auth/me` | Hub extras still mock | `AccountRepository` ✅ (hub identity) | Yes | Wired to `CurrentUserState` |
-| ProfileScreen | `/account/profile` | Account | `GET/PUT /auth/profile` | Preview fixtures only | `ProfileViewModel` ✅ | Yes | |
+| ProfileScreen | `/account/profile` | Account | `GET /auth/me`, `PUT /auth/profile` | Sizing/gender/birthday still local | `ProfileViewModel` ✅ | Yes | Wired: username, full name, avatar URL, city + clear city |
 | ReferralsScreen | `/account/referrals` | Referral | `GET /me/referral`, credits apply | Preview fixtures | `ReferralsViewModel` ✅ | Yes | Real API; share via ShareManager; no toman fake credits |
 | FollowingScreen | `/account/following` | Engagement (follows) | `GET /me/follows/shops` | Inline mock in section | — | Yes | Schema unresolved — mock kept; follow **mutations** wired on PDP/store |
 | AccountSettingsScreen | `/account/settings` | Account | Profile preferences (partial `/auth/profile`) | Local `remember` state | `AccountSettingsViewModel` | Yes | |

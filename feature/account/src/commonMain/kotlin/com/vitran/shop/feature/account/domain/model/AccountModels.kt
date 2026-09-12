@@ -3,6 +3,13 @@ package com.vitran.shop.feature.account.domain.model
 import com.vitran.shop.core.domain.auth.UserRole
 import kotlinx.datetime.Instant
 
+data class UserCity(
+    val id: Long,
+    val slug: String,
+    val name: String,
+    val province: String? = null,
+)
+
 data class User(
     val id: Long,
     val phone: String,
@@ -14,6 +21,9 @@ data class User(
     val createdAt: Instant,
     val updatedAt: Instant,
     val fullName: String? = null,
+    val avatarUrl: String? = null,
+    val cityId: Long? = null,
+    val city: UserCity? = null,
     val referralCode: String? = null,
     val wishlistShareSlug: String? = null,
     val wishlistPublic: Boolean = false,
@@ -29,6 +39,28 @@ sealed interface CurrentUserState {
 }
 
 data class UpdateProfileCommand(
-    val username: String?,
-    val email: String?,
+    val username: String? = null,
+    val email: String? = null,
+    val fullName: String? = null,
+    val avatarUrl: String? = null,
+    val cityId: Long? = null,
+    val clearCityId: Boolean? = null,
 )
+
+fun splitFullName(fullName: String?): Pair<String, String> {
+    val trimmed = fullName?.trim().orEmpty()
+    if (trimmed.isEmpty()) return "" to ""
+    val space = trimmed.indexOf(' ')
+    return if (space < 0) {
+        trimmed to ""
+    } else {
+        trimmed.substring(0, space) to trimmed.substring(space + 1).trim()
+    }
+}
+
+fun joinFullName(firstName: String, lastName: String): String? =
+    listOf(firstName, lastName)
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .joinToString(" ")
+        .ifBlank { null }

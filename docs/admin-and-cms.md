@@ -73,7 +73,7 @@ See [ADR 0012](decisions/0012-admin-rbac-client-policy.md).
 - `GET /admin/users/{id}`
 - `PATCH /admin/users/{id}`
 
-`AdminUserRepository` maps page results and unknown backend roles to safe `UserRole.Unknown`. `AdminUsersViewModel` and `AdminUserDetailViewModel` drive `AccountUsersScreen` and `AccountUserDetailScreen`.
+`AdminUserRepository` maps page results and unknown backend roles to safe `UserRole.Unknown`. List/detail payloads include profile columns (`username`, `email`, `full_name`; detail also `avatar_url` and nested `city`). PATCH remains moderation-only (`is_active` / `roles`) — profile edits use the user’s own `PUT /auth/profile`. `AdminUsersViewModel` and `AdminUserDetailViewModel` drive `AccountUsersScreen` and `AccountUserDetailScreen`.
 
 ## 9. Moderation ownership and queries
 
