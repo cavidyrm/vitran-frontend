@@ -39,6 +39,11 @@ sealed interface CurrentUserState {
     data class Error(val message: String?) : CurrentUserState
 }
 
+data class UsernameAvailability(
+    val username: String,
+    val isAvailable: Boolean,
+)
+
 data class UpdateProfileCommand(
     val username: String? = null,
     val email: String? = null,

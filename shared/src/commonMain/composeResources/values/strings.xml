@@ -707,6 +707,8 @@
     <string name="account_username_handle">@%1$s</string>
     <string name="account_username_url">vitran.ir/@%1$s</string>
     <string name="account_username_available">این نام کاربری آزاد است</string>
+    <string name="account_username_checking">در حال بررسی…</string>
+    <string name="account_username_check_error">بررسی نام کاربری ناموفق بود</string>
     <string name="account_field_email">ایمیل</string>
     <string name="account_field_phone">شماره موبایل</string>
     <string name="account_field_gender">جنسیت</string>

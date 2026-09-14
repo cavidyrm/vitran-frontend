@@ -20,6 +20,7 @@ import com.vitran.shop.feature.account.presentation.profile.ProfileGender
 import com.vitran.shop.feature.account.presentation.profile.ProfileUiAction
 import com.vitran.shop.feature.account.presentation.profile.ProfileUiState
 import com.vitran.shop.feature.account.presentation.profile.ProfileViewModel
+import com.vitran.shop.feature.account.presentation.profile.UsernameCheckUiStatus
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountCityOption
 import com.vitran.shop.ui.sections.account.AccountDest
@@ -30,6 +31,7 @@ import com.vitran.shop.ui.sections.account.AccountSaveBar
 import com.vitran.shop.ui.sections.account.ProfileAvatarSection
 import com.vitran.shop.ui.sections.account.ProfilePersonalInfoCard
 import com.vitran.shop.ui.sections.account.ProfileSizingCard
+import com.vitran.shop.ui.sections.account.UsernameCheckDisplay
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.util.formatIsoDateAsJalali
 import org.jetbrains.compose.resources.stringResource
@@ -146,6 +148,7 @@ fun ProfileScreen(
                         viewModel.onAction(ProfileUiAction.BirthdayChanged(iso))
                     },
                     citiesError = uiState.citiesError,
+                    usernameCheck = uiState.usernameCheck.toDisplay(),
                 )
                 ProfileSizingCard(
                     upperBodySlug = uiState.upperBodySize,
@@ -175,6 +178,9 @@ fun ProfileScreen(
                 AccountSaveBar(
                     onCancel = onBack,
                     onSave = { viewModel.onAction(ProfileUiAction.Save) },
+                    saveEnabled = !uiState.isUpdating &&
+                        uiState.usernameCheck !is UsernameCheckUiStatus.Taken &&
+                        uiState.usernameCheck !is UsernameCheckUiStatus.Checking,
                 )
             }
         }
@@ -247,4 +253,12 @@ private fun AccountGender.toProfileGender(): ProfileGender = when (this) {
     AccountGender.Female -> ProfileGender.Female
     AccountGender.Male -> ProfileGender.Male
     AccountGender.Other -> ProfileGender.Other
+}
+
+private fun UsernameCheckUiStatus.toDisplay(): UsernameCheckDisplay = when (this) {
+    UsernameCheckUiStatus.Idle -> UsernameCheckDisplay.Idle
+    UsernameCheckUiStatus.Checking -> UsernameCheckDisplay.Checking
+    is UsernameCheckUiStatus.Available -> UsernameCheckDisplay.Available
+    is UsernameCheckUiStatus.Taken -> UsernameCheckDisplay.Taken
+    is UsernameCheckUiStatus.Error -> UsernameCheckDisplay.Error
 }

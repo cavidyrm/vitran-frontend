@@ -2,6 +2,7 @@ package com.vitran.shop.feature.account.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.model.PersonRelation
@@ -16,6 +17,8 @@ import com.vitran.shop.feature.account.domain.model.splitFullName
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
 import com.vitran.shop.feature.account.domain.repository.ProfileRepository
 import com.vitran.shop.feature.location.domain.repository.LocationRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +35,14 @@ enum class ProfileGender {
     Female,
     Male,
     Other,
+}
+
+sealed class UsernameCheckUiStatus {
+    data object Idle : UsernameCheckUiStatus()
+    data object Checking : UsernameCheckUiStatus()
+    data class Available(val username: String) : UsernameCheckUiStatus()
+    data class Taken(val username: String) : UsernameCheckUiStatus()
+    data class Error(val error: AppError) : UsernameCheckUiStatus()
 }
 
 data class ProfileUiState(
@@ -55,6 +66,7 @@ data class ProfileUiState(
     val lowerBodySize: String? = null,
     val shoeSize: String? = null,
     val sizingError: String? = null,
+    val usernameCheck: UsernameCheckUiStatus = UsernameCheckUiStatus.Idle,
     val showAvatarUrlField: Boolean = false,
     val error: String? = null,
 )
@@ -80,6 +92,7 @@ class ProfileViewModel(
     private val accountRepository: AccountRepository,
     private val locationRepository: LocationRepository,
     private val profileRepository: ProfileRepository,
+    private val usernameDebounceMs: Long = 400L,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -87,6 +100,8 @@ class ProfileViewModel(
 
     private var sizingSelfName: String? = null
     private var sizingNotify: Boolean? = null
+    private var loadedUsername: String = ""
+    private var usernameCheckJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -108,7 +123,7 @@ class ProfileViewModel(
 
     fun onAction(action: ProfileUiAction) {
         when (action) {
-            is ProfileUiAction.UsernameChanged -> _uiState.update { it.copy(username = action.value) }
+            is ProfileUiAction.UsernameChanged -> onUsernameChanged(action.value)
             is ProfileUiAction.EmailChanged -> _uiState.update { it.copy(email = action.value) }
             is ProfileUiAction.FirstNameChanged -> _uiState.update { it.copy(firstName = action.value) }
             is ProfileUiAction.LastNameChanged -> _uiState.update { it.copy(lastName = action.value) }
@@ -143,11 +158,53 @@ class ProfileViewModel(
         }
     }
 
+    private fun onUsernameChanged(raw: String) {
+        usernameCheckJob?.cancel()
+        val trimmed = raw.trim()
+        _uiState.update { it.copy(username = raw) }
+        if (trimmed.isEmpty() ||
+            trimmed.length !in USERNAME_MIN_LENGTH..USERNAME_MAX_LENGTH ||
+            trimmed.equals(loadedUsername, ignoreCase = false)
+        ) {
+            _uiState.update { it.copy(usernameCheck = UsernameCheckUiStatus.Idle) }
+            return
+        }
+        usernameCheckJob =
+            viewModelScope.launch {
+                _uiState.update { it.copy(usernameCheck = UsernameCheckUiStatus.Checking) }
+                delay(usernameDebounceMs)
+                when (val result = accountRepository.checkUsernameAvailability(trimmed)) {
+                    is AppResult.Success -> {
+                        if (_uiState.value.username.trim() != trimmed) return@launch
+                        val availability = result.value
+                        _uiState.update {
+                            it.copy(
+                                usernameCheck =
+                                    if (availability.isAvailable) {
+                                        UsernameCheckUiStatus.Available(availability.username)
+                                    } else {
+                                        UsernameCheckUiStatus.Taken(availability.username)
+                                    },
+                            )
+                        }
+                    }
+                    is AppResult.Failure -> {
+                        if (_uiState.value.username.trim() != trimmed) return@launch
+                        _uiState.update {
+                            it.copy(usernameCheck = UsernameCheckUiStatus.Error(result.error))
+                        }
+                    }
+                }
+            }
+    }
+
     private fun applyUser(user: User) {
         val (firstName, lastName) = splitFullName(user.fullName)
         val cityId = user.cityId ?: user.city?.id
         val cityName = user.city?.name
             ?: _uiState.value.cities.firstOrNull { it.id == cityId }?.name
+        loadedUsername = user.username.orEmpty()
+        usernameCheckJob?.cancel()
         _uiState.update { state ->
             state.copy(
                 isLoading = false,
@@ -163,6 +220,7 @@ class ProfileViewModel(
                 cities = ensureSelectedCityInList(state.cities, cityId, cityName),
                 gender = user.sex.toProfileGender().takeIf { it != ProfileGender.Unspecified }
                     ?: state.gender,
+                usernameCheck = UsernameCheckUiStatus.Idle,
                 error = null,
             )
         }
@@ -252,6 +310,12 @@ class ProfileViewModel(
     private fun save() {
         val state = _uiState.value
         if (state.isUpdating) return
+        if (state.usernameCheck is UsernameCheckUiStatus.Taken) {
+            _uiState.update {
+                it.copy(error = "این نام کاربری قبلاً استفاده شده است.")
+            }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isUpdating = true, error = null) }
             when (
@@ -276,15 +340,18 @@ class ProfileViewModel(
                 }
                 is AppResult.Success -> {
                     val user = profileResult.value
+                    loadedUsername = user.username.orEmpty()
                     val cityId = user.cityId ?: user.city?.id
                     val cityName = user.city?.name
                         ?: _uiState.value.cities.firstOrNull { it.id == cityId }?.name
                     _uiState.update { state ->
                         state.copy(
+                            username = user.username.orEmpty(),
                             cityId = cityId,
                             cityName = cityName,
                             cityCleared = false,
                             cities = ensureSelectedCityInList(state.cities, cityId, cityName),
+                            usernameCheck = UsernameCheckUiStatus.Idle,
                         )
                     }
                 }
@@ -324,6 +391,8 @@ class ProfileViewModel(
         const val SLOT_SHOES = "shoes"
         const val ATTR_SIZE = "size"
         const val ATTR_SHOE = "shoe-size"
+        const val USERNAME_MIN_LENGTH = 3
+        const val USERNAME_MAX_LENGTH = 50
     }
 }
 

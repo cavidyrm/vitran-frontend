@@ -16,6 +16,7 @@ import com.vitran.shop.feature.account.domain.model.UpdatePersonCommand
 import com.vitran.shop.feature.account.domain.model.UpdateProfileCommand
 import com.vitran.shop.feature.account.domain.model.UpdateSizingCommand
 import com.vitran.shop.feature.account.domain.model.User
+import com.vitran.shop.feature.account.domain.model.UsernameAvailability
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
 import com.vitran.shop.feature.account.domain.repository.ProfileRepository
 import com.vitran.shop.feature.location.domain.model.City
@@ -27,6 +28,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -34,6 +36,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -187,6 +190,96 @@ class ProfileViewModelTest {
     }
 
     @Test
+    fun usernameCheck_debouncesAndFiresOnce() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val account = FakeAccountRepository(
+                sampleUser(fullName = "Javid", cityId = null),
+                usernameAvailable = true,
+            )
+            val viewModel = ProfileViewModel(
+                accountRepository = account,
+                locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
+                usernameDebounceMs = 400L,
+            )
+            advanceUntilIdle()
+
+            viewModel.onAction(ProfileUiAction.UsernameChanged("ja"))
+            viewModel.onAction(ProfileUiAction.UsernameChanged("jav"))
+            viewModel.onAction(ProfileUiAction.UsernameChanged("javi"))
+            viewModel.onAction(ProfileUiAction.UsernameChanged("javix"))
+            advanceTimeBy(399)
+            assertEquals(0, account.usernameCheckCalls)
+            assertIs<UsernameCheckUiStatus.Checking>(viewModel.uiState.value.usernameCheck)
+
+            advanceTimeBy(1)
+            advanceUntilIdle()
+            assertEquals(1, account.usernameCheckCalls)
+            assertEquals("javix", account.lastUsernameChecked)
+            assertIs<UsernameCheckUiStatus.Available>(viewModel.uiState.value.usernameCheck)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun usernameCheck_skipsWhenUnchangedFromLoaded() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val account = FakeAccountRepository(sampleUser(fullName = "Javid", cityId = null))
+            val viewModel = ProfileViewModel(
+                accountRepository = account,
+                locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
+                usernameDebounceMs = 400L,
+            )
+            advanceUntilIdle()
+
+            viewModel.onAction(ProfileUiAction.UsernameChanged("javid"))
+            advanceTimeBy(500)
+            advanceUntilIdle()
+            assertEquals(0, account.usernameCheckCalls)
+            assertIs<UsernameCheckUiStatus.Idle>(viewModel.uiState.value.usernameCheck)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun usernameTaken_blocksSave() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val account = FakeAccountRepository(
+                sampleUser(fullName = "Javid", cityId = null),
+                usernameAvailable = false,
+            )
+            val viewModel = ProfileViewModel(
+                accountRepository = account,
+                locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
+                usernameDebounceMs = 400L,
+            )
+            advanceUntilIdle()
+
+            viewModel.onAction(ProfileUiAction.UsernameChanged("taken"))
+            advanceTimeBy(400)
+            advanceUntilIdle()
+            assertIs<UsernameCheckUiStatus.Taken>(viewModel.uiState.value.usernameCheck)
+
+            viewModel.onAction(ProfileUiAction.Save)
+            advanceUntilIdle()
+            assertNull(account.lastCommand)
+            assertTrue(viewModel.uiState.value.error != null)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
     fun birthdayChange_staysLocalInUiState() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(dispatcher)
@@ -273,14 +366,25 @@ class ProfileViewModelTest {
 
     private class FakeAccountRepository(
         user: User,
+        private val usernameAvailable: Boolean = true,
     ) : AccountRepository {
         private val _state = MutableStateFlow<CurrentUserState>(CurrentUserState.Available(user))
         override val currentUserState: StateFlow<CurrentUserState> = _state
         var lastCommand: UpdateProfileCommand? = null
+        var usernameCheckCalls = 0
+        var lastUsernameChecked: String? = null
 
         override suspend fun refreshCurrentUser(): AppResult<User> {
             val user = (_state.value as CurrentUserState.Available).user
             return AppResult.Success(user)
+        }
+
+        override suspend fun checkUsernameAvailability(username: String): AppResult<UsernameAvailability> {
+            usernameCheckCalls += 1
+            lastUsernameChecked = username
+            return AppResult.Success(
+                UsernameAvailability(username = username, isAvailable = usernameAvailable),
+            )
         }
 
         override suspend fun updateProfile(command: UpdateProfileCommand): AppResult<User> {

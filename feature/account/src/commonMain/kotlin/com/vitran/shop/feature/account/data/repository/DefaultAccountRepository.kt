@@ -10,6 +10,7 @@ import com.vitran.shop.feature.account.data.remote.dto.UpdateProfileRequestDto
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.model.UpdateProfileCommand
 import com.vitran.shop.feature.account.domain.model.User
+import com.vitran.shop.feature.account.domain.model.UsernameAvailability
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,6 +43,12 @@ internal class DefaultAccountRepository(
             }
         }
     }
+
+    override suspend fun checkUsernameAvailability(username: String): AppResult<UsernameAvailability> =
+        when (val result = accountApi.checkUsername(username)) {
+            is AppResult.Success -> AppResult.Success(result.value.usernameCheck.toDomain())
+            is AppResult.Failure -> AppResult.Failure(result.error)
+        }
 
     override suspend fun updateProfile(command: UpdateProfileCommand): AppResult<User> =
         when (val result = accountApi.updateProfile(

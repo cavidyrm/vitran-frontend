@@ -9,8 +9,10 @@ import com.vitran.shop.core.network.request.authMode
 import com.vitran.shop.feature.account.data.remote.dto.GetCurrentUserDataDto
 import com.vitran.shop.feature.account.data.remote.dto.UpdateProfileDataDto
 import com.vitran.shop.feature.account.data.remote.dto.UpdateProfileRequestDto
+import com.vitran.shop.feature.account.data.remote.dto.UsernameCheckDataDto
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -25,6 +27,14 @@ internal class AccountApi(
         executor.execute {
             client.get(environment.apiUrl("/auth/me")) {
                 authMode(AuthMode.Required)
+            }
+        }
+
+    suspend fun checkUsername(username: String): AppResult<UsernameCheckDataDto> =
+        executor.execute {
+            client.get(environment.apiUrl("/auth/check-username")) {
+                authMode(AuthMode.Required)
+                parameter("username", username)
             }
         }
 

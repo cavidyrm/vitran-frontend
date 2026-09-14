@@ -38,6 +38,7 @@ import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.components.VitranText
 import com.vitran.shop.ui.components.VitranTextStyle
 import com.vitran.shop.ui.theme.ErrorRed
+import com.vitran.shop.ui.theme.VitranOpacity
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -236,14 +237,25 @@ internal fun AccountPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: Painter? = null,
+    enabled: Boolean = true,
 ) {
     val shape = RoundedCornerShape(VitranRadius.medium)
+    val background = if (enabled) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.primary.copy(alpha = VitranOpacity.INACTIVE)
+    }
+    val contentColor = if (enabled) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onPrimary.copy(alpha = VitranOpacity.INACTIVE)
+    }
     Row(
         modifier = modifier
             .height(VitranSize.buttonHeight)
             .clip(shape)
-            .background(MaterialTheme.colorScheme.primary, shape)
-            .clickable(role = Role.Button, onClick = onClick)
+            .background(background, shape)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = VitranSpacing.xl),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
@@ -253,12 +265,12 @@ internal fun AccountPrimaryButton(
                 painter = icon,
                 contentDescription = null,
                 size = VitranSize.iconSmall,
-                tint = MaterialTheme.colorScheme.onPrimary,
+                tint = contentColor,
             )
         }
         Text(
             text = label,
-            color = MaterialTheme.colorScheme.onPrimary,
+            color = contentColor,
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
         )
     }

@@ -145,6 +145,9 @@ internal class FakeAccountRepository(
         return refreshResult
     }
 
+    override suspend fun checkUsernameAvailability(username: String) =
+        AppResult.Failure(AppError.Unexpected())
+
     override suspend fun updateProfile(command: UpdateProfileCommand): AppResult<User> =
         AppResult.Failure(AppError.Unexpected())
 

@@ -174,6 +174,14 @@ private class FakeAccountRepository(user: User) : AccountRepository {
         return AppResult.Success((state.value as CurrentUserState.Available).user)
     }
 
+    override suspend fun checkUsernameAvailability(username: String) =
+        AppResult.Success(
+            com.vitran.shop.feature.account.domain.model.UsernameAvailability(
+                username = username,
+                isAvailable = true,
+            ),
+        )
+
     override suspend fun updateProfile(command: UpdateProfileCommand): AppResult<User> =
         AppResult.Success((state.value as CurrentUserState.Available).user)
 

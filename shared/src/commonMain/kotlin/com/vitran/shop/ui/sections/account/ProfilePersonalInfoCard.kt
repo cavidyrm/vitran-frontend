@@ -29,9 +29,20 @@ import vitranshop.shared.generated.resources.account_section_contact_hint
 import vitranshop.shared.generated.resources.account_section_personal
 import vitranshop.shared.generated.resources.account_section_personal_hint
 import vitranshop.shared.generated.resources.account_username_available
+import vitranshop.shared.generated.resources.account_username_check_error
+import vitranshop.shared.generated.resources.account_username_checking
 import vitranshop.shared.generated.resources.account_username_taken
 import vitranshop.shared.generated.resources.ic_lock
 import vitranshop.shared.generated.resources.ic_nav_profile
+
+/** Username availability feedback shown under the profile username field. */
+enum class UsernameCheckDisplay {
+    Idle,
+    Checking,
+    Available,
+    Taken,
+    Error,
+}
 
 @Composable
 internal fun ProfilePersonalInfoCard(
@@ -43,6 +54,7 @@ internal fun ProfilePersonalInfoCard(
     birthdayIso: String?,
     onBirthdayChange: (String?) -> Unit,
     citiesError: String? = null,
+    usernameCheck: UsernameCheckDisplay = UsernameCheckDisplay.Idle,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -58,6 +70,7 @@ internal fun ProfilePersonalInfoCard(
             birthdayIso = birthdayIso,
             onBirthdayChange = onBirthdayChange,
             citiesError = citiesError,
+            usernameCheck = usernameCheck,
         )
         ContactFieldsCard(profile = profile)
     }
@@ -73,6 +86,7 @@ private fun PersonalFieldsCard(
     birthdayIso: String?,
     onBirthdayChange: (String?) -> Unit,
     citiesError: String?,
+    usernameCheck: UsernameCheckDisplay,
 ) {
     val genderUnspecified = AccountGender.Unspecified.label()
     val genderFemale = AccountGender.Female.label()
@@ -80,8 +94,17 @@ private fun PersonalFieldsCard(
     val genderOther = AccountGender.Other.label()
     val genderLabels = listOf(genderUnspecified, genderFemale, genderMale, genderOther)
     val selectedGenderLabel = profile.gender.label()
-    val usernameAvailable = profile.username.length >= 3 &&
-        !profile.username.equals("admin", ignoreCase = true)
+    val usernameSupporting = when (usernameCheck) {
+        UsernameCheckDisplay.Idle -> null to false
+        UsernameCheckDisplay.Checking ->
+            stringResource(Res.string.account_username_checking) to false
+        UsernameCheckDisplay.Available ->
+            stringResource(Res.string.account_username_available) to true
+        UsernameCheckDisplay.Taken ->
+            stringResource(Res.string.account_username_taken) to false
+        UsernameCheckDisplay.Error ->
+            stringResource(Res.string.account_username_check_error) to false
+    }
 
     AccountCard {
         Column(
@@ -111,13 +134,9 @@ private fun PersonalFieldsCard(
                         profile.copy(username = it.filter { ch -> ch.isLetterOrDigit() || ch == '_' }),
                     )
                 },
-                supportingText = if (usernameAvailable) {
-                    stringResource(Res.string.account_username_available)
-                } else {
-                    stringResource(Res.string.account_username_taken)
-                },
-                supportingPositive = usernameAvailable,
-                showSupportingCheck = true,
+                supportingText = usernameSupporting.first,
+                supportingPositive = usernameSupporting.second,
+                showSupportingCheck = usernameCheck == UsernameCheckDisplay.Available,
             )
             AccountBirthdayField(
                 birthdayIso = birthdayIso,

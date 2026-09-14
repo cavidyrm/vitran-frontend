@@ -56,3 +56,14 @@ internal data class UpdateProfileRequestDto(
 internal data class UpdateProfileDataDto(
     val user: UserDto,
 )
+
+@Serializable
+internal data class UsernameCheckDataDto(
+    @SerialName("username_check") val usernameCheck: UsernameCheckDto,
+)
+
+@Serializable
+internal data class UsernameCheckDto(
+    val username: String,
+    val available: Boolean,
+)

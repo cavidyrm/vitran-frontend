@@ -4,6 +4,7 @@ import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.model.UpdateProfileCommand
 import com.vitran.shop.feature.account.domain.model.User
+import com.vitran.shop.feature.account.domain.model.UsernameAvailability
 import kotlinx.coroutines.flow.StateFlow
 
 interface AccountRepository {
@@ -12,6 +13,8 @@ interface AccountRepository {
     fun observeCurrentUser(): StateFlow<CurrentUserState> = currentUserState
 
     suspend fun refreshCurrentUser(): AppResult<User>
+
+    suspend fun checkUsernameAvailability(username: String): AppResult<UsernameAvailability>
 
     suspend fun updateProfile(command: UpdateProfileCommand): AppResult<User>
 

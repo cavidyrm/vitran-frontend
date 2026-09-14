@@ -11,6 +11,7 @@ import com.vitran.shop.feature.account.data.repository.DefaultAccountRepository
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.model.PersonSex
 import com.vitran.shop.feature.account.domain.model.UpdateProfileCommand
+import com.vitran.shop.feature.account.domain.model.UsernameAvailability
 import com.vitran.shop.feature.account.domain.model.joinFullName
 import com.vitran.shop.feature.account.domain.model.splitFullName
 import io.ktor.client.engine.mock.MockEngine
@@ -149,6 +150,28 @@ class DefaultAccountRepositoryTest {
     }
 
     @Test
+    fun checkUsernameAvailability_mapsAvailableAndTaken() = runTest {
+        val availableRepo = repository(
+            MockEngine { request ->
+                assertTrue(request.url.encodedPath.endsWith("/auth/check-username"))
+                assertEquals("javid", request.url.parameters["username"])
+                jsonResponse(HttpStatusCode.OK, usernameAvailableBody)
+            },
+        )
+        val available = availableRepo.checkUsernameAvailability("javid")
+        val availableSuccess = assertIs<AppResult.Success<UsernameAvailability>>(available)
+        assertEquals(true, availableSuccess.value.isAvailable)
+        assertEquals("javid", availableSuccess.value.username)
+
+        val takenRepo = repository(
+            MockEngine { jsonResponse(HttpStatusCode.OK, usernameTakenBody) },
+        )
+        val taken = takenRepo.checkUsernameAvailability("taken")
+        val takenSuccess = assertIs<AppResult.Success<UsernameAvailability>>(taken)
+        assertEquals(false, takenSuccess.value.isAvailable)
+    }
+
+    @Test
     fun updateProfileRequest_omitsNullsIncludingClearFlag() {
         val json = createNetworkJson()
         val encoded = json.encodeToString(
@@ -259,6 +282,30 @@ private val updatedUserBodyClearedCity = """
       "created_at": "2026-01-01T12:00:00Z",
       "updated_at": "2026-01-02T12:00:00Z"
     }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+private val usernameAvailableBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "username_check": { "username": "javid", "available": true }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+private val usernameTakenBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "username_check": { "username": "taken", "available": false }
   },
   "errors": []
 }

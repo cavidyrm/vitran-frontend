@@ -27,6 +27,7 @@ internal fun AccountSaveBar(
     onCancel: () -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
+    saveEnabled: Boolean = true,
 ) {
     val isDesktop = LocalDesktopLayout.current
     Box(
@@ -48,6 +49,7 @@ internal fun AccountSaveBar(
                 label = stringResource(Res.string.account_save_changes),
                 onClick = onSave,
                 icon = painterResource(Res.drawable.ic_save),
+                enabled = saveEnabled,
             )
             AccountOutlinedButton(
                 label = stringResource(Res.string.account_cancel),

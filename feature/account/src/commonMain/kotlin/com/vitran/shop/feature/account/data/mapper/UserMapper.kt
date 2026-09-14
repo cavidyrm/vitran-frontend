@@ -3,8 +3,10 @@ package com.vitran.shop.feature.account.data.mapper
 import com.vitran.shop.core.domain.auth.UserRole
 import com.vitran.shop.feature.account.data.remote.dto.UserCityDto
 import com.vitran.shop.feature.account.data.remote.dto.UserDto
+import com.vitran.shop.feature.account.data.remote.dto.UsernameCheckDto
 import com.vitran.shop.feature.account.domain.model.User
 import com.vitran.shop.feature.account.domain.model.UserCity
+import com.vitran.shop.feature.account.domain.model.UsernameAvailability
 import kotlinx.datetime.Instant
 
 internal fun UserDto.toDomain(): User = User(
@@ -35,3 +37,9 @@ internal fun UserCityDto.toDomain(): UserCity = UserCity(
     name = name,
     province = province,
 )
+
+internal fun UsernameCheckDto.toDomain(): UsernameAvailability =
+    UsernameAvailability(
+        username = username,
+        isAvailable = available,
+    )
