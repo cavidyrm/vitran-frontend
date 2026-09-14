@@ -46,5 +46,24 @@ config.devServer = Object.assign({}, config.devServer || {}, {
                 Origin: "https://shop.app",
             },
         },
+        {
+            // /arvanstorage-proxy/{host}/{object} → https://{host}/{object}
+            // Arvan buckets omit Access-Control-Allow-Origin; Coil web fetch needs same-origin.
+            context: ["/arvanstorage-proxy"],
+            target: "https://hot.ir-central1.arvanstorage.ir",
+            changeOrigin: true,
+            secure: true,
+            router: function (req) {
+                const match = (req.url || "").match(/^\/arvanstorage-proxy\/([^/?]+)/);
+                return match ? "https://" + match[1] : "https://hot.ir-central1.arvanstorage.ir";
+            },
+            pathRewrite: function (path) {
+                return path.replace(/^\/arvanstorage-proxy\/[^/?]+/, "") || "/";
+            },
+            headers: {
+                "User-Agent":
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+            },
+        },
     ],
 });

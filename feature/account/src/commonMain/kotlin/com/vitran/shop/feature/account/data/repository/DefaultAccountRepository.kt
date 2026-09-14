@@ -1,6 +1,7 @@
 package com.vitran.shop.feature.account.data.repository
 
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.core.platform.file.SelectedFile
 import com.vitran.shop.core.session.repository.SessionInvalidationListener
 import com.vitran.shop.core.session.repository.SessionRoleCache
 import com.vitran.shop.feature.account.data.mapper.toApiValue
@@ -47,6 +48,16 @@ internal class DefaultAccountRepository(
     override suspend fun checkUsernameAvailability(username: String): AppResult<UsernameAvailability> =
         when (val result = accountApi.checkUsername(username)) {
             is AppResult.Success -> AppResult.Success(result.value.usernameCheck.toDomain())
+            is AppResult.Failure -> AppResult.Failure(result.error)
+        }
+
+    override suspend fun uploadAvatar(image: SelectedFile): AppResult<User> =
+        when (val result = accountApi.uploadAvatar(image)) {
+            is AppResult.Success -> {
+                val user = result.value.user.toDomain()
+                applyUser(user)
+                AppResult.Success(user)
+            }
             is AppResult.Failure -> AppResult.Failure(result.error)
         }
 

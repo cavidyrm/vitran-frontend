@@ -190,7 +190,7 @@ Postman requests **without saved response examples** (or with incomplete example
 |-------|--------|
 | **Status** | Partially resolved |
 | **Issue** | `PUT /auth/profile` documents editable fields: `username`, `email`, `full_name`, `avatar_url`, `sex` (`male`\|`female`), `city_id`. Omit a key to keep it; send `clear_city_id` / `clear_sex` / `clear_avatar_url`: true to unset. |
-| **Client impact** | Client uses `explicitNulls = false` so nulls are omitted. Profile save sends current username/email/`full_name`/`avatar_url`/`sex`, sends `city_id` when a city is selected, and sends the matching `clear_*` flag when the user clears city, gender, or avatar URL. |
+| **Client impact** | Client uses `explicitNulls = false` so nulls are omitted. Profile save sends current username/email/`full_name`/`avatar_url`/`sex`, sends `city_id` when a city is selected, and sends the matching `clear_*` flag when the user clears city, gender, or avatar URL. Avatar file pick uses `POST /auth/profile/avatar` (multipart `image`) and fills `avatar_url` from the response before save. |
 | **Phase 3 handling** | City / sex / avatar clears are explicit. Remaining omit-vs-clear risk is limited to blank username/email/`full_name`. |
 
 ---

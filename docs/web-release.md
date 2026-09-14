@@ -34,6 +34,8 @@ Decide per deploy: public / private to crash tooling / disabled. Do not expose m
 
 Browser API calls are same-origin: the Wasm client uses `window.location.origin`, Traefik routes `/api/*` on `vitran.ir` to the backend, and nginx/webpack proxy `/api` and `/health` when that split is not in front. Native apps still use `https://api.vitran.ir` (no CORS). Do not expect `api.vitran.ir` to send `Access-Control-Allow-Origin`.
 
+Profile/product images on Arvan (`*.arvanstorage.ir`) also lack CORS; web loads them via `/arvanstorage-proxy/{host}/…` (see `resolveNetworkImageUrl` + `nginx.conf` / webpack proxies).
+
 ## Payment
 
 Same as other targets: open URL ≠ success; no invented return deep link.

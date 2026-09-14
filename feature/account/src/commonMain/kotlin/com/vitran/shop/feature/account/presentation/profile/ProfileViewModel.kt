@@ -71,6 +71,7 @@ data class ProfileUiState(
     val usernameCheck: UsernameCheckUiStatus = UsernameCheckUiStatus.Idle,
     val avatarPreviewBytes: ByteArray? = null,
     val isPickingAvatar: Boolean = false,
+    val isUploadingAvatar: Boolean = false,
     val error: String? = null,
 )
 
@@ -79,6 +80,7 @@ sealed interface ProfileUiAction {
     data class EmailChanged(val value: String) : ProfileUiAction
     data class FirstNameChanged(val value: String) : ProfileUiAction
     data class LastNameChanged(val value: String) : ProfileUiAction
+    data class AvatarUrlChanged(val value: String) : ProfileUiAction
     data class CitySelected(val cityId: Long?) : ProfileUiAction
     data class BirthdayChanged(val iso: String?) : ProfileUiAction
     data class GenderChanged(val gender: ProfileGender) : ProfileUiAction
@@ -131,6 +133,9 @@ class ProfileViewModel(
             is ProfileUiAction.EmailChanged -> _uiState.update { it.copy(email = action.value) }
             is ProfileUiAction.FirstNameChanged -> _uiState.update { it.copy(firstName = action.value) }
             is ProfileUiAction.LastNameChanged -> _uiState.update { it.copy(lastName = action.value) }
+            is ProfileUiAction.AvatarUrlChanged -> _uiState.update {
+                it.copy(avatarUrl = action.value, avatarPreviewBytes = null)
+            }
             is ProfileUiAction.CitySelected -> _uiState.update { state ->
                 val name = action.cityId?.let { id ->
                     state.cities.firstOrNull { it.id == id }?.name
@@ -200,18 +205,46 @@ class ProfileViewModel(
     }
 
     private fun pickAvatar() {
-        if (_uiState.value.isPickingAvatar) return
+        val current = _uiState.value
+        if (current.isPickingAvatar || current.isUploadingAvatar) return
         pickAvatarJob?.cancel()
         pickAvatarJob =
             viewModelScope.launch {
-                _uiState.update { it.copy(isPickingAvatar = true) }
+                _uiState.update { it.copy(isPickingAvatar = true, error = null) }
                 val file = imagePicker.pickImages(1).firstOrNull()
-                val bytes = file?.let { runCatching { it.readBytes() }.getOrNull() }
+                if (file == null) {
+                    _uiState.update { it.copy(isPickingAvatar = false) }
+                    return@launch
+                }
+                val bytes = runCatching { file.readBytes() }.getOrNull()
                 _uiState.update { state ->
                     state.copy(
                         isPickingAvatar = false,
+                        isUploadingAvatar = true,
                         avatarPreviewBytes = bytes ?: state.avatarPreviewBytes,
+                        error = null,
                     )
+                }
+                when (val result = accountRepository.uploadAvatar(file)) {
+                    is AppResult.Success -> {
+                        val uploadedUrl = result.value.avatarUrl.orEmpty()
+                        _uiState.update {
+                            it.copy(
+                                isUploadingAvatar = false,
+                                avatarUrl = uploadedUrl,
+                                avatarPreviewBytes = null,
+                                error = null,
+                            )
+                        }
+                    }
+                    is AppResult.Failure -> {
+                        _uiState.update {
+                            it.copy(
+                                isUploadingAvatar = false,
+                                error = result.error.message ?: "آپلود تصویر ناموفق بود",
+                            )
+                        }
+                    }
                 }
             }
     }

@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Vitran API",
-    "description": "Vitran marketplace backend — **119 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Account profile: **`GET/PUT /auth/profile`** (`username`, `email`, `full_name`, `avatar_url`, `city_id`). Sizing & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
+    "description": "Vitran marketplace backend — **120 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Account profile: **`GET/PUT /auth/profile`** (`username`, `email`, `full_name`, `avatar_url`, `city_id`); avatar file upload **`POST /auth/profile/avatar`** (`multipart` field `image`). Sizing & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -836,7 +836,7 @@
               "raw": "{\n  \"username\": \"javid\",\n  \"email\": \"user@example.com\",\n  \"full_name\": \"Javid\",\n  \"avatar_url\": \"https://cdn.example/avatar.png\",\n  \"sex\": \"male\",\n  \"city_id\": 1\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/profile",
-            "description": "Partial update of editable `users` profile fields: send only keys you want to change (`username`, `email`, `full_name`, `avatar_url`, `sex`, `city_id`). `avatar_url` must be a valid URL when sent; omit to keep the current avatar; set **`clear_avatar_url`: true** to unset. `sex` is `male`|`female`; omit to keep; set **`clear_sex`: true** to unset. `city_id` must exist (`GET /cities`); omit to keep the current city; set **`clear_city_id`: true** to unset.\n\nNot handled here: `phone`, `password`, `product_match_notify` (**Profile & Persons — Me → Update notification settings**), wishlist (**Favorites — Me → Update wishlist share**), referral fields. Response matches **Get profile (me)**."
+            "description": "Partial update of editable `users` profile fields: send only keys you want to change (`username`, `email`, `full_name`, `avatar_url`, `sex`, `city_id`). `avatar_url` must be a valid URL when sent; omit to keep the current avatar; set **`clear_avatar_url`: true** to unset. Prefer **`POST /auth/profile/avatar`** to upload the image file. `sex` is `male`|`female`; omit to keep; set **`clear_sex`: true** to unset. `city_id` must exist (`GET /cities`); omit to keep the current city; set **`clear_city_id`: true** to unset.\n\nNot handled here: `phone`, `password`, `product_match_notify` (**Profile & Persons — Me → Update notification settings**), wishlist (**Favorites — Me → Update wishlist share**), referral fields. Response matches **Get profile (me)**."
           },
           "response": [
             {
@@ -851,6 +851,51 @@
                 }
               ],
               "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"avatar_url\": \"https://cdn.example/avatar.png\",\n      \"sex\": \"male\",\n      \"city_id\": 1,\n      \"city\": {\n        \"id\": 1,\n        \"slug\": \"tehran\",\n        \"name\": \"Tehran\",\n        \"province\": \"Tehran\"\n      },\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T11:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload profile avatar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Profile photo: jpeg, png, webp, or gif; max 5 MiB. Requires S3 (`S3_*` env)."
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/v1/auth/profile/avatar",
+            "description": "Uploads to object storage (`users/{user_id}/{uuid}{ext}`), sets `avatar_url` on the `users` row, returns updated `data.user` (same as **Get profile (me)**). Replaces a previous avatar stored on the same CDN when possible."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"avatar_url\": \"https://cdn.example/users/2/a1b2c3d4.png\",\n      \"roles\": [\"user\"],\n      \"verified\": true,\n      \"is_active\": true\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },

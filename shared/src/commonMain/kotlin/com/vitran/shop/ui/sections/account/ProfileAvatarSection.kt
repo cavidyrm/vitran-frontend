@@ -30,14 +30,16 @@ import com.vitran.shop.ui.media.resolveNetworkImageUrl
 import com.vitran.shop.ui.theme.VitranElevation
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.account_avatar_url_placeholder
 import vitranshop.shared.generated.resources.account_edit_photo
 import vitranshop.shared.generated.resources.account_edit_photo_a11y
+import vitranshop.shared.generated.resources.account_field_avatar_url
 import vitranshop.shared.generated.resources.ic_camera
 import vitranshop.shared.generated.resources.ic_edit
 import vitranshop.shared.generated.resources.ic_nav_profile
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun AccountCircleAvatar(
@@ -89,6 +91,9 @@ internal fun ProfileAvatarSection(
     onEditClick: () -> Unit,
     modifier: Modifier = Modifier,
     previewBytes: ByteArray? = null,
+    editEnabled: Boolean = true,
+    avatarUrlValue: String = profile.avatarUrl.orEmpty(),
+    onAvatarUrlChange: ((String) -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -100,10 +105,16 @@ internal fun ProfileAvatarSection(
         Box(
             modifier = Modifier
                 .size(AccountTokens.AvatarProfile)
-                .clickable(
-                    role = Role.Button,
-                    onClickLabel = stringResource(Res.string.account_edit_photo_a11y),
-                    onClick = onEditClick,
+                .then(
+                    if (editEnabled) {
+                        Modifier.clickable(
+                            role = Role.Button,
+                            onClickLabel = stringResource(Res.string.account_edit_photo_a11y),
+                            onClick = onEditClick,
+                        )
+                    } else {
+                        Modifier
+                    },
                 ),
         ) {
             AccountCircleAvatar(
@@ -130,7 +141,13 @@ internal fun ProfileAvatarSection(
             }
         }
         Row(
-            modifier = Modifier.clickable(role = Role.Button, onClick = onEditClick),
+            modifier = Modifier.then(
+                if (editEnabled) {
+                    Modifier.clickable(role = Role.Button, onClick = onEditClick)
+                } else {
+                    Modifier
+                },
+            ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
         ) {
@@ -144,6 +161,17 @@ internal fun ProfileAvatarSection(
                 text = stringResource(Res.string.account_edit_photo),
                 style = VitranTextStyle.Label,
                 color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        if (onAvatarUrlChange != null) {
+            AccountStackedField(
+                label = stringResource(Res.string.account_field_avatar_url),
+                value = avatarUrlValue,
+                onValueChange = onAvatarUrlChange,
+                placeholder = stringResource(Res.string.account_avatar_url_placeholder),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = VitranSpacing.lg),
             )
         }
     }

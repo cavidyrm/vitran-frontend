@@ -182,6 +182,9 @@ private class FakeAccountRepository(user: User) : AccountRepository {
             ),
         )
 
+    override suspend fun uploadAvatar(image: com.vitran.shop.core.platform.file.SelectedFile) =
+        AppResult.Success((state.value as CurrentUserState.Available).user)
+
     override suspend fun updateProfile(command: UpdateProfileCommand): AppResult<User> =
         AppResult.Success((state.value as CurrentUserState.Available).user)
 

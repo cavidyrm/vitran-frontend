@@ -112,6 +112,12 @@ fun ProfileScreen(
                 ProfileAvatarSection(
                     profile = current,
                     previewBytes = uiState.avatarPreviewBytes,
+                    editEnabled = !uiState.isPickingAvatar && !uiState.isUploadingAvatar,
+                    avatarUrlValue = uiState.avatarUrl,
+                    onAvatarUrlChange = { url ->
+                        profile = current.copy(avatarUrl = url.ifBlank { null })
+                        viewModel.onAction(ProfileUiAction.AvatarUrlChanged(url))
+                    },
                     onEditClick = { viewModel.onAction(ProfileUiAction.PickAvatar) },
                 )
                 ProfilePersonalInfoCard(
@@ -175,6 +181,7 @@ fun ProfileScreen(
                     onCancel = onBack,
                     onSave = { viewModel.onAction(ProfileUiAction.Save) },
                     saveEnabled = !uiState.isUpdating &&
+                        !uiState.isUploadingAvatar &&
                         uiState.usernameCheck !is UsernameCheckUiStatus.Taken &&
                         uiState.usernameCheck !is UsernameCheckUiStatus.Checking,
                 )

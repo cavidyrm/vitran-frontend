@@ -17,7 +17,7 @@ Seller product create/update require multipart image uploads across Android, iOS
 5. Ktor multipart encoding lives in seller Data (`SellerProductApi`).
 6. No background / offline upload queue; no automatic retry of multipart mutations.
 7. HTTP logging must not dump binary multipart bodies.
-8. `FileSaver` stays the existing platform implementations (not FileKit). Profile avatar has no upload API yet — gallery pick is local preview only.
+8. `FileSaver` stays the existing platform implementations (not FileKit). Profile avatar uses `POST /auth/profile/avatar` (multipart `image`) after gallery pick; response `avatar_url` updates profile state.
 
 ## Alternatives
 

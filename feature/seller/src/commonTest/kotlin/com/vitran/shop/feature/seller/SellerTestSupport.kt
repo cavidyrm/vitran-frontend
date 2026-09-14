@@ -10,6 +10,7 @@ import com.vitran.shop.core.network.config.NetworkDiagnosticsConfig
 import com.vitran.shop.core.network.executor.ApiRequestExecutor
 import com.vitran.shop.core.network.logging.NoOpNetworkLogger
 import com.vitran.shop.core.network.serialization.createNetworkJson
+import com.vitran.shop.core.platform.file.SelectedFile
 import com.vitran.shop.core.session.auth.SessionAuthCoordinator
 import com.vitran.shop.core.session.domain.SessionCredentials
 import com.vitran.shop.core.session.domain.SessionState
@@ -146,6 +147,9 @@ internal class FakeAccountRepository(
     }
 
     override suspend fun checkUsernameAvailability(username: String) =
+        AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun uploadAvatar(image: SelectedFile) =
         AppResult.Failure(AppError.Unexpected())
 
     override suspend fun updateProfile(command: UpdateProfileCommand): AppResult<User> =

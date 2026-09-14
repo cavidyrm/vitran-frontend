@@ -181,7 +181,7 @@ UI: `normalizeIranMobile()` → `09xxxxxxxxx`. API mapper `toApiPhone()` strips 
 ## 13. Account feature (`:feature:account`)
 
 - `User` (includes `shopTypes`, `avatarUrl`, `sex`, `cityId` / nested `city`, other profile extras from `/auth/me`), `CurrentUserState`, `AccountRepository`
-- `AccountApi`: `GET /auth/me`, `GET /auth/check-username`, `PUT /auth/profile` (`username`, `email`, `full_name`, `avatar_url`, optional `sex` `male`|`female`, `city_id`; optional `clear_city_id`, `clear_sex`, `clear_avatar_url`) with `AuthMode.Required`
+- `AccountApi`: `GET /auth/me`, `GET /auth/check-username`, `POST /auth/profile/avatar` (multipart `image`), `PUT /auth/profile` (`username`, `email`, `full_name`, `avatar_url`, optional `sex` `male`|`female`, `city_id`; optional `clear_city_id`, `clear_sex`, `clear_avatar_url`) with `AuthMode.Required`
 - `ProfileApi` / `ProductMatchApi`: sizing, notify, persons (including `GET /me/persons/{id}`), `/me/matches` (data layer; no dedicated persons screens yet)
 - `DefaultAccountRepository` — `StateFlow` cache; updates on profile PUT; listens to session invalidation
 - `UserRole.fromBackend()` with `Unknown(rawValue)` — never crash on new roles; `customer`/`seller` map to `User`

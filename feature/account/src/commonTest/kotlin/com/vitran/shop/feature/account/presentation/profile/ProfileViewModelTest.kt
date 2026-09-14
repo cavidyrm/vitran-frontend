@@ -341,8 +341,9 @@ class ProfileViewModelTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(dispatcher)
         try {
+            val account = FakeAccountRepository(sampleUser(fullName = "Javid", cityId = null))
             val viewModel = ProfileViewModel(
-                accountRepository = FakeAccountRepository(sampleUser(fullName = "Javid", cityId = null)),
+                accountRepository = account,
                 locationRepository = FakeLocationRepository(),
                 profileRepository = FakeProfileRepository(),
                 imagePicker = FakeImagePicker(emptyList()),
@@ -354,18 +355,23 @@ class ProfileViewModelTest {
 
             assertNull(viewModel.uiState.value.avatarPreviewBytes)
             assertEquals(false, viewModel.uiState.value.isPickingAvatar)
+            assertEquals(false, viewModel.uiState.value.isUploadingAvatar)
+            assertEquals(0, account.uploadAvatarCalls)
         } finally {
             Dispatchers.resetMain()
         }
     }
 
     @Test
-    fun pickAvatar_setsLocalPreview_andSaveKeepsExistingAvatarUrl() = runTest {
+    fun pickAvatar_uploadsAndSetsAvatarUrl() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(dispatcher)
         try {
             val preview = byteArrayOf(1, 2, 3, 4)
-            val account = FakeAccountRepository(sampleUser(fullName = "Javid", cityId = null))
+            val account = FakeAccountRepository(
+                sampleUser(fullName = "Javid", cityId = null),
+                uploadedAvatarUrl = "https://cdn.example/uploaded-avatar.webp",
+            )
             val viewModel = ProfileViewModel(
                 accountRepository = account,
                 locationRepository = FakeLocationRepository(),
@@ -381,12 +387,48 @@ class ProfileViewModelTest {
             viewModel.onAction(ProfileUiAction.PickAvatar)
             advanceUntilIdle()
 
-            assertTrue(viewModel.uiState.value.avatarPreviewBytes.contentEquals(preview))
+            assertEquals(1, account.uploadAvatarCalls)
+            assertEquals("https://cdn.example/uploaded-avatar.webp", viewModel.uiState.value.avatarUrl)
+            assertNull(viewModel.uiState.value.avatarPreviewBytes)
+            assertEquals(false, viewModel.uiState.value.isUploadingAvatar)
 
             viewModel.onAction(ProfileUiAction.Save)
             advanceUntilIdle()
 
-            assertEquals("https://cdn.example/avatar.png", account.lastCommand?.avatarUrl)
+            assertEquals("https://cdn.example/uploaded-avatar.webp", account.lastCommand?.avatarUrl)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun pickAvatar_uploadFailure_keepsLocalPreview() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val preview = byteArrayOf(9, 8, 7)
+            val account = FakeAccountRepository(
+                sampleUser(fullName = "Javid", cityId = null),
+                uploadAvatarResult = AppResult.Failure(AppError.Network.Timeout(message = "timeout")),
+            )
+            val viewModel = ProfileViewModel(
+                accountRepository = account,
+                locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
+                imagePicker = FakeImagePicker(
+                    listOf(SelectedFile.fromBytes("avatar.jpg", preview, "image/jpeg")),
+                ),
+            )
+            advanceUntilIdle()
+
+            viewModel.onAction(ProfileUiAction.PickAvatar)
+            advanceUntilIdle()
+
+            assertEquals(1, account.uploadAvatarCalls)
+            assertTrue(viewModel.uiState.value.avatarPreviewBytes.contentEquals(preview))
+            assertEquals("https://cdn.example/avatar.png", viewModel.uiState.value.avatarUrl)
+            assertEquals("timeout", viewModel.uiState.value.error)
+            assertEquals(false, viewModel.uiState.value.isUploadingAvatar)
         } finally {
             Dispatchers.resetMain()
         }
@@ -425,12 +467,16 @@ class ProfileViewModelTest {
     private class FakeAccountRepository(
         user: User,
         private val usernameAvailable: Boolean = true,
+        private val uploadedAvatarUrl: String = "https://cdn.example/uploaded-avatar.webp",
+        private val uploadAvatarResult: AppResult<User>? = null,
     ) : AccountRepository {
         private val _state = MutableStateFlow<CurrentUserState>(CurrentUserState.Available(user))
         override val currentUserState: StateFlow<CurrentUserState> = _state
         var lastCommand: UpdateProfileCommand? = null
         var usernameCheckCalls = 0
         var lastUsernameChecked: String? = null
+        var uploadAvatarCalls = 0
+        var lastUploadedAvatar: SelectedFile? = null
 
         override suspend fun refreshCurrentUser(): AppResult<User> {
             val user = (_state.value as CurrentUserState.Available).user
@@ -443,6 +489,16 @@ class ProfileViewModelTest {
             return AppResult.Success(
                 UsernameAvailability(username = username, isAvailable = usernameAvailable),
             )
+        }
+
+        override suspend fun uploadAvatar(image: SelectedFile): AppResult<User> {
+            uploadAvatarCalls += 1
+            lastUploadedAvatar = image
+            uploadAvatarResult?.let { return it }
+            val current = (_state.value as CurrentUserState.Available).user
+            val updated = current.copy(avatarUrl = uploadedAvatarUrl)
+            _state.value = CurrentUserState.Available(updated)
+            return AppResult.Success(updated)
         }
 
         override suspend fun updateProfile(command: UpdateProfileCommand): AppResult<User> {

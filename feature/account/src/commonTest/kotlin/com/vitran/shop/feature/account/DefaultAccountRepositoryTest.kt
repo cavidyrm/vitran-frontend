@@ -4,8 +4,10 @@ import com.vitran.shop.core.domain.auth.UserRole
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.core.network.serialization.createNetworkJson
+import com.vitran.shop.core.platform.file.SelectedFile
 import com.vitran.shop.core.session.repository.SessionRoleCache
 import com.vitran.shop.feature.account.data.remote.AccountApi
+import com.vitran.shop.feature.account.data.remote.buildProfileAvatarMultipart
 import com.vitran.shop.feature.account.data.remote.dto.UpdateProfileRequestDto
 import com.vitran.shop.feature.account.data.repository.DefaultAccountRepository
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
@@ -15,9 +17,16 @@ import com.vitran.shop.feature.account.domain.model.UsernameAvailability
 import com.vitran.shop.feature.account.domain.model.joinFullName
 import com.vitran.shop.feature.account.domain.model.splitFullName
 import io.ktor.client.engine.mock.MockEngine
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.content.TextContent
+import io.ktor.utils.io.ByteChannel
+import io.ktor.utils.io.copyTo
+import io.ktor.utils.io.readRemaining
+import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.readByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -172,6 +181,39 @@ class DefaultAccountRepositoryTest {
     }
 
     @Test
+    fun uploadAvatar_usesImageMultipartKey_andMapsAvatarUrl() = runTest {
+        val multipart =
+            readBodyText(
+                buildProfileAvatarMultipart(
+                    SelectedFile.fromBytes("avatar.png", byteArrayOf(1, 2, 3), "image/png"),
+                ),
+            )
+        assertTrue(multipart.hasPart("image"), multipart)
+        assertTrue(
+            multipart.contains("filename=avatar.png") || multipart.contains("filename=\"avatar.png\""),
+            multipart,
+        )
+
+        val repository = repository(
+            MockEngine { request ->
+                assertEquals(HttpMethod.Post, request.method)
+                assertTrue(request.url.encodedPath.endsWith("/auth/profile/avatar"))
+                val body = readBodyText(request.body)
+                assertTrue(body.hasPart("image"), body)
+                jsonResponse(HttpStatusCode.OK, uploadedAvatarUserBody)
+            },
+        )
+
+        val result = repository.uploadAvatar(
+            SelectedFile.fromBytes("avatar.png", byteArrayOf(1, 2, 3), "image/png"),
+        )
+
+        assertIs<AppResult.Success<*>>(result)
+        val cached = repository.currentUserState.value as CurrentUserState.Available
+        assertEquals("https://cdn.example/new-avatar.webp", cached.user.avatarUrl)
+    }
+
+    @Test
     fun updateProfileRequest_omitsNullsIncludingClearFlag() {
         val json = createNetworkJson()
         val encoded = json.encodeToString(
@@ -310,3 +352,53 @@ private val usernameTakenBody = """
   "errors": []
 }
 """.trimIndent()
+
+private val uploadedAvatarUserBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "user": {
+      "id": 1,
+      "phone": "9123456789",
+      "username": "javid",
+      "email": "user@example.com",
+      "full_name": "Javid",
+      "avatar_url": "https://cdn.example/new-avatar.webp",
+      "roles": ["user"],
+      "verified": true,
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-02T12:00:00Z"
+    }
+  },
+  "errors": []
+}
+""".trimIndent()
+
+private fun String.hasPart(key: String): Boolean =
+    contains("name=$key") || contains("name=\"$key\"")
+
+private suspend fun readBodyText(body: OutgoingContent): String {
+    val channel = ByteChannel(autoFlush = true)
+    when (body) {
+        is OutgoingContent.WriteChannelContent -> {
+            body.writeTo(channel)
+            channel.flushAndClose()
+        }
+        is OutgoingContent.ByteArrayContent -> {
+            channel.writeFully(body.bytes())
+            channel.flushAndClose()
+        }
+        is OutgoingContent.ReadChannelContent -> {
+            body.readFrom().copyTo(channel)
+            channel.flushAndClose()
+        }
+        else -> {
+            channel.flushAndClose()
+            return "unsupported-body:${body::class.simpleName}"
+        }
+    }
+    return channel.readRemaining().readByteArray().decodeToString()
+}

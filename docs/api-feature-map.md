@@ -160,6 +160,7 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/api/v1/categories/slug/aa-1-2-3-4` | Taxonomy | Taxonomy | — (alias) | — | Public | Yes |
 | GET | `/api/v1/auth/check-username?username=javid` | Users | Account | AccountApi | AccountRepository | Required | Yes (debounced from ProfileScreen) |
 | GET | `/api/v1/auth/me` | Users | Account | AccountApi | AccountRepository | Public | Yes (`avatar_url`, optional `sex`, `city_id`, nested `city`) |
+| POST | `/api/v1/auth/profile/avatar` | Users | Account | AccountApi | AccountRepository | Required (multipart `image`) | Yes (ProfileScreen pick → upload) |
 | PUT | `/api/v1/auth/profile` | Users | Account | AccountApi | AccountRepository | Public | Yes (`username`, `email`, `full_name`, `avatar_url`, `sex`, `city_id`; `clear_city_id` / `clear_sex` / `clear_avatar_url` to unset) |
 | GET | `/api/v1/me/profile/sizing` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | Yes |
 | PUT | `/api/v1/me/profile/sizing` | Profile & Persons — Me | Profile / Persons | `ProfileApi` ✅ | `ProfileRepository` ✅ | Required | **Missing** (request documented) |
