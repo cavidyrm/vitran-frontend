@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.ktor.client.android)
             implementation(libs.media3.exoplayer)
             implementation(libs.androidx.security.crypto)
+            implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)

@@ -26,6 +26,7 @@ import com.vitran.shop.ui.navigation.navAuthUiStateOf
 import com.vitran.shop.ui.navigation.rememberInitialRoute
 import com.vitran.shop.ui.navigation.rememberNavigationState
 import com.vitran.shop.ui.navigation.rememberNavigator
+import com.vitran.shop.ui.platform.BindFileKit
 import com.vitran.shop.ui.shell.AppShell
 import com.vitran.shop.ui.theme.VitranTheme
 import org.koin.compose.koinInject
@@ -55,6 +56,7 @@ fun App() {
         val startRoute = rememberInitialRoute()
         val navState = rememberNavigationState(start = startRoute)
         val navigator = rememberNavigator(navState)
+        BindFileKit()
         BindBrowserNavigation(navState = navState, navigator = navigator)
 
         val authState = navAuthUiStateOf(sessionState, currentUser)

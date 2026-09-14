@@ -46,6 +46,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.koin.core)
+            api(libs.filekit.dialogs)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

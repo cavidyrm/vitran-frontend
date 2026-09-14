@@ -111,12 +111,8 @@ fun ProfileScreen(
                 val current = profile!!
                 ProfileAvatarSection(
                     profile = current,
-                    onEditClick = { viewModel.onAction(ProfileUiAction.ToggleAvatarUrlField) },
-                    showAvatarUrlField = uiState.showAvatarUrlField,
-                    onAvatarUrlChange = { url ->
-                        profile = current.copy(avatarUrl = url)
-                        viewModel.onAction(ProfileUiAction.AvatarUrlChanged(url))
-                    },
+                    previewBytes = uiState.avatarPreviewBytes,
+                    onEditClick = { viewModel.onAction(ProfileUiAction.PickAvatar) },
                 )
                 ProfilePersonalInfoCard(
                     profile = current,

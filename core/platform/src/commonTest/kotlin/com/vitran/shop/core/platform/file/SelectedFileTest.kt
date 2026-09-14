@@ -25,4 +25,9 @@ class SelectedFileTest {
     fun noOpPicker_cancelIsEmpty() = runTest {
         assertTrue(NoOpImagePicker().pickImages(3).isEmpty())
     }
+
+    @Test
+    fun fileKitPicker_zeroMaxCountIsEmpty() = runTest {
+        assertTrue(FileKitImagePicker().pickImages(0).isEmpty())
+    }
 }

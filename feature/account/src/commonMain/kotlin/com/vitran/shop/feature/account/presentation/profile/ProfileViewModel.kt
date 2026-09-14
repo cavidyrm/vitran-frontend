@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.core.platform.file.ImagePicker
+import com.vitran.shop.core.platform.file.NoOpImagePicker
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.model.PersonRelation
 import com.vitran.shop.feature.account.domain.model.PersonSex
@@ -67,7 +69,8 @@ data class ProfileUiState(
     val shoeSize: String? = null,
     val sizingError: String? = null,
     val usernameCheck: UsernameCheckUiStatus = UsernameCheckUiStatus.Idle,
-    val showAvatarUrlField: Boolean = false,
+    val avatarPreviewBytes: ByteArray? = null,
+    val isPickingAvatar: Boolean = false,
     val error: String? = null,
 )
 
@@ -76,14 +79,13 @@ sealed interface ProfileUiAction {
     data class EmailChanged(val value: String) : ProfileUiAction
     data class FirstNameChanged(val value: String) : ProfileUiAction
     data class LastNameChanged(val value: String) : ProfileUiAction
-    data class AvatarUrlChanged(val value: String) : ProfileUiAction
     data class CitySelected(val cityId: Long?) : ProfileUiAction
     data class BirthdayChanged(val iso: String?) : ProfileUiAction
     data class GenderChanged(val gender: ProfileGender) : ProfileUiAction
     data class UpperBodySizeChanged(val slug: String?) : ProfileUiAction
     data class LowerBodySizeChanged(val slug: String?) : ProfileUiAction
     data class ShoeSizeChanged(val slug: String?) : ProfileUiAction
-    data object ToggleAvatarUrlField : ProfileUiAction
+    data object PickAvatar : ProfileUiAction
     data object Retry : ProfileUiAction
     data object Save : ProfileUiAction
 }
@@ -92,6 +94,7 @@ class ProfileViewModel(
     private val accountRepository: AccountRepository,
     private val locationRepository: LocationRepository,
     private val profileRepository: ProfileRepository,
+    private val imagePicker: ImagePicker = NoOpImagePicker(),
     private val usernameDebounceMs: Long = 400L,
 ) : ViewModel() {
 
@@ -102,6 +105,7 @@ class ProfileViewModel(
     private var sizingNotify: Boolean? = null
     private var loadedUsername: String = ""
     private var usernameCheckJob: Job? = null
+    private var pickAvatarJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -127,7 +131,6 @@ class ProfileViewModel(
             is ProfileUiAction.EmailChanged -> _uiState.update { it.copy(email = action.value) }
             is ProfileUiAction.FirstNameChanged -> _uiState.update { it.copy(firstName = action.value) }
             is ProfileUiAction.LastNameChanged -> _uiState.update { it.copy(lastName = action.value) }
-            is ProfileUiAction.AvatarUrlChanged -> _uiState.update { it.copy(avatarUrl = action.value) }
             is ProfileUiAction.CitySelected -> _uiState.update { state ->
                 val name = action.cityId?.let { id ->
                     state.cities.firstOrNull { it.id == id }?.name
@@ -146,9 +149,7 @@ class ProfileViewModel(
                 _uiState.update { it.copy(lowerBodySize = action.slug) }
             is ProfileUiAction.ShoeSizeChanged ->
                 _uiState.update { it.copy(shoeSize = action.slug) }
-            ProfileUiAction.ToggleAvatarUrlField -> _uiState.update {
-                it.copy(showAvatarUrlField = !it.showAvatarUrlField)
-            }
+            ProfileUiAction.PickAvatar -> pickAvatar()
             ProfileUiAction.Retry -> {
                 refresh()
                 loadCities()
@@ -194,6 +195,23 @@ class ProfileViewModel(
                             it.copy(usernameCheck = UsernameCheckUiStatus.Error(result.error))
                         }
                     }
+                }
+            }
+    }
+
+    private fun pickAvatar() {
+        if (_uiState.value.isPickingAvatar) return
+        pickAvatarJob?.cancel()
+        pickAvatarJob =
+            viewModelScope.launch {
+                _uiState.update { it.copy(isPickingAvatar = true) }
+                val file = imagePicker.pickImages(1).firstOrNull()
+                val bytes = file?.let { runCatching { it.readBytes() }.getOrNull() }
+                _uiState.update { state ->
+                    state.copy(
+                        isPickingAvatar = false,
+                        avatarPreviewBytes = bytes ?: state.avatarPreviewBytes,
+                    )
                 }
             }
     }
@@ -375,7 +393,7 @@ class ProfileViewModel(
                 is AppResult.Success -> {
                     applySizing(sizingResult.value)
                     _uiState.update {
-                        it.copy(isUpdating = false, showAvatarUrlField = false)
+                        it.copy(isUpdating = false)
                     }
                 }
                 is AppResult.Failure -> _uiState.update {

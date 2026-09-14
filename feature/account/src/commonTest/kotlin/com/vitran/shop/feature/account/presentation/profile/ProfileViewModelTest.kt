@@ -3,6 +3,8 @@ package com.vitran.shop.feature.account.presentation.profile
 import com.vitran.shop.core.domain.auth.UserRole
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.core.platform.file.ImagePicker
+import com.vitran.shop.core.platform.file.SelectedFile
 import com.vitran.shop.feature.account.domain.model.CreatePersonCommand
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
 import com.vitran.shop.feature.account.domain.model.Person
@@ -334,6 +336,62 @@ class ProfileViewModelTest {
         }
     }
 
+    @Test
+    fun pickAvatar_cancelLeavesPreviewUnchanged() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val viewModel = ProfileViewModel(
+                accountRepository = FakeAccountRepository(sampleUser(fullName = "Javid", cityId = null)),
+                locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
+                imagePicker = FakeImagePicker(emptyList()),
+            )
+            advanceUntilIdle()
+
+            viewModel.onAction(ProfileUiAction.PickAvatar)
+            advanceUntilIdle()
+
+            assertNull(viewModel.uiState.value.avatarPreviewBytes)
+            assertEquals(false, viewModel.uiState.value.isPickingAvatar)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun pickAvatar_setsLocalPreview_andSaveKeepsExistingAvatarUrl() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val preview = byteArrayOf(1, 2, 3, 4)
+            val account = FakeAccountRepository(sampleUser(fullName = "Javid", cityId = null))
+            val viewModel = ProfileViewModel(
+                accountRepository = account,
+                locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
+                imagePicker = FakeImagePicker(
+                    listOf(
+                        SelectedFile.fromBytes("avatar.jpg", preview, "image/jpeg"),
+                    ),
+                ),
+            )
+            advanceUntilIdle()
+
+            viewModel.onAction(ProfileUiAction.PickAvatar)
+            advanceUntilIdle()
+
+            assertTrue(viewModel.uiState.value.avatarPreviewBytes.contentEquals(preview))
+
+            viewModel.onAction(ProfileUiAction.Save)
+            advanceUntilIdle()
+
+            assertEquals("https://cdn.example/avatar.png", account.lastCommand?.avatarUrl)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
     private fun sampleUser(
         fullName: String?,
         cityId: Long?,
@@ -478,5 +536,11 @@ class ProfileViewModelTest {
 
         override suspend fun deletePerson(id: PersonId): AppResult<Unit> =
             AppResult.Failure(AppError.Unexpected())
+    }
+
+    private class FakeImagePicker(
+        private val files: List<SelectedFile>,
+    ) : ImagePicker {
+        override suspend fun pickImages(maxCount: Int): List<SelectedFile> = files.take(maxCount)
     }
 }

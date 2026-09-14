@@ -20,5 +20,5 @@ val accountModule = module {
     single<AccountRepository> { DefaultAccountRepository(get(), get(), get()) }
     single<ProfileRepository> { DefaultProfileRepository(get()) }
     single<ProductMatchRepository> { DefaultProductMatchRepository(get()) }
-    viewModel { ProfileViewModel(get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get()) }
 }

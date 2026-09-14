@@ -28,6 +28,7 @@ room3 = "3.0.2"
 sqlite = "2.7.0"
 ksp = "2.3.11"
 kotlinx-browser = "0.5.0"
+filekit = "0.16.0"
 vitran-version-name = "1.0.0"
 vitran-version-code = "1"
 
@@ -80,6 +81,7 @@ androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.r
 androidx-sqlite-framework = { module = "androidx.sqlite:sqlite-framework", version.ref = "sqlite" }
 androidx-sqlite-web = { module = "androidx.sqlite:sqlite-web", version.ref = "sqlite" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
+filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

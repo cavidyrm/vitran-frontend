@@ -2,28 +2,30 @@
 
 ## Status
 
-Accepted — Phase 8
+Accepted — Phase 8; picker implementation updated 2026-04 (FileKit)
 
 ## Context
 
-Seller product create/update require multipart image uploads across Android, iOS, Desktop, and Web/Wasm. Platform file types must not enter Domain or common business APIs.
+Seller product create/update require multipart image uploads across Android, iOS, Desktop, and Web/Wasm. Platform file types must not enter Domain or common business APIs. The original HostedImagePicker bind on Android/iOS/Wasm was never wired, so gallery pick did not work there.
 
 ## Decision
 
 1. Platform file types (`Uri`, `File`, `NSURL`, browser `File`) stay in platform source sets.
 2. Shared `SelectedFile` + suspending `readBytes()` in `:core:platform` — ByteArray-backed for modest product images.
-3. `ImagePicker` interface + DI; cancel returns empty list.
-4. Ktor multipart encoding lives in seller Data (`SellerProductApi`).
-5. No background / offline upload queue; no automatic retry of multipart mutations.
-6. HTTP logging must not dump binary multipart bodies.
+3. `ImagePicker` interface + DI; cancel returns an empty list. Runtime implementation is `FileKitImagePicker` ([FileKit](https://klibs.io/project/vinceglb/FileKit) `filekit-dialogs`), which owns native pickers. Domain still only sees `SelectedFile`.
+4. Android: `FileKit.init(activity)` from `BindFileKit()`. Desktop JVM: `FileKit.init(appId = "com.vitran.shop")`. iOS / JS / Wasm need no extra init.
+5. Ktor multipart encoding lives in seller Data (`SellerProductApi`).
+6. No background / offline upload queue; no automatic retry of multipart mutations.
+7. HTTP logging must not dump binary multipart bodies.
+8. `FileSaver` stays the existing platform implementations (not FileKit). Profile avatar has no upload API yet — gallery pick is local preview only.
 
 ## Alternatives
 
 - Streaming-only abstraction everywhere — deferred; overkill for ≤5 product images (revisit Phase 11 taxonomy import).
-- Third-party filekit — not added; keep dependency surface small.
+- Hand-rolled Photo Picker / PHPicker / `<input>` bind per target — replaced by FileKit after HostedImagePicker stayed unbound.
 
 ## Consequences
 
-Positive: testable fakes; Domain stays clean; one HttpClient.
+Positive: one common pick API; testable `ImagePicker` fakes; Domain stays clean.
 
-Negative: Hosted pickers need UI bind on Android/iOS/Wasm; ByteArray memory limits for large future imports.
+Negative: FileKit is an extra dependency; ByteArray memory limits for large future imports.

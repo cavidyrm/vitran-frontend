@@ -1,7 +1,7 @@
 package com.vitran.shop.core.platform.file
 
 /**
- * Platform capability for selecting product images.
+ * Platform capability for selecting images (profile, product media).
  * Cancellation returns an empty list (never throws).
  */
 interface ImagePicker {

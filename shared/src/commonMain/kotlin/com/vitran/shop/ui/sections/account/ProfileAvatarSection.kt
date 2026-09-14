@@ -35,8 +35,6 @@ import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.account_edit_photo
 import vitranshop.shared.generated.resources.account_edit_photo_a11y
-import vitranshop.shared.generated.resources.account_field_avatar_url
-import vitranshop.shared.generated.resources.account_avatar_url_placeholder
 import vitranshop.shared.generated.resources.ic_camera
 import vitranshop.shared.generated.resources.ic_edit
 import vitranshop.shared.generated.resources.ic_nav_profile
@@ -46,6 +44,7 @@ internal fun AccountCircleAvatar(
     avatarUrl: String?,
     modifier: Modifier = Modifier,
     placeholderSize: Dp = VitranSize.iconLarge,
+    previewBytes: ByteArray? = null,
 ) {
     Box(
         modifier = modifier
@@ -53,21 +52,33 @@ internal fun AccountCircleAvatar(
             .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center,
     ) {
+        val bytes = previewBytes?.takeIf { it.isNotEmpty() }
         val url = avatarUrl?.takeIf { it.isNotBlank() }
-        if (url != null) {
-            AsyncImage(
-                model = resolveNetworkImageUrl(url),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().clip(CircleShape),
-            )
-        } else {
-            VitranIcon(
-                painter = painterResource(Res.drawable.ic_nav_profile),
-                contentDescription = null,
-                size = placeholderSize,
-                tint = MaterialTheme.colorScheme.primary,
-            )
+        when {
+            bytes != null -> {
+                AsyncImage(
+                    model = bytes,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize().clip(CircleShape),
+                )
+            }
+            url != null -> {
+                AsyncImage(
+                    model = resolveNetworkImageUrl(url),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize().clip(CircleShape),
+                )
+            }
+            else -> {
+                VitranIcon(
+                    painter = painterResource(Res.drawable.ic_nav_profile),
+                    contentDescription = null,
+                    size = placeholderSize,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
     }
 }
@@ -76,9 +87,8 @@ internal fun AccountCircleAvatar(
 internal fun ProfileAvatarSection(
     profile: AccountProfile,
     onEditClick: () -> Unit,
-    showAvatarUrlField: Boolean,
-    onAvatarUrlChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    previewBytes: ByteArray? = null,
 ) {
     Column(
         modifier = modifier
@@ -98,6 +108,7 @@ internal fun ProfileAvatarSection(
         ) {
             AccountCircleAvatar(
                 avatarUrl = profile.avatarUrl,
+                previewBytes = previewBytes,
                 modifier = Modifier.matchParentSize(),
             )
             Box(
@@ -133,15 +144,6 @@ internal fun ProfileAvatarSection(
                 text = stringResource(Res.string.account_edit_photo),
                 style = VitranTextStyle.Label,
                 color = MaterialTheme.colorScheme.primary,
-            )
-        }
-        if (showAvatarUrlField) {
-            AccountStackedField(
-                label = stringResource(Res.string.account_field_avatar_url),
-                value = profile.avatarUrl.orEmpty(),
-                onValueChange = onAvatarUrlChange,
-                placeholder = stringResource(Res.string.account_avatar_url_placeholder),
-                modifier = Modifier.padding(horizontal = VitranSpacing.lg),
             )
         }
     }
