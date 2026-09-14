@@ -113,7 +113,22 @@ class SellerShopApiRepositoryTest {
             )
         val encoded = json.encodeToString(CreateShopRequestDto.serializer(), dto)
         assertFalse(encoded.contains("\"slug\""))
+        assertFalse(encoded.contains("\"avatar_url\""))
         assertTrue(encoded.contains("\"category_slugs\":[1,2]"))
+    }
+
+    @Test
+    fun createShop_serializesAvatarUrl() {
+        val json = createNetworkJson()
+        val dto =
+            CreateShopRequestDto(
+                title = "My Shop",
+                avatarUrl = "https://cdn.example/shop.png",
+                type = "retailer",
+                cityId = 1,
+            )
+        val encoded = json.encodeToString(CreateShopRequestDto.serializer(), dto)
+        assertTrue(encoded.contains("\"avatar_url\":\"https://cdn.example/shop.png\""))
     }
 
     @Test
@@ -128,6 +143,26 @@ class SellerShopApiRepositoryTest {
         val shop = (result as AppResult.Success).value.shop
         assertEquals(ShopPublicationState.PendingApproval, shop.publicationState)
         assertNull(result.value.sessionAccessUpdate)
+    }
+
+    @Test
+    fun createShop_mapsAvatarUrl() = runTest {
+        val engine = MockEngine { jsonResponse(HttpStatusCode.Created, createShopWithTokenBody) }
+        val (repo, _) = createSellerRepository(engine)
+        val result =
+            repo.createShop(
+                CreateShopCommand(
+                    title = "My Shop",
+                    avatarUrl = "https://cdn.example/shop.png",
+                    type = "retailer",
+                    cityId = CityId(1),
+                ),
+            )
+        assertIs<AppResult.Success<*>>(result)
+        assertEquals(
+            "https://cdn.example/shop.png",
+            (result as AppResult.Success).value.shop.avatarUrl,
+        )
     }
 
     @Test

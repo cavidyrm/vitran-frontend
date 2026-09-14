@@ -170,6 +170,7 @@ internal val createShopWithTokenBody = """
       "city_id": 1,
       "title": "My Shop",
       "slug": "my-shop",
+      "avatar_url": "https://cdn.example/shop.png",
       "description": "Best products",
       "type": "retailer",
       "share_url": "https://vitran.ir/my-shop",

@@ -19,8 +19,12 @@ import vitranshop.shared.generated.resources.ic_ruler
 
 @Composable
 internal fun ProfileSizingCard(
-    profile: AccountProfile,
-    onProfileChange: (AccountProfile) -> Unit,
+    upperBodySlug: String?,
+    lowerBodySlug: String?,
+    shoeSlug: String?,
+    onUpperBodyChange: (String?) -> Unit,
+    onLowerBodyChange: (String?) -> Unit,
+    onShoeChange: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val unset = stringResource(Res.string.account_size_unset)
@@ -36,34 +40,36 @@ internal fun ProfileSizingCard(
             )
             AccountDropdownField(
                 label = stringResource(Res.string.account_field_shoe_size),
-                value = profile.shoeSize.orEmpty(),
+                value = sizeLabelForSlug(ShoeSizeOptions, shoeSlug),
                 placeholder = unset,
-                options = listOf(unset) + ShoeSizeOptions,
+                options = listOf(unset) + ShoeSizeOptions.map { it.first },
                 onSelect = { selected ->
-                    onProfileChange(
-                        profile.copy(shoeSize = selected.takeUnless { it == unset }),
+                    onShoeChange(
+                        selected.takeUnless { it == unset }?.let { sizeSlugForLabel(ShoeSizeOptions, it) },
                     )
                 },
             )
             AccountDropdownField(
                 label = stringResource(Res.string.account_field_top_size),
-                value = profile.topSize.orEmpty(),
+                value = sizeLabelForSlug(UpperBodySizeOptions, upperBodySlug),
                 placeholder = unset,
-                options = listOf(unset) + ClothingSizeOptions,
+                options = listOf(unset) + UpperBodySizeOptions.map { it.first },
                 onSelect = { selected ->
-                    onProfileChange(
-                        profile.copy(topSize = selected.takeUnless { it == unset }),
+                    onUpperBodyChange(
+                        selected.takeUnless { it == unset }
+                            ?.let { sizeSlugForLabel(UpperBodySizeOptions, it) },
                     )
                 },
             )
             AccountDropdownField(
                 label = stringResource(Res.string.account_field_bottom_size),
-                value = profile.bottomSize.orEmpty(),
+                value = sizeLabelForSlug(LowerBodySizeOptions, lowerBodySlug),
                 placeholder = unset,
-                options = listOf(unset) + ClothingSizeOptions,
+                options = listOf(unset) + LowerBodySizeOptions.map { it.first },
                 onSelect = { selected ->
-                    onProfileChange(
-                        profile.copy(bottomSize = selected.takeUnless { it == unset }),
+                    onLowerBodyChange(
+                        selected.takeUnless { it == unset }
+                            ?.let { sizeSlugForLabel(LowerBodySizeOptions, it) },
                     )
                 },
             )

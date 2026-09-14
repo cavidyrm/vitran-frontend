@@ -19,6 +19,7 @@ internal data class UserDto(
     val email: String? = null,
     @SerialName("full_name") val fullName: String? = null,
     @SerialName("avatar_url") val avatarUrl: String? = null,
+    val sex: String? = null,
     @SerialName("city_id") val cityId: Long? = null,
     val city: UserCityDto? = null,
     @SerialName("referral_code") val referralCode: String? = null,
@@ -44,8 +45,11 @@ internal data class UpdateProfileRequestDto(
     val email: String? = null,
     @SerialName("full_name") val fullName: String? = null,
     @SerialName("avatar_url") val avatarUrl: String? = null,
+    val sex: String? = null,
     @SerialName("city_id") val cityId: Long? = null,
     @SerialName("clear_city_id") val clearCityId: Boolean? = null,
+    @SerialName("clear_sex") val clearSex: Boolean? = null,
+    @SerialName("clear_avatar_url") val clearAvatarUrl: Boolean? = null,
 )
 
 @Serializable

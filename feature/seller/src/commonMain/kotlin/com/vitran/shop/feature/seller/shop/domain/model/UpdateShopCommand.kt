@@ -12,6 +12,7 @@ data class UpdateShopCommand(
     val shopId: ShopId,
     val title: String? = null,
     val slug: ShopSlug? = null,
+    val avatarUrl: String? = null,
     val description: String? = null,
     val address: String? = null,
     val phoneNumber: String? = null,

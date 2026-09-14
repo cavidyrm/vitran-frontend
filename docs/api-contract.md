@@ -1,6 +1,6 @@
 # API Contract Summary
 
-Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (121 requests, 118 `/api/v1` business routes).
+Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (122 requests, 119 `/api/v1` business routes).
 
 **Client active version:** `/api/v1` only. `/api/v2` mirror exists in the collection but is not implemented in the client until an explicit migration phase.
 

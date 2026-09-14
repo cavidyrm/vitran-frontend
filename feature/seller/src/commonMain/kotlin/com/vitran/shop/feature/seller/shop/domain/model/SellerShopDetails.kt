@@ -19,6 +19,7 @@ data class SellerShopDetails(
     val ownerId: Long? = null,
     val cityId: CityId? = null,
     val title: String? = null,
+    val avatarUrl: String? = null,
     val description: String? = null,
     val address: String? = null,
     val phoneNumber: String? = null,

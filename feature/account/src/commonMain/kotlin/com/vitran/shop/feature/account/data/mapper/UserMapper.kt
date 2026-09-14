@@ -19,6 +19,7 @@ internal fun UserDto.toDomain(): User = User(
     updatedAt = Instant.parse(updatedAt),
     fullName = fullName,
     avatarUrl = avatarUrl,
+    sex = sex.toPersonSex(),
     cityId = cityId ?: city?.id,
     city = city?.toDomain(),
     referralCode = referralCode,

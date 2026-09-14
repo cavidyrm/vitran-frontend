@@ -3,6 +3,7 @@ package com.vitran.shop.feature.account.data.repository
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.session.repository.SessionInvalidationListener
 import com.vitran.shop.core.session.repository.SessionRoleCache
+import com.vitran.shop.feature.account.data.mapper.toApiValue
 import com.vitran.shop.feature.account.data.mapper.toDomain
 import com.vitran.shop.feature.account.data.remote.AccountApi
 import com.vitran.shop.feature.account.data.remote.dto.UpdateProfileRequestDto
@@ -49,8 +50,11 @@ internal class DefaultAccountRepository(
                 email = command.email,
                 fullName = command.fullName,
                 avatarUrl = command.avatarUrl,
+                sex = command.sex?.toApiValue(),
                 cityId = command.cityId,
                 clearCityId = command.clearCityId,
+                clearSex = command.clearSex,
+                clearAvatarUrl = command.clearAvatarUrl,
             ),
         )) {
             is AppResult.Success -> {

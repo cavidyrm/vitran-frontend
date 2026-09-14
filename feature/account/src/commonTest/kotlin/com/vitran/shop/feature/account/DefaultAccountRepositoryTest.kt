@@ -9,6 +9,7 @@ import com.vitran.shop.feature.account.data.remote.AccountApi
 import com.vitran.shop.feature.account.data.remote.dto.UpdateProfileRequestDto
 import com.vitran.shop.feature.account.data.repository.DefaultAccountRepository
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
+import com.vitran.shop.feature.account.domain.model.PersonSex
 import com.vitran.shop.feature.account.domain.model.UpdateProfileCommand
 import com.vitran.shop.feature.account.domain.model.joinFullName
 import com.vitran.shop.feature.account.domain.model.splitFullName
@@ -49,6 +50,7 @@ class DefaultAccountRepositoryTest {
         assertEquals("Tehran", state.user.city?.province)
         assertEquals("V2", state.user.referralCode)
         assertEquals(emptyList(), state.user.shopTypes)
+        assertEquals(PersonSex.Male, state.user.sex)
     }
 
     @Test
@@ -74,6 +76,7 @@ class DefaultAccountRepositoryTest {
                 email = "new@example.com",
                 fullName = "Javid Updated",
                 avatarUrl = "https://cdn.example/avatar.png",
+                sex = PersonSex.Male,
                 cityId = 1,
             ),
         )
@@ -82,8 +85,11 @@ class DefaultAccountRepositoryTest {
         assertTrue(bodyText.contains("\"username\":\"updated\""))
         assertTrue(bodyText.contains("\"full_name\":\"Javid Updated\""))
         assertTrue(bodyText.contains("\"avatar_url\":\"https://cdn.example/avatar.png\""))
+        assertTrue(bodyText.contains("\"sex\":\"male\""))
         assertTrue(bodyText.contains("\"city_id\":1"))
         assertFalse(bodyText.contains("clear_city_id"))
+        assertFalse(bodyText.contains("clear_sex"))
+        assertFalse(bodyText.contains("clear_avatar_url"))
         val cached = repository.currentUserState.value as CurrentUserState.Available
         assertEquals("updated", cached.user.username)
         assertEquals("new@example.com", cached.user.email)
@@ -115,6 +121,31 @@ class DefaultAccountRepositoryTest {
         val cached = repository.currentUserState.value as CurrentUserState.Available
         assertNull(cached.user.cityId)
         assertNull(cached.user.city)
+    }
+
+    @Test
+    fun updateProfile_clearSexAndAvatar_sendsFlagsAndOmitsValues() = runTest {
+        var bodyText = ""
+        val repository = repository(
+            MockEngine { request ->
+                bodyText = (request.body as TextContent).text
+                jsonResponse(HttpStatusCode.OK, updatedUserBodyClearedCity)
+            },
+        )
+
+        val result = repository.updateProfile(
+            UpdateProfileCommand(
+                username = "javid",
+                clearSex = true,
+                clearAvatarUrl = true,
+            ),
+        )
+
+        assertIs<AppResult.Success<*>>(result)
+        assertTrue(bodyText.contains("\"clear_sex\":true"))
+        assertTrue(bodyText.contains("\"clear_avatar_url\":true"))
+        assertFalse(bodyText.contains("\"sex\""))
+        assertFalse(bodyText.contains("\"avatar_url\""))
     }
 
     @Test
@@ -159,6 +190,7 @@ private val currentUserBody = """
       "email": "user@example.com",
       "full_name": "Javid",
       "avatar_url": "https://cdn.example/avatar.png",
+      "sex": "male",
       "city_id": 1,
       "city": {
         "id": 1,
@@ -195,6 +227,7 @@ private val updatedUserBody = """
       "email": "new@example.com",
       "full_name": "Javid Updated",
       "avatar_url": "https://cdn.example/avatar.png",
+      "sex": "male",
       "city_id": 1,
       "city": { "id": 1, "slug": "tehran", "name": "Tehran", "province": "Tehran" },
       "roles": ["user"],

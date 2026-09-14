@@ -163,6 +163,7 @@ internal fun AccountDropdownField(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
     trailingIcon: Painter = painterResource(Res.drawable.ic_chevron_down),
+    error: String? = null,
 ) {
     var open by remember { mutableStateOf(false) }
     var fieldWidthPx by remember { mutableIntStateOf(0) }
@@ -184,6 +185,7 @@ internal fun AccountDropdownField(
             onValueChange = {},
             placeholder = placeholder,
             readOnly = true,
+            error = error,
             trailing = {
                 AccountTrailingIcon(
                     painter = trailingIcon,

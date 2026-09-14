@@ -219,12 +219,30 @@ fun AccountGender.label(): String = stringResource(
     },
 )
 
-internal val ShoeSizeOptions = listOf(
-    "4", "4.5", "5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5",
-    "9", "9.5", "10", "10.5", "11", "11.5", "12", "12.5",
+internal val UpperBodySizeOptions: List<Pair<String, String>> = listOf(
+    "XS" to "size__xs",
+    "S" to "size__s",
+    "M" to "size__m",
+    "L" to "size__l",
+    "XL" to "size__xl",
+    "XXL" to "size__xxl",
+    "XXXL" to "size__xxxl",
 )
 
-internal val ClothingSizeOptions = listOf("XS", "S", "M", "L", "XL", "XXL", "XXXL")
+internal val LowerBodySizeOptions: List<Pair<String, String>> =
+    (28..40 step 2).map { n -> n.toString() to "size__$n" }
+
+internal val ShoeSizeOptions: List<Pair<String, String>> =
+    (36..48).map { n -> n.toString() to "shoe-size__$n" }
+
+/** @deprecated Prefer slug-aware [UpperBodySizeOptions] / [LowerBodySizeOptions]. */
+internal val ClothingSizeOptions = UpperBodySizeOptions.map { it.first }
+
+internal fun sizeLabelForSlug(options: List<Pair<String, String>>, slug: String?): String =
+    options.firstOrNull { it.second == slug }?.first.orEmpty()
+
+internal fun sizeSlugForLabel(options: List<Pair<String, String>>, label: String): String? =
+    options.firstOrNull { it.first == label }?.second
 
 internal val SkinTypeOptions = listOf("خشک", "چرب", "ترکیبی", "حساس", "نرمال")
 internal val SkinUndertoneOptions = listOf("سرد", "گرم", "خنثی")

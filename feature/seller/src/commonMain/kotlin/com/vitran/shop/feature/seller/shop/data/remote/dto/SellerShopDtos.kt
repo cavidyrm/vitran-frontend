@@ -35,6 +35,9 @@ data class CreateShopRequestDto(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val slug: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("avatar_url")
+    val avatarUrl: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     val description: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val address: String? = null,
@@ -64,6 +67,9 @@ data class UpdateShopRequestDto(
     val title: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val slug: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("avatar_url")
+    val avatarUrl: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val description: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
@@ -111,6 +117,7 @@ data class SellerShopCreateResponseDto(
     @SerialName("city_id") val cityId: Long,
     val title: String,
     val slug: String,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
     val description: String? = null,
     val type: String,
     @SerialName("share_url") val shareUrl: String? = null,
@@ -153,6 +160,7 @@ data class SellerShopDetailsDto(
     @SerialName("owner_id") val ownerId: Long? = null,
     @SerialName("city_id") val cityId: Long? = null,
     val title: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
     val description: String? = null,
     val address: String? = null,
     @SerialName("phone_number") val phoneNumber: String? = null,

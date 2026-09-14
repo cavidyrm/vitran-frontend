@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.account.presentation.profile.ProfileGender
 import com.vitran.shop.feature.account.presentation.profile.ProfileUiAction
 import com.vitran.shop.feature.account.presentation.profile.ProfileUiState
 import com.vitran.shop.feature.account.presentation.profile.ProfileViewModel
@@ -30,6 +31,7 @@ import com.vitran.shop.ui.sections.account.ProfileAvatarSection
 import com.vitran.shop.ui.sections.account.ProfilePersonalInfoCard
 import com.vitran.shop.ui.sections.account.ProfileSizingCard
 import com.vitran.shop.ui.theme.VitranSpacing
+import com.vitran.shop.ui.util.formatIsoDateAsJalali
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.account_city_clear
@@ -59,7 +61,14 @@ fun ProfileScreen(
         uiState.lastName,
         uiState.avatarUrl,
         uiState.cityId,
+        uiState.cityName,
         uiState.cities,
+        uiState.citiesError,
+        uiState.gender,
+        uiState.birthdayIso,
+        uiState.upperBodySize,
+        uiState.lowerBodySize,
+        uiState.shoeSize,
         uiState.isLoading,
     ) {
         if (!uiState.isLoading) {
@@ -123,20 +132,43 @@ fun ProfileScreen(
                         if (updated.lastName != current.lastName) {
                             viewModel.onAction(ProfileUiAction.LastNameChanged(updated.lastName))
                         }
+                        if (updated.gender != current.gender) {
+                            viewModel.onAction(ProfileUiAction.GenderChanged(updated.gender.toProfileGender()))
+                        }
                     },
                     cities = uiState.cities.map { AccountCityOption(id = it.id, name = it.name) },
                     clearCityLabel = clearCityLabel,
                     onCitySelect = { cityId ->
                         viewModel.onAction(ProfileUiAction.CitySelected(cityId))
                     },
+                    birthdayIso = uiState.birthdayIso,
+                    onBirthdayChange = { iso ->
+                        viewModel.onAction(ProfileUiAction.BirthdayChanged(iso))
+                    },
+                    citiesError = uiState.citiesError,
                 )
                 ProfileSizingCard(
-                    profile = current,
-                    onProfileChange = { profile = it },
+                    upperBodySlug = uiState.upperBodySize,
+                    lowerBodySlug = uiState.lowerBodySize,
+                    shoeSlug = uiState.shoeSize,
+                    onUpperBodyChange = {
+                        viewModel.onAction(ProfileUiAction.UpperBodySizeChanged(it))
+                    },
+                    onLowerBodyChange = {
+                        viewModel.onAction(ProfileUiAction.LowerBodySizeChanged(it))
+                    },
+                    onShoeChange = {
+                        viewModel.onAction(ProfileUiAction.ShoeSizeChanged(it))
+                    },
                 )
                 if (uiState.error != null) {
                     Text(
                         text = uiState.error!!,
+                        modifier = Modifier.padding(horizontal = VitranSpacing.lg),
+                    )
+                } else if (uiState.sizingError != null) {
+                    Text(
+                        text = uiState.sizingError!!,
                         modifier = Modifier.padding(horizontal = VitranSpacing.lg),
                     )
                 }
@@ -154,8 +186,15 @@ private fun profileFromUiState(
     existing: AccountProfile?,
 ): AccountProfile {
     val cityName = uiState.cityId?.let { id ->
-        uiState.cities.firstOrNull { it.id == id }?.name ?: existing?.cityName
+        uiState.cities.firstOrNull { it.id == id }?.name
+            ?: uiState.cityName
+            ?: existing?.cityName
     }
+    val birthdayDisplay = uiState.birthdayIso
+        ?.takeIf { it.isNotBlank() }
+        ?.let { formatIsoDateAsJalali(it) }
+        .orEmpty()
+    val gender = uiState.gender.toAccountGender()
     return existing?.copy(
         username = uiState.username,
         email = uiState.email,
@@ -165,6 +204,11 @@ private fun profileFromUiState(
         avatarUrl = uiState.avatarUrl.ifBlank { null },
         cityId = uiState.cityId,
         cityName = cityName,
+        gender = gender,
+        birthday = birthdayDisplay,
+        shoeSize = uiState.shoeSize,
+        topSize = uiState.upperBodySize,
+        bottomSize = uiState.lowerBodySize,
     ) ?: AccountProfile(
         id = "",
         username = uiState.username,
@@ -175,11 +219,11 @@ private fun profileFromUiState(
         phone = uiState.phone,
         roles = emptyList(),
         hasStore = false,
-        gender = AccountGender.Unspecified,
-        birthday = "",
-        shoeSize = null,
-        topSize = null,
-        bottomSize = null,
+        gender = gender,
+        birthday = birthdayDisplay,
+        shoeSize = uiState.shoeSize,
+        topSize = uiState.upperBodySize,
+        bottomSize = uiState.lowerBodySize,
         skinType = null,
         skinUndertone = null,
         skinTone = null,
@@ -189,4 +233,18 @@ private fun profileFromUiState(
         cityId = uiState.cityId,
         cityName = cityName,
     )
+}
+
+private fun ProfileGender.toAccountGender(): AccountGender = when (this) {
+    ProfileGender.Unspecified -> AccountGender.Unspecified
+    ProfileGender.Female -> AccountGender.Female
+    ProfileGender.Male -> AccountGender.Male
+    ProfileGender.Other -> AccountGender.Other
+}
+
+private fun AccountGender.toProfileGender(): ProfileGender = when (this) {
+    AccountGender.Unspecified -> ProfileGender.Unspecified
+    AccountGender.Female -> ProfileGender.Female
+    AccountGender.Male -> ProfileGender.Male
+    AccountGender.Other -> ProfileGender.Other
 }

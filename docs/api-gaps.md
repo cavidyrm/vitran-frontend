@@ -189,9 +189,9 @@ Postman requests **without saved response examples** (or with incomplete example
 | Field | Status |
 |-------|--------|
 | **Status** | Partially resolved |
-| **Issue** | `PUT /auth/profile` now documents editable fields: `username`, `email`, `full_name`, `avatar_url`, `city_id`. Omit `city_id` to keep the current city; send `clear_city_id: true` to unset. Other omitted keys are not documented as “clear vs keep”. |
-| **Client impact** | Client uses `explicitNulls = false` so nulls are omitted. Profile save sends current username/email/`full_name`/`avatar_url`, sends `city_id` when a city is selected, and sends `clear_city_id: true` only when the user clears city. |
-| **Phase 3 handling** | City clear is explicit. Remaining omit-vs-clear risk is limited to blank username/email/`full_name`/`avatar_url`. |
+| **Issue** | `PUT /auth/profile` documents editable fields: `username`, `email`, `full_name`, `avatar_url`, `sex` (`male`\|`female`), `city_id`. Omit a key to keep it; send `clear_city_id` / `clear_sex` / `clear_avatar_url`: true to unset. |
+| **Client impact** | Client uses `explicitNulls = false` so nulls are omitted. Profile save sends current username/email/`full_name`/`avatar_url`/`sex`, sends `city_id` when a city is selected, and sends the matching `clear_*` flag when the user clears city, gender, or avatar URL. |
+| **Phase 3 handling** | City / sex / avatar clears are explicit. Remaining omit-vs-clear risk is limited to blank username/email/`full_name`. |
 
 ---
 

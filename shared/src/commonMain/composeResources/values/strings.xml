@@ -712,6 +712,7 @@
     <string name="account_field_gender">جنسیت</string>
     <string name="account_field_birthday">تاریخ تولد</string>
     <string name="account_birthday_placeholder">روز/ماه/سال</string>
+    <string name="account_birthday_confirm">تأیید</string>
     <string name="account_gender_unspecified">انتخاب جنسیت</string>
     <string name="account_gender_female">زن</string>
     <string name="account_gender_male">مرد</string>

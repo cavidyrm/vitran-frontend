@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Vitran API",
-    "description": "Vitran marketplace backend — **118 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Account profile: **`GET/PUT /auth/profile`** (`username`, `email`, `full_name`, `avatar_url`, `city_id`). Sizing & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
+    "description": "Vitran marketplace backend — **119 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Account profile: **`GET/PUT /auth/profile`** (`username`, `email`, `full_name`, `avatar_url`, `city_id`). Sizing & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -731,6 +731,53 @@
       "name": "Users",
       "item": [
         {
+          "name": "Check username availability",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/auth/check-username?username=javid",
+            "description": "Debounced availability probe before **Update profile** (mirrors **Seller → Check shop title**). Query: `username` (required, 3–50 chars after trim). Optional `exclude_user_id` — defaults to the authenticated user so your current handle stays available.\n\nResponse: `data.username_check` → `{ username, available }`. Rate limit: 60/min per IP."
+          },
+          "response": [
+            {
+              "name": "200 OK — available",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بررسی نام کاربری انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"username_check\": {\n      \"username\": \"javid\",\n      \"available\": true\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 OK — taken",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بررسی نام کاربری انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"username_check\": {\n      \"username\": \"taken\",\n      \"available\": false\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
           "name": "Get profile (me)",
           "request": {
             "auth": {
@@ -746,7 +793,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/auth/me",
-            "description": "Current user (`users` row). Editable account fields are updated via **Update profile**; sizing/family via **Profile & Persons — Me**.\n\nIncludes: `username`, `email`, `full_name`, `avatar_url`, `city_id`, nested `city`, `wishlist_share_slug`, `wishlist_public`, `referral_code`, `product_match_notify`, `roles`, derived `shop_types` (`[]` / `retailer` / `wholesaler`), `verified`, `is_active`. Password is never returned."
+            "description": "Current user (`users` row). Editable account fields are updated via **Update profile**; sizing/family via **Profile & Persons — Me**.\n\nIncludes: `username`, `email`, `full_name`, `avatar_url`, optional `sex` (`male`|`female`), `city_id`, nested `city`, `wishlist_share_slug`, `wishlist_public`, `referral_code`, `product_match_notify`, `roles`, derived `shop_types` (`[]` / `retailer` / `wholesaler`), `verified`, `is_active`. Password is never returned."
           },
           "response": [
             {
@@ -760,7 +807,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات پروفایل با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"avatar_url\": \"https://cdn.example/avatar.png\",\n      \"city_id\": 1,\n      \"city\": {\n        \"id\": 1,\n        \"slug\": \"tehran\",\n        \"name\": \"Tehran\",\n        \"province\": \"Tehran\"\n      },\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات پروفایل با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"avatar_url\": \"https://cdn.example/avatar.png\",\n      \"sex\": \"male\",\n      \"city_id\": 1,\n      \"city\": {\n        \"id\": 1,\n        \"slug\": \"tehran\",\n        \"name\": \"Tehran\",\n        \"province\": \"Tehran\"\n      },\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -786,10 +833,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"javid\",\n  \"email\": \"user@example.com\",\n  \"full_name\": \"Javid\",\n  \"avatar_url\": \"https://cdn.example/avatar.png\",\n  \"city_id\": 1\n}"
+              "raw": "{\n  \"username\": \"javid\",\n  \"email\": \"user@example.com\",\n  \"full_name\": \"Javid\",\n  \"avatar_url\": \"https://cdn.example/avatar.png\",\n  \"sex\": \"male\",\n  \"city_id\": 1\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/profile",
-            "description": "Updates editable `users` profile fields: `username`, `email`, `full_name`, `avatar_url`, `city_id`. `avatar_url` must be a valid URL when non-empty. `city_id` must exist (`GET /cities`). Omit `city_id` to keep the current city; set **`clear_city_id`: true** to unset.\n\nNot handled here: `phone`, `password`, `product_match_notify` (**Profile & Persons — Me → Update notification settings**), wishlist (**Favorites — Me → Update wishlist share**), referral fields. Response matches **Get profile (me)**."
+            "description": "Partial update of editable `users` profile fields: send only keys you want to change (`username`, `email`, `full_name`, `avatar_url`, `sex`, `city_id`). `avatar_url` must be a valid URL when sent; omit to keep the current avatar; set **`clear_avatar_url`: true** to unset. `sex` is `male`|`female`; omit to keep; set **`clear_sex`: true** to unset. `city_id` must exist (`GET /cities`); omit to keep the current city; set **`clear_city_id`: true** to unset.\n\nNot handled here: `phone`, `password`, `product_match_notify` (**Profile & Persons — Me → Update notification settings**), wishlist (**Favorites — Me → Update wishlist share**), referral fields. Response matches **Get profile (me)**."
           },
           "response": [
             {
@@ -803,7 +850,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"avatar_url\": \"https://cdn.example/avatar.png\",\n      \"city_id\": 1,\n      \"city\": {\n        \"id\": 1,\n        \"slug\": \"tehran\",\n        \"name\": \"Tehran\",\n        \"province\": \"Tehran\"\n      },\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T11:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"پروفایل با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"user\": {\n      \"id\": 2,\n      \"phone\": \"9123456789\",\n      \"username\": \"javid\",\n      \"email\": \"user@example.com\",\n      \"full_name\": \"Javid\",\n      \"avatar_url\": \"https://cdn.example/avatar.png\",\n      \"sex\": \"male\",\n      \"city_id\": 1,\n      \"city\": {\n        \"id\": 1,\n        \"slug\": \"tehran\",\n        \"name\": \"Tehran\",\n        \"province\": \"Tehran\"\n      },\n      \"referral_code\": \"V2\",\n      \"wishlist_share_slug\": \"wl-a1b2c3d4e5f67890\",\n      \"wishlist_public\": false,\n      \"product_match_notify\": true,\n      \"roles\": [\"user\"],\n      \"shop_types\": [],\n      \"verified\": true,\n      \"is_active\": true,\n      \"created_at\": \"2026-06-09T10:00:00Z\",\n      \"updated_at\": \"2026-06-09T11:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -1716,7 +1763,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"My Shop\",\n  \"slug\": \"my-shop\",\n  \"description\": \"Best products in town\",\n  \"address\": \"123 Main St\",\n  \"phone_number\": \"02112345678\",\n  \"support_times\": \"9-18\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1],\n  \"whatsapp\": \"https://wa.me/989123456789\",\n  \"telegram\": \"@myshop\",\n  \"instagram\": \"@myshop\",\n  \"website\": \"https://example.com\"\n}"
+              "raw": "{\n  \"title\": \"My Shop\",\n  \"slug\": \"my-shop\",\n  \"avatar_url\": \"https://cdn.example/shop.png\",\n  \"description\": \"Best products in town\",\n  \"address\": \"123 Main St\",\n  \"phone_number\": \"02112345678\",\n  \"support_times\": \"9-18\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1],\n  \"whatsapp\": \"https://wa.me/989123456789\",\n  \"telegram\": \"@myshop\",\n  \"instagram\": \"@myshop\",\n  \"website\": \"https://example.com\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/seller/shops",
             "description": "Creates with `active=false`, `confirmed=false`. Role is unchanged (ownership is `shops.owner_id`). Then call **List my shops**. Omit `slug` to auto-generate from title."
@@ -1733,7 +1780,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"description\": \"Best products in town\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"qr_code_url\": \"http://localhost:9000/vitran/shops/1/qr.png\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"avatar_url\": \"https://cdn.example/shop.png\",\n      \"description\": \"Best products in town\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"qr_code_url\": \"http://localhost:9000/vitran/shops/1/qr.png\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             },
             {
               "name": "409 Slug taken",
@@ -1936,10 +1983,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"My Shop Updated\",\n  \"slug\": \"my-shop\",\n  \"description\": \"Updated description\",\n  \"address\": \"456 New St\",\n  \"phone_number\": \"02187654321\",\n  \"support_times\": \"10-20\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1, 2],\n  \"whatsapp\": \"https://wa.me/989123456789\"\n}"
+              "raw": "{\n  \"title\": \"My Shop Updated\",\n  \"slug\": \"my-shop\",\n  \"avatar_url\": \"https://cdn.example/shop-v2.png\",\n  \"description\": \"Updated description\",\n  \"address\": \"456 New St\",\n  \"phone_number\": \"02187654321\",\n  \"support_times\": \"10-20\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1, 2],\n  \"whatsapp\": \"https://wa.me/989123456789\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/seller/shops/1",
-            "description": "Requires `user` token (must own the shop). Sets `active=false`, `confirmed=false` (needs re-confirmation)."
+            "description": "Requires `user` token (must own the shop). Sets `active=false`, `confirmed=false` (needs re-confirmation). Optional `avatar_url` (valid URL); omit or empty to clear; **`clear_avatar_url`: true** to remove explicitly."
           },
           "response": [
             {

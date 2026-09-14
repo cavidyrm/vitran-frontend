@@ -22,6 +22,7 @@ data class User(
     val updatedAt: Instant,
     val fullName: String? = null,
     val avatarUrl: String? = null,
+    val sex: PersonSex? = null,
     val cityId: Long? = null,
     val city: UserCity? = null,
     val referralCode: String? = null,
@@ -43,8 +44,11 @@ data class UpdateProfileCommand(
     val email: String? = null,
     val fullName: String? = null,
     val avatarUrl: String? = null,
+    val sex: PersonSex? = null,
     val cityId: Long? = null,
     val clearCityId: Boolean? = null,
+    val clearSex: Boolean? = null,
+    val clearAvatarUrl: Boolean? = null,
 )
 
 fun splitFullName(fullName: String?): Pair<String, String> {

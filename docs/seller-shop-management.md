@@ -61,7 +61,7 @@ Centralized in `shopPublicationState(active, confirmed)`:
 
 ## 10. Create Shop
 
-`CreateShopUseCase` → `SellerShopRepository.createShop`. Request fields per Postman; null optionals omitted (`explicitNulls=false` + `@EncodeDefault(NEVER)`). `category_slugs` as `List<Long>` (see gap). Create Store UI does **not** invent category IDs.
+`CreateShopUseCase` → `SellerShopRepository.createShop`. Request fields per Postman (including optional `avatar_url`); null optionals omitted (`explicitNulls=false` + `@EncodeDefault(NEVER)`). `category_slugs` as `List<Long>` (see gap). Create Store UI does **not** invent category IDs.
 
 ## 11. Update Shop
 

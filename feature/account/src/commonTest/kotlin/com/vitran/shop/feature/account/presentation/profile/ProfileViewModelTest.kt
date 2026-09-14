@@ -3,10 +3,21 @@ package com.vitran.shop.feature.account.presentation.profile
 import com.vitran.shop.core.domain.auth.UserRole
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.feature.account.domain.model.CreatePersonCommand
 import com.vitran.shop.feature.account.domain.model.CurrentUserState
+import com.vitran.shop.feature.account.domain.model.Person
+import com.vitran.shop.feature.account.domain.model.PersonId
+import com.vitran.shop.feature.account.domain.model.PersonRelation
+import com.vitran.shop.feature.account.domain.model.PersonSex
+import com.vitran.shop.feature.account.domain.model.ProductMatchNotifySettings
+import com.vitran.shop.feature.account.domain.model.SizeSlotValue
+import com.vitran.shop.feature.account.domain.model.SizingProfile
+import com.vitran.shop.feature.account.domain.model.UpdatePersonCommand
 import com.vitran.shop.feature.account.domain.model.UpdateProfileCommand
+import com.vitran.shop.feature.account.domain.model.UpdateSizingCommand
 import com.vitran.shop.feature.account.domain.model.User
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
+import com.vitran.shop.feature.account.domain.repository.ProfileRepository
 import com.vitran.shop.feature.location.domain.model.City
 import com.vitran.shop.feature.location.domain.model.CityId
 import com.vitran.shop.feature.location.domain.model.CitySlug
@@ -24,6 +35,7 @@ import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
@@ -34,11 +46,13 @@ class ProfileViewModelTest {
         Dispatchers.setMain(dispatcher)
         try {
             val account = FakeAccountRepository(sampleUser(fullName = "علی محمدی", cityId = 1))
+            val profileRepo = FakeProfileRepository()
             val viewModel = ProfileViewModel(
                 accountRepository = account,
                 locationRepository = FakeLocationRepository(
                     cities = listOf(City(CityId(1), CitySlug("tehran"), "تهران")),
                 ),
+                profileRepository = profileRepo,
             )
             advanceUntilIdle()
 
@@ -56,6 +70,7 @@ class ProfileViewModelTest {
             assertEquals("جاوید محمدی", command?.fullName)
             assertEquals(1L, command?.cityId)
             assertNull(command?.clearCityId)
+            assertTrue(profileRepo.lastSizingCommand != null)
         } finally {
             Dispatchers.resetMain()
         }
@@ -70,6 +85,7 @@ class ProfileViewModelTest {
             val viewModel = ProfileViewModel(
                 accountRepository = account,
                 locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
             )
             advanceUntilIdle()
 
@@ -85,9 +101,151 @@ class ProfileViewModelTest {
         }
     }
 
+    @Test
+    fun hydratesSizingAndGender_thenSaveSendsUpdateSizingCommand() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val profileRepo = FakeProfileRepository(
+                sizing = SizingProfile(
+                    productMatchNotify = true,
+                    persons = listOf(
+                        Person(
+                            id = PersonId(1),
+                            name = "Me",
+                            relation = PersonRelation.Self,
+                            sex = PersonSex.Male,
+                            notify = true,
+                            sortOrder = 0,
+                            sizes = mapOf(
+                                "upper_body" to SizeSlotValue("size__m", "size"),
+                                "lower_body" to SizeSlotValue("size__32", "size"),
+                                "shoes" to SizeSlotValue("shoe-size__42", "shoe-size"),
+                            ),
+                        ),
+                    ),
+                    slots = emptyList(),
+                ),
+            )
+            val account = FakeAccountRepository(sampleUser(fullName = "Javid", cityId = null))
+            val viewModel = ProfileViewModel(
+                accountRepository = account,
+                locationRepository = FakeLocationRepository(),
+                profileRepository = profileRepo,
+            )
+            advanceUntilIdle()
+
+            assertEquals(ProfileGender.Male, viewModel.uiState.value.gender)
+            assertEquals("size__m", viewModel.uiState.value.upperBodySize)
+            assertEquals("size__32", viewModel.uiState.value.lowerBodySize)
+            assertEquals("shoe-size__42", viewModel.uiState.value.shoeSize)
+
+            viewModel.onAction(ProfileUiAction.GenderChanged(ProfileGender.Female))
+            viewModel.onAction(ProfileUiAction.UpperBodySizeChanged("size__l"))
+            viewModel.onAction(ProfileUiAction.ShoeSizeChanged(null))
+            viewModel.onAction(ProfileUiAction.Save)
+            advanceUntilIdle()
+
+            val sizing = profileRepo.lastSizingCommand
+            assertEquals(PersonSex.Female, sizing?.sex)
+            assertEquals("Me", sizing?.name)
+            assertEquals(true, sizing?.notify)
+            assertEquals("size__l", sizing?.sizes?.get("upper_body")?.valueSlug)
+            assertEquals("size__32", sizing?.sizes?.get("lower_body")?.valueSlug)
+            assertNull(sizing?.sizes?.get("shoes"))
+            assertEquals(PersonSex.Female, account.lastCommand?.sex)
+            assertNull(account.lastCommand?.clearSex)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun unspecifiedGender_sendsClearSexOnProfile() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val account = FakeAccountRepository(
+                sampleUser(fullName = "Javid", cityId = null, sex = PersonSex.Male),
+            )
+            val viewModel = ProfileViewModel(
+                accountRepository = account,
+                locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
+            )
+            advanceUntilIdle()
+
+            viewModel.onAction(ProfileUiAction.GenderChanged(ProfileGender.Unspecified))
+            viewModel.onAction(ProfileUiAction.Save)
+            advanceUntilIdle()
+
+            assertNull(account.lastCommand?.sex)
+            assertEquals(true, account.lastCommand?.clearSex)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun birthdayChange_staysLocalInUiState() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val viewModel = ProfileViewModel(
+                accountRepository = FakeAccountRepository(sampleUser(fullName = "Javid", cityId = null)),
+                locationRepository = FakeLocationRepository(),
+                profileRepository = FakeProfileRepository(),
+            )
+            advanceUntilIdle()
+
+            viewModel.onAction(ProfileUiAction.BirthdayChanged("1990-03-21"))
+            assertEquals("1990-03-21", viewModel.uiState.value.birthdayIso)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun hydratesCityFromUserAndCitiesList() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val account = FakeAccountRepository(
+                sampleUser(
+                    fullName = "Javid",
+                    cityId = 1,
+                    cityName = "تهران",
+                ),
+            )
+            val viewModel = ProfileViewModel(
+                accountRepository = account,
+                locationRepository = FakeLocationRepository(
+                    cities = listOf(
+                        City(CityId(2), CitySlug("isfahan"), "اصفهان"),
+                        City(CityId(1), CitySlug("tehran"), "تهران"),
+                    ),
+                ),
+                profileRepository = FakeProfileRepository(),
+            )
+            advanceUntilIdle()
+
+            assertEquals(1L, viewModel.uiState.value.cityId)
+            assertEquals("تهران", viewModel.uiState.value.cityName)
+            assertEquals(2, viewModel.uiState.value.cities.size)
+            assertEquals(
+                listOf("اصفهان", "تهران"),
+                viewModel.uiState.value.cities.map { it.name },
+            )
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
     private fun sampleUser(
         fullName: String?,
         cityId: Long?,
+        cityName: String? = null,
+        sex: PersonSex? = null,
     ) = User(
         id = 2,
         phone = "9123456789",
@@ -100,7 +258,17 @@ class ProfileViewModelTest {
         updatedAt = Instant.parse("2026-01-01T00:00:00Z"),
         fullName = fullName,
         avatarUrl = "https://cdn.example/avatar.png",
+        sex = sex,
         cityId = cityId,
+        city = cityId?.let { id ->
+            cityName?.let {
+                com.vitran.shop.feature.account.domain.model.UserCity(
+                    id = id,
+                    slug = "city-$id",
+                    name = it,
+                )
+            }
+        },
     )
 
     private class FakeAccountRepository(
@@ -122,7 +290,8 @@ class ProfileViewModelTest {
                 username = command.username ?: current.username,
                 email = command.email ?: current.email,
                 fullName = command.fullName,
-                avatarUrl = command.avatarUrl,
+                avatarUrl = if (command.clearAvatarUrl == true) null else command.avatarUrl ?: current.avatarUrl,
+                sex = if (command.clearSex == true) null else command.sex ?: current.sex,
                 cityId = if (command.clearCityId == true) null else command.cityId ?: current.cityId,
                 city = if (command.clearCityId == true) null else current.city,
             )
@@ -148,5 +317,62 @@ class ProfileViewModelTest {
             AppResult.Failure(AppError.Unexpected())
 
         override suspend fun invalidateCities() = Unit
+    }
+
+    private class FakeProfileRepository(
+        private var sizing: SizingProfile = SizingProfile(
+            productMatchNotify = false,
+            persons = emptyList(),
+            slots = emptyList(),
+        ),
+    ) : ProfileRepository {
+        var lastSizingCommand: UpdateSizingCommand? = null
+
+        override suspend fun getSizingProfile(): AppResult<SizingProfile> =
+            AppResult.Success(sizing)
+
+        override suspend fun updateSizingProfile(command: UpdateSizingCommand): AppResult<SizingProfile> {
+            lastSizingCommand = command
+            val self = sizing.persons.firstOrNull { it.relation is PersonRelation.Self }
+            val updatedSelf = (self ?: Person(
+                id = PersonId(1),
+                name = command.name,
+                relation = PersonRelation.Self,
+                sex = command.sex,
+                notify = command.notify ?: false,
+                sortOrder = 0,
+                sizes = emptyMap(),
+            )).copy(
+                name = command.name ?: self?.name,
+                sex = command.sex ?: self?.sex,
+                notify = command.notify ?: self?.notify ?: false,
+                sizes = command.sizes.ifEmpty { self?.sizes.orEmpty() },
+            )
+            sizing = sizing.copy(
+                persons = listOf(updatedSelf) + sizing.persons.filterNot { it.relation is PersonRelation.Self },
+            )
+            return AppResult.Success(sizing)
+        }
+
+        override suspend fun getNotifySettings(): AppResult<ProductMatchNotifySettings> =
+            AppResult.Failure(AppError.Unexpected())
+
+        override suspend fun updateNotifySettings(productMatchNotify: Boolean) =
+            AppResult.Failure(AppError.Unexpected())
+
+        override suspend fun listPersons(): AppResult<List<Person>> =
+            AppResult.Failure(AppError.Unexpected())
+
+        override suspend fun getPerson(id: PersonId): AppResult<Person> =
+            AppResult.Failure(AppError.Unexpected())
+
+        override suspend fun createPerson(command: CreatePersonCommand): AppResult<Person> =
+            AppResult.Failure(AppError.Unexpected())
+
+        override suspend fun updatePerson(command: UpdatePersonCommand): AppResult<Person> =
+            AppResult.Failure(AppError.Unexpected())
+
+        override suspend fun deletePerson(id: PersonId): AppResult<Unit> =
+            AppResult.Failure(AppError.Unexpected())
     }
 }
