@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -13,6 +15,8 @@ import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.account_email_change
 import vitranshop.shared.generated.resources.account_email_change_hint
 import vitranshop.shared.generated.resources.account_email_locked_a11y
+import vitranshop.shared.generated.resources.account_cities_loading
+import vitranshop.shared.generated.resources.account_cities_retry
 import vitranshop.shared.generated.resources.account_city_placeholder
 import vitranshop.shared.generated.resources.account_field_city
 import vitranshop.shared.generated.resources.account_field_email
@@ -54,6 +58,8 @@ internal fun ProfilePersonalInfoCard(
     birthdayIso: String?,
     onBirthdayChange: (String?) -> Unit,
     citiesError: String? = null,
+    isCitiesLoading: Boolean = false,
+    onCitiesRetry: () -> Unit = {},
     usernameCheck: UsernameCheckDisplay = UsernameCheckDisplay.Idle,
     modifier: Modifier = Modifier,
 ) {
@@ -70,6 +76,8 @@ internal fun ProfilePersonalInfoCard(
             birthdayIso = birthdayIso,
             onBirthdayChange = onBirthdayChange,
             citiesError = citiesError,
+            isCitiesLoading = isCitiesLoading,
+            onCitiesRetry = onCitiesRetry,
             usernameCheck = usernameCheck,
         )
         ContactFieldsCard(profile = profile)
@@ -86,6 +94,8 @@ private fun PersonalFieldsCard(
     birthdayIso: String?,
     onBirthdayChange: (String?) -> Unit,
     citiesError: String?,
+    isCitiesLoading: Boolean,
+    onCitiesRetry: () -> Unit,
     usernameCheck: UsernameCheckDisplay,
 ) {
     val genderUnspecified = AccountGender.Unspecified.label()
@@ -148,20 +158,32 @@ private fun PersonalFieldsCard(
                 else -> cities.firstOrNull { it.id == profile.cityId }?.name
                     ?: profile.cityName.orEmpty()
             }
-            AccountDropdownField(
-                label = stringResource(Res.string.account_field_city),
-                value = selectedCityName,
-                placeholder = stringResource(Res.string.account_city_placeholder),
-                options = cityOptions,
-                onSelect = { label ->
-                    if (label == clearCityLabel) {
-                        onCitySelect(null)
+            Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs)) {
+                AccountDropdownField(
+                    label = stringResource(Res.string.account_field_city),
+                    value = selectedCityName,
+                    placeholder = stringResource(Res.string.account_city_placeholder),
+                    options = cityOptions,
+                    onSelect = { label ->
+                        if (label == clearCityLabel) {
+                            onCitySelect(null)
+                        } else {
+                            onCitySelect(cities.firstOrNull { it.name == label }?.id)
+                        }
+                    },
+                    error = citiesError,
+                    supportingText = if (isCitiesLoading && citiesError == null) {
+                        stringResource(Res.string.account_cities_loading)
                     } else {
-                        onCitySelect(cities.firstOrNull { it.name == label }?.id)
+                        null
+                    },
+                )
+                if (citiesError != null) {
+                    TextButton(onClick = onCitiesRetry) {
+                        Text(stringResource(Res.string.account_cities_retry))
                     }
-                },
-                error = citiesError,
-            )
+                }
+            }
             AccountDropdownField(
                 label = stringResource(Res.string.account_field_gender),
                 value = if (profile.gender == AccountGender.Unspecified) "" else selectedGenderLabel,

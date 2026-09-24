@@ -337,6 +337,99 @@ class ProfileViewModelTest {
     }
 
     @Test
+    fun getCitiesFailure_keepsSelectedCityAndSetsError() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val viewModel = ProfileViewModel(
+                accountRepository = FakeAccountRepository(
+                    sampleUser(
+                        fullName = "Javid",
+                        cityId = 1,
+                        cityName = "تهران",
+                    ),
+                ),
+                locationRepository = FakeLocationRepository(shouldFail = true),
+                profileRepository = FakeProfileRepository(),
+            )
+            advanceUntilIdle()
+
+            assertEquals(1L, viewModel.uiState.value.cityId)
+            assertEquals("تهران", viewModel.uiState.value.cityName)
+            assertEquals("خطا در دریافت لیست شهرها", viewModel.uiState.value.citiesError)
+            assertEquals(false, viewModel.uiState.value.isCitiesLoading)
+            assertEquals(
+                listOf("تهران"),
+                viewModel.uiState.value.cities.map { it.name },
+            )
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun getCitiesThrow_setsCitiesErrorWithoutClearingCity() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val viewModel = ProfileViewModel(
+                accountRepository = FakeAccountRepository(
+                    sampleUser(
+                        fullName = "Javid",
+                        cityId = 1,
+                        cityName = "تهران",
+                    ),
+                ),
+                locationRepository = FakeLocationRepository(shouldThrow = true),
+                profileRepository = FakeProfileRepository(),
+            )
+            advanceUntilIdle()
+
+            assertEquals(1L, viewModel.uiState.value.cityId)
+            assertEquals("تهران", viewModel.uiState.value.cityName)
+            assertEquals("خطا در دریافت لیست شهرها", viewModel.uiState.value.citiesError)
+            assertEquals(false, viewModel.uiState.value.isCitiesLoading)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun retry_reloadsCitiesWithForceRefresh() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val location = FakeLocationRepository(shouldFail = true)
+            val viewModel = ProfileViewModel(
+                accountRepository = FakeAccountRepository(
+                    sampleUser(fullName = "Javid", cityId = 1, cityName = "تهران"),
+                ),
+                locationRepository = location,
+                profileRepository = FakeProfileRepository(),
+            )
+            advanceUntilIdle()
+            location.shouldFail = false
+            location.cities = listOf(
+                City(CityId(2), CitySlug("isfahan"), "اصفهان"),
+                City(CityId(1), CitySlug("tehran"), "تهران"),
+            )
+            viewModel.onAction(ProfileUiAction.Retry)
+            advanceUntilIdle()
+
+            assertEquals(true, location.lastForceRefresh)
+            assertNull(viewModel.uiState.value.citiesError)
+            assertEquals(1L, viewModel.uiState.value.cityId)
+            assertEquals("تهران", viewModel.uiState.value.cityName)
+            assertEquals(
+                listOf("اصفهان", "تهران"),
+                viewModel.uiState.value.cities.map { it.name },
+            )
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
     fun pickAvatar_cancelLeavesPreviewUnchanged() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(dispatcher)
@@ -524,9 +617,19 @@ class ProfileViewModelTest {
 
     private class FakeLocationRepository(
         var cities: List<City> = emptyList(),
+        var shouldFail: Boolean = false,
+        var shouldThrow: Boolean = false,
     ) : LocationRepository {
-        override suspend fun getCities(forceRefresh: Boolean): AppResult<List<City>> =
-            AppResult.Success(cities)
+        var lastForceRefresh: Boolean? = null
+
+        override suspend fun getCities(forceRefresh: Boolean): AppResult<List<City>> {
+            lastForceRefresh = forceRefresh
+            if (shouldThrow) error("cities boom")
+            if (shouldFail) {
+                return AppResult.Failure(AppError.Unexpected("خطا در دریافت لیست شهرها"))
+            }
+            return AppResult.Success(cities)
+        }
 
         override suspend fun getCityById(id: CityId) =
             AppResult.Failure(AppError.Unexpected())

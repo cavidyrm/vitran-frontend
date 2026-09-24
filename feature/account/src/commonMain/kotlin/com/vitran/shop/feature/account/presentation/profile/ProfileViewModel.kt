@@ -19,6 +19,7 @@ import com.vitran.shop.feature.account.domain.model.splitFullName
 import com.vitran.shop.feature.account.domain.repository.AccountRepository
 import com.vitran.shop.feature.account.domain.repository.ProfileRepository
 import com.vitran.shop.feature.location.domain.repository.LocationRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -157,7 +158,7 @@ class ProfileViewModel(
             ProfileUiAction.PickAvatar -> pickAvatar()
             ProfileUiAction.Retry -> {
                 refresh()
-                loadCities()
+                loadCities(forceRefresh = true)
                 loadSizing()
             }
             ProfileUiAction.Save -> save()
@@ -283,31 +284,42 @@ class ProfileViewModel(
         }
     }
 
-    private fun loadCities() {
+    private fun loadCities(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { it.copy(isCitiesLoading = true, citiesError = null) }
-            when (val result = locationRepository.getCities()) {
-                is AppResult.Success -> {
-                    val loaded = result.value
-                        .map { city -> ProfileCityOption(id = city.id.value, name = city.name) }
-                        .sortedBy { it.name }
-                    _uiState.update { state ->
-                        val cityId = state.cityId
-                        val resolvedName = cityId?.let { id ->
-                            loaded.firstOrNull { it.id == id }?.name ?: state.cityName
+            try {
+                when (val result = locationRepository.getCities(forceRefresh = forceRefresh)) {
+                    is AppResult.Success -> {
+                        val loaded = result.value
+                            .map { city -> ProfileCityOption(id = city.id.value, name = city.name) }
+                            .sortedBy { it.name }
+                        _uiState.update { state ->
+                            val cityId = state.cityId
+                            val resolvedName = cityId?.let { id ->
+                                loaded.firstOrNull { it.id == id }?.name ?: state.cityName
+                            }
+                            state.copy(
+                                isCitiesLoading = false,
+                                cities = ensureSelectedCityInList(loaded, cityId, resolvedName),
+                                cityName = resolvedName,
+                                citiesError = null,
+                            )
                         }
-                        state.copy(
+                    }
+                    is AppResult.Failure -> _uiState.update {
+                        it.copy(
                             isCitiesLoading = false,
-                            cities = ensureSelectedCityInList(loaded, cityId, resolvedName),
-                            cityName = resolvedName,
-                            citiesError = null,
+                            citiesError = result.error.message ?: "خطا در دریافت لیست شهرها",
                         )
                     }
                 }
-                is AppResult.Failure -> _uiState.update {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                _uiState.update {
                     it.copy(
                         isCitiesLoading = false,
-                        citiesError = result.error.message ?: "خطا در دریافت لیست شهرها",
+                        citiesError = "خطا در دریافت لیست شهرها",
                     )
                 }
             }

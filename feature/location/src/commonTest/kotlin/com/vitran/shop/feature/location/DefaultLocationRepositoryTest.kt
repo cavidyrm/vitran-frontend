@@ -1,6 +1,5 @@
 package com.vitran.shop.feature.location
 
-import com.vitran.shop.core.database.createInMemoryVitranDatabase
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
 import com.vitran.shop.feature.location.data.mapper.toDomain
@@ -34,18 +33,11 @@ class DefaultLocationRepositoryTest {
     @Test
     fun getCities_cachesSecondCall() = runTest {
         var requestCount = 0
-        val repository = DefaultLocationRepository(
-            locationApi = LocationApi(
-                client = createLocationTestClient(
-                    MockEngine {
-                        requestCount++
-                        jsonResponse(HttpStatusCode.OK, citiesListEnvelope)
-                    },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
-            database = createInMemoryVitranDatabase(),
+        val repository = repository(
+            MockEngine {
+                requestCount++
+                jsonResponse(HttpStatusCode.OK, citiesListEnvelope)
+            },
         )
 
         val first = repository.getCities()
@@ -60,18 +52,11 @@ class DefaultLocationRepositoryTest {
     @Test
     fun getCities_forceRefresh_hitsNetworkAgain() = runTest {
         var requestCount = 0
-        val repository = DefaultLocationRepository(
-            locationApi = LocationApi(
-                client = createLocationTestClient(
-                    MockEngine {
-                        requestCount++
-                        jsonResponse(HttpStatusCode.OK, citiesListEnvelope)
-                    },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
-            database = createInMemoryVitranDatabase(),
+        val repository = repository(
+            MockEngine {
+                requestCount++
+                jsonResponse(HttpStatusCode.OK, citiesListEnvelope)
+            },
         )
 
         repository.getCities()
@@ -83,22 +68,18 @@ class DefaultLocationRepositoryTest {
     @Test
     fun getCities_refreshFailure_keepsCache() = runTest {
         var requestCount = 0
-        val repository = DefaultLocationRepository(
-            locationApi = LocationApi(
-                client = createLocationTestClient(
-                    MockEngine {
-                        requestCount++
-                        if (requestCount == 1) {
-                            jsonResponse(HttpStatusCode.OK, citiesListEnvelope)
-                        } else {
-                            jsonResponse(HttpStatusCode.InternalServerError, """{"success":false,"message":"fail","code":0,"errors":[]}""")
-                        }
-                    },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
-            database = createInMemoryVitranDatabase(),
+        val repository = repository(
+            MockEngine {
+                requestCount++
+                if (requestCount == 1) {
+                    jsonResponse(HttpStatusCode.OK, citiesListEnvelope)
+                } else {
+                    jsonResponse(
+                        HttpStatusCode.InternalServerError,
+                        """{"success":false,"message":"fail","code":0,"errors":[]}""",
+                    )
+                }
+            },
         )
 
         repository.getCities()
@@ -112,16 +93,28 @@ class DefaultLocationRepositoryTest {
     }
 
     @Test
+    fun invalidateCities_clearsMemoryCache() = runTest {
+        var requestCount = 0
+        val repository = repository(
+            MockEngine {
+                requestCount++
+                jsonResponse(HttpStatusCode.OK, citiesListEnvelope)
+            },
+        )
+
+        repository.getCities()
+        repository.invalidateCities()
+        val afterInvalidate = repository.getCities()
+
+        assertIs<AppResult.Success<List<City>>>(afterInvalidate)
+        assertEquals(2, requestCount)
+        assertEquals(2, afterInvalidate.value.size)
+    }
+
+    @Test
     fun getCityBySlug_returnsMappedCity() = runTest {
-        val repository = DefaultLocationRepository(
-            locationApi = LocationApi(
-                client = createLocationTestClient(
-                    MockEngine { jsonResponse(HttpStatusCode.OK, cityDetailEnvelope) },
-                ),
-                environment = environment,
-                executor = executor,
-            ),
-            database = createInMemoryVitranDatabase(),
+        val repository = repository(
+            MockEngine { jsonResponse(HttpStatusCode.OK, cityDetailEnvelope) },
         )
 
         val result = repository.getCityBySlug(CitySlug("tehran"))
@@ -129,4 +122,13 @@ class DefaultLocationRepositoryTest {
         assertIs<AppResult.Success<City>>(result)
         assertEquals("tehran", result.value.slug.value)
     }
+
+    private fun repository(engine: MockEngine) =
+        DefaultLocationRepository(
+            locationApi = LocationApi(
+                client = createLocationTestClient(engine),
+                environment = environment,
+                executor = executor,
+            ),
+        )
 }

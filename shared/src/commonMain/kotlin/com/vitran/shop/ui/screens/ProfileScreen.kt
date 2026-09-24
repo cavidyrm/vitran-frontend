@@ -66,6 +66,7 @@ fun ProfileScreen(
         uiState.cityName,
         uiState.cities,
         uiState.citiesError,
+        uiState.isCitiesLoading,
         uiState.gender,
         uiState.birthdayIso,
         uiState.upperBodySize,
@@ -143,6 +144,10 @@ fun ProfileScreen(
                     cities = uiState.cities.map { AccountCityOption(id = it.id, name = it.name) },
                     clearCityLabel = clearCityLabel,
                     onCitySelect = { cityId ->
+                        val name = cityId?.let { id ->
+                            uiState.cities.firstOrNull { it.id == id }?.name
+                        }
+                        profile = current.copy(cityId = cityId, cityName = name)
                         viewModel.onAction(ProfileUiAction.CitySelected(cityId))
                     },
                     birthdayIso = uiState.birthdayIso,
@@ -150,6 +155,8 @@ fun ProfileScreen(
                         viewModel.onAction(ProfileUiAction.BirthdayChanged(iso))
                     },
                     citiesError = uiState.citiesError,
+                    isCitiesLoading = uiState.isCitiesLoading,
+                    onCitiesRetry = { viewModel.onAction(ProfileUiAction.Retry) },
                     usernameCheck = uiState.usernameCheck.toDisplay(),
                 )
                 ProfileSizingCard(
