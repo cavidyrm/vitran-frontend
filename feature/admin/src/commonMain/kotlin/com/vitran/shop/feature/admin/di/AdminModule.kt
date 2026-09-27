@@ -11,6 +11,7 @@ import com.vitran.shop.feature.admin.catalog.taxonomy.data.repository.DefaultAdm
 import com.vitran.shop.feature.admin.catalog.taxonomy.domain.AdminTaxonomyRepository
 import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.AttributeNameEditViewModel
 import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.CategoryEditViewModel
+import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.TaxonomyBrowseViewModel
 import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.TaxonomyImportViewModel
 import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.ValueNameEditViewModel
 import com.vitran.shop.feature.admin.content.data.AdminContentApi
@@ -62,6 +63,7 @@ val adminModule = module {
         AdminCityDetailViewModel(parameters.get(), get(), get(), get(), get(), get())
     }
     viewModel { TaxonomyImportViewModel(get(), get(), get(), get()) }
+    viewModel { TaxonomyBrowseViewModel(get(), get(), get()) }
     viewModel { parameters -> CategoryEditViewModel(parameters.get(), get(), get()) }
     viewModel { parameters -> AttributeNameEditViewModel(parameters.get(), get()) }
     viewModel { parameters -> ValueNameEditViewModel(parameters.get(), get()) }

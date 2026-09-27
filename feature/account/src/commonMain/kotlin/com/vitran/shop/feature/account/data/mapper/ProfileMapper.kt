@@ -58,7 +58,9 @@ internal fun UpdateSizingCommand.toRequestDto(): UpdateSizingRequestDto =
         relation = "self",
         sex = sex?.toApiValue(),
         notify = notify,
-        sizes = sizes.takeIf { it.isNotEmpty() }?.toDto(),
+        sizes = sizes.takeIf { it.isNotEmpty() }?.mapValues { (_, value) ->
+            SizeSlotAssignmentDto(valueSlug = value.valueSlug)
+        },
     )
 
 internal fun CreatePersonCommand.toRequestDto(): PersonWriteRequestDto =

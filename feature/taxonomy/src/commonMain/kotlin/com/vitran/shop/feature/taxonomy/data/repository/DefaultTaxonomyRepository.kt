@@ -11,6 +11,11 @@ import com.vitran.shop.feature.taxonomy.domain.model.CategoryDetails
 import com.vitran.shop.feature.taxonomy.domain.model.CategoryNode
 import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 import com.vitran.shop.feature.taxonomy.domain.repository.TaxonomyRepository
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 
@@ -24,28 +29,29 @@ internal class DefaultTaxonomyRepository(
 
     private val json = Json { ignoreUnknownKeys = true }
 
+    /**
+     * Cache writes must not block the caller. On web, Room's worker can suspend
+     * forever when OPFS/COOP is unavailable, which kept admin taxonomy on the spinner
+     * and prevented the category request from being issued.
+     */
+    private val cacheScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     override suspend fun getCategoryTree(forceRefresh: Boolean): AppResult<List<CategoryNode>> {
         if (!forceRefresh) {
-            val cached = categoryDao.getAll()
-            if (cached.isNotEmpty()) {
-                return AppResult.Success(cached.toTree())
-            }
+            cachedTreeOrNull()?.let { return AppResult.Success(it) }
         }
 
         return when (val result = taxonomyApi.getCategoryTree()) {
             is AppResult.Success -> {
                 val tree = result.value.categories.map { it.toDomain() }
-                val now = Clock.System.now().toEpochMilliseconds()
-                categoryDao.replaceAll(flattenCategoryTree(tree, parentSlug = null, fetchedAt = now))
+                persistTree(tree, await = !forceRefresh)
                 AppResult.Success(tree)
             }
             is AppResult.Failure -> {
-                val cached = categoryDao.getAll()
-                if (cached.isNotEmpty()) {
-                    AppResult.Success(cached.toTree())
-                } else {
-                    AppResult.Failure(result.error)
+                if (!forceRefresh) {
+                    cachedTreeOrNull()?.let { return AppResult.Success(it) }
                 }
+                AppResult.Failure(result.error)
             }
         }
     }
@@ -64,32 +70,72 @@ internal class DefaultTaxonomyRepository(
             is AppResult.Success -> {
                 val dto = result.value.category
                 val details = dto.toDomain()
-                val now = Clock.System.now().toEpochMilliseconds()
-                categoryDetailDao.upsert(
-                    CategoryDetailEntity(
-                        slug = slug.value,
-                        payloadJson = json.encodeToString(CategoryDetailsDto.serializer(), dto),
-                        fetchedAt = now,
-                    ),
-                )
+                persistDetails(slug, dto, await = !forceRefresh)
                 AppResult.Success(details)
             }
             is AppResult.Failure -> {
-                val cached = categoryDetailDao.getBySlug(slug.value)
-                if (cached != null) {
-                    AppResult.Success(cached.toDomain(json))
-                } else {
-                    AppResult.Failure(result.error)
+                if (!forceRefresh) {
+                    cachedDetailsOrNull(slug)?.let { return AppResult.Success(it) }
                 }
+                AppResult.Failure(result.error)
             }
         }
     }
 
     override suspend fun invalidateTaxonomy() {
-        categoryDao.deleteAll()
-        categoryDetailDao.deleteAll()
+        cacheScope.launch {
+            ignoreCacheFailure {
+                categoryDao.deleteAll()
+                categoryDetailDao.deleteAll()
+            }
+        }
+    }
+
+    private suspend fun cachedTreeOrNull(): List<CategoryNode>? =
+        ignoreCacheFailure { categoryDao.getAll().takeIf { it.isNotEmpty() }?.toTree() }
+
+    private suspend fun cachedDetailsOrNull(slug: CategorySlug): CategoryDetails? =
+        ignoreCacheFailure { categoryDetailDao.getBySlug(slug.value)?.toDomain(json) }
+
+    private suspend fun persistTree(tree: List<CategoryNode>, await: Boolean) {
+        val rows = flattenCategoryTree(
+            nodes = tree,
+            parentSlug = null,
+            fetchedAt = Clock.System.now().toEpochMilliseconds(),
+        )
+        if (await) {
+            ignoreCacheFailure { categoryDao.replaceAll(rows) }
+        } else {
+            cacheScope.launch { ignoreCacheFailure { categoryDao.replaceAll(rows) } }
+        }
+    }
+
+    private suspend fun persistDetails(
+        slug: CategorySlug,
+        dto: CategoryDetailsDto,
+        await: Boolean,
+    ) {
+        val entity = CategoryDetailEntity(
+            slug = slug.value,
+            payloadJson = json.encodeToString(CategoryDetailsDto.serializer(), dto),
+            fetchedAt = Clock.System.now().toEpochMilliseconds(),
+        )
+        if (await) {
+            ignoreCacheFailure { categoryDetailDao.upsert(entity) }
+        } else {
+            cacheScope.launch { ignoreCacheFailure { categoryDetailDao.upsert(entity) } }
+        }
     }
 }
+
+private suspend fun <T> ignoreCacheFailure(block: suspend () -> T): T? =
+    try {
+        block()
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (_: Throwable) {
+        null
+    }
 
 internal fun flattenCategoryTree(
     nodes: List<CategoryNode>,

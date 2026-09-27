@@ -22,6 +22,7 @@ import io.ktor.http.content.TextContent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
@@ -71,14 +72,24 @@ class ProfileApiRepositoryTest {
                 name = "Me",
                 sex = PersonSex.Male,
                 notify = true,
-                sizes = mapOf("upper_body" to SizeSlotValue("size__l")),
+                sizes = mapOf(
+                    "upper_body" to SizeSlotValue("size__l", "size"),
+                    "lower_body" to SizeSlotValue("size__34", "size"),
+                    "shoes" to SizeSlotValue("shoe-size__43", "shoe-size"),
+                ),
             ),
         )
 
         assertIs<AppResult.Success<*>>(result)
         assertTrue(bodyText.contains("\"relation\":\"self\""))
-        assertTrue(bodyText.contains("\"upper_body\":\"size__l\""))
         assertTrue(bodyText.contains("\"name\":\"Me\""))
+        assertTrue(bodyText.contains("\"sex\":\"male\""))
+        assertTrue(bodyText.contains("\"notify\":true"))
+        assertTrue(bodyText.contains("\"upper_body\":\"size__l\""))
+        assertTrue(bodyText.contains("\"lower_body\":\"size__34\""))
+        assertTrue(bodyText.contains("\"shoes\":\"shoe-size__43\""))
+        assertFalse(bodyText.contains("attribute_slug"))
+        assertFalse(bodyText.contains("value_slug"))
     }
 
     @Test

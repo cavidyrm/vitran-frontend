@@ -421,16 +421,16 @@ class ProfileViewModel(
             }
 
             val sizes = buildMap {
-                state.upperBodySize?.let { put(SLOT_UPPER, SizeSlotValue(it, ATTR_SIZE)) }
-                state.lowerBodySize?.let { put(SLOT_LOWER, SizeSlotValue(it, ATTR_SIZE)) }
-                state.shoeSize?.let { put(SLOT_SHOES, SizeSlotValue(it, ATTR_SHOE)) }
+                state.upperBodySize?.let { put(SLOT_UPPER, SizeSlotValue(it)) }
+                state.lowerBodySize?.let { put(SLOT_LOWER, SizeSlotValue(it)) }
+                state.shoeSize?.let { put(SLOT_SHOES, SizeSlotValue(it)) }
             }
             when (
                 val sizingResult = profileRepository.updateSizingProfile(
                     UpdateSizingCommand(
-                        name = sizingSelfName,
+                        name = sizingSelfName?.takeIf { it.isNotBlank() } ?: "Me",
                         sex = state.gender.toPersonSex(),
-                        notify = sizingNotify,
+                        notify = sizingNotify ?: true,
                         sizes = sizes,
                     ),
                 )
@@ -452,8 +452,6 @@ class ProfileViewModel(
         const val SLOT_UPPER = "upper_body"
         const val SLOT_LOWER = "lower_body"
         const val SLOT_SHOES = "shoes"
-        const val ATTR_SIZE = "size"
-        const val ATTR_SHOE = "shoe-size"
         const val USERNAME_MIN_LENGTH = 3
         const val USERNAME_MAX_LENGTH = 50
     }

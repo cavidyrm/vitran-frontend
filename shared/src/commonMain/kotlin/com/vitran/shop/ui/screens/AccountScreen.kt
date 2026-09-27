@@ -93,6 +93,7 @@ fun AccountScreen(
             onSavedClick = onOpenSaved,
             onFollowingClick = onOpenFollowing,
         )
+        AccountSellerSection(onCreateStore = onCreateStore)
         if (canAccessAdmin && !LocalDesktopLayout.current) {
             AccountHubUsersRow(onClick = { onDestClick(AccountDest.Users) })
             AccountHubCitiesRow(onClick = { onDestClick(AccountDest.Cities) })
@@ -132,9 +133,6 @@ fun AccountScreen(
             },
             onSaveClick = {},
         )
-        if (!canAccessAdmin) {
-            AccountSellerSection(onCreateStore = onCreateStore)
-        }
         AccountSignOutRow(
             onClick = onSignOut,
             isSigningOut = isSigningOut,
