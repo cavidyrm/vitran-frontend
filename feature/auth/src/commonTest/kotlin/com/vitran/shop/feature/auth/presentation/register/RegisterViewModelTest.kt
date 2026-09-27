@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -133,11 +134,13 @@ class RegisterViewModelTest {
             assertIs<ReferralCodeCheckUiStatus.Invalid>(vm.uiState.value.referralCheck)
 
             val events = mutableListOf<RegisterUiEffect>()
-            backgroundScope.launch { vm.effects.collect { events.add(it) } }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                vm.effects.collect { events.add(it) }
+            }
             vm.submit("09121111111", "secret12", "NOPE")
             advanceUntilIdle()
             assertEquals("NOPE", authRepository.lastCommand?.referralCode)
-            assertEquals(
+            assertEquals<List<RegisterUiEffect>>(
                 listOf(RegisterUiEffect.NavigateToVerification("09121111111")),
                 events,
             )

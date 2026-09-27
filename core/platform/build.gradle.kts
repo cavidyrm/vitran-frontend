@@ -35,7 +35,8 @@ kotlin {
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
+            // FileKit 0.16 inline functions are compiled for JVM 21.
+            jvmTarget = JvmTarget.JVM_21
         }
     }
 
