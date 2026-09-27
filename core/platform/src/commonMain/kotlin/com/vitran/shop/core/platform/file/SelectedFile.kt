@@ -39,3 +39,16 @@ fun safeFileName(raw: String): String {
     val base = if (cut >= 0) trimmed.substring(cut + 1) else trimmed
     return base.ifBlank { "file" }
 }
+
+/** MIME type from the file extension. Unknown extensions return null. */
+internal fun guessImageContentType(fileName: String): String? {
+    val lower = fileName.lowercase()
+    return when {
+        lower.endsWith(".jpg") || lower.endsWith(".jpeg") -> "image/jpeg"
+        lower.endsWith(".png") -> "image/png"
+        lower.endsWith(".webp") -> "image/webp"
+        lower.endsWith(".gif") -> "image/gif"
+        lower.endsWith(".heic") || lower.endsWith(".heif") -> "image/heic"
+        else -> null
+    }
+}

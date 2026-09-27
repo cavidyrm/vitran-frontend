@@ -41,15 +41,3 @@ private suspend fun PlatformFile.toSelectedFile(): SelectedFile? =
             contentType = guessImageContentType(name),
         )
     }.getOrNull()
-
-private fun guessImageContentType(fileName: String): String? {
-    val lower = fileName.lowercase()
-    return when {
-        lower.endsWith(".jpg") || lower.endsWith(".jpeg") -> "image/jpeg"
-        lower.endsWith(".png") -> "image/png"
-        lower.endsWith(".webp") -> "image/webp"
-        lower.endsWith(".gif") -> "image/gif"
-        lower.endsWith(".heic") || lower.endsWith(".heif") -> "image/heic"
-        else -> null
-    }
-}
