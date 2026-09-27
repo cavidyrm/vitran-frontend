@@ -54,6 +54,8 @@ import vitranshop.shared.generated.resources.account_privacy_public_profile
 import vitranshop.shared.generated.resources.account_privacy_public_profile_hint
 import vitranshop.shared.generated.resources.account_privacy_title
 import vitranshop.shared.generated.resources.account_section_settings
+import vitranshop.shared.generated.resources.account_seller_stores
+import vitranshop.shared.generated.resources.account_seller_stores_hint
 import vitranshop.shared.generated.resources.account_settings_account
 import vitranshop.shared.generated.resources.account_settings_account_hint
 import vitranshop.shared.generated.resources.account_settings_notifications
@@ -79,6 +81,7 @@ import vitranshop.shared.generated.resources.ic_lock
 import vitranshop.shared.generated.resources.ic_logout
 import vitranshop.shared.generated.resources.ic_people
 import vitranshop.shared.generated.resources.ic_settings
+import vitranshop.shared.generated.resources.ic_shop_logo
 import vitranshop.shared.generated.resources.ic_shield
 import vitranshop.shared.generated.resources.ic_sparkles
 import vitranshop.shared.generated.resources.ic_user
@@ -414,6 +417,22 @@ internal fun AccountHubSettingsRow(
             title = stringResource(Res.string.account_nav_settings),
             subtitle = stringResource(Res.string.account_settings_privacy_hint),
             icon = painterResource(Res.drawable.ic_settings),
+            onClick = onClick,
+            trailing = { SettingsChevron() },
+        )
+    }
+}
+
+@Composable
+internal fun AccountHubStoresRow(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AccountCard(modifier = modifier) {
+        SettingsActionRow(
+            title = stringResource(Res.string.account_seller_stores),
+            subtitle = stringResource(Res.string.account_seller_stores_hint),
+            icon = painterResource(Res.drawable.ic_shop_logo),
             onClick = onClick,
             trailing = { SettingsChevron() },
         )

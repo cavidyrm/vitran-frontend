@@ -19,7 +19,7 @@ data class UpdateShopCommand(
     val supportTimes: String? = null,
     val type: String? = null,
     val cityId: CityId? = null,
-    val categoryNumericIds: List<Long>? = null,
+    val categorySlugs: List<String>? = null,
     val whatsapp: String? = null,
     val telegram: String? = null,
     val instagram: String? = null,

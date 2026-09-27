@@ -62,6 +62,32 @@ class FlexibleCategorySlugSerializerTest {
     }
 
     @Test
+    fun decodeShopDetail_acceptsCategoryObjects() {
+        val wrapper = json.decodeFromString<ShopDataDto>(
+            """
+            {
+              "shop": {
+                "id": 1,
+                "owner_id": 2,
+                "city_id": 1,
+                "title": "Shop",
+                "slug": "shop",
+                "type": "retailer",
+                "share_url": "https://vitran.ir/shop",
+                "active": true,
+                "confirmed": true,
+                "category_slugs": [{"slug": "aa-1", "name": "پوشاک"}, 2],
+                "created_at": "2026-06-09T12:00:00Z",
+                "updated_at": "2026-06-09T12:00:00Z"
+              }
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(listOf("aa-1", "2"), wrapper.shop.categorySlugs)
+    }
+
+    @Test
     fun decodeElement_stringAndInt() {
         assertEquals("aa-1", FlexibleCategorySlugSerializer.decodeElement(json.parseToJsonElement("\"aa-1\"")))
         assertEquals("42", FlexibleCategorySlugSerializer.decodeElement(json.parseToJsonElement("42")))

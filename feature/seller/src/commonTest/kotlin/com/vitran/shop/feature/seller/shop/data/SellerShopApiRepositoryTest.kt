@@ -101,7 +101,7 @@ class SellerShopApiRepositoryTest {
     }
 
     @Test
-    fun createShop_omitsSlug_andSerializesCategorySlugsAsLongs() {
+    fun createShop_omitsSlug_andSerializesCategorySlugsAsStrings() {
         val json = createNetworkJson()
         val dto =
             CreateShopRequestDto(
@@ -109,12 +109,12 @@ class SellerShopApiRepositoryTest {
                 slug = null,
                 type = "retailer",
                 cityId = 1,
-                categorySlugs = listOf(1L, 2L),
+                categorySlugs = listOf("aa-1-2-3-4"),
             )
         val encoded = json.encodeToString(CreateShopRequestDto.serializer(), dto)
         assertFalse(encoded.contains("\"slug\""))
         assertFalse(encoded.contains("\"avatar_url\""))
-        assertTrue(encoded.contains("\"category_slugs\":[1,2]"))
+        assertTrue(encoded.contains("\"category_slugs\":[\"aa-1-2-3-4\"]"))
     }
 
     @Test
@@ -202,6 +202,32 @@ class SellerShopApiRepositoryTest {
         val result = repo.getMyShop(ShopId(1))
         assertIs<AppResult.Success<*>>(result)
         assertEquals(ShopPublicationState.PendingApproval, (result as AppResult.Success).value.publicationState)
+    }
+
+    @Test
+    fun getMyShop_readsPascalCaseCategorySlugs() = runTest {
+        val body = """
+            {
+              "success": true,
+              "message": "ok",
+              "code": 1,
+              "data": {
+                "shop": {
+                  "id": 1,
+                  "slug": "galry-nvr",
+                  "active": false,
+                  "confirmed": false,
+                  "CategorySlugs": ["ap-1", "fb-2"]
+                }
+              },
+              "errors": []
+            }
+        """.trimIndent()
+        val engine = MockEngine { jsonResponse(HttpStatusCode.OK, body) }
+        val (repo, _) = createSellerRepository(engine)
+        val result = repo.getMyShop(ShopId(1))
+        assertIs<AppResult.Success<*>>(result)
+        assertEquals(listOf("ap-1", "fb-2"), (result as AppResult.Success).value.categorySlugs)
     }
 
     @Test

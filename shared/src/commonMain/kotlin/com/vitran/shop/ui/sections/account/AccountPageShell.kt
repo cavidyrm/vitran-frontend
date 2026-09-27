@@ -75,6 +75,8 @@ internal fun AccountPageShell(
     contentMaxWidth: Dp = AccountTokens.ContentMaxWidth,
     bottomBar: (@Composable () -> Unit)? = null,
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
+    onNearEnd: (() -> Unit)? = null,
+    nearEndToken: Any? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val isDesktop = LocalDesktopLayout.current
@@ -107,6 +109,16 @@ internal fun AccountPageShell(
             .distinctUntilChanged()
             .filter { scrolling -> scrolling }
             .collect { onDismissOmnibox() }
+    }
+
+    val onNearEndState by rememberUpdatedState(onNearEnd)
+    LaunchedEffect(scrollState, nearEndToken) {
+        if (onNearEndState == null) return@LaunchedEffect
+        snapshotFlow { scrollState.value to scrollState.maxValue }
+            .collect { (value, max) ->
+                val near = max <= 48 || value >= max - 240
+                if (near) onNearEndState?.invoke()
+            }
     }
 
     Box(

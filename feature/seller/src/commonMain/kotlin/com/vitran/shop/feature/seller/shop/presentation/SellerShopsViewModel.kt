@@ -23,7 +23,7 @@ data class SellerShopsUiState(
     val list: CursorListState<SellerShopSummary> = CursorListState(),
 )
 
-/** Deferred UI — ViewModel ready for seller shop list screen. */
+/** Owned-shop list for `/account/stores`. Loads `GET /seller/shops`. */
 class SellerShopsViewModel(
     private val sellerShopRepository: SellerShopRepository,
 ) : ViewModel() {
@@ -46,13 +46,19 @@ class SellerShopsViewModel(
     }
 
     fun refresh() {
+        // beginRefresh() also bumps the generation. Calling both drops the 200 response
+        // and leaves the list on the loading flags.
         val generation = controller.resetForNewQuery()
-        _uiState.update {
-            it.copy(
-                list =
-                    controller.beginRefresh(it.list).copy(
-                        isLoadingInitial = it.list.items.isEmpty(),
-                    ),
+        _uiState.update { state ->
+            val list = state.list
+            state.copy(
+                list = list.copy(
+                    isLoadingInitial = list.items.isEmpty(),
+                    isRefreshing = true,
+                    initialError = null,
+                    refreshError = null,
+                    paginationError = null,
+                ),
             )
         }
         loadJob?.cancel()
@@ -71,13 +77,17 @@ class SellerShopsViewModel(
                     }
                     is AppResult.Failure -> {
                         _uiState.update {
+                            val failed =
+                                if (it.list.items.isEmpty()) {
+                                    controller.applyInitialFailure(it.list, result.error)
+                                } else {
+                                    controller.applyRefreshFailure(it.list, result.error)
+                                }
                             it.copy(
-                                list =
-                                    if (it.list.items.isEmpty()) {
-                                        controller.applyInitialFailure(it.list, result.error)
-                                    } else {
-                                        controller.applyRefreshFailure(it.list, result.error)
-                                    },
+                                list = failed.copy(
+                                    isLoadingInitial = false,
+                                    isRefreshing = false,
+                                ),
                             )
                         }
                     }

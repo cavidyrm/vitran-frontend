@@ -1,6 +1,12 @@
 package com.vitran.shop.ui.components.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,11 +34,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vitran.shop.ui.components.VitranIcon
+import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.admin_social_remove
 import vitranshop.shared.generated.resources.admin_taxonomy_back_a11y
 import vitranshop.shared.generated.resources.admin_taxonomy_search
 import vitranshop.shared.generated.resources.ic_check
@@ -61,7 +69,7 @@ fun AdminTaxonomyPicker(
     ) { dismiss ->
         TaxonomyMenu(
             roots = roots,
-            valueId = valueId,
+            selectedIds = setOfNotNull(valueId),
             searchPlaceholder = queryPlaceholder,
             onSelect = { node ->
                 onSelect(node)
@@ -71,18 +79,106 @@ fun AdminTaxonomyPicker(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun AdminTaxonomyMultiPicker(
+    label: String,
+    selectedIds: List<String>,
+    roots: List<AdminTaxonomyNode>,
+    onToggle: (AdminTaxonomyNode) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    helper: String? = null,
+    error: String? = null,
+    enabled: Boolean = true,
+) {
+    val queryPlaceholder = stringResource(Res.string.admin_taxonomy_search)
+    val selected = selectedIds.toSet()
+    val selectedLabels = selectedIds.map { id -> roots.breadcrumbLabel(id) ?: id }
+    val displayText = selectedIds
+        .map { id -> roots.pathTo(id).lastOrNull()?.label ?: id }
+        .takeIf { it.isNotEmpty() }
+        ?.joinToString("، ")
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
+    ) {
+        if (selectedIds.isNotEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
+            ) {
+                selectedIds.forEachIndexed { index, id ->
+                    val labelText = selectedLabels[index]
+                    TaxonomySelectedChip(
+                        label = labelText,
+                        onRemove = { onToggle(AdminTaxonomyNode(id = id, label = labelText)) },
+                    )
+                }
+            }
+        }
+        AdminDropdownAnchor(
+            label = label,
+            helper = helper,
+            displayText = displayText,
+            placeholder = placeholder,
+            enabled = enabled && roots.isNotEmpty(),
+            error = error,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            TaxonomyMenu(
+                roots = roots,
+                selectedIds = selected,
+                searchPlaceholder = queryPlaceholder,
+                leafOnly = true,
+                onSelect = onToggle,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TaxonomySelectedChip(
+    label: String,
+    onRemove: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(percent = 50))
+            .border(1.dp, AdminTokens.FieldBorder, RoundedCornerShape(percent = 50))
+            .padding(horizontal = VitranSpacing.md, vertical = VitranSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
+    ) {
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium,
+            fontSize = 13.sp,
+        )
+        Text(
+            text = stringResource(Res.string.admin_social_remove),
+            color = AdminTokens.Helper,
+            fontSize = 12.sp,
+            modifier = Modifier.clickable(role = Role.Button, onClick = onRemove),
+        )
+    }
+}
+
 @Composable
 private fun TaxonomyMenu(
     roots: List<AdminTaxonomyNode>,
-    valueId: String?,
+    selectedIds: Set<String>,
     searchPlaceholder: String,
     onSelect: (AdminTaxonomyNode) -> Unit,
+    leafOnly: Boolean = false,
 ) {
-    val selectedPath = remember(roots, valueId) {
-        valueId?.let { roots.pathTo(it) }.orEmpty()
+    val anchorId = selectedIds.firstOrNull()
+    val selectedPath = remember(roots, anchorId) {
+        anchorId?.let { roots.pathTo(it) }.orEmpty()
     }
     var query by remember { mutableStateOf("") }
-    var currentPath by remember {
+    var currentPath by remember(roots, anchorId) {
         mutableStateOf(
             if (selectedPath.size > 1) selectedPath.dropLast(1) else emptyList(),
         )
@@ -106,14 +202,15 @@ private fun TaxonomyMenu(
         if (searching) {
             TaxonomyHitList(
                 hits = hits,
-                selectedId = valueId,
+                selectedIds = selectedIds,
+                leafOnly = leafOnly,
                 onSelect = onSelect,
             )
         } else {
             TaxonomyLevelList(
                 nodes = levelNodes,
                 currentPath = currentPath,
-                selectedId = valueId,
+                selectedIds = selectedIds,
                 onDrill = { currentPath = currentPath + it },
                 onPop = { currentPath = currentPath.dropLast(1) },
                 onSelect = onSelect,
@@ -126,7 +223,7 @@ private fun TaxonomyMenu(
 private fun TaxonomyLevelList(
     nodes: List<AdminTaxonomyNode>,
     currentPath: List<AdminTaxonomyNode>,
-    selectedId: String?,
+    selectedIds: Set<String>,
     onDrill: (AdminTaxonomyNode) -> Unit,
     onPop: () -> Unit,
     onSelect: (AdminTaxonomyNode) -> Unit,
@@ -147,7 +244,7 @@ private fun TaxonomyLevelList(
         items(nodes, key = { it.id }) { node ->
             TaxonomyNodeRow(
                 node = node,
-                selected = node.id == selectedId,
+                selected = node.containsSelection(selectedIds),
                 showChevron = node.hasChildren,
                 description = null,
                 onClick = {
@@ -161,7 +258,8 @@ private fun TaxonomyLevelList(
 @Composable
 private fun TaxonomyHitList(
     hits: List<AdminTaxonomyHit>,
-    selectedId: String?,
+    selectedIds: Set<String>,
+    leafOnly: Boolean,
     onSelect: (AdminTaxonomyNode) -> Unit,
 ) {
     LazyColumn(
@@ -172,10 +270,12 @@ private fun TaxonomyHitList(
         items(hits, key = { it.node.id }) { hit ->
             TaxonomyNodeRow(
                 node = hit.node,
-                selected = hit.node.id == selectedId,
-                showChevron = false,
+                selected = hit.node.containsSelection(selectedIds),
+                showChevron = leafOnly && hit.node.hasChildren,
                 description = hit.breadcrumb.ifEmpty { null },
-                onClick = { onSelect(hit.node) },
+                onClick = {
+                    if (!leafOnly || !hit.node.hasChildren) onSelect(hit.node)
+                },
             )
         }
     }

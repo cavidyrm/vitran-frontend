@@ -35,6 +35,7 @@ import com.vitran.shop.feature.location.presentation.CreateStoreLocationViewMode
 import com.vitran.shop.feature.seller.shop.presentation.CreateShopUiEffect
 import com.vitran.shop.feature.seller.shop.presentation.CreateShopViewModel
 import com.vitran.shop.feature.seller.shop.presentation.SlugCheckUiStatus
+import com.vitran.shop.feature.seller.shop.presentation.TitleCheckUiStatus
 import com.vitran.shop.feature.seller.shop.presentation.buildCreateShopCommand
 import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.sections.admin.AutosaveStatus
@@ -48,6 +49,9 @@ import com.vitran.shop.ui.sections.admin.CreateStoreStepOrder
 import com.vitran.shop.ui.sections.admin.CreateStoreStepper
 import com.vitran.shop.ui.sections.admin.CreateStoreSummaryCard
 import com.vitran.shop.ui.sections.admin.StoreSocialKind
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerUiState
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
+import com.vitran.shop.ui.sections.reference.toAdminTaxonomyNodes
 import com.vitran.shop.ui.sections.reference.toAdminSelectOptions
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -55,6 +59,7 @@ import com.vitran.shop.ui.theme.VitranTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.admin_field_city_required
 import vitranshop.shared.generated.resources.admin_last_saved_just_now
 import vitranshop.shared.generated.resources.admin_last_saved_minutes
 
@@ -72,6 +77,7 @@ fun CreateStoreScreen(
     modifier: Modifier = Modifier,
     locationViewModel: CreateStoreLocationViewModel = vitranKoinViewModel(),
     createShopViewModel: CreateShopViewModel = vitranKoinViewModel(),
+    taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
 ) {
     var state by remember { mutableStateOf(CreateStoreFormState()) }
     var step by remember { mutableStateOf(CreateStoreStep.Basics) }
@@ -82,12 +88,20 @@ fun CreateStoreScreen(
     var lastSavedLabel by remember { mutableStateOf<String?>(null) }
     val locationState by locationViewModel.uiState.collectAsStateWithLifecycle()
     val createState by createShopViewModel.uiState.collectAsStateWithLifecycle()
+    val taxonomyState by taxonomyViewModel.uiState.collectAsStateWithLifecycle()
+    val taxonomyRoots = when (val current = taxonomyState) {
+        is TaxonomyPickerUiState.Content -> current.roots.toAdminTaxonomyNodes()
+        else -> emptyList()
+    }
+    val taxonomyLoading = taxonomyState is TaxonomyPickerUiState.Loading
+    val taxonomyError = (taxonomyState as? TaxonomyPickerUiState.Error)?.message
     val cityOptions = when (val current = locationState) {
         is CreateStoreLocationUiState.Content -> current.cities.toAdminSelectOptions()
         else -> emptyList()
     }
     val citiesLoading = locationState is CreateStoreLocationUiState.Loading
     val citiesError = (locationState as? CreateStoreLocationUiState.Error)?.message
+    val cityRequired = stringResource(Res.string.admin_field_city_required)
 
     LaunchedEffect(state.slug) {
         createShopViewModel.onSlugInputChanged(state.slug)
@@ -160,7 +174,19 @@ fun CreateStoreScreen(
 
     fun publish() {
         if (!state.canPublish || createState.isSubmitting) return
-        val cityIdValue = state.cityId?.toLongOrNull() ?: return
+        if (
+            createState.slugCheck is SlugCheckUiStatus.Taken ||
+            createState.titleCheck is TitleCheckUiStatus.Taken
+        ) {
+            step = CreateStoreStep.Basics
+            return
+        }
+        val cityIdValue = state.cityId?.toLongOrNull()
+        if (cityIdValue == null) {
+            createShopViewModel.reportLocalFieldError("city_id", cityRequired)
+            step = CreateStoreStep.Contact
+            return
+        }
         val social = state.socialChannels.associate { it.kind to it.handle }
         val command =
             buildCreateShopCommand(
@@ -175,15 +201,19 @@ fun CreateStoreScreen(
                 telegram = social[StoreSocialKind.Telegram],
                 instagram = social[StoreSocialKind.Instagram],
                 website = social[StoreSocialKind.Website],
+                supportTimes = state.supportTimes,
+                categorySlugs = state.categorySlugs,
+                avatarUrl = state.avatarUrl,
             )
         createShopViewModel.submit(command)
     }
 
     val canPublish =
         state.canPublish &&
-            state.cityId != null &&
+            state.cityId?.toLongOrNull() != null &&
             !createState.isSubmitting &&
-            createState.slugCheck !is SlugCheckUiStatus.Taken
+            createState.slugCheck !is SlugCheckUiStatus.Taken &&
+            createState.titleCheck !is TitleCheckUiStatus.Taken
 
     Column(
         modifier = modifier
@@ -256,6 +286,12 @@ fun CreateStoreScreen(
                                 fieldErrors = createState.fieldErrors,
                                 generalError = createState.generalError?.message,
                                 onClearFieldError = createShopViewModel::clearFieldError,
+                                slugCheck = createState.slugCheck,
+                                titleCheck = createState.titleCheck,
+                                taxonomyRoots = taxonomyRoots,
+                                taxonomyLoading = taxonomyLoading,
+                                taxonomyError = taxonomyError,
+                                onTaxonomyRetry = taxonomyViewModel::retry,
                             )
                         }
                         Column(
@@ -313,6 +349,12 @@ fun CreateStoreScreen(
                             fieldErrors = createState.fieldErrors,
                             generalError = createState.generalError?.message,
                             onClearFieldError = createShopViewModel::clearFieldError,
+                            slugCheck = createState.slugCheck,
+                            titleCheck = createState.titleCheck,
+                            taxonomyRoots = taxonomyRoots,
+                            taxonomyLoading = taxonomyLoading,
+                            taxonomyError = taxonomyError,
+                            onTaxonomyRetry = taxonomyViewModel::retry,
                         )
                         CreateStoreSummaryCard(
                             state = state,

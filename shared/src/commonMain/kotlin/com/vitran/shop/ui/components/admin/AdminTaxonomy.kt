@@ -17,6 +17,11 @@ data class AdminTaxonomyHit(
     val breadcrumb: String,
 )
 
+fun AdminTaxonomyNode.containsSelection(selectedIds: Set<String>): Boolean {
+    if (id in selectedIds) return true
+    return children.any { it.containsSelection(selectedIds) }
+}
+
 fun List<AdminTaxonomyNode>.findNode(id: String): AdminTaxonomyNode? {
     for (node in this) {
         if (node.id == id) return node

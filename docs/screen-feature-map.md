@@ -28,6 +28,8 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | ReferralsScreen | `/account/referrals` | Referral | `GET /me/referral`, credits apply | Preview fixtures | `ReferralsViewModel` ✅ | Yes | Real API; share via ShareManager; no toman fake credits |
 | FollowingScreen | `/account/following` | Engagement (follows) | `GET /me/follows/shops` | Inline mock in section | — | Yes | Schema unresolved — mock kept; follow **mutations** wired on PDP/store |
 | AccountSettingsScreen | `/account/settings` | Account | Profile preferences (partial `/auth/profile`) | Local `remember` state | `AccountSettingsViewModel` | Yes | |
+| AccountStoresScreen | `/account/stores` | Seller Shops | `GET /seller/shops?per_page=20` | — | `SellerShopsViewModel` ✅ | — | Every role; row opens edit |
+| AccountStoreEditScreen | `/account/stores/{id}` | Seller Shops | `GET/PATCH /seller/shops/{id}` | — | `EditShopViewModel` ✅ | — | Pending after save |
 | AccountUsersScreen | `/account/users` | Admin Users | `GET /admin/users` | Preview fixtures only | `AdminUsersViewModel` ✅ | Yes | Real page-mode API; RBAC-gated entry |
 | AccountUserDetailScreen | `/account/users/{id}` | Admin Users | `GET/PATCH /admin/users/{id}` | Preview fixtures only | `AdminUserDetailViewModel` ✅ | Yes | Preserves Super Admin; current-user refresh |
 | AccountCitiesScreen | `/account/cities` | Admin Cities | public `GET /cities` + admin mutations | Preview fixtures only | `AdminCitiesViewModel` ✅ | Yes | Real city source |
@@ -78,9 +80,11 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 
 | Screen | Depends on |
 |--------|------------|
-| AccountScreen | `SessionRepository` + `AccountRepository`; seller/admin role gates |
+| AccountScreen | `SessionRepository` + `AccountRepository`; admin rows stay role-gated; «فروشگاه‌های من» is visible for every role |
 | CreateStoreScreen | Session update after shop create via `CreateShopUseCase` (not Auth ViewModel) |
-| Seller list / edit / details / API key | ViewModels in `:feature:seller` ready; Compose screens deferred |
+| Seller list | `AccountStoresScreen` via `SellerShopsViewModel` (`GET /seller/shops`) |
+| Seller edit | `AccountStoreEditScreen` via `EditShopViewModel` (`GET/PATCH /seller/shops/{id}`) |
+| Seller details / API key | ViewModels in `:feature:seller` ready; Compose screens deferred |
 | Seller analytics / boosts | `SellerAnalyticsViewModel`, `SellerBoostsViewModel`, `CreateBoostViewModel` ready; **no new Compose screens** (Phase 10) |
 | StorePlanScreen | Wired Phase 9 — shop from SellerShopRepository; SubscriptionRepository |
 | StorePlanUpgradeScreen | Wired Phase 9 — PlanRepository + PurchasePlan + VerifyPendingPayment |

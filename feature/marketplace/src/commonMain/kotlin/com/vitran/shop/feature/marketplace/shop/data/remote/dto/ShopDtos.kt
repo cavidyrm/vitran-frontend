@@ -2,8 +2,10 @@ package com.vitran.shop.feature.marketplace.shop.data.remote.dto
 
 import com.vitran.shop.core.network.pagination.CursorPageDto
 import com.vitran.shop.feature.marketplace.common.data.serializer.FlexibleCategorySlugListSerializer
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class ShopsDataDto(
@@ -54,8 +56,10 @@ data class PublicShopDetailsDto(
     @SerialName("share_url") val shareUrl: String,
     val active: Boolean,
     val confirmed: Boolean,
+    @OptIn(ExperimentalSerializationApi::class)
     @Serializable(with = FlexibleCategorySlugListSerializer::class)
     @SerialName("category_slugs")
+    @JsonNames("CategorySlugs")
     val categorySlugs: List<String> = emptyList(),
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String,

@@ -1,9 +1,11 @@
 package com.vitran.shop.feature.admin.moderation.data
 
 import com.vitran.shop.core.network.pagination.PageDto
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 internal data class AdminShopSummaryDto(
@@ -16,7 +18,10 @@ internal data class AdminShopSummaryDto(
     val type: String? = null,
     @SerialName("share_url") val shareUrl: String? = null,
     /** May be string slugs or numeric ids (Gap 1); keep as JsonElement. */
-    @SerialName("category_slugs") val categorySlugs: List<JsonElement> = emptyList(),
+    @OptIn(ExperimentalSerializationApi::class)
+    @SerialName("category_slugs")
+    @JsonNames("CategorySlugs")
+    val categorySlugs: List<JsonElement> = emptyList(),
     @SerialName("updated_at") val updatedAt: String? = null,
 )
 

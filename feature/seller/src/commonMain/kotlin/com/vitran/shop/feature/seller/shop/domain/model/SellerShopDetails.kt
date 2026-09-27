@@ -27,8 +27,10 @@ data class SellerShopDetails(
     val type: String? = null,
     val shareUrl: String? = null,
     val qrCodeUrl: String? = null,
-    /** Opaque numeric values from seller `category_slugs` transport (Postman). */
+    /** Opaque numeric leftovers from seller `category_slugs` when the value parses as a long. */
     val categoryNumericIds: List<Long> = emptyList(),
+    /** Taxonomy slugs from seller `category_slugs`, including non-numeric values. */
+    val categorySlugs: List<String> = emptyList(),
     val whatsapp: String? = null,
     val telegram: String? = null,
     val instagram: String? = null,

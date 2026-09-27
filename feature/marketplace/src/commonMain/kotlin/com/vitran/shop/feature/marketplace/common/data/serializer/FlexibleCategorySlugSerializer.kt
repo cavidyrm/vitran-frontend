@@ -7,9 +7,11 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.longOrNull
@@ -37,14 +39,24 @@ object FlexibleCategorySlugSerializer : KSerializer<String> {
     }
 
     fun decodeElement(element: JsonElement): String =
+        decodeElementOrNull(element) ?: error("Invalid category slug element")
+
+    /**
+     * String slug, legacy number, or an object with `slug` / `category_slug`.
+     * Objects are what seller shop payloads use when they embed the category.
+     */
+    fun decodeElementOrNull(element: JsonElement): String? =
         when (element) {
             is JsonPrimitive -> {
                 element.content.takeIf { it.isNotBlank() }
                     ?: element.longOrNull?.toString()
                     ?: element.intOrNull?.toString()
-                    ?: error("Invalid category slug element")
             }
-            else -> error("Expected primitive category slug, was $element")
+            is JsonObject -> sequenceOf("slug", "category_slug", "id")
+                .firstNotNullOfOrNull { key ->
+                    (element[key] as? JsonPrimitive)?.content?.takeIf { it.isNotBlank() }
+                }
+            else -> null
         }
 
     fun toDomain(value: String): CategorySlug = CategorySlug(value)
@@ -56,15 +68,16 @@ object FlexibleCategorySlugListSerializer : KSerializer<List<String>> {
 
     override fun deserialize(decoder: Decoder): List<String> {
         if (decoder !is JsonDecoder) error("FlexibleCategorySlugListSerializer requires JSON")
-        val array = decoder.decodeJsonElement()
-        if (array !is kotlinx.serialization.json.JsonArray) return emptyList()
-        return array.map { FlexibleCategorySlugSerializer.decodeElement(it) }
+        return when (val array = decoder.decodeJsonElement()) {
+            is JsonArray -> array.mapNotNull { FlexibleCategorySlugSerializer.decodeElementOrNull(it) }
+            else -> listOfNotNull(FlexibleCategorySlugSerializer.decodeElementOrNull(array))
+        }
     }
 
     override fun serialize(encoder: Encoder, value: List<String>) {
         if (encoder !is JsonEncoder) error("FlexibleCategorySlugListSerializer requires JSON")
         encoder.encodeJsonElement(
-            kotlinx.serialization.json.JsonArray(value.map { JsonPrimitive(it) }),
+            JsonArray(value.map { JsonPrimitive(it) }),
         )
     }
 }

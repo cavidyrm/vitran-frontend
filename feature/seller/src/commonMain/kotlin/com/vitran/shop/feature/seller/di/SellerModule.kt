@@ -136,6 +136,13 @@ val sellerModule = module {
 
     viewModel { CreateShopViewModel(get(), get()) }
     viewModel { SellerShopsViewModel(get()) }
+    viewModel { parameters ->
+        EditShopViewModel(
+            shopId = parameters.get(),
+            sellerShopRepository = get(),
+            updateShopUseCase = get(),
+        )
+    }
     viewModel { CreateProductViewModel(get(), get(), get(), get()) }
     viewModel { StorePlanViewModel(get(), get(), get()) }
     viewModel {

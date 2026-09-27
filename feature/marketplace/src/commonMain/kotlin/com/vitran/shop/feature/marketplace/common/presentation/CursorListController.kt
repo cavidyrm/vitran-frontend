@@ -76,7 +76,9 @@ class CursorListController<T, Id>(
             items = page.items,
             nextCursor = page.nextCursor,
             hasMore = page.hasMore,
+            isLoadingInitial = false,
             isRefreshing = false,
+            initialError = null,
             refreshError = null,
             paginationError = null,
         )

@@ -16,6 +16,7 @@ enum class AccountDest {
     Referrals,
     Following,
     Settings,
+    Stores,
     Users,
     Cities,
 }

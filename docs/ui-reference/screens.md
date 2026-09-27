@@ -21,6 +21,7 @@
 5h. City management (`/account/cities` — `AccountCitiesScreen`; header + add-city CTA, search filter, desktop table / compact cards). Child of Account; chrome stays. Visual: `docs/ui-reference/account/cities-list-desktop.png`
 5i. City detail (`/account/cities/{id}` — `AccountCityDetailScreen`; breadcrumb, id/name/slug form, mock save/reset/delete). Child of Account; chrome stays. Visual: `docs/ui-reference/account/cities-detail-desktop.png`
 5j. Add city (`/account/cities/new` — `AccountCityCreateScreen`; required name/slug, URL preview, create/cancel). Child of Account; chrome stays. Visual: `docs/ui-reference/account/cities-add-desktop.png`
+5k. My stores (`/account/stores` — `AccountStoresScreen`; owned shops from `GET /seller/shops`, visible for every role). Child of Account; chrome stays. Tap a shop to edit (`/account/stores/{id}` — `AccountStoreEditScreen`; `GET` + `PATCH /seller/shops/{id}`).
 6. Category landing (Women/Men/Beauty/...)
 7. Product list (filters + grid)
 8. Product detail (UI only; no checkout) — route `/products/{productId}/{slug}` ↔ shop.app PDP; `ProductDetailScreen`

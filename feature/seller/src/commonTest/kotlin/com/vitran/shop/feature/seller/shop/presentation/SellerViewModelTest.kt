@@ -31,6 +31,7 @@ import io.ktor.http.HttpStatusCode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -147,6 +148,55 @@ class SellerViewModelTest {
         } finally {
             Dispatchers.resetMain()
         }
+    }
+
+    @Test
+    fun createShopViewModel_rejectsBlankTypeAndInvalidCity() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val repo = ThrowingSellerShopRepository()
+            val vm =
+                CreateShopViewModel(
+                    CreateShopUseCase(repo, FakeSessionRepository(), FakeAccountRepository()),
+                    repo,
+                )
+            vm.submit(CreateShopCommand(title = "Shop", type = " ", cityId = CityId(0)))
+            advanceUntilIdle()
+            assertEquals("type", vm.uiState.value.fieldErrors["type"])
+            assertEquals("city_id", vm.uiState.value.fieldErrors["city_id"])
+            assertTrue(vm.uiState.value.createdShop == null)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun buildCreateShopCommand_mapsSupportTimesCategoriesAndAvatar() {
+        val command =
+            buildCreateShopCommand(
+                title = "  فروشگاه  ",
+                slug = "shop",
+                omitSlug = false,
+                description = "about",
+                address = "addr",
+                phoneNumber = "021",
+                cityId = CityId(4),
+                whatsapp = "  ",
+                telegram = "@myshop",
+                instagram = null,
+                website = "https://example.com",
+                supportTimes = " 9-18 ",
+                categorySlugs = listOf(" aa-1-2-3-4 ", ""),
+                avatarUrl = " https://cdn.example/logo.png ",
+            )
+        assertEquals("فروشگاه", command.title)
+        assertEquals("9-18", command.supportTimes)
+        assertEquals("https://cdn.example/logo.png", command.avatarUrl)
+        assertEquals(listOf("aa-1-2-3-4"), command.categorySlugs)
+        assertEquals("retailer", command.type)
+        assertNull(command.whatsapp)
+        assertEquals("@myshop", command.telegram)
     }
 
     @Test

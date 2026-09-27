@@ -46,7 +46,7 @@ internal fun CreateShopCommand.toRequestDto(): CreateShopRequestDto =
         supportTimes = supportTimes?.takeIf { it.isNotBlank() },
         type = type,
         cityId = cityId.value,
-        categorySlugs = categoryNumericIds,
+        categorySlugs = categorySlugs,
         whatsapp = whatsapp?.takeIf { it.isNotBlank() },
         telegram = telegram?.takeIf { it.isNotBlank() },
         instagram = instagram?.takeIf { it.isNotBlank() },
@@ -64,7 +64,7 @@ internal fun UpdateShopCommand.toRequestDto(): UpdateShopRequestDto =
         supportTimes = supportTimes,
         type = type,
         cityId = cityId?.value,
-        categorySlugs = categoryNumericIds,
+        categorySlugs = categorySlugs,
         whatsapp = whatsapp,
         telegram = telegram,
         instagram = instagram,
@@ -98,7 +98,8 @@ internal fun SellerShopCreateResponseDto.toDomain(): SellerShopDetails =
         type = type,
         shareUrl = shareUrl,
         qrCodeUrl = qrCodeUrl,
-        categoryNumericIds = categorySlugs,
+        categorySlugs = categorySlugs,
+        categoryNumericIds = categorySlugs.toNumericCategoryIds(),
         createdAt = createdAt?.let { Instant.parse(it) },
         updatedAt = updatedAt?.let { Instant.parse(it) },
     )
@@ -130,7 +131,8 @@ internal fun SellerShopDetailsDto.toDomain(): SellerShopDetails =
         type = type,
         shareUrl = shareUrl,
         qrCodeUrl = qrCodeUrl,
-        categoryNumericIds = categorySlugs,
+        categorySlugs = categorySlugs,
+        categoryNumericIds = categorySlugs.toNumericCategoryIds(),
         whatsapp = whatsapp,
         telegram = telegram,
         instagram = instagram,
@@ -154,3 +156,6 @@ internal fun SellerShopDetails.toSummary(): SellerShopSummary =
         confirmed = confirmed,
         publicationState = publicationState,
     )
+
+private fun List<String>.toNumericCategoryIds(): List<Long> =
+    mapNotNull { it.toLongOrNull() }

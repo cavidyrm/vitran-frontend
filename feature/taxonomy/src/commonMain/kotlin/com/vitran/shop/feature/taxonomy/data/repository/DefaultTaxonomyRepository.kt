@@ -44,7 +44,7 @@ internal class DefaultTaxonomyRepository(
         return when (val result = taxonomyApi.getCategoryTree()) {
             is AppResult.Success -> {
                 val tree = result.value.categories.map { it.toDomain() }
-                persistTree(tree, await = !forceRefresh)
+                persistTree(tree, await = !forceRefresh && !taxonomyRoomCacheMayHang)
                 AppResult.Success(tree)
             }
             is AppResult.Failure -> {
@@ -61,16 +61,14 @@ internal class DefaultTaxonomyRepository(
         forceRefresh: Boolean,
     ): AppResult<CategoryDetails> {
         if (!forceRefresh) {
-            categoryDetailDao.getBySlug(slug.value)?.let { entity ->
-                return AppResult.Success(entity.toDomain(json))
-            }
+            cachedDetailsOrNull(slug)?.let { return AppResult.Success(it) }
         }
 
         return when (val result = taxonomyApi.getCategory(slug)) {
             is AppResult.Success -> {
                 val dto = result.value.category
                 val details = dto.toDomain()
-                persistDetails(slug, dto, await = !forceRefresh)
+                persistDetails(slug, dto, await = !forceRefresh && !taxonomyRoomCacheMayHang)
                 AppResult.Success(details)
             }
             is AppResult.Failure -> {
@@ -91,11 +89,15 @@ internal class DefaultTaxonomyRepository(
         }
     }
 
-    private suspend fun cachedTreeOrNull(): List<CategoryNode>? =
-        ignoreCacheFailure { categoryDao.getAll().takeIf { it.isNotEmpty() }?.toTree() }
+    private suspend fun cachedTreeOrNull(): List<CategoryNode>? {
+        if (taxonomyRoomCacheMayHang) return null
+        return ignoreCacheFailure { categoryDao.getAll().takeIf { it.isNotEmpty() }?.toTree() }
+    }
 
-    private suspend fun cachedDetailsOrNull(slug: CategorySlug): CategoryDetails? =
-        ignoreCacheFailure { categoryDetailDao.getBySlug(slug.value)?.toDomain(json) }
+    private suspend fun cachedDetailsOrNull(slug: CategorySlug): CategoryDetails? {
+        if (taxonomyRoomCacheMayHang) return null
+        return ignoreCacheFailure { categoryDetailDao.getBySlug(slug.value)?.toDomain(json) }
+    }
 
     private suspend fun persistTree(tree: List<CategoryNode>, await: Boolean) {
         val rows = flattenCategoryTree(

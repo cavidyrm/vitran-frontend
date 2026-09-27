@@ -152,6 +152,8 @@ class CreateShopViewModel(
         if (_uiState.value.isSubmitting) return
         val localErrors = mutableMapOf<String, String>()
         if (command.title.isBlank()) localErrors["title"] = "title"
+        if (command.type.isBlank()) localErrors["type"] = "type"
+        if (command.cityId.value <= 0L) localErrors["city_id"] = "city_id"
         if (localErrors.isNotEmpty()) {
             _uiState.update { it.copy(fieldErrors = localErrors) }
             return
@@ -211,6 +213,11 @@ class CreateShopViewModel(
         _uiState.update { it.copy(createdShop = null) }
     }
 
+    fun reportLocalFieldError(reason: String, message: String) {
+        val key = reason.lowercase()
+        _uiState.update { it.copy(fieldErrors = it.fieldErrors + (key to message)) }
+    }
+
     fun clearFieldError(reason: String) {
         val key = reason.lowercase()
         _uiState.update { state ->
@@ -233,6 +240,9 @@ fun buildCreateShopCommand(
     telegram: String?,
     instagram: String?,
     website: String?,
+    supportTimes: String? = null,
+    categorySlugs: List<String> = emptyList(),
+    avatarUrl: String? = null,
     type: String = "retailer",
 ): CreateShopCommand =
     CreateShopCommand(
@@ -243,13 +253,14 @@ fun buildCreateShopCommand(
             } else {
                 ShopSlug(slug.trim())
             },
+        avatarUrl = avatarUrl?.trim()?.takeIf { it.isNotBlank() },
         description = description.takeIf { it.isNotBlank() },
         address = address.takeIf { it.isNotBlank() },
         phoneNumber = phoneNumber.takeIf { it.isNotBlank() },
-        supportTimes = null,
+        supportTimes = supportTimes?.trim()?.takeIf { it.isNotBlank() },
         type = type.ifBlank { "retailer" },
         cityId = cityId,
-        categoryNumericIds = emptyList(),
+        categorySlugs = categorySlugs.map { it.trim() }.filter { it.isNotEmpty() },
         whatsapp = whatsapp?.takeIf { it.isNotBlank() },
         telegram = telegram?.takeIf { it.isNotBlank() },
         instagram = instagram?.takeIf { it.isNotBlank() },
@@ -265,12 +276,14 @@ internal val CreateShopFormReasons = setOf(
     "description",
     "address",
     "phone_number",
+    "support_times",
     "city_id",
     "category_slugs",
     "whatsapp",
     "telegram",
     "instagram",
     "website",
+    "avatar_url",
 )
 
 internal val CreateShopFormAliases = mapOf(

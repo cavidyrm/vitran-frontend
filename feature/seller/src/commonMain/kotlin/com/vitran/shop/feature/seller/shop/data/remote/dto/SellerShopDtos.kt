@@ -1,10 +1,12 @@
 package com.vitran.shop.feature.seller.shop.data.remote.dto
 
 import com.vitran.shop.core.network.pagination.CursorPageDto
+import com.vitran.shop.feature.marketplace.common.data.serializer.FlexibleCategorySlugListSerializer
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class SlugCheckDataDto(
@@ -49,7 +51,9 @@ data class CreateShopRequestDto(
     val supportTimes: String? = null,
     val type: String,
     @SerialName("city_id") val cityId: Long,
-    @SerialName("category_slugs") val categorySlugs: List<Long> = emptyList(),
+    @Serializable(with = FlexibleCategorySlugListSerializer::class)
+    @SerialName("category_slugs")
+    val categorySlugs: List<String> = emptyList(),
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val whatsapp: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
@@ -86,8 +90,9 @@ data class UpdateShopRequestDto(
     @SerialName("city_id")
     val cityId: Long? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @Serializable(with = FlexibleCategorySlugListSerializer::class)
     @SerialName("category_slugs")
-    val categorySlugs: List<Long>? = null,
+    val categorySlugs: List<String>? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val whatsapp: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
@@ -124,7 +129,11 @@ data class SellerShopCreateResponseDto(
     @SerialName("qr_code_url") val qrCodeUrl: String? = null,
     val active: Boolean,
     val confirmed: Boolean,
-    @SerialName("category_slugs") val categorySlugs: List<Long> = emptyList(),
+    @OptIn(ExperimentalSerializationApi::class)
+    @Serializable(with = FlexibleCategorySlugListSerializer::class)
+    @SerialName("category_slugs")
+    @JsonNames("CategorySlugs")
+    val categorySlugs: List<String> = emptyList(),
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
 )
@@ -168,7 +177,11 @@ data class SellerShopDetailsDto(
     val type: String? = null,
     @SerialName("share_url") val shareUrl: String? = null,
     @SerialName("qr_code_url") val qrCodeUrl: String? = null,
-    @SerialName("category_slugs") val categorySlugs: List<Long> = emptyList(),
+    @OptIn(ExperimentalSerializationApi::class)
+    @Serializable(with = FlexibleCategorySlugListSerializer::class)
+    @SerialName("category_slugs")
+    @JsonNames("CategorySlugs")
+    val categorySlugs: List<String> = emptyList(),
     val whatsapp: String? = null,
     val telegram: String? = null,
     val instagram: String? = null,

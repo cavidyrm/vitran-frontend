@@ -39,6 +39,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vitran.shop.feature.seller.shop.presentation.SlugCheckUiStatus
+import com.vitran.shop.feature.seller.shop.presentation.TitleCheckUiStatus
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.components.admin.AdminEmptyPromptCard
 import com.vitran.shop.ui.components.admin.AdminFormCard
@@ -46,7 +48,8 @@ import com.vitran.shop.ui.components.admin.AdminMediaDropzone
 import com.vitran.shop.ui.components.admin.AdminMultilineField
 import com.vitran.shop.ui.components.admin.AdminSelectField
 import com.vitran.shop.ui.components.admin.AdminSelectOption
-import com.vitran.shop.ui.components.admin.AdminSearchableSelect
+import com.vitran.shop.ui.components.admin.AdminTaxonomyMultiPicker
+import com.vitran.shop.ui.components.admin.AdminTaxonomyNode
 import com.vitran.shop.ui.components.admin.AdminTextField
 import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.sections.reference.ReferenceDataError
@@ -75,9 +78,12 @@ import vitranshop.shared.generated.resources.admin_create_store_publish
 import vitranshop.shared.generated.resources.admin_field_about
 import vitranshop.shared.generated.resources.admin_field_about_placeholder
 import vitranshop.shared.generated.resources.admin_field_address
+import vitranshop.shared.generated.resources.admin_field_avatar_url
+import vitranshop.shared.generated.resources.admin_field_avatar_url_placeholder
+import vitranshop.shared.generated.resources.admin_field_category_helper
+import vitranshop.shared.generated.resources.admin_field_category_placeholder
 import vitranshop.shared.generated.resources.admin_field_category_prompt
 import vitranshop.shared.generated.resources.admin_field_city
-import vitranshop.shared.generated.resources.admin_field_city_helper
 import vitranshop.shared.generated.resources.admin_field_city_placeholder
 import vitranshop.shared.generated.resources.admin_field_cover
 import vitranshop.shared.generated.resources.admin_field_email
@@ -90,14 +96,14 @@ import vitranshop.shared.generated.resources.admin_field_owner_name
 import vitranshop.shared.generated.resources.admin_field_phone
 import vitranshop.shared.generated.resources.admin_field_phone_placeholder
 import vitranshop.shared.generated.resources.admin_field_policies
-import vitranshop.shared.generated.resources.admin_field_province
-import vitranshop.shared.generated.resources.admin_field_province_placeholder
 import vitranshop.shared.generated.resources.admin_field_returns
 import vitranshop.shared.generated.resources.admin_field_shipping
 import vitranshop.shared.generated.resources.admin_field_slogan
 import vitranshop.shared.generated.resources.admin_field_slogan_placeholder
 import vitranshop.shared.generated.resources.admin_field_store_name
 import vitranshop.shared.generated.resources.admin_field_store_name_placeholder
+import vitranshop.shared.generated.resources.admin_field_support_times
+import vitranshop.shared.generated.resources.admin_field_support_times_placeholder
 import vitranshop.shared.generated.resources.admin_field_telegram
 import vitranshop.shared.generated.resources.admin_field_website
 import vitranshop.shared.generated.resources.admin_field_whatsapp
@@ -120,10 +126,9 @@ import vitranshop.shared.generated.resources.admin_empty_products_body
 import vitranshop.shared.generated.resources.admin_empty_products_title
 import vitranshop.shared.generated.resources.admin_preview_store_fallback
 import vitranshop.shared.generated.resources.admin_preview_visit
-import vitranshop.shared.generated.resources.admin_publish_check_brand
-import vitranshop.shared.generated.resources.admin_publish_check_contact
-import vitranshop.shared.generated.resources.admin_publish_check_info
-import vitranshop.shared.generated.resources.admin_publish_check_policies
+import vitranshop.shared.generated.resources.admin_publish_check_city
+import vitranshop.shared.generated.resources.admin_publish_check_name
+import vitranshop.shared.generated.resources.admin_publish_check_slug
 import vitranshop.shared.generated.resources.admin_publish_done
 import vitranshop.shared.generated.resources.admin_publish_not_ready_title
 import vitranshop.shared.generated.resources.admin_publish_ready_title
@@ -146,8 +151,13 @@ import vitranshop.shared.generated.resources.admin_theme_include_cards
 import vitranshop.shared.generated.resources.admin_theme_include_primary
 import vitranshop.shared.generated.resources.admin_theme_includes
 import vitranshop.shared.generated.resources.admin_theme_presets
+import vitranshop.shared.generated.resources.admin_title_available
+import vitranshop.shared.generated.resources.admin_title_checking
+import vitranshop.shared.generated.resources.admin_title_taken
 import vitranshop.shared.generated.resources.admin_url_available
+import vitranshop.shared.generated.resources.admin_url_checking
 import vitranshop.shared.generated.resources.admin_url_copied
+import vitranshop.shared.generated.resources.admin_url_taken
 import vitranshop.shared.generated.resources.admin_url_copy
 import vitranshop.shared.generated.resources.admin_url_label
 import vitranshop.shared.generated.resources.admin_url_prefix
@@ -177,6 +187,12 @@ fun CreateStoreStepBody(
     fieldErrors: Map<String, String> = emptyMap(),
     generalError: String? = null,
     onClearFieldError: (String) -> Unit = {},
+    slugCheck: SlugCheckUiStatus = SlugCheckUiStatus.Idle,
+    titleCheck: TitleCheckUiStatus = TitleCheckUiStatus.Idle,
+    taxonomyRoots: List<AdminTaxonomyNode> = emptyList(),
+    taxonomyLoading: Boolean = false,
+    taxonomyError: String? = null,
+    onTaxonomyRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -196,6 +212,12 @@ fun CreateStoreStepBody(
                 onStateChange = onStateChange,
                 fieldErrors = fieldErrors,
                 onClearFieldError = onClearFieldError,
+                slugCheck = slugCheck,
+                titleCheck = titleCheck,
+                taxonomyRoots = taxonomyRoots,
+                taxonomyLoading = taxonomyLoading,
+                taxonomyError = taxonomyError,
+                onTaxonomyRetry = onTaxonomyRetry,
             )
             CreateStoreStep.Brand -> CreateStoreBrandStep(
                 state = state,
@@ -224,13 +246,18 @@ fun CreateStoreStepBody(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CreateStoreBasicsStep(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
     fieldErrors: Map<String, String> = emptyMap(),
     onClearFieldError: (String) -> Unit = {},
+    slugCheck: SlugCheckUiStatus = SlugCheckUiStatus.Idle,
+    titleCheck: TitleCheckUiStatus = TitleCheckUiStatus.Idle,
+    taxonomyRoots: List<AdminTaxonomyNode> = emptyList(),
+    taxonomyLoading: Boolean = false,
+    taxonomyError: String? = null,
+    onTaxonomyRetry: () -> Unit = {},
 ) {
     AdminFormCard(
         title = stringResource(Res.string.admin_card_identity),
@@ -248,6 +275,7 @@ private fun CreateStoreBasicsStep(
             required = true,
             error = fieldErrors["title"],
         )
+        TitleAvailabilityLine(title = state.storeName, status = titleCheck)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md),
@@ -271,53 +299,24 @@ private fun CreateStoreBasicsStep(
             onValueChange = { onStateChange(state.copy(slogan = it, dirty = true)) },
             placeholder = stringResource(Res.string.admin_field_slogan_placeholder),
         )
-        Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
-            Text(
-                text = stringResource(Res.string.admin_field_category_prompt),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium,
-                fontSize = 13.sp,
+        when {
+            taxonomyLoading -> ReferenceDataLoading(message = "در حال بارگذاری دسته‌ها…")
+            taxonomyError != null -> ReferenceDataError(
+                message = taxonomyError,
+                onRetry = onTaxonomyRetry,
             )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
-                verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
-            ) {
-                CreateStoreMocks.categories.forEach { category ->
-                    val selected = state.typeId == category.id
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(percent = 50))
-                            .background(
-                                if (selected) state.theme.primary.copy(alpha = 0.12f)
-                                else AdminTokens.DropdownHover,
-                            )
-                            .border(
-                                width = if (selected) 1.5.dp else 1.dp,
-                                color = if (selected) state.theme.primary else AdminTokens.FieldBorder,
-                                shape = RoundedCornerShape(percent = 50),
-                            )
-                            .clickable(role = Role.Button) {
-                                onClearFieldError("category_slugs")
-                                onStateChange(state.withCategory(category.id))
-                            }
-                            .padding(horizontal = VitranSpacing.md, vertical = VitranSpacing.sm),
-                    ) {
-                        Text(
-                            text = "${category.emoji}  ${category.label}",
-                            color = if (selected) state.theme.primary else MaterialTheme.colorScheme.onSurface,
-                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                            fontSize = 13.sp,
-                        )
-                    }
-                }
-            }
-            fieldErrors["category_slugs"]?.let { message ->
-                Text(
-                    text = message,
-                    color = AdminTokens.Destructive,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                )
-            }
+            else -> AdminTaxonomyMultiPicker(
+                label = stringResource(Res.string.admin_field_category_prompt),
+                selectedIds = state.categorySlugs,
+                roots = taxonomyRoots,
+                onToggle = { node ->
+                    onClearFieldError("category_slugs")
+                    onStateChange(state.toggleCategory(node.id))
+                },
+                placeholder = stringResource(Res.string.admin_field_category_placeholder),
+                helper = stringResource(Res.string.admin_field_category_helper),
+                error = fieldErrors["category_slugs"],
+            )
         }
     }
     AdminFormCard(
@@ -330,6 +329,7 @@ private fun CreateStoreBasicsStep(
             onStateChange = onStateChange,
             slugError = fieldErrors["slug"],
             onClearSlugError = { onClearFieldError("slug") },
+            slugCheck = slugCheck,
         )
     }
 }
@@ -340,6 +340,7 @@ private fun CreateStoreUrlBuilder(
     onStateChange: (CreateStoreFormState) -> Unit,
     slugError: String? = null,
     onClearSlugError: () -> Unit = {},
+    slugCheck: SlugCheckUiStatus = SlugCheckUiStatus.Idle,
 ) {
     var copied by remember { mutableStateOf(false) }
     AdminTextField(
@@ -366,14 +367,57 @@ private fun CreateStoreUrlBuilder(
             )
         },
     )
-    if (state.slug.isNotBlank()) {
-        Text(
-            text = stringResource(Res.string.admin_url_available),
-            color = AdminTokens.Success,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-        )
+    SlugAvailabilityLine(slug = state.slug, status = slugCheck)
+}
+
+@Composable
+private fun TitleAvailabilityLine(
+    title: String,
+    status: TitleCheckUiStatus,
+) {
+    val trimmed = title.trim()
+    val (text, color) = when (status) {
+        TitleCheckUiStatus.Idle, is TitleCheckUiStatus.Error -> return
+        TitleCheckUiStatus.Checking ->
+            stringResource(Res.string.admin_title_checking) to AdminTokens.Helper
+        is TitleCheckUiStatus.Available ->
+            if (status.title != trimmed) return
+            else stringResource(Res.string.admin_title_available) to AdminTokens.Success
+        is TitleCheckUiStatus.Taken ->
+            if (status.title != trimmed) return
+            else stringResource(Res.string.admin_title_taken) to AdminTokens.Destructive
     }
+    Text(
+        text = text,
+        color = color,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Medium,
+    )
+}
+
+@Composable
+private fun SlugAvailabilityLine(
+    slug: String,
+    status: SlugCheckUiStatus,
+) {
+    val trimmed = slug.trim()
+    val (text, color) = when (status) {
+        SlugCheckUiStatus.Idle, is SlugCheckUiStatus.Error -> return
+        SlugCheckUiStatus.Checking ->
+            stringResource(Res.string.admin_url_checking) to AdminTokens.Helper
+        is SlugCheckUiStatus.Available ->
+            if (status.slug.value != trimmed) return
+            else stringResource(Res.string.admin_url_available) to AdminTokens.Success
+        is SlugCheckUiStatus.Taken ->
+            if (status.slug.value != trimmed) return
+            else stringResource(Res.string.admin_url_taken) to AdminTokens.Destructive
+    }
+    Text(
+        text = text,
+        color = color,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Medium,
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -463,11 +507,21 @@ private fun CreateStoreBrandStep(
         }
         AdminMediaDropzone(
             label = stringResource(Res.string.admin_field_icon),
-            imageUrl = state.iconUrl,
-            onPick = { onStateChange(state.copy(iconUrl = CreateStoreMocks.MockIconUrl, dirty = true)) },
-            onRemove = { onStateChange(state.copy(iconUrl = null, dirty = true)) },
+            imageUrl = state.avatarUrl.takeIf { it.isNotBlank() },
+            onPick = {},
+            onRemove = { onStateChange(state.copy(avatarUrl = "", dirty = true)) },
             height = AdminTokens.LogoDropzoneSize,
             circular = true,
+        )
+        AdminTextField(
+            label = stringResource(Res.string.admin_field_avatar_url),
+            value = state.avatarUrl,
+            onValueChange = {
+                onClearFieldError("avatar_url")
+                onStateChange(state.copy(avatarUrl = it, dirty = true))
+            },
+            placeholder = stringResource(Res.string.admin_field_avatar_url_placeholder),
+            error = fieldErrors["avatar_url"],
         )
     }
     AdminFormCard(
@@ -755,6 +809,16 @@ private fun CreateStoreContactStep(
             )
         }
         AdminTextField(
+            label = stringResource(Res.string.admin_field_support_times),
+            value = state.supportTimes,
+            onValueChange = {
+                onClearFieldError("support_times")
+                onStateChange(state.copy(supportTimes = it, dirty = true))
+            },
+            placeholder = stringResource(Res.string.admin_field_support_times_placeholder),
+            error = fieldErrors["support_times"],
+        )
+        AdminTextField(
             label = stringResource(Res.string.admin_field_address),
             value = state.address,
             onValueChange = {
@@ -764,43 +828,21 @@ private fun CreateStoreContactStep(
             singleLine = false,
             error = fieldErrors["address"],
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md),
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                AdminSearchableSelect(
-                    label = stringResource(Res.string.admin_field_province),
-                    valueId = state.provinceId,
-                    options = CreateStoreMocks.provinces,
-                    onSelect = { onStateChange(state.withProvince(it.id)) },
-                    placeholder = stringResource(Res.string.admin_field_province_placeholder),
-                    showItemChevron = false,
-                )
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                when {
-                    citiesLoading -> ReferenceDataLoading(message = "در حال بارگذاری شهرها…")
-                    citiesError != null -> ReferenceDataError(message = citiesError, onRetry = onCitiesRetry)
-                    else -> AdminSelectField(
-                        label = stringResource(Res.string.admin_field_city),
-                        valueId = state.cityId,
-                        options = cityOptions,
-                        onSelect = {
-                            onClearFieldError("city_id")
-                            onStateChange(state.copy(cityId = it.id, dirty = true))
-                        },
-                        placeholder = stringResource(Res.string.admin_field_city_placeholder),
-                        helper = if (state.provinceId == null) {
-                            stringResource(Res.string.admin_field_city_helper)
-                        } else {
-                            null
-                        },
-                        error = fieldErrors["city_id"],
-                        enabled = state.provinceId != null && cityOptions.isNotEmpty(),
-                    )
-                }
-            }
+        when {
+            citiesLoading -> ReferenceDataLoading(message = "در حال بارگذاری شهرها…")
+            citiesError != null -> ReferenceDataError(message = citiesError, onRetry = onCitiesRetry)
+            else -> AdminSelectField(
+                label = stringResource(Res.string.admin_field_city),
+                valueId = state.cityId,
+                options = cityOptions,
+                onSelect = {
+                    onClearFieldError("city_id")
+                    onStateChange(state.copy(cityId = it.id, dirty = true))
+                },
+                placeholder = stringResource(Res.string.admin_field_city_placeholder),
+                error = fieldErrors["city_id"],
+                enabled = cityOptions.isNotEmpty(),
+            )
         }
     }
     AdminFormCard(
@@ -1226,10 +1268,12 @@ private fun CreateStorePublishStep(
                 color = AdminTokens.Helper,
                 fontSize = 12.sp,
             )
-            PublishCheck(stringResource(Res.string.admin_publish_check_info), state.basicsComplete())
-            PublishCheck(stringResource(Res.string.admin_publish_check_brand), state.brandComplete())
-            PublishCheck(stringResource(Res.string.admin_publish_check_contact), state.contactComplete())
-            PublishCheck(stringResource(Res.string.admin_publish_check_policies), state.policiesComplete())
+            PublishCheck(stringResource(Res.string.admin_publish_check_name), state.storeName.isNotBlank())
+            PublishCheck(stringResource(Res.string.admin_publish_check_slug), state.slug.isNotBlank())
+            PublishCheck(
+                stringResource(Res.string.admin_publish_check_city),
+                state.cityId?.toLongOrNull() != null,
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),

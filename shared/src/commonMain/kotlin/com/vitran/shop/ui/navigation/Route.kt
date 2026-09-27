@@ -58,6 +58,22 @@ sealed interface Route : NavKey {
         val userId: String,
     ) : Route
 
+    /**
+     * Owned shops — path `/account/stores`.
+     * Child of Account; visible for every role. Shopper chrome stays.
+     */
+    @Serializable
+    data object AccountStores : Route
+
+    /**
+     * Edit an owned shop — path `/account/stores/{shopId}`.
+     * Child of Account; loads seller GET and saves with PATCH.
+     */
+    @Serializable
+    data class AccountStoreEdit(
+        val shopId: String,
+    ) : Route
+
     /** City management list — path `/account/cities`. Child of Account. */
     @Serializable
     data object AccountCities : Route
@@ -247,6 +263,8 @@ fun Route.isTopLevel(): Boolean =
         Route.Referrals,
         Route.Following,
         Route.AccountSettings,
+        Route.AccountStores,
+        is Route.AccountStoreEdit,
         Route.AccountUsers,
         is Route.AccountUserDetail,
         Route.AccountCities,
@@ -270,6 +288,8 @@ fun Route.isAccountChild(): Boolean =
         this == Route.Referrals ||
         this == Route.Following ||
         this == Route.AccountSettings ||
+        this == Route.AccountStores ||
+        this is Route.AccountStoreEdit ||
         this == Route.AccountUsers ||
         this is Route.AccountUserDetail ||
         this == Route.AccountCities ||

@@ -91,9 +91,11 @@ data class CreateStoreFormState(
     val typeId: String? = null,
     val email: String = "",
     val phone: String = "",
+    val supportTimes: String = "",
     val address: String = "",
-    val provinceId: String? = null,
     val cityId: String? = null,
+    val categorySlugs: List<String> = emptyList(),
+    val avatarUrl: String = "",
     val policies: String = "",
     val shipping: String = "",
     val returns: String = "",
@@ -154,9 +156,14 @@ data class CreateStoreFormState(
             dirty = true,
         )
 
-    fun withProvince(id: String): CreateStoreFormState {
-        val cityStillValid = CreateStoreMocks.cities.any { it.id == cityId && it.provinceId == id }
-        return copy(provinceId = id, cityId = if (cityStillValid) cityId else null, dirty = true)
+    fun toggleCategory(slug: String): CreateStoreFormState {
+        val next =
+            if (slug in categorySlugs) {
+                categorySlugs.filterNot { it == slug }
+            } else {
+                categorySlugs + slug
+            }
+        return copy(categorySlugs = next, dirty = true)
     }
 
     fun withCategory(id: String): CreateStoreFormState {
@@ -174,7 +181,7 @@ data class CreateStoreFormState(
     fun markedDirty(): CreateStoreFormState = copy(dirty = true)
 
     fun basicsComplete(): Boolean =
-        storeName.isNotBlank() && typeId != null && slug.isNotBlank()
+        storeName.isNotBlank() && slug.isNotBlank()
 
     fun brandComplete(): Boolean =
         coverUrl != null || iconUrl != null || about.isNotBlank()
@@ -198,11 +205,8 @@ data class CreateStoreFormState(
     fun completionFraction(): Float {
         val checks = listOf(
             storeName.isNotBlank(),
-            typeId != null,
             slug.isNotBlank(),
-            coverUrl != null || iconUrl != null,
-            email.isNotBlank() || phone.isNotBlank() || socialChannels.any { it.handle.isNotBlank() },
-            policies.isNotBlank() || shipping.isNotBlank() || returns.isNotBlank(),
+            cityId?.toLongOrNull() != null,
         )
         return checks.count { it } / checks.size.toFloat()
     }

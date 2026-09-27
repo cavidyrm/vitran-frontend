@@ -27,6 +27,7 @@ import vitranshop.shared.generated.resources.account_nav_hub
 import vitranshop.shared.generated.resources.account_nav_referrals
 import vitranshop.shared.generated.resources.account_nav_saved
 import vitranshop.shared.generated.resources.account_nav_settings
+import vitranshop.shared.generated.resources.account_seller_stores
 import vitranshop.shared.generated.resources.account_nav_users
 
 @Composable
@@ -71,6 +72,11 @@ internal fun AccountSubNav(
             label = stringResource(Res.string.account_nav_settings),
             selected = dest == AccountDest.Settings,
             onClick = { onDestClick(AccountDest.Settings) },
+        )
+        AccountSubNavItem(
+            label = stringResource(Res.string.account_seller_stores),
+            selected = dest == AccountDest.Stores,
+            onClick = { onDestClick(AccountDest.Stores) },
         )
         if (canAccessAdmin) {
             AccountSubNavItem(

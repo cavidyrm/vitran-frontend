@@ -13,6 +13,7 @@ import com.vitran.shop.ui.sections.account.AccountHubAdminPlansRow
 import com.vitran.shop.ui.sections.account.AccountHubAdminRow
 import com.vitran.shop.ui.sections.account.AccountHubCitiesRow
 import com.vitran.shop.ui.sections.account.AccountHubHeader
+import com.vitran.shop.ui.sections.account.AccountHubStoresRow
 import com.vitran.shop.ui.sections.account.AccountHubUsersRow
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.AccountRecentlyViewedSection
@@ -41,6 +42,7 @@ fun AccountScreen(
     onOpenFollowing: () -> Unit = {},
     onOpenReferrals: () -> Unit = {},
     onCreateStore: () -> Unit = {},
+    onOpenStores: () -> Unit = {},
     onOpenStorePlan: () -> Unit = {},
     onOpenAdminPlans: () -> Unit = {},
     onOpenAdminShops: () -> Unit = {},
@@ -93,6 +95,7 @@ fun AccountScreen(
             onSavedClick = onOpenSaved,
             onFollowingClick = onOpenFollowing,
         )
+        AccountHubStoresRow(onClick = onOpenStores)
         AccountSellerSection(onCreateStore = onCreateStore)
         if (canAccessAdmin && !LocalDesktopLayout.current) {
             AccountHubUsersRow(onClick = { onDestClick(AccountDest.Users) })

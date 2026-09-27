@@ -29,11 +29,12 @@ data class EditShopFormState(
     val supportTimes: String = "",
     val type: String = "retailer",
     val cityId: CityId? = null,
-    val categoryNumericIds: List<Long> = emptyList(),
     val whatsapp: String = "",
     val telegram: String = "",
     val instagram: String = "",
     val website: String = "",
+    val avatarUrl: String = "",
+    val categorySlugs: List<String> = emptyList(),
 )
 
 data class EditShopUiState(
@@ -61,6 +62,7 @@ class EditShopViewModel(
     private var slugCheckJob: Job? = null
     private var submitJob: Job? = null
     private var originalSlug: String? = null
+    private var originalCategorySlugs: List<String> = emptyList()
 
     init {
         load()
@@ -72,12 +74,14 @@ class EditShopViewModel(
             when (val result = sellerShopRepository.getMyShop(shopId)) {
                 is AppResult.Success -> {
                     val shop = result.value
+                    val form = shop.toEditForm()
                     originalSlug = shop.slug.value
+                    originalCategorySlugs = form.categorySlugs
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             loadedShop = shop,
-                            form = shop.toEditForm(),
+                            form = form,
                             slugCheck = SlugCheckUiStatus.Idle,
                         )
                     }
@@ -93,13 +97,20 @@ class EditShopViewModel(
 
     fun updateForm(transform: (EditShopFormState) -> EditShopFormState) {
         _uiState.update {
-            it.copy(form = transform(it.form), fieldErrors = emptyMap(), generalError = null)
+            it.copy(
+                form = transform(it.form),
+                fieldErrors = emptyMap(),
+                generalError = null,
+                savedShop = null,
+            )
         }
     }
 
     fun onSlugChanged(raw: String) {
         val slug = raw.trim()
-        _uiState.update { it.copy(form = it.form.copy(slug = slug)) }
+        _uiState.update {
+            it.copy(form = it.form.copy(slug = slug), savedShop = null, fieldErrors = emptyMap())
+        }
         if (slug == originalSlug) {
             slugCheckJob?.cancel()
             _uiState.update { it.copy(slugCheck = SlugCheckUiStatus.Idle) }
@@ -140,21 +151,36 @@ class EditShopViewModel(
             }
     }
 
+    fun toggleCategory(slug: String) {
+        updateForm { form ->
+            val next =
+                if (slug in form.categorySlugs) {
+                    form.categorySlugs.filterNot { it == slug }
+                } else {
+                    form.categorySlugs + slug
+                }
+            form.copy(categorySlugs = next)
+        }
+    }
+
     fun save() {
         if (_uiState.value.isSubmitting) return
+        if (_uiState.value.slugCheck is SlugCheckUiStatus.Taken) return
         val form = _uiState.value.form
+        val categoriesChanged = form.categorySlugs.toSet() != originalCategorySlugs.toSet()
         val command =
             UpdateShopCommand(
                 shopId = shopId,
                 title = form.title.takeIf { it.isNotBlank() },
                 slug = form.slug.takeIf { it.isNotBlank() }?.let { ShopSlug(it) },
+                avatarUrl = form.avatarUrl.trim().takeIf { it.isNotEmpty() },
                 description = form.description,
                 address = form.address,
                 phoneNumber = form.phoneNumber,
                 supportTimes = form.supportTimes,
                 type = form.type.takeIf { it.isNotBlank() },
                 cityId = form.cityId,
-                categoryNumericIds = form.categoryNumericIds,
+                categorySlugs = form.categorySlugs.takeIf { categoriesChanged },
                 whatsapp = form.whatsapp,
                 telegram = form.telegram,
                 instagram = form.instagram,
@@ -168,15 +194,25 @@ class EditShopViewModel(
                 }
                 when (val result = updateShopUseCase(command)) {
                     is AppResult.Success -> {
+                        val returned = result.value
+                        val slugs =
+                            if (!categoriesChanged && returned.categorySlugs.isEmpty()) {
+                                originalCategorySlugs
+                            } else {
+                                returned.categorySlugs
+                            }
+                        val shop = returned.copy(categorySlugs = slugs)
+                        val form = shop.toEditForm()
                         _uiState.update {
                             it.copy(
                                 isSubmitting = false,
-                                savedShop = result.value,
-                                loadedShop = result.value,
-                                form = result.value.toEditForm(),
+                                savedShop = shop,
+                                loadedShop = shop,
+                                form = form,
                             )
                         }
-                        originalSlug = result.value.slug.value
+                        originalSlug = shop.slug.value
+                        originalCategorySlugs = form.categorySlugs
                     }
                     is AppResult.Failure -> {
                         val error = result.error
@@ -213,9 +249,10 @@ private fun SellerShopDetails.toEditForm(): EditShopFormState =
         supportTimes = supportTimes.orEmpty(),
         type = type ?: "retailer",
         cityId = cityId,
-        categoryNumericIds = categoryNumericIds,
         whatsapp = whatsapp.orEmpty(),
         telegram = telegram.orEmpty(),
         instagram = instagram.orEmpty(),
         website = website.orEmpty(),
+        avatarUrl = avatarUrl.orEmpty(),
+        categorySlugs = categorySlugs.map { it.trim() }.filter { it.isNotEmpty() },
     )

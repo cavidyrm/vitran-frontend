@@ -19,6 +19,9 @@ import com.vitran.shop.ui.screens.AccountCityCreateScreen
 import com.vitran.shop.ui.screens.AccountCityDetailScreen
 import com.vitran.shop.ui.screens.AccountScreen
 import com.vitran.shop.ui.screens.AccountSettingsScreen
+import com.vitran.shop.ui.screens.AccountStoreEditScreen
+import com.vitran.shop.ui.screens.AccountStoresScreen
+import com.vitran.shop.ui.screens.AccountStoreEditScreen
 import com.vitran.shop.ui.screens.AccountUserDetailScreen
 import com.vitran.shop.ui.screens.AccountUsersScreen
 import com.vitran.shop.ui.screens.AdminPlansScreen
@@ -155,6 +158,7 @@ fun AppNavHost(
                     onOpenFollowing = { navigator.push(Route.Following) },
                     onOpenReferrals = { navigator.push(Route.Referrals) },
                     onCreateStore = { navigator.push(Route.CreateStore) },
+                    onOpenStores = { navigator.push(Route.AccountStores) },
                     onOpenStorePlan = { navigator.push(Route.StorePlan) },
                     onOpenAdminPlans = { navigator.push(Route.AdminPlans) },
                     onOpenAdminShops = { navigator.push(Route.AdminShops) },
@@ -217,6 +221,27 @@ fun AppNavHost(
                     onSignOut = onSignOut,
                     isSigningOut = signingOut,
                     signOutError = signOutError,
+                    onFooterLinkClick = onFooterLink,
+                )
+            }
+            entry<Route.AccountStores> {
+                AccountStoresScreen(
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onCreateStore = { navigator.push(Route.CreateStore) },
+                    onShopEdit = { shopId ->
+                        navigator.push(Route.AccountStoreEdit(shopId = shopId))
+                    },
+                    onFooterLinkClick = onFooterLink,
+                )
+            }
+            entry<Route.AccountStoreEdit> { key ->
+                AccountStoreEditScreen(
+                    shopId = key.shopId,
+                    onBack = { navigator.goBack() },
+                    onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
+                    onOpenSaved = { navigator.navigate(Route.Saved) },
                     onFooterLinkClick = onFooterLink,
                 )
             }
@@ -488,12 +513,14 @@ private fun Navigator.openAccountDest(state: NavigationState, dest: AccountDest)
         AccountDest.Referrals -> Route.Referrals
         AccountDest.Following -> Route.Following
         AccountDest.Settings -> Route.AccountSettings
+        AccountDest.Stores -> Route.AccountStores
         AccountDest.Users -> Route.AccountUsers
         AccountDest.Cities -> Route.AccountCities
     }
     if (state.currentRoute == target) return
     val nestedList = when (state.currentRoute) {
         is Route.AccountUserDetail -> Route.AccountUsers
+        is Route.AccountStoreEdit -> Route.AccountStores
         is Route.AccountCityDetail, Route.AccountCityCreate -> Route.AccountCities
         else -> null
     }
