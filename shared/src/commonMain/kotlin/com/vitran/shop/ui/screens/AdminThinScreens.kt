@@ -45,6 +45,7 @@ import com.vitran.shop.feature.admin.content.domain.UpdateStaticPageCommand
 import com.vitran.shop.feature.admin.content.presentation.AdminStaticPageEditorUiState
 import com.vitran.shop.feature.admin.content.presentation.AdminStaticPageEditorViewModel
 import com.vitran.shop.feature.admin.content.presentation.AdminStaticPagesViewModel
+import com.vitran.shop.feature.admin.catalog.location.presentation.AdminCitiesViewModel
 import com.vitran.shop.feature.admin.moderation.presentation.AdminCommentsViewModel
 import com.vitran.shop.feature.admin.moderation.presentation.AdminProductDetailsUiState
 import com.vitran.shop.feature.admin.moderation.presentation.AdminProductDetailsViewModel
@@ -55,6 +56,7 @@ import com.vitran.shop.feature.content.domain.model.StaticPageId
 import com.vitran.shop.feature.content.domain.model.StaticPageSlug
 import com.vitran.shop.feature.marketplace.product.domain.model.ProductId
 import com.vitran.shop.feature.taxonomy.domain.model.CategoryNode
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
 import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 import com.vitran.shop.ui.components.VitranIcon
 import com.vitran.shop.ui.components.VitranText
@@ -66,7 +68,9 @@ import com.vitran.shop.ui.components.admin.AdminPrimaryButton
 import com.vitran.shop.ui.components.admin.AdminSecondaryButton
 import com.vitran.shop.ui.components.admin.AdminTextField
 import com.vitran.shop.ui.components.admin.AdminToggleRow
+import com.vitran.shop.ui.sections.account.digitsOnly
 import com.vitran.shop.ui.sections.account.toPersianDigits
+import com.vitran.shop.ui.sections.admin.AdminShopsFilters
 import com.vitran.shop.ui.sections.admin.plan.StorePlanTokens
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
@@ -110,10 +114,38 @@ fun AdminShopsModerationScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AdminShopsViewModel = vitranKoinViewModel(),
+    citiesViewModel: AdminCitiesViewModel = vitranKoinViewModel(),
+    taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val citiesState by citiesViewModel.uiState.collectAsStateWithLifecycle()
+    val taxonomyState by taxonomyViewModel.uiState.collectAsStateWithLifecycle()
+    var userIdText by remember { mutableStateOf("") }
     AdminThinScaffold("بررسی فروشگاه‌ها", onBack, modifier) {
+        AdminShopsFilters(
+            query = state.query,
+            userIdText = userIdText,
+            onUserIdTextChange = { raw ->
+                val digits = digitsOnly(raw)
+                userIdText = digits
+                viewModel.setUserId(digits.toLongOrNull())
+            },
+            onActiveChange = viewModel::setActive,
+            onCityIdChange = viewModel::setCityId,
+            onCategorySlugChange = viewModel::setCategorySlug,
+            onClear = {
+                userIdText = ""
+                viewModel.clearFilters()
+            },
+            citiesState = citiesState,
+            onCitiesRetry = citiesViewModel::load,
+            taxonomyState = taxonomyState,
+            onTaxonomyRetry = taxonomyViewModel::retry,
+        )
         if (state.loading) CircularProgressIndicator()
+        if (!state.loading && state.shops.isEmpty() && state.error == null) {
+            VitranText("فروشگاهی با این فیلترها یافت نشد", VitranTextStyle.Body)
+        }
         state.shops.forEach { shop ->
             AdminFormCard(
                 title = shop.title ?: shop.slug,

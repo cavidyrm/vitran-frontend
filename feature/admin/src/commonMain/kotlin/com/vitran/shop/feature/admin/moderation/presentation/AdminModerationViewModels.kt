@@ -13,12 +13,15 @@ import com.vitran.shop.feature.admin.moderation.domain.ConfirmedAdminComment
 import com.vitran.shop.feature.engagement.comment.domain.model.ShopCommentId
 import com.vitran.shop.feature.marketplace.product.domain.model.ProductId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class AdminShopsUiState(
+    val query: AdminModerationQuery = AdminModerationQuery(active = false),
     val shops: List<AdminShopSummary> = emptyList(),
     val pendingShopIds: Set<ShopId> = emptySet(),
     val loading: Boolean = false,
@@ -28,14 +31,40 @@ data class AdminShopsUiState(
 class AdminShopsViewModel(private val repository: AdminModerationRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(AdminShopsUiState())
     val uiState = _uiState.asStateFlow()
+    private var loadGeneration = 0
+    private var userIdJob: Job? = null
+
     init { refresh() }
 
-    fun refresh() = viewModelScope.launch {
-        _uiState.update { it.copy(loading = true, error = null) }
-        when (val result = repository.getShops(AdminModerationQuery(active = false))) {
-            is AppResult.Success -> _uiState.update { it.copy(shops = result.value.items, loading = false) }
-            is AppResult.Failure -> _uiState.update { it.copy(loading = false, error = result.error) }
+    fun refresh() {
+        userIdJob?.cancel()
+        load(_uiState.value.query.copy(page = 1))
+    }
+
+    fun setActive(active: Boolean?) = applyFilter { it.copy(active = active, page = 1) }
+
+    fun setCityId(cityId: Long?) = applyFilter { it.copy(cityId = cityId, page = 1) }
+
+    fun setCategorySlug(categorySlug: String?) =
+        applyFilter { it.copy(categorySlug = categorySlug?.ifBlank { null }, page = 1) }
+
+    fun setUserId(userId: Long?) {
+        val query = _uiState.value.query.copy(userId = userId, page = 1)
+        if (query == _uiState.value.query) return
+        loadGeneration += 1
+        _uiState.update { it.copy(query = query, loading = true, error = null) }
+        userIdJob?.cancel()
+        userIdJob = viewModelScope.launch {
+            delay(USER_ID_DEBOUNCE_MS)
+            load(_uiState.value.query.copy(page = 1))
         }
+    }
+
+    fun clearFilters() {
+        userIdJob?.cancel()
+        val query = AdminModerationQuery(active = false)
+        if (query == _uiState.value.query) return
+        load(query)
     }
 
     fun confirm(id: ShopId) {
@@ -50,6 +79,35 @@ class AdminShopsViewModel(private val repository: AdminModerationRepository) : V
             }
             _uiState.update { it.copy(pendingShopIds = it.pendingShopIds - id) }
         }
+    }
+
+    private fun applyFilter(transform: (AdminModerationQuery) -> AdminModerationQuery) {
+        val query = transform(_uiState.value.query)
+        if (query == _uiState.value.query) return
+        userIdJob?.cancel()
+        load(query)
+    }
+
+    private fun load(query: AdminModerationQuery) {
+        loadGeneration += 1
+        val generation = loadGeneration
+        _uiState.update { it.copy(query = query, loading = true, error = null) }
+        viewModelScope.launch {
+            when (val result = repository.getShops(query)) {
+                is AppResult.Success -> {
+                    if (generation != loadGeneration) return@launch
+                    _uiState.update { it.copy(shops = result.value.items, loading = false, query = query) }
+                }
+                is AppResult.Failure -> {
+                    if (generation != loadGeneration) return@launch
+                    _uiState.update { it.copy(loading = false, error = result.error, query = query) }
+                }
+            }
+        }
+    }
+
+    private companion object {
+        const val USER_ID_DEBOUNCE_MS = 400L
     }
 }
 
