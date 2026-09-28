@@ -144,14 +144,12 @@ data class CreateStoreFormState(
     val canPublish: Boolean
         get() = storeName.isNotBlank() && slug.isNotBlank()
 
-    fun withStoreName(value: String): CreateStoreFormState {
-        val nextSlug = if (slugManuallyEdited) slug else slugifyStoreName(value)
-        return copy(storeName = value, slug = nextSlug, dirty = true)
-    }
+    fun withStoreName(value: String): CreateStoreFormState =
+        copy(storeName = value, dirty = true)
 
     fun withSlug(value: String): CreateStoreFormState =
         copy(
-            slug = slugifyStoreName(value).ifBlank { value.trim().lowercase() },
+            slug = sanitizeStoreSlugInput(value),
             slugManuallyEdited = true,
             dirty = true,
         )
@@ -435,6 +433,23 @@ data class CityOption(
     val provinceId: String,
     val label: String,
 )
+
+/**
+ * Normalizes a user-typed store slug while typing.
+ * Keeps ASCII letters and digits; spaces and underscores become hyphens.
+ * A trailing hyphen stays so `noor-gallery` can be entered.
+ */
+internal fun sanitizeStoreSlugInput(raw: String): String {
+    val normalized = buildString {
+        raw.lowercase().forEach { ch ->
+            when {
+                ch in 'a'..'z' || ch in '0'..'9' -> append(ch)
+                ch == '-' || ch == '_' || ch.isWhitespace() -> append('-')
+            }
+        }
+    }
+    return normalized.replace(Regex("-{2,}"), "-").trimStart('-')
+}
 
 internal fun slugifyStoreName(name: String): String {
     val transliterated = buildString {

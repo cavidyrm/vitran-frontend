@@ -18,6 +18,7 @@ import com.vitran.shop.feature.seller.shop.domain.model.SellerShopDetails
 import com.vitran.shop.feature.seller.shop.domain.model.SellerShopSummary
 import com.vitran.shop.feature.seller.shop.domain.model.ShopApiKey
 import com.vitran.shop.feature.seller.shop.domain.model.ShopSlugAvailability
+import com.vitran.shop.feature.seller.shop.domain.model.ShopTitleAvailability
 import com.vitran.shop.feature.seller.shop.domain.model.UpdateShopCommand
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopListQuery
 import com.vitran.shop.feature.seller.shop.domain.repository.SellerShopRepository
@@ -33,7 +34,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
@@ -73,6 +76,7 @@ class SellerViewModelTest {
             vm.onSlugInputChanged("my-shop")
             advanceTimeBy(399)
             assertEquals(null, lastSlug)
+            assertIs<SlugCheckUiStatus.Idle>(vm.uiState.value.slugCheck)
             advanceTimeBy(2)
             advanceUntilIdle()
             assertEquals("my-shop", lastSlug)
@@ -113,6 +117,115 @@ class SellerViewModelTest {
     }
 
     @Test
+    fun createShopViewModel_titleDebounceAndCancellation() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            var lastTitle: String? = null
+            val repo =
+                object : SellerShopRepository by ThrowingSellerShopRepository() {
+                    override suspend fun checkTitleAvailability(
+                        title: String,
+                        excludeId: ShopId?,
+                    ): AppResult<ShopTitleAvailability> {
+                        lastTitle = title
+                        return AppResult.Success(ShopTitleAvailability(title, isAvailable = true))
+                    }
+                }
+            val vm =
+                CreateShopViewModel(
+                    CreateShopUseCase(repo, FakeSessionRepository(), FakeAccountRepository()),
+                    repo,
+                    slugDebounceMs = 400,
+                )
+            vm.onTitleInputChanged("گال")
+            vm.onTitleInputChanged("گالر")
+            vm.onTitleInputChanged("گالری نور")
+            advanceTimeBy(399)
+            assertEquals(null, lastTitle)
+            assertIs<TitleCheckUiStatus.Idle>(vm.uiState.value.titleCheck)
+            advanceTimeBy(2)
+            advanceUntilIdle()
+            assertEquals("گالری نور", lastTitle)
+            assertIs<TitleCheckUiStatus.Available>(vm.uiState.value.titleCheck)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun createShopViewModel_repeatedSlugSkipsSecondCheck() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            var checks = 0
+            val repo =
+                object : SellerShopRepository by ThrowingSellerShopRepository() {
+                    override suspend fun checkSlugAvailability(
+                        slug: ShopSlug,
+                        excludeId: ShopId?,
+                    ): AppResult<ShopSlugAvailability> {
+                        checks += 1
+                        return AppResult.Success(ShopSlugAvailability(slug, isAvailable = true))
+                    }
+                }
+            val vm =
+                CreateShopViewModel(
+                    CreateShopUseCase(repo, FakeSessionRepository(), FakeAccountRepository()),
+                    repo,
+                    slugDebounceMs = 400,
+                )
+            vm.onSlugInputChanged("my-shop")
+            advanceUntilIdle()
+            vm.onSlugInputChanged("my-shop")
+            advanceUntilIdle()
+            assertEquals(1, checks)
+            assertIs<SlugCheckUiStatus.Available>(vm.uiState.value.slugCheck)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun createShopViewModel_staleTitleResultIgnored() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val repo =
+                object : SellerShopRepository by ThrowingSellerShopRepository() {
+                    override suspend fun checkTitleAvailability(
+                        title: String,
+                        excludeId: ShopId?,
+                    ): AppResult<ShopTitleAvailability> {
+                        try {
+                            delay(1_000)
+                        } catch (_: CancellationException) {
+                            // Non-cooperative client: still return after cancel.
+                        }
+                        return AppResult.Success(
+                            ShopTitleAvailability(title, isAvailable = title == "new name"),
+                        )
+                    }
+                }
+            val vm =
+                CreateShopViewModel(
+                    CreateShopUseCase(repo, FakeSessionRepository(), FakeAccountRepository()),
+                    repo,
+                    slugDebounceMs = 400,
+                )
+            vm.onTitleInputChanged("old name")
+            advanceTimeBy(400)
+            vm.onTitleInputChanged("new name")
+            advanceUntilIdle()
+            val status = vm.uiState.value.titleCheck
+            assertIs<TitleCheckUiStatus.Available>(status)
+            assertEquals("new name", status.title)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
     fun createShopViewModel_duplicateSubmitPrevented() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(dispatcher)
@@ -140,7 +253,12 @@ class SellerViewModelTest {
                     repo,
                 )
             val command =
-                CreateShopCommand(title = "Shop", type = "retailer", cityId = CityId(1))
+                CreateShopCommand(
+                    title = "Shop",
+                    slug = ShopSlug("shop"),
+                    type = "retailer",
+                    cityId = CityId(1),
+                )
             vm.submit(command)
             vm.submit(command)
             advanceUntilIdle()
@@ -163,6 +281,7 @@ class SellerViewModelTest {
                 )
             vm.submit(CreateShopCommand(title = "Shop", type = " ", cityId = CityId(0)))
             advanceUntilIdle()
+            assertEquals("slug", vm.uiState.value.fieldErrors["slug"])
             assertEquals("type", vm.uiState.value.fieldErrors["type"])
             assertEquals("city_id", vm.uiState.value.fieldErrors["city_id"])
             assertTrue(vm.uiState.value.createdShop == null)
@@ -191,6 +310,23 @@ class SellerViewModelTest {
                 avatarUrl = " https://cdn.example/logo.png ",
             )
         assertEquals("فروشگاه", command.title)
+        assertEquals(ShopSlug("shop"), command.slug)
+        assertEquals(
+            ShopSlug("noor"),
+            buildCreateShopCommand(
+                title = "فروشگاه",
+                slug = "noor-",
+                omitSlug = false,
+                description = "",
+                address = "",
+                phoneNumber = "",
+                cityId = CityId(4),
+                whatsapp = null,
+                telegram = null,
+                instagram = null,
+                website = null,
+            ).slug,
+        )
         assertEquals("9-18", command.supportTimes)
         assertEquals("https://cdn.example/logo.png", command.avatarUrl)
         assertEquals(listOf("aa-1-2-3-4"), command.categorySlugs)

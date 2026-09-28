@@ -421,6 +421,8 @@
     <string name="admin_field_rating_helper">بعد از ثبت نظرات مشتریان نمایش داده می‌شود.</string>
     <string name="admin_card_urls">نشانی‌ها</string>
     <string name="admin_field_slug">نشانی کوتاه</string>
+    <string name="admin_create_store_slug_label">اسلاگ</string>
+    <string name="admin_create_store_slug_helper">اسلاگ بخش یکتای آدرس عمومی فروشگاه است؛ فقط حروف انگلیسی، عدد و خط تیره. نمونه: noor-gallery</string>
     <string name="admin_url_label">آدرس فروشگاه شما</string>
     <string name="admin_url_prefix">vitran.shop/m/</string>
     <string name="admin_url_available">این آدرس آزاد است</string>

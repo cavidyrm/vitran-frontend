@@ -75,6 +75,8 @@ import vitranshop.shared.generated.resources.admin_card_theme
 import vitranshop.shared.generated.resources.admin_card_theme_sub
 import vitranshop.shared.generated.resources.admin_card_url_sub
 import vitranshop.shared.generated.resources.admin_create_store_publish
+import vitranshop.shared.generated.resources.admin_create_store_slug_helper
+import vitranshop.shared.generated.resources.admin_create_store_slug_label
 import vitranshop.shared.generated.resources.admin_field_about
 import vitranshop.shared.generated.resources.admin_field_about_placeholder
 import vitranshop.shared.generated.resources.admin_field_address
@@ -344,7 +346,7 @@ private fun CreateStoreUrlBuilder(
 ) {
     var copied by remember { mutableStateOf(false) }
     AdminTextField(
-        label = stringResource(Res.string.admin_url_label),
+        label = stringResource(Res.string.admin_create_store_slug_label),
         value = state.slug,
         onValueChange = {
             copied = false
@@ -353,8 +355,9 @@ private fun CreateStoreUrlBuilder(
         },
         prefix = stringResource(Res.string.admin_url_prefix),
         required = true,
-        placeholder = "aria-store",
+        placeholder = "noor-gallery",
         error = slugError,
+        ltr = true,
         trailing = {
             Text(
                 text = stringResource(
@@ -366,6 +369,12 @@ private fun CreateStoreUrlBuilder(
                 modifier = Modifier.clickable(role = Role.Button) { copied = true },
             )
         },
+    )
+    Text(
+        text = stringResource(Res.string.admin_create_store_slug_helper),
+        color = AdminTokens.Helper,
+        fontSize = 12.sp,
+        lineHeight = 18.sp,
     )
     SlugAvailabilityLine(slug = state.slug, status = slugCheck)
 }

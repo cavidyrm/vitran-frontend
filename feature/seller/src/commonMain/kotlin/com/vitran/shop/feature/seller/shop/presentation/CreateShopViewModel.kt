@@ -71,23 +71,29 @@ class CreateShopViewModel(
     private var slugCheckJob: Job? = null
     private var titleCheckJob: Job? = null
     private var submitJob: Job? = null
+    private var latestTitleQuery: String = ""
+    private var latestSlugQuery: String = ""
 
     fun onTitleInputChanged(rawTitle: String, excludeId: ShopId? = null) {
-        titleCheckJob?.cancel()
         val trimmed = rawTitle.trim()
+        latestTitleQuery = trimmed
+        titleCheckJob?.cancel()
         if (trimmed.isEmpty()) {
             _uiState.update { it.copy(titleCheck = TitleCheckUiStatus.Idle) }
             return
         }
+        if (titleCheckMatches(trimmed, _uiState.value.titleCheck)) return
         titleCheckJob =
             viewModelScope.launch {
-                _uiState.update { it.copy(titleCheck = TitleCheckUiStatus.Checking) }
                 delay(slugDebounceMs)
+                if (latestTitleQuery != trimmed) return@launch
+                _uiState.update { it.copy(titleCheck = TitleCheckUiStatus.Checking) }
                 when (
                     val result =
                         sellerShopRepository.checkTitleAvailability(trimmed, excludeId)
                 ) {
                     is AppResult.Success -> {
+                        if (latestTitleQuery != trimmed) return@launch
                         val availability = result.value
                         _uiState.update {
                             it.copy(
@@ -101,6 +107,7 @@ class CreateShopViewModel(
                         }
                     }
                     is AppResult.Failure -> {
+                        if (latestTitleQuery != trimmed) return@launch
                         _uiState.update {
                             it.copy(titleCheck = TitleCheckUiStatus.Error(result.error))
                         }
@@ -110,21 +117,25 @@ class CreateShopViewModel(
     }
 
     fun onSlugInputChanged(rawSlug: String, excludeId: ShopId? = null) {
-        slugCheckJob?.cancel()
         val trimmed = rawSlug.trim()
+        latestSlugQuery = trimmed
+        slugCheckJob?.cancel()
         if (trimmed.isEmpty() || !isLocallyValidSlug(trimmed)) {
             _uiState.update { it.copy(slugCheck = SlugCheckUiStatus.Idle) }
             return
         }
+        if (slugCheckMatches(trimmed, _uiState.value.slugCheck)) return
         slugCheckJob =
             viewModelScope.launch {
-                _uiState.update { it.copy(slugCheck = SlugCheckUiStatus.Checking) }
                 delay(slugDebounceMs)
+                if (latestSlugQuery != trimmed) return@launch
+                _uiState.update { it.copy(slugCheck = SlugCheckUiStatus.Checking) }
                 when (
                     val result =
                         sellerShopRepository.checkSlugAvailability(ShopSlug(trimmed), excludeId)
                 ) {
                     is AppResult.Success -> {
+                        if (latestSlugQuery != trimmed) return@launch
                         val availability = result.value
                         _uiState.update {
                             it.copy(
@@ -138,20 +149,20 @@ class CreateShopViewModel(
                         }
                     }
                     is AppResult.Failure -> {
+                        if (latestSlugQuery != trimmed) return@launch
                         _uiState.update {
-                            it.copy(slugCheck = SpugCheckError(result.error))
+                            it.copy(slugCheck = SlugCheckUiStatus.Error(result.error))
                         }
                     }
                 }
             }
     }
 
-    private fun SpugCheckError(error: AppError) = SlugCheckUiStatus.Error(error)
-
     fun submit(command: CreateShopCommand) {
         if (_uiState.value.isSubmitting) return
         val localErrors = mutableMapOf<String, String>()
         if (command.title.isBlank()) localErrors["title"] = "title"
+        if (command.slug?.value.isNullOrBlank()) localErrors["slug"] = "slug"
         if (command.type.isBlank()) localErrors["type"] = "type"
         if (command.cityId.value <= 0L) localErrors["city_id"] = "city_id"
         if (localErrors.isNotEmpty()) {
@@ -248,10 +259,10 @@ fun buildCreateShopCommand(
     CreateShopCommand(
         title = title.trim(),
         slug =
-            if (omitSlug || slug.isBlank()) {
+            if (omitSlug) {
                 null
             } else {
-                ShopSlug(slug.trim())
+                slug.trim().trim('-').takeIf { it.isNotEmpty() }?.let(::ShopSlug)
             },
         avatarUrl = avatarUrl?.trim()?.takeIf { it.isNotBlank() },
         description = description.takeIf { it.isNotBlank() },
@@ -269,6 +280,20 @@ fun buildCreateShopCommand(
 
 internal fun isLocallyValidSlug(slug: String): Boolean =
     slug.length >= 2 && slug.all { it.isLetterOrDigit() || it == '-' || it == '_' }
+
+private fun titleCheckMatches(title: String, status: TitleCheckUiStatus): Boolean =
+    when (status) {
+        is TitleCheckUiStatus.Available -> status.title == title
+        is TitleCheckUiStatus.Taken -> status.title == title
+        else -> false
+    }
+
+private fun slugCheckMatches(slug: String, status: SlugCheckUiStatus): Boolean =
+    when (status) {
+        is SlugCheckUiStatus.Available -> status.slug.value == slug
+        is SlugCheckUiStatus.Taken -> status.slug.value == slug
+        else -> false
+    }
 
 internal val CreateShopFormReasons = setOf(
     "title",
