@@ -65,6 +65,58 @@ class CreateProductViewModelTest {
     }
 
     @Test
+    fun loadShops_prefersGivenShop() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val vm =
+                CreateProductViewModel(
+                    CreateProductUseCase(FakeProductRepo()),
+                    FakeShopRepo(
+                        listOf(
+                            SellerShopSummary(ShopId(1), "اول", true, true),
+                            SellerShopSummary(ShopId(2), "دوم", true, true),
+                        ),
+                    ),
+                    FakePicker(),
+                    FakeEntitlementsUseCase(),
+                    preferredShopId = ShopId(2),
+                )
+            advanceUntilIdle()
+            assertEquals(ShopId(2), vm.uiState.value.selectedShopId)
+            assertEquals("دوم", vm.uiState.value.storeName)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun loadShops_unknownPreferredFallsBackToFirst() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val vm =
+                CreateProductViewModel(
+                    CreateProductUseCase(FakeProductRepo()),
+                    FakeShopRepo(
+                        listOf(
+                            SellerShopSummary(ShopId(1), "اول", true, true),
+                            SellerShopSummary(ShopId(2), "دوم", true, true),
+                        ),
+                    ),
+                    FakePicker(),
+                    FakeEntitlementsUseCase(),
+                    preferredShopId = ShopId(99),
+                )
+            advanceUntilIdle()
+            assertEquals(ShopId(1), vm.uiState.value.selectedShopId)
+            assertEquals("اول", vm.uiState.value.storeName)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
     fun pickImages_cancelLeavesFormUnchanged() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(dispatcher)

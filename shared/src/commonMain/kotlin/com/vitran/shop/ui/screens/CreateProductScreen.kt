@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vitran.shop.di.vitranKoinViewModel
+import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.seller.product.presentation.CreateProductSubmitMode
 import com.vitran.shop.feature.seller.product.presentation.CreateProductUiEffect
 import com.vitran.shop.feature.seller.product.presentation.CreateProductViewModel
@@ -64,6 +65,7 @@ import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.core.parameter.parametersOf
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.admin_create_product_leave_exit
 import vitranshop.shared.generated.resources.admin_create_product_leave_stay
@@ -78,9 +80,13 @@ import vitranshop.shared.generated.resources.admin_create_product_leave_title
 @Composable
 fun CreateProductScreen(
     onBack: () -> Unit,
+    shopId: String? = null,
     modifier: Modifier = Modifier,
     taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
-    createProductViewModel: CreateProductViewModel = vitranKoinViewModel(),
+    createProductViewModel: CreateProductViewModel = vitranKoinViewModel {
+        val id = shopId?.toLongOrNull()?.takeIf { it > 0L }
+        if (id == null) parametersOf() else parametersOf(ShopId(id))
+    },
 ) {
     var state by remember { mutableStateOf(CreateProductFormState()) }
     var leaveDialog by remember { mutableStateOf(false) }

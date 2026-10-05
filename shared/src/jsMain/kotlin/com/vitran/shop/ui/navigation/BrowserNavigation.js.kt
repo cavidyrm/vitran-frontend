@@ -20,7 +20,7 @@ import web.window.window
 @Composable
 actual fun rememberInitialRoute(fallback: Route): Route =
     remember(fallback) {
-        RouteMapper.fromPath(location.pathname) ?: fallback
+        RouteMapper.fromUri(browserAddress()) ?: fallback
     }
 
 @OptIn(ExperimentalWasmJsInterop::class)
@@ -37,7 +37,7 @@ actual fun BindBrowserNavigation(
     // Align History with the seeded route without adding a history entry.
     LaunchedEffect(Unit) {
         val path = RouteMapper.toPath(navState.currentRoute)
-        if (location.pathname != path) {
+        if (browserAddress() != path) {
             history.replaceState(null, "", path)
         }
         lastWrittenPath = path
@@ -53,7 +53,7 @@ actual fun BindBrowserNavigation(
         when (navState.urlSyncMode) {
             UrlSyncMode.HistoryBack -> {
                 // Stack already popped; rewind browser History to match.
-                if (location.pathname != path) {
+                if (browserAddress() != path) {
                     lastWrittenPath = path
                     history.back()
                 } else {
@@ -79,10 +79,9 @@ actual fun BindBrowserNavigation(
     DisposableEffect(navigator, navState) {
         val unsubscribe = window.popStateEvent.addHandler(
             EventHandler { _: PopStateEvent ->
-                val path = location.pathname
-                val route = RouteMapper.fromPath(path) ?: return@EventHandler
+                val route = RouteMapper.fromUri(browserAddress()) ?: return@EventHandler
                 if (route == navState.currentRoute) {
-                    lastWrittenPath = path
+                    lastWrittenPath = RouteMapper.toPath(route)
                     return@EventHandler
                 }
                 applyingFromBrowser = true
@@ -101,4 +100,10 @@ actual fun BindBrowserNavigation(
         )
         onDispose(unsubscribe)
     }
+}
+
+@OptIn(ExperimentalWasmJsInterop::class)
+private fun browserAddress(): String {
+    val search = location.search
+    return if (search.isEmpty()) location.pathname else location.pathname + search
 }

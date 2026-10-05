@@ -1,5 +1,8 @@
 package com.vitran.shop.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -16,8 +19,10 @@ import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountPageShell
 import com.vitran.shop.ui.sections.account.stores.AccountStoreEditForm
+import com.vitran.shop.ui.sections.account.stores.AccountStoreProductsSection
 import com.vitran.shop.ui.sections.account.stores.AccountStoresError
 import com.vitran.shop.ui.sections.account.stores.AccountStoresLoading
+import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.sections.reference.toAdminSelectOptions
 import com.vitran.shop.ui.sections.reference.toAdminTaxonomyNodes
 import org.jetbrains.compose.resources.stringResource
@@ -39,6 +44,7 @@ fun AccountStoreEditScreen(
     onBack: () -> Unit,
     onDestClick: (AccountDest) -> Unit,
     onOpenSaved: () -> Unit,
+    onCreateProduct: () -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -59,7 +65,10 @@ fun AccountStoreEditScreen(
                 onRetry = onBack,
             )
         } else {
-            AccountStoreEditBody(shopId = ShopId(parsedId))
+            AccountStoreEditBody(
+                shopId = ShopId(parsedId),
+                onCreateProduct = onCreateProduct,
+            )
         }
     }
 }
@@ -67,6 +76,7 @@ fun AccountStoreEditScreen(
 @Composable
 private fun AccountStoreEditBody(
     shopId: ShopId,
+    onCreateProduct: () -> Unit,
     viewModel: EditShopViewModel = vitranKoinViewModel { parametersOf(shopId) },
     locationViewModel: CreateStoreLocationViewModel = vitranKoinViewModel(),
     taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
@@ -94,6 +104,10 @@ private fun AccountStoreEditBody(
                 onRetry = viewModel::load,
             )
         else ->
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(VitranSpacing.lg),
+            ) {
             AccountStoreEditForm(
                 form = uiState.form,
                 publication = uiState.loadedShop?.publicationState,
@@ -133,5 +147,14 @@ private fun AccountStoreEditBody(
                 onToggleCategory = viewModel::toggleCategory,
                 onSave = viewModel::save,
             )
+            AccountStoreProductsSection(
+                shopId = shopId,
+                taxonomyRoots = taxonomyRoots,
+                taxonomyLoading = taxonomyState is TaxonomyPickerUiState.Loading,
+                taxonomyError = (taxonomyState as? TaxonomyPickerUiState.Error)?.message,
+                onTaxonomyRetry = taxonomyViewModel::retry,
+                onCreateProduct = onCreateProduct,
+            )
+            }
     }
 }

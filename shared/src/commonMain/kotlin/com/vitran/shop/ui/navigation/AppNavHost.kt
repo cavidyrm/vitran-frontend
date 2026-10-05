@@ -242,6 +242,9 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                     onDestClick = { dest -> navigator.openAccountDest(navState, dest) },
                     onOpenSaved = { navigator.navigate(Route.Saved) },
+                    onCreateProduct = {
+                        navigator.push(Route.CreateProduct(shopId = key.shopId))
+                    },
                     onFooterLinkClick = onFooterLink,
                 )
             }
@@ -371,7 +374,7 @@ fun AppNavHost(
                 CreateStoreScreen(
                     onBack = { navigator.goBack() },
                     onViewStore = { shopId -> navigator.push(Route.Store(shopId = shopId)) },
-                    onAddProduct = { navigator.push(Route.CreateProduct) },
+                    onAddProduct = { navigator.push(Route.CreateProduct()) },
                     onShopCreated = { navigator.navigate(Route.Account) },
                 )
             }
@@ -425,8 +428,9 @@ fun AppNavHost(
                     onBack = { navigator.goBack() },
                 )
             }
-            entry<Route.CreateProduct> {
+            entry<Route.CreateProduct> { key ->
                 CreateProductScreen(
+                    shopId = key.shopId,
                     onBack = { navigator.goBack() },
                 )
             }

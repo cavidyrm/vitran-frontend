@@ -181,10 +181,11 @@ sealed interface Route : NavKey {
 
     /**
      * Merchant admin — add product. Path `/admin/products/new`.
+     * Optional `shopId` is the query `shop_id` so the form targets that shop.
      * Child route: pushed onto the stack; no shopper chrome while showing.
      */
     @Serializable
-    data object CreateProduct : Route
+    data class CreateProduct(val shopId: String? = null) : Route
 
     /**
      * Merchant admin — pick a Standard Product Taxonomy node.
@@ -257,7 +258,7 @@ fun Route.isTopLevel(): Boolean =
         Route.AdminTaxonomy,
         Route.AdminStaticPages,
         is Route.AdminStaticPageEdit,
-        Route.CreateProduct,
+        is Route.CreateProduct,
         Route.CreateCategory,
         Route.Profile,
         Route.Referrals,

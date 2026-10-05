@@ -84,6 +84,7 @@ class CreateProductViewModel(
     private val sellerShopRepository: SellerShopRepository,
     private val imagePicker: ImagePicker,
     private val getShopEntitlements: GetShopEntitlementsUseCase,
+    private val preferredShopId: ShopId? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateProductUiState())
     val uiState: StateFlow<CreateProductUiState> = _uiState.asStateFlow()
@@ -112,7 +113,7 @@ class CreateProductViewModel(
             ) {
                 is AppResult.Success -> {
                     val shops = result.value.items
-                    val selected = shops.firstOrNull()
+                    val selected = shops.firstOrNull { it.id == preferredShopId } ?: shops.firstOrNull()
                     _uiState.update {
                         it.copy(
                             shopsLoading = false,

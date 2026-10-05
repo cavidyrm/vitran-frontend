@@ -26,6 +26,7 @@ import com.vitran.shop.feature.seller.product.domain.usecase.DeleteProductUseCas
 import com.vitran.shop.feature.seller.product.domain.usecase.SetProductActiveUseCase
 import com.vitran.shop.feature.seller.product.domain.usecase.UpdateProductUseCase
 import com.vitran.shop.feature.seller.product.presentation.CreateProductViewModel
+import com.vitran.shop.feature.seller.product.presentation.SellerShopProductsViewModel
 import com.vitran.shop.feature.seller.referral.data.remote.ReferralApi
 import com.vitran.shop.feature.seller.referral.data.repository.DefaultReferralRepository
 import com.vitran.shop.feature.seller.referral.data.state.ReferralStateStore
@@ -143,7 +144,21 @@ val sellerModule = module {
             updateShopUseCase = get(),
         )
     }
-    viewModel { CreateProductViewModel(get(), get(), get(), get()) }
+    viewModel { parameters ->
+        SellerShopProductsViewModel(
+            shopId = parameters.get(),
+            sellerProductRepository = get(),
+        )
+    }
+    viewModel { parameters ->
+        CreateProductViewModel(
+            createProductUseCase = get(),
+            sellerShopRepository = get(),
+            imagePicker = get(),
+            getShopEntitlements = get(),
+            preferredShopId = parameters.getOrNull(),
+        )
+    }
     viewModel { StorePlanViewModel(get(), get(), get()) }
     viewModel {
         StorePlanUpgradeViewModel(

@@ -42,7 +42,14 @@ object RouteMapper {
             Route.AdminStaticPages -> "/admin/content/pages"
             is Route.AdminStaticPageEdit ->
                 route.id?.let { "/admin/content/pages/$it" } ?: "/admin/content/pages/new"
-            Route.CreateProduct -> "/admin/products/new"
+            is Route.CreateProduct -> {
+                val shopId = route.shopId?.takeIf { it.isNotBlank() }
+                if (shopId == null) {
+                    "/admin/products/new"
+                } else {
+                    "/admin/products/new?shop_id=${percentEncode(shopId)}"
+                }
+            }
             Route.CreateCategory -> "/admin/categories/new"
             is Route.ProductDetail -> "/products/${route.productId}/${route.slug}"
             is Route.Store -> "/m/${route.shopId}"
@@ -84,7 +91,7 @@ object RouteMapper {
             "/admin/taxonomy" -> Route.AdminTaxonomy
             "/admin/content/pages" -> Route.AdminStaticPages
             "/admin/content/pages/new" -> Route.AdminStaticPageEdit()
-            "/admin/products/new" -> Route.CreateProduct
+            "/admin/products/new" -> Route.CreateProduct()
             "/admin/categories/new" -> Route.CreateCategory
             "/about" -> Route.About
             "/terms" -> Route.Terms
@@ -123,6 +130,10 @@ object RouteMapper {
         if (path == "/search" || path.startsWith("/search/")) {
             val q = query["q"] ?: path.removePrefix("/search/").takeIf { it.isNotBlank() }
             if (!q.isNullOrBlank()) return Route.Search(percentDecode(q))
+        }
+        if (path == "/admin/products/new") {
+            val shopId = query["shop_id"]?.takeIf { it.isNotBlank() }
+            return Route.CreateProduct(shopId = shopId)
         }
         return fromPath(path)
     }
