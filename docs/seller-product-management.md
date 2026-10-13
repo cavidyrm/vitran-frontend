@@ -51,13 +51,13 @@ Centralized in `productPublicationState(active, confirmed)`. Do not scatter raw 
 
 ## 7. Create Product
 
-Multipart fields (Postman-verified): `title`, `category_slug`, `price`, `description`, `active`, repeated `images` (≤5).
+Multipart fields (Postman-verified): `title`, exactly one `category_slug`, `price`, `description`, `active`, optional `compare_at_price`, optional `seo_title`, `seo_description`, `noindex`, repeated `images` (≤5).
 
-UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/screens/CreateProductScreen.kt) + `CreateProductViewModel`. Unsupported Shopify-admin fields (SKU, inventory, variants, SEO, compare-at) remain local-only and are **not** sent.
+UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/screens/CreateProductScreen.kt) + `CreateProductViewModel`. The SEO card sends `seoTitle`, `seoDescription`, and `noindex` when the toggle is on. The first image is the cover; after create the client calls set-main when that image is not already `is_main`. SKU, inventory, variants, and the local product slug remain local-only.
 
 ## 8. Update Product
 
-`PATCH /seller/products/{id}` multipart — same text fields + optional appended `images`. Data + `UpdateProductUseCase` (public cache invalidation). No edit UI yet.
+`PATCH /seller/products/{id}` multipart — same text fields, including optional SEO, plus appended `images`. Empty `seo_title` / `seo_description` clears those fields. Data + `UpdateProductUseCase` (public cache invalidation). No edit UI yet. `category_slug` is required on update.
 
 ## 9. Active / publish endpoint
 
@@ -69,7 +69,11 @@ UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/s
 
 ## 11. Image deletion
 
-`DELETE /seller/products/{id}/images/{imageId}`. Local-only selected images are removed without API calls.
+`DELETE /seller/products/{id}/images/{imageId}`. Local-only selected images are removed without API calls. If the deleted image was the cover, the server promotes the remaining image with the lowest `sort_order`.
+
+## 11b. Cover image
+
+`PATCH /seller/products/{id}/images/{imageId}/main` has no body. The response includes `main_image` and `images[].is_main`. `SetProductMainImageUseCase` invalidates the public product cache. On the add-product form, moving an image to the front marks it as the cover; after a successful create the client sets that image as main when the response has not already done so. Cards use `main_image.url`, not `images[0]`.
 
 ## 12. Multipart architecture
 

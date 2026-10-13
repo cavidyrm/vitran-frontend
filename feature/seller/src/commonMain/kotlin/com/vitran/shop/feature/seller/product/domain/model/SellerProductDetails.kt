@@ -15,6 +15,7 @@ data class SellerProductDetails(
     val compareAtPriceAmount: Long? = null,
     val active: Boolean,
     val confirmed: Boolean,
+    val mainImage: SellerProductImage? = null,
     val images: List<SellerProductImage>,
     val createdAt: Instant?,
     val updatedAt: Instant?,

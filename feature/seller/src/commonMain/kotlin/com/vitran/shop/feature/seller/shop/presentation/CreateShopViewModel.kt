@@ -10,6 +10,9 @@ import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSlug
 import com.vitran.shop.feature.seller.shop.domain.error.isSlugAlreadyTaken
 import com.vitran.shop.feature.seller.shop.domain.model.CreateShopCommand
+import com.vitran.shop.feature.seller.shop.domain.model.ShopRule
+import com.vitran.shop.feature.seller.shop.domain.model.ShopShippingMethod
+import com.vitran.shop.feature.seller.shop.domain.model.ShopWorkingHours
 import com.vitran.shop.feature.seller.shop.domain.model.SellerShopDetails
 import com.vitran.shop.feature.seller.shop.domain.repository.SellerShopRepository
 import com.vitran.shop.feature.seller.shop.domain.usecase.CreateShopUseCase
@@ -251,10 +254,21 @@ fun buildCreateShopCommand(
     telegram: String?,
     instagram: String?,
     website: String?,
+    bale: String? = null,
+    rubika: String? = null,
+    tiktok: String? = null,
     supportTimes: String? = null,
     categorySlugs: List<String> = emptyList(),
     avatarUrl: String? = null,
     type: String = "retailer",
+    seoTitle: String? = null,
+    seoDescription: String? = null,
+    noindex: Boolean? = null,
+    rules: List<ShopRule> = emptyList(),
+    shippingMethods: List<ShopShippingMethod> = emptyList(),
+    workingHours: List<ShopWorkingHours> = emptyList(),
+    fulfillmentType: String? = null,
+    webhookUrl: String? = null,
 ): CreateShopCommand =
     CreateShopCommand(
         title = title.trim(),
@@ -273,9 +287,20 @@ fun buildCreateShopCommand(
         cityId = cityId,
         categorySlugs = categorySlugs.map { it.trim() }.filter { it.isNotEmpty() },
         whatsapp = whatsapp?.takeIf { it.isNotBlank() },
+        bale = bale?.takeIf { it.isNotBlank() },
+        rubika = rubika?.takeIf { it.isNotBlank() },
         telegram = telegram?.takeIf { it.isNotBlank() },
         instagram = instagram?.takeIf { it.isNotBlank() },
+        tiktok = tiktok?.takeIf { it.isNotBlank() },
         website = website?.takeIf { it.isNotBlank() },
+        seoTitle = seoTitle?.trim()?.takeIf { it.isNotEmpty() },
+        seoDescription = seoDescription?.trim()?.takeIf { it.isNotEmpty() },
+        noindex = noindex,
+        rules = rules,
+        shippingMethods = shippingMethods,
+        workingHours = workingHours,
+        fulfillmentType = fulfillmentType?.trim()?.takeIf { it.isNotEmpty() },
+        webhookUrl = webhookUrl?.trim()?.takeIf { it.isNotEmpty() },
     )
 
 internal fun isLocallyValidSlug(slug: String): Boolean =
@@ -309,6 +334,17 @@ internal val CreateShopFormReasons = setOf(
     "instagram",
     "website",
     "avatar_url",
+    "seo_title",
+    "seo_description",
+    "noindex",
+    "rules",
+    "shipping_methods",
+    "working_hours",
+    "fulfillment_type",
+    "webhook_url",
+    "bale",
+    "rubika",
+    "tiktok",
 )
 
 internal val CreateShopFormAliases = mapOf(

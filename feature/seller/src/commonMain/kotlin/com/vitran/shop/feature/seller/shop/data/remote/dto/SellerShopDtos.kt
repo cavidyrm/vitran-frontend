@@ -55,11 +55,39 @@ data class CreateShopRequestDto(
     @SerialName("category_slugs")
     val categorySlugs: List<String> = emptyList(),
     @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("seo_title")
+    val seoTitle: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("seo_description")
+    val seoDescription: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val noindex: Boolean? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val rules: List<ShopRuleDto>? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("shipping_methods")
+    val shippingMethods: List<ShopShippingMethodDto>? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("working_hours")
+    val workingHours: List<ShopWorkingHoursDto>? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("fulfillment_type")
+    val fulfillmentType: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("webhook_url")
+    val webhookUrl: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     val whatsapp: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val bale: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val rubika: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val telegram: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val instagram: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val tiktok: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val website: String? = null,
 )
@@ -94,11 +122,45 @@ data class UpdateShopRequestDto(
     @SerialName("category_slugs")
     val categorySlugs: List<String>? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("seo_title")
+    val seoTitle: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("seo_description")
+    val seoDescription: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val noindex: Boolean? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val rules: List<ShopRuleDto>? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("shipping_methods")
+    val shippingMethods: List<ShopShippingMethodDto>? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("working_hours")
+    val workingHours: List<ShopWorkingHoursDto>? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("fulfillment_type")
+    val fulfillmentType: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("webhook_url")
+    val webhookUrl: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("clear_avatar_url")
+    val clearAvatarUrl: Boolean? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("clear_webhook_url")
+    val clearWebhookUrl: Boolean? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     val whatsapp: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val bale: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val rubika: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val telegram: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val instagram: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val tiktok: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val website: String? = null,
 )
@@ -134,6 +196,17 @@ data class SellerShopCreateResponseDto(
     @SerialName("category_slugs")
     @JsonNames("CategorySlugs")
     val categorySlugs: List<String> = emptyList(),
+    @SerialName("seo_title") val seoTitle: String? = null,
+    @SerialName("seo_description") val seoDescription: String? = null,
+    val noindex: Boolean? = null,
+    val rules: List<ShopRuleDto> = emptyList(),
+    @SerialName("shipping_methods") val shippingMethods: List<ShopShippingMethodDto> = emptyList(),
+    @SerialName("working_hours") val workingHours: List<ShopWorkingHoursDto> = emptyList(),
+    @SerialName("fulfillment_type") val fulfillmentType: String? = null,
+    @SerialName("webhook_url") val webhookUrl: String? = null,
+    val bale: String? = null,
+    val rubika: String? = null,
+    val tiktok: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
 )
@@ -183,11 +256,46 @@ data class SellerShopDetailsDto(
     @JsonNames("CategorySlugs")
     val categorySlugs: List<String> = emptyList(),
     val whatsapp: String? = null,
+    val bale: String? = null,
+    val rubika: String? = null,
     val telegram: String? = null,
     val instagram: String? = null,
+    val tiktok: String? = null,
     val website: String? = null,
+    @SerialName("seo_title") val seoTitle: String? = null,
+    @SerialName("seo_description") val seoDescription: String? = null,
+    val noindex: Boolean? = null,
+    val rules: List<ShopRuleDto> = emptyList(),
+    @SerialName("shipping_methods") val shippingMethods: List<ShopShippingMethodDto> = emptyList(),
+    @SerialName("working_hours") val workingHours: List<ShopWorkingHoursDto> = emptyList(),
+    @SerialName("fulfillment_type") val fulfillmentType: String? = null,
+    @SerialName("webhook_url") val webhookUrl: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+@Serializable
+data class ShopRuleDto(
+    val title: String,
+    val body: String,
+)
+
+@Serializable
+data class ShopShippingMethodDto(
+    val code: String,
+    val title: String,
+    val cost: Long? = null,
+    @SerialName("min_days") val minDays: Int? = null,
+    @SerialName("max_days") val maxDays: Int? = null,
+    val active: Boolean? = null,
+)
+
+@Serializable
+data class ShopWorkingHoursDto(
+    val day: String,
+    @SerialName("opens_at") val opensAt: String? = null,
+    @SerialName("closes_at") val closesAt: String? = null,
+    val closed: Boolean = false,
 )
 
 @Serializable

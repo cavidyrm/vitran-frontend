@@ -22,6 +22,7 @@ data class ProductListItemDto(
     @SerialName("compare_at_price") val compareAtPrice: Long? = null,
     val active: Boolean = true,
     val confirmed: Boolean = true,
+    @SerialName("main_image") val mainImage: ProductImageDto? = null,
     val images: List<ProductImageDto> = emptyList(),
 )
 
@@ -43,6 +44,7 @@ data class ProductDetailsDto(
     @SerialName("compare_at_price") val compareAtPrice: Long? = null,
     val active: Boolean = true,
     val confirmed: Boolean = true,
+    @SerialName("main_image") val mainImage: ProductImageDto? = null,
     val images: List<ProductImageDto> = emptyList(),
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String,
@@ -53,4 +55,5 @@ data class ProductImageDto(
     val id: Long,
     val url: String,
     @SerialName("sort_order") val sortOrder: Int = 0,
+    @SerialName("is_main") val isMain: Boolean = false,
 )

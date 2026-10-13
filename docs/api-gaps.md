@@ -11,9 +11,9 @@ Status values: `Open` | `Verified from backend source` | `Resolved by backend up
 | Field | Status |
 |-------|--------|
 | **Status** | Client compatibility workaround |
-| **Issue** | Taxonomy uses string slugs (`aa-1-2-3-4`). Query params use string slugs. Request/response examples also show `"category_slug": 1` and `"category_slugs": [1]`. |
-| **Client impact** | Domain uses `CategorySlug` as `String`. `FlexibleCategorySlugSerializer` accepts int/string at DTO boundary in `:feature:marketplace`. |
-| **Phase 5 handling** | Implemented in product/shop DTOs. Live production probe did not re-verify numeric slugs; Postman examples drive tests. |
+| **Issue** | Taxonomy and current Postman examples use string slugs (`aa-1-2`). Create product still documents a legacy `category_id` with the same value. Older numeric examples are no longer the saved contract. |
+| **Client impact** | Domain uses `CategorySlug` as `String`. `FlexibleCategorySlugSerializer` still accepts int or string at the DTO boundary. |
+| **Phase 5 handling** | Implemented in product/shop DTOs. New writes send taxonomy strings. |
 
 ---
 
@@ -109,9 +109,10 @@ Postman requests **without saved response examples** (or with incomplete example
 | Field | Status |
 |-------|--------|
 | **Status** | Verified from Postman collection |
-| **Create/Update fields** | `title`, `category_slug`, `price`, optional `compare_at_price`, `description`, `active`, `images` (file, repeat, ≤5) |
+| **Create/Update fields** | `title`, exactly one `category_slug`, `price`, optional `compare_at_price`, `description`, optional `seo_title`, `seo_description`, `noindex`, `active`, `images` (file, repeat, ≤5) |
 | **Image key** | `images` (not `image`) |
-| **Update images** | Appended; total ≤ 5 (collection description) |
+| **Cover** | `main_image` plus `images[].is_main`. Set with `PATCH /seller/products/{id}/images/{imageId}/main`. Cards use `main_image.url`. |
+| **Update images** | Appended; total ≤ 5 (collection description). Deleting the cover promotes the lowest `sort_order`. |
 | **compare_at_price** | Optional pre-discount price. Product is on sale when set and greater than `price`. Update: omit to leave unchanged; send empty to clear. |
 | **List filters** | `active`, `shop_id`, `category_slug` (+ cursor pagination); `confirmed` accepted as optional client query when used |
 | **Open** | Exact server error reasons for publish-unapproved / plan limits; seller list item fields beyond Postman example; GET detail may omit `description` |
@@ -432,9 +433,9 @@ See [admin-and-cms.md](admin-and-cms.md).
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open / blocking |
-| **Issue** | Postman seller create/update/response use `"category_slugs": [1]` (numbers). Public taxonomy exposes only string slugs (`aa-1-2-3-4`) with no numeric CategoryId. |
-| **Client impact** | Transport uses `List<Long>`. Create Store does **not** invent IDs; sends empty list. Do not introduce `CategoryId` until taxonomy exposes mappable IDs. |
+| **Status** | Resolved by backend update |
+| **Issue** | Older Postman examples used `"category_slugs": [1]`. Current create/update/response examples use taxonomy strings (`"aa-1-2"`). |
+| **Client impact** | Transport sends `List<String>`. Create Store can attach real taxonomy slugs. The flexible serializer still accepts a legacy number. |
 | **Phase 7 handling** | Documented in [seller-shop-management.md](seller-shop-management.md). |
 
 ---
@@ -465,10 +466,10 @@ See [admin-and-cms.md](admin-and-cms.md).
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
-| **Issue** | Postman examples do not prove requiredness or how omitted/`null`/`""` clear optional social fields on PATCH. |
-| **Client impact** | Client omits null optionals on create; update sends provided strings without inventing clear semantics. |
-| **Phase 7 handling** | Documented; no invented clearing rules. |
+| **Status** | Resolved by backend update |
+| **Issue** | Update description now says: omit an optional string to keep it; send `""` to clear it. Omit `noindex`, `rules`, `shipping_methods`, or `working_hours` to keep them; send `[]` to clear a list. `clear_avatar_url` and `clear_webhook_url` remove those values. |
+| **Client impact** | Create omits null optionals. Update encodes empty strings and empty lists. Clear flags are sent only when true. |
+| **Phase 7 handling** | Applied on `UpdateShopCommand` / `UpdateShopRequestDto`. |
 
 ---
 
@@ -477,8 +478,8 @@ See [admin-and-cms.md](admin-and-cms.md).
 | Field | Status |
 |-------|--------|
 | **Status** | Open |
-| **Issue** | Sample proves `manual`/`redirect` only. API-key 403 capability reason unverified. |
-| **Client impact** | Unknown modes → `FulfillmentMode.Unknown`. Capability-specific 403 not mapped until verified. |
+| **Issue** | `GET .../fulfillment-options` sample still proves `manual` and `redirect` only. Create/update `fulfillment_type` also names `api`, `marketplace`, and `local` (`webhook_url` required for `api`). API-key 403 capability reason unverified. |
+| **Client impact** | Those five values map to typed `FulfillmentMode`s. Anything else stays `Unknown`. Capability-specific 403 is not mapped. |
 | **Phase 7 handling** | No plan-slug hard-coding. |
 
 ---
@@ -512,3 +513,14 @@ See [admin-and-cms.md](admin-and-cms.md).
 | **Status** | Open — catalog search still deferred |
 | **Issue** | `GET /catalog/search` gained `on_sale=true` but still has no response example. |
 | **Client impact** | Documented only. Simple search remains `GET /products/search`. |
+
+---
+
+## Gap 44 — Shop profile read-back and seller collection examples
+
+| Field | Status |
+|-------|--------|
+| **Status** | Open |
+| **Issue** | Create/update shop **requests** include `seo_title`, `seo_description`, `noindex`, `rules`, `shipping_methods`, `working_hours`, `fulfillment_type`, `webhook_url`, and socials (`bale`, `rubika`, `tiktok`). Saved GET/create/update **responses** still omit those fields. Seller `GET` collection list and detail have no saved examples. |
+| **Client impact** | Write models send the documented fields. Response DTOs decode them when present and leave them empty when absent. Absence in a minimal example is not treated as cleared. Seller collection reads reuse the public list/detail shape. |
+| **Handling** | Do not pre-fill an edit form from GET until a saved example includes the profile fields. Store collection UI stays mock. |

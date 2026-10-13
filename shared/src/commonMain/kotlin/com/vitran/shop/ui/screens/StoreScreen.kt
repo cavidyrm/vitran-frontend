@@ -53,6 +53,7 @@ import com.vitran.shop.ui.sections.store.StoreMenuSheet
 import com.vitran.shop.ui.sections.store.StoreProductsSection
 import com.vitran.shop.ui.sections.reference.toCategoriesProduct
 import com.vitran.shop.ui.sections.reference.toStoreMock
+import com.vitran.shop.ui.sections.store.StoreCollection
 import com.vitran.shop.ui.sections.store.StoreMock
 import com.vitran.shop.ui.sections.store.StoreProductsMock
 import com.vitran.shop.ui.sections.store.rememberMockStoreMenu
@@ -60,6 +61,9 @@ import com.vitran.shop.ui.sections.store.rememberStoreCoverHeight
 import com.vitran.shop.ui.shell.LocalDesktopLayout
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import org.jetbrains.compose.resources.stringResource
+import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.store_collection_product_count
 /** shop.app mobile overlay `backdrop-blur-[10px]` — blur content under the sheet. */
 private val MobileOmniboxBackdropBlur = 10.dp
 
@@ -101,7 +105,25 @@ fun StoreScreen(
     val engagementState by engagementViewModel.uiState.collectAsStateWithLifecycle()
     val shareManager: ShareManager = koinInject()
     val store = when (val state = shopState) {
-        is ShopDetailsUiState.Content -> state.shop.toStoreMock()
+        is ShopDetailsUiState.Content ->
+            state.shop.toStoreMock().copy(
+                collections =
+                    state.collections.map { collection ->
+                        val countLabel = stringResource(
+                            Res.string.store_collection_product_count,
+                            collection.productCount,
+                        )
+                        StoreCollection(
+                            id = collection.id.value.toString(),
+                            title = if (collection.productCount > 0) {
+                                "${collection.title} · $countLabel"
+                            } else {
+                                collection.title
+                            },
+                            imageUrl = "",
+                        )
+                    },
+            )
         else -> null
     }
     val productsMock = when (val state = shopState) {
@@ -279,11 +301,13 @@ fun StoreScreen(
                 )
             }
 
-            item(key = "store-collections") {
-                StoreCollectionsSection(
-                    store = resolvedStore,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            if (resolvedStore.collections.isNotEmpty()) {
+                item(key = "store-collections") {
+                    StoreCollectionsSection(
+                        store = resolvedStore,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
 
             item(key = "store-products") {

@@ -331,6 +331,27 @@ private class FakeShopRepo(
 
     override suspend fun regenerateApiKey(shopId: ShopId) =
         AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun getMyCollections(
+        query: com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionListQuery,
+    ) = AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun getMyCollection(
+        query: com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionDetailQuery,
+    ) = AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun createCollection(
+        command: com.vitran.shop.feature.seller.shop.domain.model.CreateShopCollectionCommand,
+    ) = AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun updateCollection(
+        command: com.vitran.shop.feature.seller.shop.domain.model.UpdateShopCollectionCommand,
+    ) = AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun deleteCollection(
+        shopId: ShopId,
+        collectionId: com.vitran.shop.feature.marketplace.shop.domain.model.ShopCollectionId,
+    ) = AppResult.Failure(AppError.Unexpected())
 }
 
 private class FakeProductRepo(
@@ -384,5 +405,8 @@ private class FakeProductRepo(
     override suspend fun deleteProduct(productId: ProductId) = AppResult.Success(Unit)
 
     override suspend fun deleteProductImage(productId: ProductId, imageId: ProductImageId) =
+        AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun setProductMainImage(productId: ProductId, imageId: ProductImageId) =
         AppResult.Failure(AppError.Unexpected())
 }

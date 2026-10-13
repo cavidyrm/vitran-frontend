@@ -126,6 +126,9 @@ import vitranshop.shared.generated.resources.admin_policy_templates_label
 import vitranshop.shared.generated.resources.admin_empty_products_action
 import vitranshop.shared.generated.resources.admin_empty_products_body
 import vitranshop.shared.generated.resources.admin_empty_products_title
+import vitranshop.shared.generated.resources.admin_field_bale
+import vitranshop.shared.generated.resources.admin_field_rubika
+import vitranshop.shared.generated.resources.admin_field_tiktok
 import vitranshop.shared.generated.resources.admin_preview_store_fallback
 import vitranshop.shared.generated.resources.admin_preview_visit
 import vitranshop.shared.generated.resources.admin_publish_check_city
@@ -137,9 +140,12 @@ import vitranshop.shared.generated.resources.admin_publish_ready_title
 import vitranshop.shared.generated.resources.admin_publish_view
 import vitranshop.shared.generated.resources.admin_social_add_new
 import vitranshop.shared.generated.resources.admin_social_drag_a11y
+import vitranshop.shared.generated.resources.admin_social_placeholder_bale
 import vitranshop.shared.generated.resources.admin_social_placeholder_email
 import vitranshop.shared.generated.resources.admin_social_placeholder_instagram
+import vitranshop.shared.generated.resources.admin_social_placeholder_rubika
 import vitranshop.shared.generated.resources.admin_social_placeholder_telegram
+import vitranshop.shared.generated.resources.admin_social_placeholder_tiktok
 import vitranshop.shared.generated.resources.admin_social_placeholder_website
 import vitranshop.shared.generated.resources.admin_social_placeholder_whatsapp
 import vitranshop.shared.generated.resources.admin_social_remove
@@ -237,7 +243,11 @@ fun CreateStoreStepBody(
                 fieldErrors = fieldErrors,
                 onClearFieldError = onClearFieldError,
             )
-            CreateStoreStep.Policies -> CreateStorePoliciesStep(state, onStateChange)
+            CreateStoreStep.Policies -> CreateStorePoliciesStep(
+                state = state,
+                onStateChange = onStateChange,
+                fieldErrors = fieldErrors,
+            )
             CreateStoreStep.Publish -> CreateStorePublishStep(
                 state = state,
                 onViewStore = onViewStore,
@@ -923,6 +933,9 @@ private fun socialReasonFor(kind: StoreSocialKind): String? = when (kind) {
     StoreSocialKind.Telegram -> "telegram"
     StoreSocialKind.WhatsApp -> "whatsapp"
     StoreSocialKind.Website -> "website"
+    StoreSocialKind.Bale -> "bale"
+    StoreSocialKind.Rubika -> "rubika"
+    StoreSocialKind.TikTok -> "tiktok"
     StoreSocialKind.Email -> null
 }
 
@@ -941,6 +954,9 @@ private fun SocialChannelRow(
         StoreSocialKind.Telegram -> stringResource(Res.string.admin_field_telegram)
         StoreSocialKind.WhatsApp -> stringResource(Res.string.admin_field_whatsapp)
         StoreSocialKind.Website -> stringResource(Res.string.admin_field_website)
+        StoreSocialKind.Bale -> stringResource(Res.string.admin_field_bale)
+        StoreSocialKind.Rubika -> stringResource(Res.string.admin_field_rubika)
+        StoreSocialKind.TikTok -> stringResource(Res.string.admin_field_tiktok)
         StoreSocialKind.Email -> stringResource(Res.string.admin_field_email_channel)
     }
     val placeholder = when (channel.kind) {
@@ -948,6 +964,9 @@ private fun SocialChannelRow(
         StoreSocialKind.Telegram -> stringResource(Res.string.admin_social_placeholder_telegram)
         StoreSocialKind.WhatsApp -> stringResource(Res.string.admin_social_placeholder_whatsapp)
         StoreSocialKind.Website -> stringResource(Res.string.admin_social_placeholder_website)
+        StoreSocialKind.Bale -> stringResource(Res.string.admin_social_placeholder_bale)
+        StoreSocialKind.Rubika -> stringResource(Res.string.admin_social_placeholder_rubika)
+        StoreSocialKind.TikTok -> stringResource(Res.string.admin_social_placeholder_tiktok)
         StoreSocialKind.Email -> stringResource(Res.string.admin_social_placeholder_email)
     }
     val icon = when (channel.kind) {
@@ -955,6 +974,9 @@ private fun SocialChannelRow(
         StoreSocialKind.Telegram -> Res.drawable.ic_social_website
         StoreSocialKind.WhatsApp -> Res.drawable.ic_social_email
         StoreSocialKind.Website -> Res.drawable.ic_social_website
+        StoreSocialKind.Bale -> Res.drawable.ic_social_website
+        StoreSocialKind.Rubika -> Res.drawable.ic_social_website
+        StoreSocialKind.TikTok -> Res.drawable.ic_social_instagram
         StoreSocialKind.Email -> Res.drawable.ic_social_email
     }
     val prefix = when (channel.kind) {
@@ -1042,8 +1064,10 @@ private fun SocialChannelRow(
 private fun CreateStorePoliciesStep(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
+    fieldErrors: Map<String, String> = emptyMap(),
 ) {
     var tab by remember { mutableStateOf(0) }
+    Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.lg)) {
     AdminFormCard(
         title = stringResource(Res.string.admin_card_policies),
         subtitle = stringResource(Res.string.admin_card_policies_sub),
@@ -1181,6 +1205,14 @@ private fun CreateStorePoliciesStep(
                 },
             )
         }
+    }
+    ShopProfileEditor(
+        profile = state.profile,
+        onProfileChange = { profile ->
+            onStateChange(state.copy(profile = profile, dirty = true))
+        },
+        fieldErrors = fieldErrors,
+    )
     }
 }
 

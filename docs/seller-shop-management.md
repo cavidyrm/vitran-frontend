@@ -61,7 +61,7 @@ Centralized in `shopPublicationState(active, confirmed)`:
 
 ## 10. Create Shop
 
-`CreateShopUseCase` → `SellerShopRepository.createShop`. Request fields per Postman (including optional `avatar_url`); null optionals omitted (`explicitNulls=false` + `@EncodeDefault(NEVER)`). `category_slugs` as `List<Long>` (see gap). Create Store UI does **not** invent category IDs.
+`CreateShopUseCase` → `SellerShopRepository.createShop`. Request fields per Postman, including optional SEO, rules, shipping methods, working hours, `fulfillment_type`, `webhook_url`, and socials (`whatsapp`, `bale`, `rubika`, `telegram`, `instagram`, `tiktok`, `website`). Null optionals are omitted (`explicitNulls=false` + `@EncodeDefault(NEVER)`). `category_slugs` is `List<String>` of taxonomy slugs. Create Store collects those profile fields on the policies step, plus bale, rubika, and tiktok on the contact step. The existing policies and shipping text is sent as a rule and a default shipping method when the structured lists are empty.
 
 ## 11. Update Shop
 
@@ -85,15 +85,19 @@ Reuse `LocationRepository` / `CityId`. Create Store city select uses numeric `Ci
 
 ## 16. Taxonomy integration
 
-Public taxonomy exposes string `CategorySlug` only — **no numeric CategoryId**. Seller create category selection is blocked until backend exposes mappable IDs.
+Public taxonomy exposes string `CategorySlug` values such as `aa-1-2`. Seller create/update send those strings.
 
 ## 17. `category_slugs` compatibility status
 
-**Open / blocking:** Postman examples use numeric arrays (`[1]`). Taxonomy has no numeric IDs. Client serializes `List<Long>` when provided; Create Store sends `[]` and does not invent IDs.
+**Resolved.** Postman examples use string arrays (`["aa-1-2"]`). The client serializes `List<String>`. `FlexibleCategorySlugListSerializer` still accepts a legacy number.
 
 ## 18. Fulfillment options
 
-`GET .../fulfillment-options` → `manual`, `redirect`, plus `Unknown(raw)`. Server-driven; no plan-slug hard-coding.
+`GET .../fulfillment-options` → `manual`, `redirect`, plus `Unknown(raw)`. Create/update `fulfillment_type` also documents `api`, `marketplace`, and `local`. `webhook_url` is required when the type is `api`. Server-driven; no plan-slug hard-coding.
+
+## 18b. Shop collections
+
+Owner CRUD: `POST/GET/PATCH/DELETE /seller/shops/{id}/collections`, edited on the store edit screen. Public reads: `GET /shops/{id}/collections` and `GET /shops/{id}/collections/{collectionId}`. Title is 1–150 characters, description up to 5000, at most 500 `product_ids`. Seller list/detail have no saved response examples; the client decodes the public shape. `StoreScreen` shows those rows (title and product count). Create and edit shop forms send SEO, rules, shipping methods, working hours, fulfillment, webhook, and bale/rubika/tiktok. Edit omits profile fields the user did not change.
 
 ## 19. API-key regeneration
 
@@ -118,7 +122,7 @@ Implements `SessionInvalidationListener` — cleared on logout / terminal invali
 | CreateStoreScreen | Wired to `CreateShopViewModel` |
 | Seller list / edit / details / API key | ViewModels ready; Compose routes deferred |
 
-Unsupported Create Store fields (logo, theme, policies, province, category chips as IDs) remain visual/deferred.
+Unsupported Create Store fields (logo file upload, theme, policies, shipping, hours, province) remain visual/deferred. Category chips send taxonomy slugs when the form has a selection.
 
 ## 24. Tests
 

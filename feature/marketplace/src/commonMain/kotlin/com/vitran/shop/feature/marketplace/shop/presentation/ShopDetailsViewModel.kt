@@ -11,8 +11,11 @@ import com.vitran.shop.feature.marketplace.common.presentation.CursorListState
 import com.vitran.shop.feature.marketplace.product.domain.model.ProductSummary
 import com.vitran.shop.feature.marketplace.product.domain.query.ProductBrowseQuery
 import com.vitran.shop.feature.marketplace.product.domain.repository.ProductRepository
+import com.vitran.shop.feature.marketplace.shop.domain.model.ShopCollection
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopDetails
+import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.marketplace.shop.domain.model.parseShopNavigationKey
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionListQuery
 import com.vitran.shop.feature.marketplace.shop.domain.repository.ShopRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +28,7 @@ sealed interface ShopDetailsUiState {
     data class Content(
         val shop: ShopDetails,
         val products: CursorListState<ProductSummary>,
+        val collections: List<ShopCollection> = emptyList(),
     ) : ShopDetailsUiState
 
     data class NotFound(
@@ -112,6 +116,7 @@ class ShopDetailsViewModel(
                         generation = generation,
                         isRefresh = false,
                     )
+                    loadCollections(shopResult.value.id)
                 }
                 is AppResult.Failure -> {
                     _uiState.value = mapShopError(shopResult.error)
@@ -151,6 +156,19 @@ class ShopDetailsViewModel(
                     else -> productController.applyLoadMoreFailure(current.products, result.error)
                 }
                 _uiState.value = current.copy(products = updated)
+            }
+        }
+    }
+
+    private fun loadCollections(shopId: ShopId) {
+        viewModelScope.launch {
+            when (val result = shopRepository.getShopCollections(ShopCollectionListQuery(shopId))) {
+                is AppResult.Success -> {
+                    val current = _uiState.value as? ShopDetailsUiState.Content ?: return@launch
+                    if (current.shop.id != shopId) return@launch
+                    _uiState.value = current.copy(collections = result.value.items)
+                }
+                is AppResult.Failure -> Unit
             }
         }
     }

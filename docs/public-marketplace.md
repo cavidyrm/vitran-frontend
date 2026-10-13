@@ -167,7 +167,7 @@ Engagement is implemented in `:feature:engagement`. See [marketplace-engagement.
 
 ## 18. Known UI/API gaps
 
-Public shop detail lacks fields `StoreMock` expects: `coverUrl`, `avatarUrl`, `wordmarkUrl`, `brandColor`, `ratingLabel`, `reviewCountLabel`, `collections`, rich `navChips`. UI uses placeholders; see `docs/api-gaps.md`.
+Public shop detail still lacks cover, wordmark, brand color, rating, and review count expected by `StoreMock`. `StoreScreen` collection tiles use `GET /shops/{id}/collections` (title and `product_count`; no cover image). Product cards use `main_image` / `is_main` for the cover. The add-product form can mark noindex and treats the first image as the cover. See `docs/api-gaps.md`.
 
 Home merchant spotlight cards may lack cover art and product peeks until Home item schemas are verified.
 

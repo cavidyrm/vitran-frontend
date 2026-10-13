@@ -18,6 +18,7 @@ import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
 import com.vitran.shop.ui.components.SiteFooterLinkId
 import com.vitran.shop.ui.sections.account.AccountDest
 import com.vitran.shop.ui.sections.account.AccountPageShell
+import com.vitran.shop.ui.sections.account.stores.AccountStoreCollectionsSection
 import com.vitran.shop.ui.sections.account.stores.AccountStoreEditForm
 import com.vitran.shop.ui.sections.account.stores.AccountStoreProductsSection
 import com.vitran.shop.ui.sections.account.stores.AccountStoresError
@@ -139,6 +140,16 @@ private fun AccountStoreEditBody(
                 onTelegramChange = { value -> viewModel.updateForm { it.copy(telegram = value) } },
                 onInstagramChange = { value -> viewModel.updateForm { it.copy(instagram = value) } },
                 onWebsiteChange = { value -> viewModel.updateForm { it.copy(website = value) } },
+                onBaleChange = { value ->
+                    viewModel.updateForm { it.copy(bale = value, editedFields = it.editedFields + "bale") }
+                },
+                onRubikaChange = { value ->
+                    viewModel.updateForm { it.copy(rubika = value, editedFields = it.editedFields + "rubika") }
+                },
+                onTiktokChange = { value ->
+                    viewModel.updateForm { it.copy(tiktok = value, editedFields = it.editedFields + "tiktok") }
+                },
+                onProfileChange = { profile -> viewModel.updateForm { it.copy(profile = profile) } },
                 onCitySelect = { id ->
                     viewModel.updateForm { form ->
                         form.copy(cityId = id.toLongOrNull()?.let(::CityId))
@@ -147,6 +158,7 @@ private fun AccountStoreEditBody(
                 onToggleCategory = viewModel::toggleCategory,
                 onSave = viewModel::save,
             )
+            AccountStoreCollectionsSection(shopId = shopId)
             AccountStoreProductsSection(
                 shopId = shopId,
                 taxonomyRoots = taxonomyRoots,

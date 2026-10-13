@@ -23,6 +23,8 @@ description: >-
 - **One piece per task** unless the user asks for more.
 - Match shop.app using **live shop.app in the agent browser** plus `docs/ui-reference/` screenshots. Screenshots alone are not enough.
 - Use mock data only (see mock-phase rule).
+- Product cards that show a real catalog image use the API cover: `main_image.url`, otherwise the image with `is_main`, otherwise the lowest `sort_order`. Do not treat `images[0]` as the cover.
+- Store collection tiles on `StoreScreen` use `GET /shops/{id}/collections`. Do not add a parallel collection model. Rows have no cover image.
 - Read `shop-design-system` skill for tokens when needed.
 
 ## Steps

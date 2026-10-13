@@ -105,6 +105,11 @@ private class FakeSellerProductRepository : SellerProductRepository {
         imageId: ProductImageId,
     ): AppResult<SellerProductDetails> = AppResult.Success(sampleDetails(ShopId(1)))
 
+    override suspend fun setProductMainImage(
+        productId: ProductId,
+        imageId: ProductImageId,
+    ): AppResult<SellerProductDetails> = AppResult.Success(sampleDetails(ShopId(1)).copy(id = productId))
+
     private fun sampleDetails(shopId: ShopId) =
         SellerProductDetails(
             id = ProductId(1),

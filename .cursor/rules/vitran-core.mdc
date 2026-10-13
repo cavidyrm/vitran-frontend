@@ -26,9 +26,16 @@ alwaysApply: true
 - New shopper sections: always verify **responsive sizing** and the **gap above** the previous section on live shop.app — see rule `page-section-workflow.mdc`.
 
 ## Phase
-- Current phase: **UI + mock data only**. No real API calls.
+- Current phase: **UI + mock data only**. No real API calls from screens until a section is explicitly wired.
 - Prefer fake/local data so screens look complete.
 - Never ship PDP placeholders like title `محصول`, merchant `فروشگاه`, price `—`, or “description coming soon” — use realistic fake copy.
+
+## API contract
+- Source of truth: `docs/postman/vitran-api.postman_collection.json` (131 requests, 128 `/api/v1` business routes). Summary: `docs/api-contract.md`.
+- `category_slug` / `category_slugs` are taxonomy **strings** (example `aa-1-2`). Keep the flexible serializer for legacy numbers; do not invent numeric category ids.
+- Product cards use `main_image.url` (or `images[]` where `is_main` is true). Do not assume `images[0]` is the cover.
+- Shop collections: public `GET /shops/{id}/collections` feeds `StoreScreen` tiles. Seller create/update/delete lives on the store edit screen. Collection rows have `product_count` and no cover image. Do not add a second collection model.
+- Seller shop create/update sends SEO, rules, shipping methods, working hours, fulfillment type, webhook, and socials (`bale`, `rubika`, `tiktok`) from the create-store and edit-store forms. On edit, omit a profile field the user did not change — shop GET may still leave those fields out.
 
 ## Language
 - Code, comments, and Cursor rules/skills: **English**.

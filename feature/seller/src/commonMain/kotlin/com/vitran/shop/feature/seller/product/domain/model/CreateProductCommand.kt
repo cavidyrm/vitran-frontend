@@ -13,4 +13,7 @@ data class CreateProductCommand(
     val desiredActive: Boolean,
     val images: List<SelectedFile> = emptyList(),
     val compareAtPriceAmount: Long? = null,
+    val seoTitle: String? = null,
+    val seoDescription: String? = null,
+    val noindex: Boolean? = null,
 )

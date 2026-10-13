@@ -19,4 +19,10 @@ data class UpdateProductCommand(
     /** Null means omit. [clearCompareAtPrice] sends an empty field to clear the discount. */
     val compareAtPriceAmount: Long? = null,
     val clearCompareAtPrice: Boolean = false,
+    /** Null omits the field. Empty string clears `seo_title`. */
+    val seoTitle: String? = null,
+    /** Null omits the field. Empty string clears `seo_description`. */
+    val seoDescription: String? = null,
+    /** Null omits the field. */
+    val noindex: Boolean? = null,
 )

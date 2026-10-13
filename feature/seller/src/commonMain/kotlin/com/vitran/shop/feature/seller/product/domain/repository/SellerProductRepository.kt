@@ -27,4 +27,9 @@ interface SellerProductRepository {
         productId: ProductId,
         imageId: ProductImageId,
     ): AppResult<SellerProductDetails>
+
+    suspend fun setProductMainImage(
+        productId: ProductId,
+        imageId: ProductImageId,
+    ): AppResult<SellerProductDetails>
 }

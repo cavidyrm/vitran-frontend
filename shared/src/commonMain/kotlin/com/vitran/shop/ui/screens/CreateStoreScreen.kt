@@ -36,7 +36,12 @@ import com.vitran.shop.feature.seller.shop.presentation.CreateShopUiEffect
 import com.vitran.shop.feature.seller.shop.presentation.CreateShopViewModel
 import com.vitran.shop.feature.seller.shop.presentation.SlugCheckUiStatus
 import com.vitran.shop.feature.seller.shop.presentation.TitleCheckUiStatus
+import com.vitran.shop.feature.seller.shop.domain.model.ShopRule
+import com.vitran.shop.feature.seller.shop.domain.model.ShopShippingMethod
 import com.vitran.shop.feature.seller.shop.presentation.buildCreateShopCommand
+import com.vitran.shop.feature.seller.shop.presentation.toRules
+import com.vitran.shop.feature.seller.shop.presentation.toShippingMethods
+import com.vitran.shop.feature.seller.shop.presentation.toWorkingHours
 import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.sections.admin.AutosaveStatus
 import com.vitran.shop.ui.sections.admin.CreateStoreBottomBar
@@ -60,6 +65,7 @@ import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.admin_field_city_required
+import vitranshop.shared.generated.resources.admin_profile_webhook_required
 import vitranshop.shared.generated.resources.admin_last_saved_just_now
 import vitranshop.shared.generated.resources.admin_last_saved_minutes
 
@@ -102,6 +108,7 @@ fun CreateStoreScreen(
     val citiesLoading = locationState is CreateStoreLocationUiState.Loading
     val citiesError = (locationState as? CreateStoreLocationUiState.Error)?.message
     val cityRequired = stringResource(Res.string.admin_field_city_required)
+    val webhookRequired = stringResource(Res.string.admin_profile_webhook_required)
 
     LaunchedEffect(state.slug) {
         createShopViewModel.onSlugInputChanged(state.slug)
@@ -187,7 +194,25 @@ fun CreateStoreScreen(
             step = CreateStoreStep.Contact
             return
         }
+        if (state.profile.fulfillmentType == "api" && state.profile.webhookUrl.isBlank()) {
+            createShopViewModel.reportLocalFieldError("webhook_url", webhookRequired)
+            step = CreateStoreStep.Policies
+            return
+        }
         val social = state.socialChannels.associate { it.kind to it.handle }
+        val rules =
+            state.profile.toRules().ifEmpty {
+                buildList {
+                    if (state.policies.isNotBlank()) add(ShopRule(title = "قوانین", body = state.policies.trim()))
+                    if (state.returns.isNotBlank()) add(ShopRule(title = "مرجوعی", body = state.returns.trim()))
+                }
+            }
+        val shippingMethods =
+            state.profile.toShippingMethods().ifEmpty {
+                state.shipping.trim().takeIf { it.isNotEmpty() }?.let { title ->
+                    listOf(ShopShippingMethod(code = "default", title = title))
+                } ?: emptyList()
+            }
         val command =
             buildCreateShopCommand(
                 title = state.storeName,
@@ -201,9 +226,20 @@ fun CreateStoreScreen(
                 telegram = social[StoreSocialKind.Telegram],
                 instagram = social[StoreSocialKind.Instagram],
                 website = social[StoreSocialKind.Website],
+                bale = social[StoreSocialKind.Bale],
+                rubika = social[StoreSocialKind.Rubika],
+                tiktok = social[StoreSocialKind.TikTok],
                 supportTimes = state.supportTimes,
                 categorySlugs = state.categorySlugs,
                 avatarUrl = state.avatarUrl,
+                seoTitle = state.profile.seoTitle,
+                seoDescription = state.profile.seoDescription,
+                noindex = state.profile.noindex.takeIf { it },
+                rules = rules,
+                shippingMethods = shippingMethods,
+                workingHours = state.profile.toWorkingHours(),
+                fulfillmentType = state.profile.fulfillmentType,
+                webhookUrl = state.profile.webhookUrl,
             )
         createShopViewModel.submit(command)
     }

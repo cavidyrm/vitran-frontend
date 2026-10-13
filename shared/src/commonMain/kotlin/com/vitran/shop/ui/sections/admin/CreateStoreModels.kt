@@ -3,6 +3,7 @@ package com.vitran.shop.ui.sections.admin
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import com.vitran.shop.feature.seller.shop.presentation.ShopProfileDraft
 import com.vitran.shop.ui.components.admin.AdminSelectOption
 
 enum class CreateStoreStep {
@@ -18,6 +19,9 @@ enum class StoreSocialKind {
     Telegram,
     WhatsApp,
     Website,
+    Bale,
+    Rubika,
+    TikTok,
     Email,
 }
 
@@ -102,6 +106,7 @@ data class CreateStoreFormState(
     val policyMode: PolicyInputMode = PolicyInputMode.Manual,
     val policyTemplateId: String? = null,
     val socialChannels: List<StoreSocialChannel> = CreateStoreMocks.defaultSocialChannels,
+    val profile: ShopProfileDraft = ShopProfileDraft(),
     val themeId: String = CreateStoreMocks.DefaultThemeId,
     val themeManuallyEdited: Boolean = false,
     val coverUrl: String? = null,

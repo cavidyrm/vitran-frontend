@@ -116,6 +116,7 @@ data class CreateProductFormState(
     val slugManuallyEdited: Boolean = false,
     val seoTitle: String = "",
     val seoDescription: String = "",
+    val noindex: Boolean = false,
     val seoExpanded: Boolean = false,
     val dirty: Boolean = false,
     val savePhase: ProductSavePhase = ProductSavePhase.Idle,

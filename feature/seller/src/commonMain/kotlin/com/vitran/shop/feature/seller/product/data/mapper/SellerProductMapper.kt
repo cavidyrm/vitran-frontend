@@ -11,6 +11,7 @@ import com.vitran.shop.feature.seller.product.data.remote.dto.SellerProductListI
 import com.vitran.shop.feature.seller.product.domain.model.ProductImageId
 import com.vitran.shop.feature.seller.product.domain.model.SellerProductDetails
 import com.vitran.shop.feature.seller.product.domain.model.SellerProductImage
+import com.vitran.shop.feature.seller.product.domain.model.coverImage
 import com.vitran.shop.feature.seller.product.domain.model.SellerProductSummary
 import kotlinx.datetime.Instant
 
@@ -35,7 +36,25 @@ internal fun SellerProductImageDto.toDomain(): SellerProductImage =
         id = ProductImageId(id),
         url = url,
         sortOrder = sortOrder,
+        isMain = isMain,
     )
+
+internal fun List<SellerProductImageDto>.toDomainImages(
+    mainImage: SellerProductImageDto?,
+): List<SellerProductImage> {
+    val mapped = map { it.toDomain() }.toMutableList()
+    if (mainImage != null && mapped.none { it.id.value == mainImage.id }) {
+        mapped += mainImage.toDomain()
+    }
+    val coverId = mainImage?.id ?: mapped.firstOrNull { it.isMain }?.id?.value
+    val flagged =
+        if (coverId == null) {
+            mapped
+        } else {
+            mapped.map { image -> image.copy(isMain = image.id.value == coverId) }
+        }
+    return flagged.sortedWith(compareBy<SellerProductImage> { !it.isMain }.thenBy { it.sortOrder })
+}
 
 internal fun SellerProductDto.toDomain(
     fallbackShopId: ShopId? = null,
@@ -48,6 +67,7 @@ internal fun SellerProductDto.toDomain(
             ?: ShopId(0)
     val active = active ?: previous?.active ?: false
     val confirmed = confirmed ?: previous?.confirmed ?: false
+    val resolvedImages = images.toDomainImages(mainImage)
     return SellerProductDetails(
         id = ProductId(id),
         shopId = resolvedShopId,
@@ -59,7 +79,8 @@ internal fun SellerProductDto.toDomain(
         compareAtPriceAmount = compareAtPrice ?: previous?.compareAtPriceAmount,
         active = active,
         confirmed = confirmed,
-        images = images.map { it.toDomain() }.sortedBy { it.sortOrder },
+        mainImage = mainImage?.toDomain()?.copy(isMain = true) ?: resolvedImages.coverImage(),
+        images = resolvedImages,
         createdAt = createdAt?.let { runCatching { Instant.parse(it) }.getOrNull() }
             ?: previous?.createdAt,
         updatedAt = updatedAt?.let { runCatching { Instant.parse(it) }.getOrNull() }

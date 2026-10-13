@@ -117,4 +117,18 @@ internal class DefaultSellerProductRepository(
             }
             is AppResult.Failure -> AppResult.Failure(result.error.toSellerProductAppError())
         }
+
+    override suspend fun setProductMainImage(
+        productId: ProductId,
+        imageId: ProductImageId,
+    ): AppResult<SellerProductDetails> =
+        when (val result = api.setProductMainImage(productId, imageId)) {
+            is AppResult.Success -> {
+                val previous = stateStore.getDetails(productId)
+                val details = result.value.product.toDomain(previous = previous)
+                stateStore.putDetails(details)
+                AppResult.Success(details)
+            }
+            is AppResult.Failure -> AppResult.Failure(result.error.toSellerProductAppError())
+        }
 }

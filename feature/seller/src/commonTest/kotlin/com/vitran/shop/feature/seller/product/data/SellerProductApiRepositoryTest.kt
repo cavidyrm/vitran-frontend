@@ -45,6 +45,7 @@ import io.ktor.utils.io.copyTo
 import io.ktor.utils.io.readRemaining
 import io.ktor.utils.io.writeFully
 import com.vitran.shop.feature.seller.product.data.remote.buildCreateMultipart
+import com.vitran.shop.feature.seller.product.data.remote.buildUpdateMultipart
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -339,7 +340,90 @@ class SellerProductApiRepositoryTest {
         listeners.single().onSessionInvalidated()
         assertTrue(store.summaries.value.isEmpty())
     }
+
+    @Test
+    fun createProduct_includesSeoWhenSet() = runTest {
+        val bodyText =
+            readBodyText(
+                buildCreateMultipart(
+                    CreateProductCommand(
+                        shopId = ShopId(1),
+                        title = "Blue Widget",
+                        description = "Desc",
+                        priceAmount = 10,
+                        category = CategorySlug("aa-1-2"),
+                        desiredActive = false,
+                        seoTitle = "Blue Widget | Vitran",
+                        seoDescription = "Meta",
+                        noindex = true,
+                    ),
+                ),
+            )
+        assertTrue(bodyText.contains("seo_title"))
+        assertTrue(bodyText.contains("Blue Widget | Vitran"))
+        assertTrue(bodyText.contains("seo_description"))
+        assertTrue(bodyText.contains("noindex"))
+        assertTrue(bodyText.contains("true"))
+    }
+
+    @Test
+    fun updateProduct_sendsEmptySeoToClear() = runTest {
+        val bodyText =
+            readBodyText(
+                buildUpdateMultipart(
+                    UpdateProductCommand(
+                        productId = ProductId(1),
+                        seoTitle = "",
+                        seoDescription = "",
+                    ),
+                ),
+            )
+        assertTrue(bodyText.contains("name=seo_title") || bodyText.contains("name=\"seo_title\""))
+        assertTrue(bodyText.contains("name=seo_description") || bodyText.contains("name=\"seo_description\""))
+    }
+
+    @Test
+    fun setProductMainImage_usesCoverFromResponse() = runTest {
+        val engine =
+            MockEngine { request ->
+                assertEquals(HttpMethod.Patch, request.method)
+                assertTrue(request.url.encodedPath.endsWith("/seller/products/1/images/2/main"))
+                assertTrue(request.hasAuthBearer("OLD_ACCESS"))
+                jsonResponse(HttpStatusCode.OK, setMainImageBody)
+            }
+        val (repo, _) = createSellerProductRepository(engine)
+        val result = repo.setProductMainImage(ProductId(1), ProductImageId(2))
+        assertIs<AppResult.Success<*>>(result)
+        val details = (result as AppResult.Success).value
+        assertEquals(2L, details.mainImage?.id?.value)
+        assertTrue(details.images.first { it.id == ProductImageId(2) }.isMain)
+        assertFalse(details.images.first { it.id == ProductImageId(1) }.isMain)
+    }
 }
+
+private const val setMainImageBody = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "product": {
+      "id": 1,
+      "main_image": {
+        "id": 2,
+        "url": "http://localhost:9000/vitran/shops/1/products/cover.jpg",
+        "sort_order": 1,
+        "is_main": true
+      },
+      "images": [
+        { "id": 1, "url": "http://localhost:9000/vitran/shops/1/products/abc.jpg", "sort_order": 0, "is_main": false },
+        { "id": 2, "url": "http://localhost:9000/vitran/shops/1/products/cover.jpg", "sort_order": 1, "is_main": true }
+      ]
+    }
+  },
+  "errors": []
+}
+"""
 
 private fun assertNotNullMultipart(contentType: ContentType?) {
     assertTrue(contentType != null, "contentType was null")

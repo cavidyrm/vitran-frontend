@@ -4,6 +4,7 @@ import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.marketplace.product.domain.model.ProductId
 import com.vitran.shop.feature.marketplace.product.domain.repository.ProductPublicCacheInvalidator
+import com.vitran.shop.feature.seller.product.domain.model.ProductImageId
 import com.vitran.shop.feature.seller.product.domain.model.SellerProductDetails
 import com.vitran.shop.feature.seller.product.domain.model.UpdateProductCommand
 import com.vitran.shop.feature.seller.product.domain.repository.SellerProductRepository
@@ -47,6 +48,23 @@ class SetProductActiveUseCase(
             }
         }
     }
+}
+
+class SetProductMainImageUseCase(
+    private val sellerProductRepository: SellerProductRepository,
+    private val publicCacheInvalidator: ProductPublicCacheInvalidator,
+) {
+    suspend operator fun invoke(
+        productId: ProductId,
+        imageId: ProductImageId,
+    ): AppResult<SellerProductDetails> =
+        when (val result = sellerProductRepository.setProductMainImage(productId, imageId)) {
+            is AppResult.Failure -> result
+            is AppResult.Success -> {
+                publicCacheInvalidator.invalidate(productId)
+                AppResult.Success(result.value)
+            }
+        }
 }
 
 class DeleteProductUseCase(

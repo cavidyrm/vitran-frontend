@@ -24,6 +24,7 @@ import com.vitran.shop.feature.seller.product.domain.repository.SellerProductRep
 import com.vitran.shop.feature.seller.product.domain.usecase.CreateProductUseCase
 import com.vitran.shop.feature.seller.product.domain.usecase.DeleteProductUseCase
 import com.vitran.shop.feature.seller.product.domain.usecase.SetProductActiveUseCase
+import com.vitran.shop.feature.seller.product.domain.usecase.SetProductMainImageUseCase
 import com.vitran.shop.feature.seller.product.domain.usecase.UpdateProductUseCase
 import com.vitran.shop.feature.seller.product.presentation.CreateProductViewModel
 import com.vitran.shop.feature.seller.product.presentation.SellerShopProductsViewModel
@@ -37,12 +38,16 @@ import com.vitran.shop.feature.seller.shop.data.remote.SellerShopApi
 import com.vitran.shop.feature.seller.shop.data.repository.DefaultSellerShopRepository
 import com.vitran.shop.feature.seller.shop.data.state.SellerShopStateStore
 import com.vitran.shop.feature.seller.shop.domain.repository.SellerShopRepository
+import com.vitran.shop.feature.seller.shop.domain.usecase.CreateShopCollectionUseCase
 import com.vitran.shop.feature.seller.shop.domain.usecase.CreateShopUseCase
+import com.vitran.shop.feature.seller.shop.domain.usecase.DeleteShopCollectionUseCase
+import com.vitran.shop.feature.seller.shop.domain.usecase.UpdateShopCollectionUseCase
 import com.vitran.shop.feature.seller.shop.domain.usecase.UpdateShopUseCase
 import com.vitran.shop.feature.seller.shop.presentation.CreateShopViewModel
 import com.vitran.shop.feature.seller.shop.presentation.EditShopViewModel
 import com.vitran.shop.feature.seller.shop.presentation.SellerShopDetailsViewModel
 import com.vitran.shop.feature.seller.shop.presentation.SellerShopsViewModel
+import com.vitran.shop.feature.seller.shop.presentation.ShopCollectionsViewModel
 import com.vitran.shop.feature.seller.shop.presentation.ShopApiKeyViewModel
 import com.vitran.shop.feature.seller.subscription.data.remote.SellerSubscriptionApi
 import com.vitran.shop.feature.seller.subscription.data.repository.DefaultSubscriptionRepository
@@ -90,6 +95,9 @@ val sellerModule = module {
     single<SellerBoostRepository> { DefaultSellerBoostRepository(get(), get()) }
 
     factory { CreateShopUseCase(get(), get(), get()) }
+    factory { CreateShopCollectionUseCase(get()) }
+    factory { UpdateShopCollectionUseCase(get()) }
+    factory { DeleteShopCollectionUseCase(get()) }
     factory {
         UpdateShopUseCase(
             sellerShopRepository = get(),
@@ -100,6 +108,12 @@ val sellerModule = module {
     factory { CreateProductUseCase(get()) }
     factory {
         UpdateProductUseCase(
+            sellerProductRepository = get(),
+            publicCacheInvalidator = get(),
+        )
+    }
+    factory {
+        SetProductMainImageUseCase(
             sellerProductRepository = get(),
             publicCacheInvalidator = get(),
         )
@@ -138,6 +152,15 @@ val sellerModule = module {
     viewModel { CreateShopViewModel(get(), get()) }
     viewModel { SellerShopsViewModel(get()) }
     viewModel { parameters ->
+        ShopCollectionsViewModel(
+            shopId = parameters.get(),
+            sellerShopRepository = get(),
+            createShopCollection = get(),
+            updateShopCollection = get(),
+            deleteShopCollection = get(),
+        )
+    }
+    viewModel { parameters ->
         EditShopViewModel(
             shopId = parameters.get(),
             sellerShopRepository = get(),
@@ -157,6 +180,7 @@ val sellerModule = module {
             imagePicker = get(),
             getShopEntitlements = get(),
             preferredShopId = parameters.getOrNull(),
+            setProductMainImage = get(),
         )
     }
     viewModel { StorePlanViewModel(get(), get(), get()) }

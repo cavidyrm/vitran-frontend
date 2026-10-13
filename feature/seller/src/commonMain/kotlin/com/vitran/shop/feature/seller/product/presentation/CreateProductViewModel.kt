@@ -6,6 +6,7 @@ import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.error.splitForForm
 import com.vitran.shop.core.domain.pagination.CursorPagination
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.feature.seller.product.domain.usecase.SetProductMainImageUseCase
 import com.vitran.shop.core.platform.file.ImagePicker
 import com.vitran.shop.core.platform.file.SelectedFile
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
@@ -85,6 +86,7 @@ class CreateProductViewModel(
     private val imagePicker: ImagePicker,
     private val getShopEntitlements: GetShopEntitlementsUseCase,
     private val preferredShopId: ShopId? = null,
+    private val setProductMainImage: SetProductMainImageUseCase? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CreateProductUiState())
     val uiState: StateFlow<CreateProductUiState> = _uiState.asStateFlow()
@@ -216,6 +218,9 @@ class CreateProductViewModel(
         categoryId: String?,
         orderedMediaIds: List<String>,
         mode: CreateProductSubmitMode,
+        seoTitle: String = "",
+        seoDescription: String = "",
+        noindex: Boolean = false,
     ) {
         if (_uiState.value.isSubmitting) return
         val shopId = _uiState.value.selectedShopId
@@ -269,6 +274,9 @@ class CreateProductViewModel(
                 category = category,
                 desiredActive = mode == CreateProductSubmitMode.Publish,
                 images = images,
+                seoTitle = seoTitle.trim().takeIf { it.isNotEmpty() },
+                seoDescription = seoDescription.trim().takeIf { it.isNotEmpty() },
+                noindex = noindex.takeIf { it },
             )
 
         val maxImages = _uiState.value.maxImages
@@ -284,7 +292,22 @@ class CreateProductViewModel(
                 }
                 when (val result = createProductUseCase(command, maxImages = maxImages)) {
                     is AppResult.Success -> {
-                        val details = result.value
+                        val created = result.value
+                        val cover = created.images.minByOrNull { it.sortOrder }
+                        val details =
+                            if (
+                                cover != null &&
+                                !cover.isMain &&
+                                command.images.isNotEmpty() &&
+                                setProductMainImage != null
+                            ) {
+                                when (val main = setProductMainImage(created.id, cover.id)) {
+                                    is AppResult.Success -> main.value
+                                    is AppResult.Failure -> created
+                                }
+                            } else {
+                                created
+                            }
                         _uiState.update {
                             it.copy(
                                 isSubmitting = false,

@@ -9,7 +9,7 @@ Accepted — Phase 1
 The Vitran backend contract is defined by a Postman collection ([`vitran-api.postman_collection.json`](../postman/vitran-api.postman_collection.json)) with:
 
 - Global response envelope (`success`, `message`, `code`, `data`, `errors`)
-- Known inconsistencies (`category_slug` int vs string, heterogeneous plan `features`)
+- Known inconsistencies (legacy numeric `category_slug` still accepted; saved examples are taxonomy strings; heterogeneous plan `features`)
 - 15 endpoints without saved response examples
 - Postman folder names that do not match ideal client feature names
 

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import com.vitran.shop.feature.seller.shop.domain.model.ShopPublicationState
 import com.vitran.shop.feature.seller.shop.presentation.EditShopFormState
+import com.vitran.shop.feature.seller.shop.presentation.ShopProfileDraft
 import com.vitran.shop.feature.seller.shop.presentation.SlugCheckUiStatus
 import com.vitran.shop.ui.components.VitranText
 import com.vitran.shop.ui.components.VitranTextStyle
@@ -19,6 +20,7 @@ import com.vitran.shop.ui.components.admin.AdminSelectOption
 import com.vitran.shop.ui.components.admin.AdminTaxonomyMultiPicker
 import com.vitran.shop.ui.components.admin.AdminTaxonomyNode
 import com.vitran.shop.ui.components.admin.AdminTextField
+import com.vitran.shop.ui.sections.admin.ShopProfileEditor
 import com.vitran.shop.ui.sections.account.AccountCard
 import com.vitran.shop.ui.sections.account.AccountPrimaryButton
 import com.vitran.shop.ui.sections.reference.ReferenceDataError
@@ -46,6 +48,9 @@ import vitranshop.shared.generated.resources.admin_field_store_name_placeholder
 import vitranshop.shared.generated.resources.admin_field_support_times
 import vitranshop.shared.generated.resources.admin_field_support_times_placeholder
 import vitranshop.shared.generated.resources.admin_field_telegram
+import vitranshop.shared.generated.resources.admin_field_bale
+import vitranshop.shared.generated.resources.admin_field_rubika
+import vitranshop.shared.generated.resources.admin_field_tiktok
 import vitranshop.shared.generated.resources.admin_field_website
 import vitranshop.shared.generated.resources.admin_field_whatsapp
 import vitranshop.shared.generated.resources.admin_url_available
@@ -80,6 +85,10 @@ internal fun AccountStoreEditForm(
     onTelegramChange: (String) -> Unit,
     onInstagramChange: (String) -> Unit,
     onWebsiteChange: (String) -> Unit,
+    onBaleChange: (String) -> Unit,
+    onRubikaChange: (String) -> Unit,
+    onTiktokChange: (String) -> Unit,
+    onProfileChange: (ShopProfileDraft) -> Unit,
     onCitySelect: (String) -> Unit,
     onToggleCategory: (String) -> Unit,
     onSave: () -> Unit,
@@ -237,8 +246,35 @@ internal fun AccountStoreEditForm(
                     error = fieldErrors["website"],
                     ltr = true,
                 )
+                AdminTextField(
+                    label = stringResource(Res.string.admin_field_bale),
+                    value = form.bale,
+                    onValueChange = onBaleChange,
+                    error = fieldErrors["bale"],
+                    ltr = true,
+                )
+                AdminTextField(
+                    label = stringResource(Res.string.admin_field_rubika),
+                    value = form.rubika,
+                    onValueChange = onRubikaChange,
+                    error = fieldErrors["rubika"],
+                    ltr = true,
+                )
+                AdminTextField(
+                    label = stringResource(Res.string.admin_field_tiktok),
+                    value = form.tiktok,
+                    onValueChange = onTiktokChange,
+                    error = fieldErrors["tiktok"],
+                    ltr = true,
+                )
             }
         }
+        ShopProfileEditor(
+            profile = form.profile,
+            onProfileChange = onProfileChange,
+            fieldErrors = fieldErrors,
+            showClearActions = true,
+        )
         AccountPrimaryButton(
             label = stringResource(Res.string.account_store_edit_save),
             onClick = onSave,

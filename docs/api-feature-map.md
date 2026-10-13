@@ -20,13 +20,13 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Location / Cities | Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public + admin |
 | Taxonomy | Taxonomy | `TaxonomyApi` ✅ (public read) | `TaxonomyRepository` ✅ | Public + admin |
 | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional |
-| Marketplace Shops | Shops — Public | `PublicShopApi` ✅ | `ShopRepository` ✅ | Public |
+| Marketplace Shops | Shops — Public, Shop collections | `PublicShopApi` ✅ | `ShopRepository` ✅ | Public |
 | Marketplace Products | Products — Public | `PublicProductApi` ✅ | `ProductRepository` ✅ | Public |
 | Catalog / Search | catalog/search, products/search | `PublicProductApi` ✅ (simple search) | `ProductRepository` ✅ | Public / catalog **deferred** |
 | Engagement | Favorites, Shop follows, Wishlists | `EngagementApi` ✅ | `FollowRepository` ✅ (mutations), `ShopFavoriteRepository` ✅, `WishlistRepository` ✅ | Required / public wishlist None |
 | Product Reviews | Products — Public (reviews) | `ProductReviewApi` ✅ | `ProductReviewRepository` ✅ | None / Required |
 | Shop Comments | Comments | `ShopCommentApi` ✅ | `ShopCommentRepository` ✅ | None / Required |
-| Seller Shops | Shops — Seller | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required (auth; shop ownership for mutations) |
+| Seller Shops | Shops — Seller, Shop collections | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required (auth; shop ownership for mutations) |
 | Seller Products | Products — Seller | `SellerProductApi` ✅ | `SellerProductRepository` ✅ | Required (shop owner) |
 | Seller Analytics | Shops — Seller (analytics) | `SellerAnalyticsApi` ✅ | `SellerAnalyticsRepository` ✅ | Required (shop owner) |
 | Seller Boosts | Boosts — Seller | `SellerBoostApi` ✅ | `SellerBoostRepository` ✅ | Required (shop owner) |
@@ -113,6 +113,7 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/api/v1/seller/products/1` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public | Yes |
 | PATCH | `/api/v1/seller/products/1/active` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public | Yes |
 | DELETE | `/api/v1/seller/products/1/images/1` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public | Yes |
+| PATCH | `/api/v1/seller/products/1/images/2/main` | Products — Seller | Seller Products | `SellerProductApi` ✅ | `SellerProductRepository` ✅ | Required | Yes (`main_image`, `is_main`) |
 | GET | `/api/v1/seller/products?per_page=20&active=false&shop_id=1&category_slug=aa-1-2-3-4` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public | Yes |
 | POST | `/api/v1/seller/shops/1/products` | Products — Seller | Seller Products | SellerProductApi | SellerProductRepository | Public (multipart) | Yes |
 | GET | `/api/v1/me/referral` | Referrals | Referral | ReferralApi | ReferralRepository | Required | Yes (Phase 9) |
@@ -125,12 +126,19 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | PATCH | `/api/v1/admin/shops/1/confirm` | Shops — Admin | Admin Moderation | `AdminModerationApi` ✅ | `AdminModerationRepository` ✅ | Required | Implemented |
 | GET | `/api/v1/admin/shops?per_page=20&active=false&city_id=1&category_slug=aa-1-2-3-4&user_id=2` | Shops — Admin | Admin Moderation | `AdminModerationApi` ✅ | `AdminModerationRepository` ✅ | Required | Implemented |
 | GET | `/api/v1/shops/1` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
+| GET | `/api/v1/shops/1/collections?per_page=20` | Shop collections | Marketplace Shops | `PublicShopApi` ✅ | `ShopRepository` ✅ | Public | Yes |
+| GET | `/api/v1/shops/1/collections/1?per_page=20` | Shop collections | Marketplace Shops | `PublicShopApi` ✅ | `ShopRepository` ✅ | Public | Yes (thin product row) |
 | POST | `/api/v1/shops/1/analytics/events` | Shops — Public | Engagement | `ShopAnalyticsApi` ✅ | `MarketplaceAnalyticsTracker` ✅ | Public | Yes |
 | GET | `/api/v1/shops/browse?per_page=20&city_slug=tehran&category_slug=aa-1-2-3-4` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
 | GET | `/api/v1/shops/slug/my-shop` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
 | GET | `/api/v1/shops?per_page=20&city_slug=tehran&category_slug=aa-1-2-3-4` | Shops — Public | Marketplace Shops | PublicShopApi | ShopRepository | Public | Yes |
-| POST | `/api/v1/seller/shops` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes (`avatar_url` optional) |
-| PATCH | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes (`avatar_url` optional) |
+| POST | `/api/v1/seller/shops` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes (SEO, rules, shipping, hours, fulfillment, socials) |
+| POST | `/api/v1/seller/shops/1/collections` | Shop collections | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| GET | `/api/v1/seller/shops/1/collections?per_page=20` | Shop collections | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | **Missing** (same row shape as public list) |
+| GET | `/api/v1/seller/shops/1/collections/1?per_page=20` | Shop collections | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | **Missing** (same detail shape as public) |
+| PATCH | `/api/v1/seller/shops/1/collections/1` | Shop collections | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| DELETE | `/api/v1/seller/shops/1/collections/1` | Shop collections | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes |
+| PATCH | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes (partial; `""` clears strings, `[]` clears lists, `clear_avatar_url` / `clear_webhook_url`) |
 | GET | `/api/v1/seller/shops/1` | Shops — Seller | Seller Shops | `SellerShopApi` ✅ | `SellerShopRepository` ✅ | Required | Yes (minimal example) |
 | GET | `/api/v1/seller/shops/1/analytics/export?period=30d` | Shops — Seller | Seller Analytics | `SellerAnalyticsApi` ✅ | `SellerAnalyticsRepository` ✅ | Required | Yes (Phase 10 — raw CSV; columns Open) |
 | GET | `/api/v1/seller/shops/1/analytics?period=7d` | Shops — Seller | Seller Analytics | `SellerAnalyticsApi` | — | Required | **Unresolved contract** (Phase 10 — not implemented) |

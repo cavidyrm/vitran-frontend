@@ -130,12 +130,13 @@ Do **not** silently invent missing API contracts in client code. Prefer disable/
 
 - **severity:** P1
 - **owner:** BACKEND
+- **status:** Resolved by backend update (Postman examples now use string slugs such as `aa-1-2`)
 - **affected:** Create / update seller shop categories
-- **description:** Seller create/update/examples use `"category_slugs": [1]` (numbers). Public taxonomy exposes string slugs (`aa-1-2-3-4`) with no mappable numeric CategoryId. Client sends empty list rather than inventing IDs.
+- **description:** Older examples used `"category_slugs": [1]`. The current collection uses taxonomy strings. The client sends `List<String>` and still decodes a legacy number.
 - **evidence:** Gap 30; [seller-shop-management.md](seller-shop-management.md)
-- **release impact:** New shops cannot attach real categories from taxonomy UI.
-- **required resolution:** Backend unifies ID/slug mapping (or exposes numeric IDs on taxonomy).
-- **workaround:** Send empty `category_slugs`; do not invent `CategoryId`.
+- **release impact:** Cleared for category attachment. Shop profile read-back is still Gap 44.
+- **required resolution:** Done for the slug type.
+- **workaround:** None for slugs. Do not treat a minimal GET shop body as proof that SEO, rules, or shipping were cleared.
 
 ### P12-011 — Home section item schemas mock / unverified
 

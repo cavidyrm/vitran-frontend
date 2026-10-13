@@ -131,6 +131,9 @@ private class FakeListRepo(
 
     override suspend fun deleteProductImage(productId: ProductId, imageId: ProductImageId) =
         AppResult.Failure(AppError.Unexpected())
+
+    override suspend fun setProductMainImage(productId: ProductId, imageId: ProductImageId) =
+        AppResult.Failure(AppError.Unexpected())
 }
 
 private fun page(

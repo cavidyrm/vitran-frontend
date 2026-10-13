@@ -5,8 +5,9 @@ import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSlug
 
 /**
- * Domain update command. Null optional strings mean "leave unchanged" until PATCH
- * clearing semantics are verified from backend source (documented as Open gap).
+ * Partial shop update. Null optional strings and lists are omitted.
+ * An empty string clears a stored optional string. An empty list clears that list.
+ * [clearAvatarUrl] and [clearWebhookUrl] send the explicit clear flags.
  */
 data class UpdateShopCommand(
     val shopId: ShopId,
@@ -20,8 +21,21 @@ data class UpdateShopCommand(
     val type: String? = null,
     val cityId: CityId? = null,
     val categorySlugs: List<String>? = null,
+    val seoTitle: String? = null,
+    val seoDescription: String? = null,
+    val noindex: Boolean? = null,
+    val rules: List<ShopRule>? = null,
+    val shippingMethods: List<ShopShippingMethod>? = null,
+    val workingHours: List<ShopWorkingHours>? = null,
+    val fulfillmentType: String? = null,
+    val webhookUrl: String? = null,
+    val clearAvatarUrl: Boolean = false,
+    val clearWebhookUrl: Boolean = false,
     val whatsapp: String? = null,
+    val bale: String? = null,
+    val rubika: String? = null,
     val telegram: String? = null,
     val instagram: String? = null,
+    val tiktok: String? = null,
     val website: String? = null,
 )

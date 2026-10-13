@@ -8,8 +8,13 @@ import com.vitran.shop.feature.marketplace.jsonResponse
 import com.vitran.shop.feature.marketplace.shop.data.remote.PublicShopApi
 import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopDataDto
 import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopsDataDto
+import com.vitran.shop.feature.marketplace.shop.data.mapper.toDetail
+import com.vitran.shop.feature.marketplace.shop.data.mapper.toShopCollectionPage
+import com.vitran.shop.feature.marketplace.shop.domain.model.ShopCollectionId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSlug
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionDetailQuery
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionListQuery
 import com.vitran.shop.feature.marketplace.shopDetailEnvelope
 import com.vitran.shop.feature.marketplace.shopListEnvelope
 import com.vitran.shop.feature.marketplace.shopBrowseEnvelope
@@ -114,4 +119,107 @@ class PublicShopApiTest {
         assertIs<AppResult.Success<ShopDataDto>>(result)
         assertEquals("my-shop", result.value.shop.slug)
     }
+
+    @Test
+    fun getShopCollections_cursorListWithoutAuth() = runTest {
+        var authorization: String? = "x"
+        val api = PublicShopApi(
+            client = createMarketplaceTestClient(
+                MockEngine { request ->
+                    authorization = request.headers[HttpHeaders.Authorization]
+                    assertEquals("/api/v1/shops/1/collections", request.url.encodedPath)
+                    assertEquals("20", request.url.parameters["per_page"])
+                    jsonResponse(HttpStatusCode.OK, shopCollectionsEnvelope)
+                },
+            ),
+            environment = environment,
+            executor = executor,
+        )
+
+        val result = api.getShopCollections(ShopCollectionListQuery(shopId = ShopId(1)))
+
+        assertIs<AppResult.Success<*>>(result)
+        val page = (result as AppResult.Success).value.collections.toShopCollectionPage()
+        assertEquals(1, page.items.size)
+        assertEquals("Summer", page.items.first().title)
+        assertEquals(2, page.items.first().productCount)
+        assertNull(authorization)
+    }
+
+    @Test
+    fun getShopCollection_mapsThinProducts() = runTest {
+        val api = PublicShopApi(
+            client = createMarketplaceTestClient(
+                MockEngine { request ->
+                    assertEquals("/api/v1/shops/1/collections/1", request.url.encodedPath)
+                    jsonResponse(HttpStatusCode.OK, shopCollectionDetailEnvelope)
+                },
+            ),
+            environment = environment,
+            executor = executor,
+        )
+
+        val result = api.getShopCollection(
+            ShopCollectionDetailQuery(shopId = ShopId(1), collectionId = ShopCollectionId(1)),
+        )
+
+        assertIs<AppResult.Success<*>>(result)
+        val detail = (result as AppResult.Success).value.toDetail()
+        assertEquals("Summer", detail.collection.title)
+        assertEquals("blue-widget", detail.products.items.first().slug)
+        assertEquals(150000, detail.products.items.first().priceAmount)
+    }
 }
+
+private const val shopCollectionsEnvelope = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "collections": {
+      "per_page": 20,
+      "has_more": false,
+      "results": [
+        {
+          "id": 1,
+          "shop_id": 1,
+          "title": "Summer",
+          "description": "Warm-weather picks",
+          "product_count": 2,
+          "created_at": "2026-06-09T12:00:00Z",
+          "updated_at": "2026-06-09T12:00:00Z"
+        }
+      ]
+    }
+  },
+  "errors": []
+}
+"""
+
+private const val shopCollectionDetailEnvelope = """
+{
+  "success": true,
+  "message": "ok",
+  "code": 1,
+  "data": {
+    "collection": {
+      "id": 1,
+      "shop_id": 1,
+      "title": "Summer",
+      "description": "Warm-weather picks",
+      "product_count": 2,
+      "created_at": "2026-06-09T12:00:00Z",
+      "updated_at": "2026-06-09T12:00:00Z"
+    },
+    "products": {
+      "per_page": 20,
+      "has_more": false,
+      "results": [
+        { "id": 4, "title": "Blue Widget", "slug": "blue-widget", "price": 150000 }
+      ]
+    }
+  },
+  "errors": []
+}
+"""

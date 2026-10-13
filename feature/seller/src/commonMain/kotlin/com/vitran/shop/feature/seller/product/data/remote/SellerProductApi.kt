@@ -112,6 +112,20 @@ internal class SellerProductApi(
                 authMode(AuthMode.Required)
             }
         }
+
+    suspend fun setProductMainImage(
+        productId: ProductId,
+        imageId: ProductImageId,
+    ): AppResult<SellerProductDataDto> =
+        executor.execute {
+            client.patch(
+                environment.apiUrl(
+                    "/seller/products/${productId.value}/images/${imageId.value}/main",
+                ),
+            ) {
+                authMode(AuthMode.Required)
+            }
+        }
 }
 
 internal suspend fun buildCreateMultipart(command: CreateProductCommand): MultiPartFormDataContent {
@@ -123,6 +137,9 @@ internal suspend fun buildCreateMultipart(command: CreateProductCommand): MultiP
             append("price", command.priceAmount.toString())
             command.compareAtPriceAmount?.let { append("compare_at_price", it.toString()) }
             append("description", command.description)
+            command.seoTitle?.takeIf { it.isNotBlank() }?.let { append("seo_title", it) }
+            command.seoDescription?.takeIf { it.isNotBlank() }?.let { append("seo_description", it) }
+            command.noindex?.let { append("noindex", it.toString()) }
             append("active", command.desiredActive.toString())
             appendPreparedImages(imageParts)
         },
@@ -142,6 +159,9 @@ internal suspend fun buildUpdateMultipart(command: UpdateProductCommand): MultiP
                     append("compare_at_price", command.compareAtPriceAmount.toString())
             }
             command.description?.let { append("description", it) }
+            command.seoTitle?.let { append("seo_title", it) }
+            command.seoDescription?.let { append("seo_description", it) }
+            command.noindex?.let { append("noindex", it.toString()) }
             command.desiredActive?.let { append("active", it.toString()) }
             appendPreparedImages(imageParts)
         },

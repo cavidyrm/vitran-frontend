@@ -143,7 +143,7 @@ Wasm compile: **PASS**. Production URL default. COOP/COEP/CSP in nginx. Credenti
 
 ## V. Remaining API gaps
 
-All open items in `docs/api-gaps.md` remain authoritative (currency, payment return, boosts, analytics dashboard, category_slugs, Home schemas, Admin comment queue, Web auth, etc.). See `docs/production-blockers.md`.
+All open items in `docs/api-gaps.md` remain authoritative (currency, payment return, boosts, analytics dashboard, Home schemas, Admin comment queue, Web auth, etc.). Seller `category_slugs` (Gap 30 / P12-010) is resolved as string slugs. See `docs/production-blockers.md`.
 
 ## W. Production blockers
 

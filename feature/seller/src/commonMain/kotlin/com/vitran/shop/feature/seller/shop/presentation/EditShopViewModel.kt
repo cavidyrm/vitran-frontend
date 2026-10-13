@@ -33,8 +33,13 @@ data class EditShopFormState(
     val telegram: String = "",
     val instagram: String = "",
     val website: String = "",
+    val bale: String = "",
+    val rubika: String = "",
+    val tiktok: String = "",
     val avatarUrl: String = "",
     val categorySlugs: List<String> = emptyList(),
+    val profile: ShopProfileDraft = ShopProfileDraft(),
+    val editedFields: Set<String> = emptySet(),
 )
 
 data class EditShopUiState(
@@ -167,13 +172,26 @@ class EditShopViewModel(
         if (_uiState.value.isSubmitting) return
         if (_uiState.value.slugCheck is SlugCheckUiStatus.Taken) return
         val form = _uiState.value.form
+        val profile = form.profile
+        if (
+            profile.fulfillmentType == "api" &&
+            profile.webhookUrl.isBlank() &&
+            !profile.clearWebhook &&
+            ("fulfillment_type" in profile.touched || "webhook_url" in profile.touched)
+        ) {
+            _uiState.update {
+                it.copy(fieldErrors = mapOf("webhook_url" to "برای تحویل از نوع وب‌هوک، آدرس وب‌هوک الزامی است"))
+            }
+            return
+        }
         val categoriesChanged = form.categorySlugs.toSet() != originalCategorySlugs.toSet()
+        val touched = profile.touched
         val command =
             UpdateShopCommand(
                 shopId = shopId,
                 title = form.title.takeIf { it.isNotBlank() },
                 slug = form.slug.takeIf { it.isNotBlank() }?.let { ShopSlug(it) },
-                avatarUrl = form.avatarUrl.trim().takeIf { it.isNotEmpty() },
+                avatarUrl = form.avatarUrl.trim().takeIf { it.isNotEmpty() && !profile.clearAvatar },
                 description = form.description,
                 address = form.address,
                 phoneNumber = form.phoneNumber,
@@ -181,10 +199,23 @@ class EditShopViewModel(
                 type = form.type.takeIf { it.isNotBlank() },
                 cityId = form.cityId,
                 categorySlugs = form.categorySlugs.takeIf { categoriesChanged },
+                seoTitle = profile.seoTitle.takeIf { "seo_title" in touched },
+                seoDescription = profile.seoDescription.takeIf { "seo_description" in touched },
+                noindex = profile.noindex.takeIf { "noindex" in touched },
+                rules = profile.toRules().takeIf { "rules" in touched },
+                shippingMethods = profile.toShippingMethods().takeIf { "shipping_methods" in touched },
+                workingHours = profile.toWorkingHours().takeIf { "working_hours" in touched },
+                fulfillmentType = profile.fulfillmentType.takeIf { "fulfillment_type" in touched },
+                webhookUrl = profile.webhookUrl.takeIf { "webhook_url" in touched && !profile.clearWebhook },
+                clearAvatarUrl = profile.clearAvatar && "clear_avatar" in touched,
+                clearWebhookUrl = profile.clearWebhook && "clear_webhook" in touched,
                 whatsapp = form.whatsapp,
                 telegram = form.telegram,
                 instagram = form.instagram,
                 website = form.website,
+                bale = form.bale.takeIf { "bale" in form.editedFields },
+                rubika = form.rubika.takeIf { "rubika" in form.editedFields },
+                tiktok = form.tiktok.takeIf { "tiktok" in form.editedFields },
             )
         submitJob?.cancel()
         submitJob =
@@ -202,17 +233,17 @@ class EditShopViewModel(
                                 returned.categorySlugs
                             }
                         val shop = returned.copy(categorySlugs = slugs)
-                        val form = shop.toEditForm()
+                        val nextForm = shop.toEditForm().keepingUnreturnedProfile(form)
                         _uiState.update {
                             it.copy(
                                 isSubmitting = false,
                                 savedShop = shop,
                                 loadedShop = shop,
-                                form = form,
+                                form = nextForm,
                             )
                         }
                         originalSlug = shop.slug.value
-                        originalCategorySlugs = form.categorySlugs
+                        originalCategorySlugs = nextForm.categorySlugs
                     }
                     is AppResult.Failure -> {
                         val error = result.error
@@ -239,6 +270,27 @@ class EditShopViewModel(
     }
 }
 
+private fun EditShopFormState.keepingUnreturnedProfile(previous: EditShopFormState): EditShopFormState =
+    copy(
+        bale = bale.ifBlank { previous.bale },
+        rubika = rubika.ifBlank { previous.rubika },
+        tiktok = tiktok.ifBlank { previous.tiktok },
+        profile = profile.keepingUnreturned(previous.profile),
+        editedFields = emptySet(),
+    )
+
+private fun ShopProfileDraft.keepingUnreturned(previous: ShopProfileDraft): ShopProfileDraft =
+    ShopProfileDraft(
+        seoTitle = seoTitle.ifBlank { previous.seoTitle },
+        seoDescription = seoDescription.ifBlank { previous.seoDescription },
+        noindex = noindex || previous.noindex,
+        rules = rules.ifEmpty { previous.rules },
+        shippingMethods = shippingMethods.ifEmpty { previous.shippingMethods },
+        workingHours = workingHours.ifEmpty { previous.workingHours },
+        fulfillmentType = fulfillmentType.ifBlank { previous.fulfillmentType },
+        webhookUrl = webhookUrl.ifBlank { previous.webhookUrl },
+    )
+
 private fun SellerShopDetails.toEditForm(): EditShopFormState =
     EditShopFormState(
         title = title.orEmpty(),
@@ -253,6 +305,10 @@ private fun SellerShopDetails.toEditForm(): EditShopFormState =
         telegram = telegram.orEmpty(),
         instagram = instagram.orEmpty(),
         website = website.orEmpty(),
+        bale = bale.orEmpty(),
+        rubika = rubika.orEmpty(),
+        tiktok = tiktok.orEmpty(),
         avatarUrl = avatarUrl.orEmpty(),
         categorySlugs = categorySlugs.map { it.trim() }.filter { it.isNotEmpty() },
+        profile = toProfileDraft(),
     )

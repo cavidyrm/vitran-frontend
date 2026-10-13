@@ -7,8 +7,16 @@ import com.vitran.shop.core.network.config.apiUrl
 import com.vitran.shop.core.network.executor.ApiRequestExecutor
 import com.vitran.shop.core.network.pagination.appendCursorPagination
 import com.vitran.shop.core.network.request.authMode
+import com.vitran.shop.feature.marketplace.shop.data.remote.dto.CreateShopCollectionRequestDto
+import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopCollectionDataDto
+import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopCollectionDetailDataDto
+import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopCollectionsDataDto
+import com.vitran.shop.feature.marketplace.shop.data.remote.dto.UpdateShopCollectionRequestDto
+import com.vitran.shop.feature.marketplace.shop.domain.model.ShopCollectionId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSlug
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionDetailQuery
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionListQuery
 import com.vitran.shop.feature.seller.shop.data.remote.dto.CreateShopDataDto
 import com.vitran.shop.feature.seller.shop.data.remote.dto.CreateShopRequestDto
 import com.vitran.shop.feature.seller.shop.data.remote.dto.FulfillmentOptionsDataDto
@@ -21,6 +29,7 @@ import com.vitran.shop.feature.seller.shop.data.remote.dto.UpdateShopRequestDto
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopFilter
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopListQuery
 import io.ktor.client.HttpClient
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.patch
@@ -115,6 +124,65 @@ internal class SellerShopApi(
     suspend fun regenerateApiKey(shopId: ShopId): AppResult<RegenerateApiKeyDataDto> =
         executor.execute {
             client.post(environment.apiUrl("/seller/shops/${shopId.value}/regenerate-api-key")) {
+                authMode(AuthMode.Required)
+            }
+        }
+
+    suspend fun listCollections(query: ShopCollectionListQuery): AppResult<ShopCollectionsDataDto> =
+        executor.execute {
+            client.get(environment.apiUrl("/seller/shops/${query.shopId.value}/collections")) {
+                authMode(AuthMode.Required)
+                url { parameters.appendCursorPagination(query.pagination) }
+            }
+        }
+
+    suspend fun getCollection(query: ShopCollectionDetailQuery): AppResult<ShopCollectionDetailDataDto> =
+        executor.execute {
+            client.get(
+                environment.apiUrl(
+                    "/seller/shops/${query.shopId.value}/collections/${query.collectionId.value}",
+                ),
+            ) {
+                authMode(AuthMode.Required)
+                url { parameters.appendCursorPagination(query.pagination) }
+            }
+        }
+
+    suspend fun createCollection(
+        shopId: ShopId,
+        request: CreateShopCollectionRequestDto,
+    ): AppResult<ShopCollectionDataDto> =
+        executor.execute {
+            client.post(environment.apiUrl("/seller/shops/${shopId.value}/collections")) {
+                authMode(AuthMode.Required)
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+
+    suspend fun updateCollection(
+        shopId: ShopId,
+        collectionId: ShopCollectionId,
+        request: UpdateShopCollectionRequestDto,
+    ): AppResult<ShopCollectionDataDto> =
+        executor.execute {
+            client.patch(
+                environment.apiUrl("/seller/shops/${shopId.value}/collections/${collectionId.value}"),
+            ) {
+                authMode(AuthMode.Required)
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+
+    suspend fun deleteCollection(
+        shopId: ShopId,
+        collectionId: ShopCollectionId,
+    ): AppResult<Unit> =
+        executor.executeEmpty {
+            client.delete(
+                environment.apiUrl("/seller/shops/${shopId.value}/collections/${collectionId.value}"),
+            ) {
                 authMode(AuthMode.Required)
             }
         }

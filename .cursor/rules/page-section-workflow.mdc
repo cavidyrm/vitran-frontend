@@ -44,6 +44,7 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - Visual: hero (breadcrumb + CTA + image + trust card), 4 feature cards, story + checklist, soft stats bar, purple join CTA, SiteFooter. Shopper chrome stays. Entry from footer «درباره ما» or URL.
 - Reference: `docs/ui-reference/about/about-desktop.png`
 - Manage plans / Store plan / Account / Auth / admin create flows remain complete for listed sections
+- Store collections on `StoreScreen` come from `GET /shops/{id}/collections` (title and product count; no cover image). Seller create/update/delete is on the store edit screen. Do not invent a second collection model.
 
 ## Placement
 - Reusable pieces: `shared/.../ui/components/`

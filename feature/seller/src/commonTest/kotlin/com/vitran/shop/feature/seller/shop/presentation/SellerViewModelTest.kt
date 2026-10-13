@@ -3,8 +3,11 @@ package com.vitran.shop.feature.seller.shop.presentation
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.location.domain.model.CityId
+import com.vitran.shop.feature.marketplace.shop.domain.model.ShopCollectionId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSlug
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionDetailQuery
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionListQuery
 import com.vitran.shop.feature.seller.createShopWithTokenBody
 import com.vitran.shop.feature.seller.createSellerRepository
 import com.vitran.shop.feature.seller.jsonResponse
@@ -12,6 +15,7 @@ import com.vitran.shop.feature.seller.slugAvailableBody
 import com.vitran.shop.feature.seller.slugTakenBody
 import com.vitran.shop.feature.seller.FakeAccountRepository
 import com.vitran.shop.feature.seller.FakeSessionRepository
+import com.vitran.shop.feature.seller.shop.domain.model.CreateShopCollectionCommand
 import com.vitran.shop.feature.seller.shop.domain.model.CreateShopCommand
 import com.vitran.shop.feature.seller.shop.domain.model.FulfillmentMode
 import com.vitran.shop.feature.seller.shop.domain.model.SellerShopDetails
@@ -19,6 +23,7 @@ import com.vitran.shop.feature.seller.shop.domain.model.SellerShopSummary
 import com.vitran.shop.feature.seller.shop.domain.model.ShopApiKey
 import com.vitran.shop.feature.seller.shop.domain.model.ShopSlugAvailability
 import com.vitran.shop.feature.seller.shop.domain.model.ShopTitleAvailability
+import com.vitran.shop.feature.seller.shop.domain.model.UpdateShopCollectionCommand
 import com.vitran.shop.feature.seller.shop.domain.model.UpdateShopCommand
 import com.vitran.shop.feature.seller.shop.domain.query.SellerShopListQuery
 import com.vitran.shop.feature.seller.shop.domain.repository.SellerShopRepository
@@ -414,4 +419,14 @@ private open class ThrowingSellerShopRepository : SellerShopRepository {
     override suspend fun getFulfillmentOptions(shopId: ShopId) = error("unexpected")
 
     override suspend fun regenerateApiKey(shopId: ShopId) = error("unexpected")
+
+    override suspend fun getMyCollections(query: ShopCollectionListQuery) = error("unexpected")
+
+    override suspend fun getMyCollection(query: ShopCollectionDetailQuery) = error("unexpected")
+
+    override suspend fun createCollection(command: CreateShopCollectionCommand) = error("unexpected")
+
+    override suspend fun updateCollection(command: UpdateShopCollectionCommand) = error("unexpected")
+
+    override suspend fun deleteCollection(shopId: ShopId, collectionId: ShopCollectionId) = error("unexpected")
 }

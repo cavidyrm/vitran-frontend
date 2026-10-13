@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Vitran API",
-    "description": "Vitran marketplace backend — **120 `/api/v1` routes** synced with code (plus `/health` and `/api/v2` mirror). Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Account profile: **`GET/PUT /auth/profile`** (`username`, `email`, `full_name`, `avatar_url`, `city_id`); avatar file upload **`POST /auth/profile/avatar`** (`multipart` field `image`). Sizing & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
+    "description": "Vitran marketplace backend — `/api/v1` routes synced with code (plus `/health` and `/api/v2` mirror). Shop collections: public `GET /shops/:shop_id/collections` and seller create/update/delete. A product has exactly one `category_slug`. Taxonomy: Shopify import + admin names/icons. Follows: `/me/follows/shops`. Wishlist: `/me/favorites/products`. Account profile: **`GET/PUT /auth/profile`** (`username`, `email`, `full_name`, `avatar_url`, `city_id`); avatar file upload **`POST /auth/profile/avatar`** (`multipart` field `image`). Sizing & persons: `/me/profile/sizing`, `/me/profile/notify`, `/me/persons`. Picked-for-you matches: **Product Matches — Me** (`GET /me/matches`) + home rails (`GET /home/screen`, `GET /home/sections/picked-for-you`, `GET /me/home/feed?product_matches=…`).\n\n**Setup**\n1. Import this collection.\n2. Set `baseUrl` to the API origin only — no path suffix.\n   - Local: `http://localhost:8080`\n   - Production: `https://vitran.ir` (do **not** append `/api` to `baseUrl`)\n3. Run **Auth → Register** (pending signup in Redis — no `users` row) then **Verify OTP** with the SMS code. OTP is **not** in the JSON unless `EXPOSE_OTP_IN_RESPONSE=true`. Or **Login** if already verified.\n4. `accessToken` / `refreshToken` / `tempToken` are saved automatically from auth responses.\n\n**Roles** (hierarchical): `user` < `admin` < `super_admin`. Signup assigns `user`. Higher roles inherit every lower role's permissions. A `user` may be a viewer (`shop_types: []`), own retail shops, own wholesale shops, or both — see `GET /auth/me` `shop_types`. Shop ownership is `shops.owner_id`, not a role. `/seller/*` accepts a `user` (or higher) token; mutations still require the caller to own the shop. After this change, refresh or re-login so JWTs do not still list `customer`/`seller`.\n\n**API versioning**\n- Business routes: `/api/v1/...` and mirrored `/api/v2/...`.\n- `GET /health`, `GET /api/v1/health`, `GET /api/v2/health`.\n\n**Plans (slugs)**\n- `free`, `starter`, `growth`, `business` — list via **Plans — Public**.\n\n**Referrals**\n- **Referrals → Get my referral profile** (authenticated user) saves `referralCode`.\n- First paid purchase by referred user grants 1 month Starter credit to both parties.\n- **Apply subscription credit** on Free/Starter shops.\n\n**Static pages (CMS)**\n- Public: **Static Pages — Public** (`about-us`, `terms-of-service`, `privacy-policy`, `service-levels`).\n- Admin: **Static Pages — Admin**.\n\n**List pagination**\n**Pagination:** **Cursor mode (recommended for infinite scroll):** omit `page`, use `per_page` (or `limit`, default 20, max 100) and optional `cursor` from previous `next_cursor`. Response: `{ per_page, has_more, next_cursor?, results }` (no total). **Page mode:** pass `page=1` for `{ page, per_page, last_page, from, to, total, has_more, results }`.\n\n**Response envelope**\n```json\n{ \"success\", \"message\", \"code\", \"data\", \"errors\" }\n```\n- `code: 1` = success, `code: -2` = validation error",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -1572,7 +1572,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event\": \"product_view\",\n  \"session_id\": \"visitor-abc-123\",\n  \"product_id\": 1,\n  \"category_slug\": 1,\n  \"city_id\": 1\n}"
+              "raw": "{\n  \"event\": \"product_view\",\n  \"session_id\": \"visitor-abc-123\",\n  \"product_id\": 1,\n  \"category_slug\": \"aa-1-2\",\n  \"city_id\": 1\n}"
             },
             "url": "{{baseUrl}}/api/v1/shops/1/analytics/events",
             "description": "Public — record shop analytics. Field is `event` (not `event_type`). Values: shop_view, product_view, category_view, search_result_view, product_click, share_click, promotion_impression, promotion_click."
@@ -1612,7 +1612,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T13:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"category_slugs\": [\"aa-1-2\"],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T13:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             },
             {
               "name": "404 Not live",
@@ -1649,7 +1649,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T13:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات فروشگاه با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"category_slugs\": [\"aa-1-2\"],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T13:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         }
@@ -1808,10 +1808,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"My Shop\",\n  \"slug\": \"my-shop\",\n  \"avatar_url\": \"https://cdn.example/shop.png\",\n  \"description\": \"Best products in town\",\n  \"address\": \"123 Main St\",\n  \"phone_number\": \"02112345678\",\n  \"support_times\": \"9-18\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1],\n  \"whatsapp\": \"https://wa.me/989123456789\",\n  \"telegram\": \"@myshop\",\n  \"instagram\": \"@myshop\",\n  \"website\": \"https://example.com\"\n}"
+              "raw": "{\n  \"title\": \"My Shop\",\n  \"slug\": \"my-shop\",\n  \"avatar_url\": \"https://cdn.example/shop.png\",\n  \"description\": \"Best products in town\",\n  \"seo_title\": \"My Shop | Vitran\",\n  \"seo_description\": \"Best products in town\",\n  \"noindex\": false,\n  \"rules\": [{ \"title\": \"Returns\", \"body\": \"7 days\" }],\n  \"shipping_methods\": [{ \"code\": \"post\", \"title\": \"Post\", \"cost\": 250000, \"min_days\": 2, \"max_days\": 5, \"active\": true }],\n  \"working_hours\": [{ \"day\": \"sat\", \"opens_at\": \"09:00\", \"closes_at\": \"18:00\", \"closed\": false }],\n  \"address\": \"123 Main St\",\n  \"phone_number\": \"02112345678\",\n  \"support_times\": \"9-18\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [\"aa-1-2\"],\n  \"fulfillment_type\": \"manual\",\n  \"whatsapp\": \"https://wa.me/989123456789\",\n  \"bale\": \"https://ble.ir/myshop\",\n  \"rubika\": \"myshop\",\n  \"telegram\": \"@myshop\",\n  \"instagram\": \"@myshop\",\n  \"tiktok\": \"@myshop\",\n  \"website\": \"https://example.com\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/seller/shops",
-            "description": "Creates with `active=false`, `confirmed=false`. Role is unchanged (ownership is `shops.owner_id`). Then call **List my shops**. Omit `slug` to auto-generate from title."
+            "description": "Creates with `active=false`, `confirmed=false`. Role is unchanged (ownership is `shops.owner_id`). Then call **List my shops**. Omit `slug` to auto-generate from title. `category_slugs` is one or more taxonomy slugs. Optional: `seo_title`, `seo_description`, `noindex`, `rules`, `shipping_methods`, `working_hours`, `fulfillment_type` (`manual`, `redirect`, `api`, `marketplace`, `local`), `webhook_url` (required for `api`), socials (`whatsapp`, `bale`, `rubika`, `telegram`, `instagram`, `tiktok`, `website`)."
           },
           "response": [
             {
@@ -1825,7 +1825,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"avatar_url\": \"https://cdn.example/shop.png\",\n      \"description\": \"Best products in town\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"qr_code_url\": \"http://localhost:9000/vitran/shops/1/qr.png\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [1],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"city_id\": 1,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"avatar_url\": \"https://cdn.example/shop.png\",\n      \"description\": \"Best products in town\",\n      \"type\": \"retailer\",\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"qr_code_url\": \"http://localhost:9000/vitran/shops/1/qr.png\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [\"aa-1-2\"],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             },
             {
               "name": "409 Slug taken",
@@ -2028,10 +2028,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"My Shop Updated\",\n  \"slug\": \"my-shop\",\n  \"avatar_url\": \"https://cdn.example/shop-v2.png\",\n  \"description\": \"Updated description\",\n  \"address\": \"456 New St\",\n  \"phone_number\": \"02187654321\",\n  \"support_times\": \"10-20\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [1, 2],\n  \"whatsapp\": \"https://wa.me/989123456789\"\n}"
+              "raw": "{\n  \"title\": \"My Shop Updated\",\n  \"slug\": \"my-shop\",\n  \"avatar_url\": \"https://cdn.example/shop-v2.png\",\n  \"description\": \"Updated description\",\n  \"seo_title\": \"My Shop | Vitran\",\n  \"seo_description\": \"Updated description\",\n  \"noindex\": false,\n  \"rules\": [{ \"title\": \"Returns\", \"body\": \"7 days\" }],\n  \"shipping_methods\": [{ \"code\": \"post\", \"title\": \"Post\", \"cost\": null, \"min_days\": 2, \"max_days\": 5 }],\n  \"working_hours\": [{ \"day\": \"fri\", \"closed\": true }],\n  \"address\": \"456 New St\",\n  \"phone_number\": \"02187654321\",\n  \"support_times\": \"10-20\",\n  \"type\": \"retailer\",\n  \"city_id\": 1,\n  \"category_slugs\": [\"aa-1-2\", \"aa-1-3\"],\n  \"fulfillment_type\": \"manual\",\n  \"whatsapp\": \"https://wa.me/989123456789\",\n  \"bale\": \"https://ble.ir/myshop\",\n  \"telegram\": \"@myshop\",\n  \"instagram\": \"@myshop\",\n  \"website\": \"https://example.com\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/seller/shops/1",
-            "description": "Requires `user` token (must own the shop). Sets `active=false`, `confirmed=false` (needs re-confirmation). Optional `avatar_url` (valid URL); omit or empty to clear; **`clear_avatar_url`: true** to remove explicitly."
+            "description": "Requires `user` token (must own the shop). Sets `active=false`, `confirmed=false` (needs re-confirmation). Partial update: omit an optional string (`description`, `seo_title`, `seo_description`, `address`, socials, `avatar_url`, `webhook_url`) to keep it; send `\"\"` to clear it. Omit `noindex`, `rules`, `shipping_methods`, or `working_hours` to keep them; send `[]` to clear a list. **`clear_avatar_url`: true** removes the avatar. **`clear_webhook_url`: true** removes the webhook. Send `slug: \"\"` to regenerate the slug from `title`. `category_slugs` is still required (taxonomy slugs)."
           },
           "response": [
             {
@@ -2045,7 +2045,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"title\": \"My Shop Updated\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [1, 2],\n      \"updated_at\": \"2026-06-09T14:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"title\": \"My Shop Updated\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"active\": false,\n      \"confirmed\": false,\n      \"category_slugs\": [\"aa-1-2\", \"aa-1-3\"],\n      \"updated_at\": \"2026-06-09T14:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -2236,6 +2236,139 @@
       ]
     },
     {
+      "name": "Shop collections",
+      "item": [
+        {
+          "name": "List shop collections (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/shops/1/collections?per_page=20",
+            "description": "Live shops only (`active` + `confirmed`). Returns collection rows with `product_count` (products are not embedded).\n\n**Pagination:** cursor mode by default (`per_page` / `limit`, optional `cursor` = last collection id). `?page=` switches to offset mode."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست کالکشن‌ها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"collections\": {\n      \"per_page\": 20,\n      \"has_more\": false,\n      \"results\": [\n        {\n          \"id\": 1,\n          \"shop_id\": 1,\n          \"title\": \"Summer\",\n          \"description\": \"Warm-weather picks\",\n          \"product_count\": 2,\n          \"created_at\": \"2026-06-09T12:00:00Z\",\n          \"updated_at\": \"2026-06-09T12:00:00Z\"\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get shop collection (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/shops/1/collections/1?per_page=20",
+            "description": "Collection plus a page of live products (`active`, `confirmed`, `status=active`). Product cursor is `sort_order:product_id` (example `0:4`). A collection on a shop that is not live returns 404."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات کالکشن با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"collection\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"title\": \"Summer\",\n      \"description\": \"Warm-weather picks\",\n      \"product_count\": 2,\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    },\n    \"products\": {\n      \"per_page\": 20,\n      \"has_more\": false,\n      \"results\": [\n        { \"id\": 4, \"title\": \"Blue Widget\", \"slug\": \"blue-widget\", \"price\": 150000 }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create collection",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Summer\",\n  \"description\": \"Warm-weather picks\",\n  \"product_ids\": [4, 5]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/collections",
+            "description": "Owner only. `title` is 1–150 characters. `description` is optional (up to 5000). `product_ids` must belong to this shop, in display order, at most 500. Duplicates are dropped. Returns 201."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"کالکشن با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"collection\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"title\": \"Summer\",\n      \"description\": \"Warm-weather picks\",\n      \"product_count\": 2,\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "List my collections",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/collections?per_page=20",
+            "description": "Owner only. Includes collections on shops that are not yet live. Rows include `product_count` only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get my collection",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/collections/1?per_page=20",
+            "description": "Owner only. Pages every product in the collection, including drafts. Product cursor is `sort_order:product_id`."
+          },
+          "response": []
+        },
+        {
+          "name": "Update collection",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Summer sale\",\n  \"product_ids\": [4]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/collections/1",
+            "description": "Owner only. Partial: omit `title`, `description`, or `product_ids` to keep the stored value. Send `product_ids` (including `[]`) to replace membership. At most 500 ids, all from this shop."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"کالکشن با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"collection\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"title\": \"Summer sale\",\n      \"product_count\": 1,\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T14:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete collection",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/collections/1",
+            "description": "Owner only. Removes the collection and its product membership."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"کالکشن با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Shops — Admin",
       "item": [
         {
@@ -2302,7 +2435,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"category_slugs\": [1],\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"فروشگاه با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"shop\": {\n      \"id\": 1,\n      \"owner_id\": 2,\n      \"title\": \"My Shop\",\n      \"slug\": \"my-shop\",\n      \"type\": \"retailer\",\n      \"active\": true,\n      \"confirmed\": true,\n      \"share_url\": \"https://vitran.ir/my-shop\",\n      \"category_slugs\": [\"aa-1-2\"],\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         }
@@ -2365,7 +2498,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"products\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"shop_id\": 1,\n          \"category_slug\": 1,\n          \"title\": \"Blue Widget\",\n          \"price\": 150000,\n          \"active\": true,\n          \"confirmed\": true,\n          \"images\": []\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"products\": {\n      \"per_page\": 20,\n      \"has_more\": true,\n      \"next_cursor\": \"42\",\n      \"results\": [\n        {\n          \"id\": 1,\n          \"shop_id\": 1,\n          \"category_slug\": \"aa-1-2\",\n          \"title\": \"Blue Widget\",\n          \"price\": 150000,\n          \"active\": true,\n          \"confirmed\": true,\n          \"images\": []\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -2375,7 +2508,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/products/1",
-            "description": "Live products only (`active=true`, `confirmed=true`). Pending products return 404."
+            "description": "Live products only (`active=true`, `confirmed=true`). Pending products return 404. `product.main_image` is the cover (the `images[]` item with `is_main: true`) and is omitted when the product has no images. Cards should use `main_image.url`, not `images[0]`."
           },
           "response": [
             {
@@ -2389,7 +2522,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"description\": \"High quality widget\",\n      \"price\": 150000,\n      \"active\": true,\n      \"confirmed\": true,\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0 }\n      ],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": \"aa-1-2\",\n      \"title\": \"Blue Widget\",\n      \"description\": \"High quality widget\",\n      \"price\": 150000,\n      \"active\": true,\n      \"confirmed\": true,\n      \"main_image\": { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0, \"is_main\": true },\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0, \"is_main\": true }\n      ],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -2559,8 +2692,9 @@
                 },
                 {
                   "key": "category_slug",
-                  "value": "1",
-                  "type": "text"
+                  "value": "aa-1-2",
+                  "type": "text",
+                  "description": "Exactly one taxonomy slug that belongs to the shop. Do not repeat the field or send a comma-separated list."
                 },
                 {
                   "key": "price",
@@ -2579,6 +2713,24 @@
                   "type": "text"
                 },
                 {
+                  "key": "seo_title",
+                  "value": "Blue Widget",
+                  "type": "text",
+                  "description": "Optional page title, up to 255 characters"
+                },
+                {
+                  "key": "seo_description",
+                  "value": "High quality widget",
+                  "type": "text",
+                  "description": "Optional meta description, up to 320 characters"
+                },
+                {
+                  "key": "noindex",
+                  "value": "false",
+                  "type": "text",
+                  "description": "true hides the public URL from search engines"
+                },
+                {
                   "key": "active",
                   "value": "true",
                   "type": "text",
@@ -2593,7 +2745,7 @@
               ]
             },
             "url": "{{baseUrl}}/api/v1/seller/shops/1/products",
-            "description": "Requires `user` token and shop ownership. Seller sets `active`; `confirmed=false` until admin approves. `category_slug` must belong to the shop. Optional `compare_at_price` marks a discount (same units as `price`)."
+            "description": "Requires `user` token and shop ownership. Seller sets `active`; `confirmed=false` until admin approves. Send exactly one `category_slug` (taxonomy slug, or legacy `category_id` with the same value). It must belong to the shop. A second value or a comma-separated list is rejected. Optional `compare_at_price` marks a discount (same units as `price`)."
           },
           "response": [
             {
@@ -2607,7 +2759,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"محصول با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"description\": \"High quality widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0 }\n      ],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"محصول با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": \"aa-1-2\",\n      \"title\": \"Blue Widget\",\n      \"description\": \"High quality widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"main_image\": { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0, \"is_main\": true },\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0, \"is_main\": true }\n      ],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -2636,8 +2788,9 @@
                 },
                 {
                   "key": "category_slug",
-                  "value": "1",
-                  "type": "text"
+                  "value": "aa-1-2",
+                  "type": "text",
+                  "description": "Exactly one taxonomy slug that belongs to the shop. Required on update as well."
                 },
                 {
                   "key": "price",
@@ -2656,6 +2809,24 @@
                   "type": "text"
                 },
                 {
+                  "key": "seo_title",
+                  "value": "Blue Widget Pro",
+                  "type": "text",
+                  "description": "Omit to leave unchanged. Send empty to clear."
+                },
+                {
+                  "key": "seo_description",
+                  "value": "Updated description",
+                  "type": "text",
+                  "description": "Omit to leave unchanged. Send empty to clear."
+                },
+                {
+                  "key": "noindex",
+                  "value": "false",
+                  "type": "text",
+                  "description": "Omit to leave unchanged"
+                },
+                {
                   "key": "active",
                   "value": "true",
                   "type": "text"
@@ -2669,7 +2840,7 @@
               ]
             },
             "url": "{{baseUrl}}/api/v1/seller/products/1",
-            "description": "Sets `confirmed=false` (admin re-approval). Seller sets `active` in form. New `images` appended (total ≤ 5)."
+            "description": "Sets `confirmed=false` (admin re-approval). Seller sets `active` in form. New `images` appended (total ≤ 5). `category_slug` is required and must be exactly one taxonomy slug that belongs to the shop."
           },
           "response": [
             {
@@ -2780,7 +2951,7 @@
             "method": "DELETE",
             "header": [],
             "url": "{{baseUrl}}/api/v1/seller/products/1/images/1",
-            "description": "Removes one image by `image_id` from DB and storage. Returns updated product."
+            "description": "Removes one image by `image_id` from DB and storage. Returns updated product. If the deleted image was the cover, the remaining image with the lowest `sort_order` becomes `main_image`."
           },
           "response": [
             {
@@ -2795,6 +2966,40 @@
                 }
               ],
               "body": "{\n  \"success\": true,\n  \"message\": \"تصویر محصول با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"images\": []\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set product main image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/seller/products/1/images/2/main",
+            "description": "Shop owner. No body. Marks `image_id` as the only cover (`is_main: true`). Does not change `sort_order` or `confirmed`. Use `product.main_image.url` on cards. 404 when the image is not on this product."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"تصویر اصلی محصول با موفقیت انتخاب شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"main_image\": {\n        \"id\": 2,\n        \"url\": \"http://localhost:9000/vitran/shops/1/products/cover.jpg\",\n        \"sort_order\": 1,\n        \"is_main\": true\n      },\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0, \"is_main\": false },\n        { \"id\": 2, \"url\": \"http://localhost:9000/vitran/shops/1/products/cover.jpg\", \"sort_order\": 1, \"is_main\": true }\n      ]\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -2814,7 +3019,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/seller/products/1",
-            "description": "Requires `user` token (must own the shop). Returns product if the authenticated user owns the shop (pending or live)."
+            "description": "Requires `user` token (must own the shop). Returns product if the authenticated user owns the shop (pending or live). Includes `main_image` and `images[]` (`is_main` marks the cover)."
           },
           "response": [
             {
@@ -2828,7 +3033,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": [],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": \"aa-1-2\",\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": [],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         }
@@ -2901,7 +3106,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": [],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات محصول با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": \"aa-1-2\",\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": false,\n      \"images\": [],\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -2935,7 +3140,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"محصول با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": 1,\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": true,\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0 }\n      ],\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"محصول با موفقیت تأیید شد\",\n  \"code\": 1,\n  \"data\": {\n    \"product\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"category_slug\": \"aa-1-2\",\n      \"title\": \"Blue Widget\",\n      \"price\": 150000,\n      \"active\": false,\n      \"confirmed\": true,\n      \"main_image\": { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0, \"is_main\": true },\n      \"images\": [\n        { \"id\": 1, \"url\": \"http://localhost:9000/vitran/shops/1/products/abc.jpg\", \"sort_order\": 0, \"is_main\": true }\n      ],\n      \"updated_at\": \"2026-06-09T15:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         }

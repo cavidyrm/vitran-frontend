@@ -43,6 +43,8 @@ import vitranshop.shared.generated.resources.admin_product_card_basics
 import vitranshop.shared.generated.resources.admin_product_card_basics_sub
 import vitranshop.shared.generated.resources.admin_product_card_inventory
 import vitranshop.shared.generated.resources.admin_product_card_media
+import vitranshop.shared.generated.resources.admin_product_cover_hint
+import vitranshop.shared.generated.resources.admin_product_noindex
 import vitranshop.shared.generated.resources.admin_product_card_price
 import vitranshop.shared.generated.resources.admin_product_card_seo
 import vitranshop.shared.generated.resources.admin_product_card_shipping
@@ -216,6 +218,11 @@ private fun MediaCard(
             onRemove = { id -> onStateChange(state.removeMedia(id)) },
             onSetPrimary = { id -> onStateChange(state.setPrimaryMedia(id)) },
             onMove = { id, towardStart -> onStateChange(state.moveMedia(id, towardStart)) },
+        )
+        Text(
+            text = stringResource(Res.string.admin_product_cover_hint),
+            color = AdminTokens.Helper,
+            fontSize = 13.sp,
         )
         val removed = state.removedMedia
         if (removed != null) {
@@ -454,6 +461,11 @@ private fun SeoCard(
                 if (state.seoExpanded) Res.string.admin_product_seo_collapse else Res.string.admin_product_seo_expand,
             ),
             onClick = { onStateChange(state.copy(seoExpanded = !state.seoExpanded)) },
+        )
+        AdminToggleRow(
+            label = stringResource(Res.string.admin_product_noindex),
+            checked = state.noindex,
+            onCheckedChange = { onStateChange(state.copy(noindex = it).markedDirty()) },
         )
         if (state.seoExpanded) {
             AdminTextField(

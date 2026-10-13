@@ -195,6 +195,9 @@ fun CreateProductScreen(
             compareAtPriceText = state.compareAtPrice,
             categoryId = state.categoryId,
             orderedMediaIds = state.media.map { it.id },
+            seoTitle = state.seoTitle,
+            seoDescription = state.seoDescription,
+            noindex = state.noindex,
             mode =
                 if (mode == ProductSaveMode.Publish) {
                     CreateProductSubmitMode.Publish

@@ -2,6 +2,8 @@ package com.vitran.shop.ui.sections.reference
 
 import com.vitran.shop.feature.marketplace.product.domain.model.ProductDetails
 import com.vitran.shop.feature.marketplace.product.domain.model.ProductSummary
+import com.vitran.shop.feature.marketplace.product.domain.model.coverImage
+import com.vitran.shop.feature.marketplace.product.domain.model.withCoverFirst
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopDetails
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSummary
 import com.vitran.shop.ui.sections.categories.CategoriesMerchantShop
@@ -26,7 +28,7 @@ fun formatMarketplacePrice(amount: Long): String {
 }
 
 fun ProductSummary.toCategoriesProduct(storeName: String = "فروشگاه"): CategoriesProduct {
-    val imageUrl = images.firstOrNull()?.url ?: PLACEHOLDER_IMAGE
+    val imageUrl = (mainImage ?: images.coverImage())?.url ?: PLACEHOLDER_IMAGE
     return CategoriesProduct(
         id = id.value.toString(),
         storeName = storeName,
@@ -39,7 +41,7 @@ fun ProductSummary.toCategoriesProduct(storeName: String = "فروشگاه"): Ca
 }
 
 fun ProductDetails.toProductDetailMock(shopTitle: String = "فروشگاه"): ProductDetailMock {
-    val imageUrls = images.map { it.url }.ifEmpty { listOf(PLACEHOLDER_IMAGE) }
+    val imageUrls = images.withCoverFirst().map { it.url }.ifEmpty { listOf(PLACEHOLDER_IMAGE) }
     return ProductDetailMock(
         id = id.value.toString(),
         slug = productSlug(title),

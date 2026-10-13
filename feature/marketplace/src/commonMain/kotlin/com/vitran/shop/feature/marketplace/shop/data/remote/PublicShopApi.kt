@@ -8,12 +8,17 @@ import com.vitran.shop.core.network.executor.ApiRequestExecutor
 import com.vitran.shop.core.network.request.authMode
 import com.vitran.shop.feature.marketplace.common.data.remote.appendShopBrowseQuery
 import com.vitran.shop.feature.marketplace.common.data.remote.appendShopListQuery
+import com.vitran.shop.core.network.pagination.appendCursorPagination
 import com.vitran.shop.feature.marketplace.shop.data.remote.dto.BrowseShopsDataDto
+import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopCollectionDetailDataDto
+import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopCollectionsDataDto
 import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopDataDto
 import com.vitran.shop.feature.marketplace.shop.data.remote.dto.ShopsDataDto
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSlug
 import com.vitran.shop.feature.marketplace.shop.domain.query.ShopBrowseQuery
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionDetailQuery
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionListQuery
 import com.vitran.shop.feature.marketplace.shop.domain.query.ShopListQuery
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -56,6 +61,26 @@ internal class PublicShopApi(
         executor.execute {
             client.get(environment.apiUrl("/shops/slug/${slug.value.encodeURLPathPart()}")) {
                 authMode(AuthMode.None)
+            }
+        }
+
+    suspend fun getShopCollections(query: ShopCollectionListQuery): AppResult<ShopCollectionsDataDto> =
+        executor.execute {
+            client.get(environment.apiUrl("/shops/${query.shopId.value}/collections")) {
+                authMode(AuthMode.None)
+                url { parameters.appendCursorPagination(query.pagination) }
+            }
+        }
+
+    suspend fun getShopCollection(query: ShopCollectionDetailQuery): AppResult<ShopCollectionDetailDataDto> =
+        executor.execute {
+            client.get(
+                environment.apiUrl(
+                    "/shops/${query.shopId.value}/collections/${query.collectionId.value}",
+                ),
+            ) {
+                authMode(AuthMode.None)
+                url { parameters.appendCursorPagination(query.pagination) }
             }
         }
 }

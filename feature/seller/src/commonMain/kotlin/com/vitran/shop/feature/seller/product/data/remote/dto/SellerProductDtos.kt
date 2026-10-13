@@ -37,6 +37,7 @@ data class SellerProductDto(
     @SerialName("compare_at_price") val compareAtPrice: Long? = null,
     val active: Boolean? = null,
     val confirmed: Boolean? = null,
+    @SerialName("main_image") val mainImage: SellerProductImageDto? = null,
     val images: List<SellerProductImageDto> = emptyList(),
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
@@ -47,6 +48,7 @@ data class SellerProductImageDto(
     val id: Long,
     val url: String,
     @SerialName("sort_order") val sortOrder: Int = 0,
+    @SerialName("is_main") val isMain: Boolean = false,
 )
 
 @Serializable

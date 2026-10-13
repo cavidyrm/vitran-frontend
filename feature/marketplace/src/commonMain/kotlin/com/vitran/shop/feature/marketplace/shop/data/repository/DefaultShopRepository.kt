@@ -6,16 +6,22 @@ import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.pagination.CursorPage
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.marketplace.shop.data.mapper.toBrowseShopSummaryPage
+import com.vitran.shop.feature.marketplace.shop.data.mapper.toDetail
 import com.vitran.shop.feature.marketplace.shop.data.mapper.toDomain
+import com.vitran.shop.feature.marketplace.shop.data.mapper.toShopCollectionPage
 import com.vitran.shop.feature.marketplace.shop.data.mapper.toShopSummaryPage
 import com.vitran.shop.feature.marketplace.shop.data.remote.PublicShopApi
 import com.vitran.shop.feature.marketplace.shop.data.remote.dto.PublicShopDetailsDto
 import com.vitran.shop.feature.marketplace.shop.domain.error.toShopResultError
+import com.vitran.shop.feature.marketplace.shop.domain.model.ShopCollection
+import com.vitran.shop.feature.marketplace.shop.domain.model.ShopCollectionDetail
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopDetails
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSlug
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopSummary
 import com.vitran.shop.feature.marketplace.shop.domain.query.ShopBrowseQuery
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionDetailQuery
+import com.vitran.shop.feature.marketplace.shop.domain.query.ShopCollectionListQuery
 import com.vitran.shop.feature.marketplace.shop.domain.query.ShopListQuery
 import com.vitran.shop.feature.marketplace.shop.domain.repository.ShopRepository
 import kotlinx.serialization.json.Json
@@ -75,6 +81,20 @@ internal class DefaultShopRepository(
             is AppResult.Failure -> handleShopFailure(result.error, id = null, slug = slug.value)
         }
     }
+
+    override suspend fun getShopCollections(
+        query: ShopCollectionListQuery,
+    ): AppResult<CursorPage<ShopCollection>> =
+        when (val result = publicShopApi.getShopCollections(query)) {
+            is AppResult.Success -> AppResult.Success(result.value.collections.toShopCollectionPage())
+            is AppResult.Failure -> AppResult.Failure(result.error.toShopResultError())
+        }
+
+    override suspend fun getShopCollection(query: ShopCollectionDetailQuery): AppResult<ShopCollectionDetail> =
+        when (val result = publicShopApi.getShopCollection(query)) {
+            is AppResult.Success -> AppResult.Success(result.value.toDetail())
+            is AppResult.Failure -> AppResult.Failure(result.error.toShopResultError())
+        }
 
     override suspend fun invalidateShop(id: ShopId) {
         shopDetailDao.deleteById(id.value)

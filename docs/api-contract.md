@@ -1,6 +1,6 @@
 # API Contract Summary
 
-Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (123 requests, 120 `/api/v1` business routes).
+Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (131 requests, 128 `/api/v1` business routes).
 
 **Client active version:** `/api/v1` only. `/api/v2` mirror exists in the collection but is not implemented in the client until an explicit migration phase.
 
@@ -173,13 +173,13 @@ See [api-feature-map.md](api-feature-map.md) for full endpoint index.
 | Location / Cities | Cities |
 | Taxonomy | Taxonomy |
 | Home | Home |
-| Marketplace Shops | Shops — Public |
+| Marketplace Shops | Shops — Public, Shop collections (public reads) |
 | Marketplace Products | Products — Public |
 | Catalog / Search | Catalog search, product search |
 | Engagement | Favorites — Me, Shop follows — Me, Wishlists — Public, reviews, comments, contact, `/events`, shop analytics |
 | Product Reviews | Products — Public (reviews) |
 | Shop Comments | Comments |
-| Seller Shops / Products / Analytics / Boosts | Shops — Seller, Products — Seller, Boosts — Seller |
+| Seller Shops / Products / Analytics / Boosts | Shops — Seller, Shop collections (seller writes), Products — Seller, Boosts — Seller |
 | Plans / Payments | Plans — Public/Admin, Payments — Public |
 | CMS | Static Pages — Public/Admin |
 | Admin | Admin — Users, Shops — Admin, Products — Admin |
@@ -190,8 +190,9 @@ See [api-feature-map.md](api-feature-map.md) for full endpoint index.
 
 | Operation | Method / path | Notes |
 |-----------|---------------|-------|
-| Create seller product (with images) | `POST /seller/shops/{id}/products` | multipart; optional `compare_at_price` |
-| Update seller product | `PATCH /seller/products/{id}` | multipart; optional `compare_at_price` (empty string clears) |
+| Create seller product (with images) | `POST /seller/shops/{id}/products` | multipart; optional `compare_at_price`, `seo_title`, `seo_description`, `noindex` |
+| Update seller product | `PATCH /seller/products/{id}` | multipart; optional `compare_at_price` (empty string clears); optional SEO fields |
+| Set product cover | `PATCH /seller/products/{id}/images/{imageId}/main` | no body; response includes `main_image` and `images[].is_main` |
 | Upload category icon | `PUT /admin/categories/{slug}/icon` | multipart |
 | Import Shopify taxonomy | `POST /admin/taxonomy/import` | multipart JSON files |
 | Analytics export | `GET /seller/shops/{id}/analytics/export` | file response (CSV) |
