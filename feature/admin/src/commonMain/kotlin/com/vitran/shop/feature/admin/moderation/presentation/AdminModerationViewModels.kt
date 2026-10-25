@@ -112,6 +112,7 @@ class AdminShopsViewModel(private val repository: AdminModerationRepository) : V
 }
 
 data class AdminProductsUiState(
+    val query: AdminModerationQuery = AdminModerationQuery(active = false),
     val products: List<AdminProductSummary> = emptyList(),
     val pendingProductIds: Set<ProductId> = emptySet(),
     val loading: Boolean = false,
@@ -121,14 +122,32 @@ data class AdminProductsUiState(
 class AdminProductsViewModel(private val repository: AdminModerationRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(AdminProductsUiState())
     val uiState = _uiState.asStateFlow()
+    private var loadGeneration = 0
+    private var textFilterJob: Job? = null
+
     init { refresh() }
 
-    fun refresh() = viewModelScope.launch {
-        _uiState.update { it.copy(loading = true, error = null) }
-        when (val result = repository.getProducts(AdminModerationQuery(active = false))) {
-            is AppResult.Success -> _uiState.update { it.copy(products = result.value.items, loading = false) }
-            is AppResult.Failure -> _uiState.update { it.copy(loading = false, error = result.error) }
-        }
+    fun refresh() {
+        textFilterJob?.cancel()
+        load(_uiState.value.query.copy(page = 1))
+    }
+
+    fun setActive(active: Boolean?) = applyFilter { it.copy(active = active, page = 1) }
+
+    fun setShopId(shopId: Long?) = scheduleTextFilter {
+        it.copy(shopId = shopId?.let(::ShopId), page = 1)
+    }
+
+    fun setCategorySlug(categorySlug: String?) =
+        applyFilter { it.copy(categorySlug = categorySlug?.ifBlank { null }, page = 1) }
+
+    fun setUserId(userId: Long?) = scheduleTextFilter { it.copy(userId = userId, page = 1) }
+
+    fun clearFilters() {
+        textFilterJob?.cancel()
+        val query = AdminModerationQuery(active = false)
+        if (query == _uiState.value.query) return
+        load(query)
     }
 
     fun confirm(id: ProductId) {
@@ -148,6 +167,47 @@ class AdminProductsViewModel(private val repository: AdminModerationRepository) 
             }
             _uiState.update { it.copy(pendingProductIds = it.pendingProductIds - id) }
         }
+    }
+
+    private fun applyFilter(transform: (AdminModerationQuery) -> AdminModerationQuery) {
+        val query = transform(_uiState.value.query)
+        if (query == _uiState.value.query) return
+        textFilterJob?.cancel()
+        load(query)
+    }
+
+    private fun scheduleTextFilter(transform: (AdminModerationQuery) -> AdminModerationQuery) {
+        val query = transform(_uiState.value.query)
+        if (query == _uiState.value.query) return
+        loadGeneration += 1
+        _uiState.update { it.copy(query = query, loading = true, error = null) }
+        textFilterJob?.cancel()
+        textFilterJob = viewModelScope.launch {
+            delay(TEXT_FILTER_DEBOUNCE_MS)
+            load(_uiState.value.query.copy(page = 1))
+        }
+    }
+
+    private fun load(query: AdminModerationQuery) {
+        loadGeneration += 1
+        val generation = loadGeneration
+        _uiState.update { it.copy(query = query, loading = true, error = null) }
+        viewModelScope.launch {
+            when (val result = repository.getProducts(query)) {
+                is AppResult.Success -> {
+                    if (generation != loadGeneration) return@launch
+                    _uiState.update { it.copy(products = result.value.items, loading = false, query = query) }
+                }
+                is AppResult.Failure -> {
+                    if (generation != loadGeneration) return@launch
+                    _uiState.update { it.copy(loading = false, error = result.error, query = query) }
+                }
+            }
+        }
+    }
+
+    private companion object {
+        const val TEXT_FILTER_DEBOUNCE_MS = 400L
     }
 }
 

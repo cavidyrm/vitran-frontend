@@ -45,7 +45,7 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | StorePlanUpgradeScreen | `/admin/stores/plan/upgrade` | Seller Subscription | Plans public + purchase | Preview fixtures | `StorePlanUpgradeViewModel` ✅ | Yes | External payment handoff + verify; no yearly toggle |
 | AdminPlansScreen | `/admin/plans` | Admin Plans | `GET/POST/PATCH/DELETE /admin/plans` | Preview fixtures only | `AdminPlansViewModel` ✅ | Yes | Real CRUD; raw features preserved; Super Admin delete |
 | AdminShopsModerationScreen | `/admin/moderation/shops` | Admin Moderation | `GET /admin/shops`, confirm PATCH | — | `AdminShopsViewModel` ✅ | — | Thin real-API queue; public cache invalidation |
-| AdminProductsModerationScreen | `/admin/moderation/products` | Admin Moderation | `GET /admin/products`, confirm PATCH | — | `AdminProductsViewModel` ✅ | — | Thin real-API queue |
+| AdminProductsModerationScreen | `/admin/moderation/products` | Admin Moderation | `GET /admin/products`, confirm PATCH | — | `AdminProductsViewModel` ✅ | — | Thin real-API queue; filters `active`, `shop_id`, `category_slug`, `user_id` |
 | AdminProductModerationDetailScreen | `/admin/moderation/products/{id}` | Admin Moderation | `GET /admin/products/{id}`, confirm PATCH | — | `AdminProductDetailsViewModel` ✅ | — | Preserves active vs confirmed |
 | AdminCommentConfirmScreen | `/admin/moderation/comments` | Admin Moderation | confirm PATCH only | — | `AdminCommentsViewModel` ✅ | — | **Blocked list contract**; known-ID mutation only |
 | AdminTaxonomyScreen | `/admin/taxonomy` | Admin Taxonomy | import/name/icon endpoints | Local form input only | taxonomy admin ViewModels ✅ | — | Multipart keys verified; response schemas unresolved |

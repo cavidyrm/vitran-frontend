@@ -126,7 +126,7 @@ fun AdminShopsFilters(
 }
 
 @Composable
-private fun ActiveFilter(
+internal fun ActiveFilter(
     query: AdminModerationQuery,
     onActiveChange: (Boolean?) -> Unit,
     modifier: Modifier = Modifier,
@@ -194,7 +194,7 @@ private fun CityFilter(
 }
 
 @Composable
-private fun CategoryFilter(
+internal fun CategoryFilter(
     query: AdminModerationQuery,
     taxonomyRoots: List<AdminTaxonomyNode>,
     taxonomyState: TaxonomyPickerUiState,
@@ -238,13 +238,14 @@ private fun CategoryFilter(
 }
 
 @Composable
-private fun UserIdFilter(
+internal fun UserIdFilter(
     userIdText: String,
     onUserIdTextChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    label: String = "شناسه کاربر",
 ) {
     AdminTextField(
-        label = "شناسه کاربر",
+        label = label,
         value = userIdText,
         onValueChange = onUserIdTextChange,
         placeholder = "همه",

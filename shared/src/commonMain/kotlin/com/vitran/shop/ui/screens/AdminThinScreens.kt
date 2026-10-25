@@ -70,6 +70,7 @@ import com.vitran.shop.ui.components.admin.AdminTextField
 import com.vitran.shop.ui.components.admin.AdminToggleRow
 import com.vitran.shop.ui.sections.account.digitsOnly
 import com.vitran.shop.ui.sections.account.toPersianDigits
+import com.vitran.shop.ui.sections.admin.AdminProductsFilters
 import com.vitran.shop.ui.sections.admin.AdminShopsFilters
 import com.vitran.shop.ui.sections.admin.plan.StorePlanTokens
 import com.vitran.shop.ui.theme.VitranSize
@@ -170,10 +171,41 @@ fun AdminProductsModerationScreen(
     onProductOpen: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AdminProductsViewModel = vitranKoinViewModel(),
+    taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val taxonomyState by taxonomyViewModel.uiState.collectAsStateWithLifecycle()
+    var shopIdText by remember { mutableStateOf("") }
+    var userIdText by remember { mutableStateOf("") }
     AdminThinScaffold("بررسی محصولات", onBack, modifier) {
+        AdminProductsFilters(
+            query = state.query,
+            shopIdText = shopIdText,
+            onShopIdTextChange = { raw ->
+                val digits = digitsOnly(raw)
+                shopIdText = digits
+                viewModel.setShopId(digits.toLongOrNull())
+            },
+            userIdText = userIdText,
+            onUserIdTextChange = { raw ->
+                val digits = digitsOnly(raw)
+                userIdText = digits
+                viewModel.setUserId(digits.toLongOrNull())
+            },
+            onActiveChange = viewModel::setActive,
+            onCategorySlugChange = viewModel::setCategorySlug,
+            onClear = {
+                shopIdText = ""
+                userIdText = ""
+                viewModel.clearFilters()
+            },
+            taxonomyState = taxonomyState,
+            onTaxonomyRetry = taxonomyViewModel::retry,
+        )
         if (state.loading) CircularProgressIndicator()
+        if (!state.loading && state.products.isEmpty() && state.error == null) {
+            VitranText("محصولی با این فیلترها یافت نشد", VitranTextStyle.Body)
+        }
         state.products.forEach { product ->
             AdminFormCard(
                 title = product.title,
