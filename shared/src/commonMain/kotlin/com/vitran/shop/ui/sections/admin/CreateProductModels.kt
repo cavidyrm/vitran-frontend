@@ -127,6 +127,10 @@ data class CreateProductFormState(
     val mediaUrls: List<String>
         get() = media.map { it.url }
 
+    /** SEO card is shown on a read-only detail only when the API stored one of these. */
+    fun hasStoredSeo(): Boolean =
+        seoTitle.isNotBlank() || seoDescription.isNotBlank() || noindex
+
     fun withTitle(value: String): CreateProductFormState {
         val clipped = value.take(CreateProductMocks.TitleMaxLength)
         val nextSlug = if (slugManuallyEdited) slug else slugifyStoreName(clipped)

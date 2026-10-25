@@ -3,19 +3,11 @@ package com.vitran.shop.ui.screens
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,14 +17,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,11 +36,7 @@ import com.vitran.shop.ui.components.admin.AdminSecondaryButton
 import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.sections.admin.CreateProductBottomBar
 import com.vitran.shop.ui.sections.admin.CreateProductFormState
-import com.vitran.shop.ui.sections.admin.CreateProductHeaderBar
-import com.vitran.shop.ui.sections.admin.CreateProductMainColumn
-import com.vitran.shop.ui.sections.admin.CreateProductOrganizationCard
-import com.vitran.shop.ui.sections.admin.CreateProductPreviewCard
-import com.vitran.shop.ui.sections.admin.CreateProductStatusCard
+import com.vitran.shop.ui.sections.admin.ProductAdminFormScaffold
 import com.vitran.shop.ui.sections.admin.ProductFieldErrors
 import com.vitran.shop.ui.sections.admin.ProductMediaItem
 import com.vitran.shop.ui.sections.admin.ProductPublishStatus
@@ -60,7 +44,6 @@ import com.vitran.shop.ui.sections.admin.ProductSaveMode
 import com.vitran.shop.ui.sections.admin.ProductSavePhase
 import com.vitran.shop.ui.sections.reference.toAdminTaxonomyNodes
 import com.vitran.shop.ui.theme.VitranRadius
-import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 import kotlinx.coroutines.launch
@@ -228,136 +211,35 @@ fun CreateProductScreen(
         }
     }
 
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxSize()
-            .background(AdminTokens.PageBackground),
-    ) {
-        val twoColumn = maxWidth >= VitranSize.desktopBreakpoint
-        val horizontalPad = if (twoColumn) VitranSpacing.xxl else VitranSpacing.lg
-        Column(modifier = Modifier.fillMaxSize()) {
-            CreateProductHeaderBar(
-                storeName = state.storeName.ifBlank { createUi.storeName },
-                onBack = { requestLeave() },
-                modifier = Modifier.drawBehind {
-                    drawLine(
-                        color = AdminTokens.CardBorder,
-                        start = Offset(0f, size.height),
-                        end = Offset(size.width, size.height),
-                        strokeWidth = 1.dp.toPx(),
-                    )
-                },
-            )
-            if (twoColumn) {
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(horizontal = horizontalPad)
-                        .padding(top = AdminTokens.CardGap),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        AdminTokens.CardGap,
-                        Alignment.CenterHorizontally,
-                    ),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    CreateProductMainColumn(
-                        state = state,
-                        onStateChange = { next ->
-                            val removed =
-                                state.media.map { it.id }.toSet() - next.media.map { it.id }.toSet()
-                            removed.forEach { createProductViewModel.removeLocalImage(it) }
-                            state = next
-                        },
-                        titleAnchor = titleAnchor,
-                        priceAnchor = priceAnchor,
-                        categoryAnchor = categoryAnchor,
-                        taxonomyRoots = taxonomyRoots,
-                        taxonomyLoading = taxonomyLoading,
-                        taxonomyError = taxonomyError,
-                        onTaxonomyRetry = taxonomyViewModel::retry,
-                        onUploadImages = { onPickImages() },
-                        onSelectExistingImages = { onPickImages() },
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .widthIn(max = AdminTokens.ProductFormMaxWidth)
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .verticalScroll(rememberScrollState())
-                            .padding(bottom = AdminTokens.CardGap),
-                    )
-                    Column(
-                        modifier = Modifier
-                            .width(AdminTokens.RailWidth)
-                            .fillMaxHeight(),
-                        verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
-                    ) {
-                        CreateProductStatusCard(
-                            state = state,
-                            onStateChange = { state = it },
-                        )
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
-                        ) {
-                            CreateProductOrganizationCard(
-                                state = state,
-                                onStateChange = { state = it },
-                            )
-                            CreateProductPreviewCard(state = state)
-                        }
-                    }
-                }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = horizontalPad)
-                        .padding(top = VitranSpacing.md, bottom = AdminTokens.CardGap),
-                    verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
-                ) {
-                    CreateProductStatusCard(
-                        state = state,
-                        onStateChange = { state = it },
-                    )
-                    CreateProductMainColumn(
-                        state = state,
-                        onStateChange = { next ->
-                            val removed =
-                                state.media.map { it.id }.toSet() - next.media.map { it.id }.toSet()
-                            removed.forEach { createProductViewModel.removeLocalImage(it) }
-                            state = next
-                        },
-                        titleAnchor = titleAnchor,
-                        priceAnchor = priceAnchor,
-                        categoryAnchor = categoryAnchor,
-                        taxonomyRoots = taxonomyRoots,
-                        taxonomyLoading = taxonomyLoading,
-                        taxonomyError = taxonomyError,
-                        onTaxonomyRetry = taxonomyViewModel::retry,
-                        onUploadImages = { onPickImages() },
-                        onSelectExistingImages = { onPickImages() },
-                    )
-                    CreateProductOrganizationCard(
-                        state = state,
-                        onStateChange = { state = it },
-                    )
-                    CreateProductPreviewCard(state = state)
-                }
-            }
+    ProductAdminFormScaffold(
+        state = state,
+        onBack = { requestLeave() },
+        titleAnchor = titleAnchor,
+        priceAnchor = priceAnchor,
+        categoryAnchor = categoryAnchor,
+        modifier = modifier,
+        storeName = state.storeName.ifBlank { createUi.storeName },
+        taxonomyRoots = taxonomyRoots,
+        taxonomyLoading = taxonomyLoading,
+        taxonomyError = taxonomyError,
+        onTaxonomyRetry = taxonomyViewModel::retry,
+        onStateChange = { next ->
+            val removed = state.media.map { it.id }.toSet() - next.media.map { it.id }.toSet()
+            removed.forEach { createProductViewModel.removeLocalImage(it) }
+            state = next
+        },
+        onUploadImages = { onPickImages() },
+        onSelectExistingImages = { onPickImages() },
+        bottomBar = { compact ->
             CreateProductBottomBar(
                 state = state,
-                compact = !twoColumn,
+                compact = compact,
                 onCancel = { requestLeave() },
                 onSaveDraft = { attemptSave(ProductSaveMode.Draft) },
                 onSavePublish = { attemptSave(ProductSaveMode.Publish) },
             )
-        }
-    }
+        },
+    )
 
     if (leaveDialog) {
         Dialog(onDismissRequest = { leaveDialog = false }) {

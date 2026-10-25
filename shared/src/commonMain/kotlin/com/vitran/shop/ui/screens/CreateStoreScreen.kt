@@ -1,19 +1,5 @@
 package com.vitran.shop.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,12 +7,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vitran.shop.di.vitranKoinViewModel
 import com.vitran.shop.feature.location.domain.model.CityId
@@ -40,24 +22,16 @@ import com.vitran.shop.feature.seller.shop.presentation.buildCreateShopCommand
 import com.vitran.shop.feature.seller.shop.presentation.toRules
 import com.vitran.shop.feature.seller.shop.presentation.toShippingMethods
 import com.vitran.shop.feature.seller.shop.presentation.toWorkingHours
-import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.sections.admin.AutosaveStatus
-import com.vitran.shop.ui.sections.admin.CreateStoreBottomBar
 import com.vitran.shop.ui.sections.admin.CreateStoreFormState
-import com.vitran.shop.ui.sections.admin.CreateStoreHeaderBar
-import com.vitran.shop.ui.sections.admin.CreateStorePhonePreview
 import com.vitran.shop.ui.sections.admin.CreateStoreStep
-import com.vitran.shop.ui.sections.admin.CreateStoreStepBody
 import com.vitran.shop.ui.sections.admin.CreateStoreStepOrder
-import com.vitran.shop.ui.sections.admin.CreateStoreStepper
-import com.vitran.shop.ui.sections.admin.CreateStoreSummaryCard
+import com.vitran.shop.ui.sections.admin.CreateStoreWizardFrame
 import com.vitran.shop.ui.sections.admin.StoreSocialKind
 import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerUiState
 import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
 import com.vitran.shop.ui.sections.reference.toAdminTaxonomyNodes
 import com.vitran.shop.ui.sections.reference.toAdminSelectOptions
-import com.vitran.shop.ui.theme.VitranSize
-import com.vitran.shop.ui.theme.VitranSpacing
 import com.vitran.shop.ui.theme.VitranTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -238,169 +212,39 @@ fun CreateStoreScreen(
             createState.slugCheck !is SlugCheckUiStatus.Taken &&
             createState.titleCheck !is TitleCheckUiStatus.Taken
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(AdminTokens.PageBackground),
-    ) {
-        CreateStoreHeaderBar(
-            autosaveStatus = autosaveStatus,
-            onBack = onBack,
-            modifier = Modifier.drawBehind {
-                drawLine(
-                    color = AdminTokens.CardBorder,
-                    start = Offset(0f, size.height),
-                    end = Offset(size.width, size.height),
-                    strokeWidth = 1.dp.toPx(),
-                )
-            },
-        )
-        BoxWithConstraints(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-        ) {
-            val twoColumn = maxWidth >= VitranSize.mdBreakpoint
-            val horizontalPad = if (twoColumn) VitranSpacing.xxl else VitranSpacing.lg
-            Column(modifier = Modifier.fillMaxSize()) {
-                CreateStoreStepper(
-                    current = step,
-                    state = state,
-                    onStepClick = { goTo(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(horizontal = horizontalPad),
-                )
-                if (twoColumn) {
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .padding(horizontal = horizontalPad)
-                            .padding(top = AdminTokens.CardGap),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            AdminTokens.CardGap,
-                            Alignment.CenterHorizontally,
-                        ),
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f, fill = false)
-                                .widthIn(max = AdminTokens.FormMaxWidth)
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                                .verticalScroll(rememberScrollState())
-                                .padding(bottom = VitranSpacing.xxl),
-                        ) {
-                            CreateStoreStepBody(
-                                step = step,
-                                state = state,
-                                onStateChange = { state = it },
-                                cityOptions = cityOptions,
-                                citiesLoading = citiesLoading,
-                                citiesError = citiesError,
-                                onCitiesRetry = locationViewModel::retry,
-                                onViewStore = {
-                                    if (state.slug.isNotBlank()) onViewStore(state.slug)
-                                },
-                                onPublish = { publish() },
-                                onAddProduct = onAddProduct,
-                                fieldErrors = createState.fieldErrors,
-                                generalError = createState.generalError?.message,
-                                onClearFieldError = createShopViewModel::clearFieldError,
-                                slugCheck = createState.slugCheck,
-                                titleCheck = createState.titleCheck,
-                                taxonomyRoots = taxonomyRoots,
-                                taxonomyLoading = taxonomyLoading,
-                                taxonomyError = taxonomyError,
-                                onTaxonomyRetry = taxonomyViewModel::retry,
-                            )
-                        }
-                        Column(
-                            modifier = Modifier
-                                .width(AdminTokens.RailWidth)
-                                .fillMaxHeight()
-                                .verticalScroll(rememberScrollState())
-                                .padding(bottom = VitranSpacing.xxl),
-                            verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            CreateStorePhonePreview(
-                                state = state,
-                                onVisit = {
-                                    if (state.slug.isNotBlank()) onViewStore(state.slug)
-                                },
-                            )
-                            CreateStoreSummaryCard(
-                                state = state,
-                                currentStep = step,
-                                lastSavedLabel = lastSavedLabel,
-                            )
-                        }
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = horizontalPad)
-                            .padding(top = VitranSpacing.md, bottom = VitranSpacing.xxl),
-                        verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        CreateStorePhonePreview(
-                            state = state,
-                            onVisit = {
-                                if (state.slug.isNotBlank()) onViewStore(state.slug)
-                            },
-                        )
-                        CreateStoreStepBody(
-                            step = step,
-                            state = state,
-                            onStateChange = { state = it },
-                            cityOptions = cityOptions,
-                            citiesLoading = citiesLoading,
-                            citiesError = citiesError,
-                            onCitiesRetry = locationViewModel::retry,
-                            onViewStore = {
-                                if (state.slug.isNotBlank()) onViewStore(state.slug)
-                            },
-                            onPublish = { publish() },
-                            onAddProduct = onAddProduct,
-                            fieldErrors = createState.fieldErrors,
-                            generalError = createState.generalError?.message,
-                            onClearFieldError = createShopViewModel::clearFieldError,
-                            slugCheck = createState.slugCheck,
-                            titleCheck = createState.titleCheck,
-                            taxonomyRoots = taxonomyRoots,
-                            taxonomyLoading = taxonomyLoading,
-                            taxonomyError = taxonomyError,
-                            onTaxonomyRetry = taxonomyViewModel::retry,
-                        )
-                        CreateStoreSummaryCard(
-                            state = state,
-                            currentStep = step,
-                            lastSavedLabel = lastSavedLabel,
-                        )
-                    }
-                }
-            }
-        }
-        CreateStoreBottomBar(
-            step = step,
-            brandColor = state.theme.primary,
-            onBrandColor = state.theme.onPrimary,
-            lastSavedLabel = lastSavedLabel,
-            canPublish = canPublish,
-            published = state.published || createState.createdShop != null,
-            onBack = { goPrev() },
-            onNext = { goNext() },
-            onSaveDraft = { saveDraft() },
-            onPublish = { publish() },
-        )
-    }
+    CreateStoreWizardFrame(
+        state = state,
+        step = step,
+        onStepClick = { goTo(it) },
+        onStateChange = { state = it },
+        onBack = onBack,
+        modifier = modifier,
+        autosaveStatus = autosaveStatus,
+        cityOptions = cityOptions,
+        citiesLoading = citiesLoading,
+        citiesError = citiesError,
+        onCitiesRetry = locationViewModel::retry,
+        onViewStore = {
+            if (state.slug.isNotBlank()) onViewStore(state.slug)
+        },
+        onPublish = { publish() },
+        onAddProduct = onAddProduct,
+        fieldErrors = createState.fieldErrors,
+        generalError = createState.generalError?.message,
+        onClearFieldError = createShopViewModel::clearFieldError,
+        slugCheck = createState.slugCheck,
+        titleCheck = createState.titleCheck,
+        taxonomyRoots = taxonomyRoots,
+        taxonomyLoading = taxonomyLoading,
+        taxonomyError = taxonomyError,
+        onTaxonomyRetry = taxonomyViewModel::retry,
+        lastSavedLabel = lastSavedLabel,
+        canPublish = canPublish,
+        published = state.published || createState.createdShop != null,
+        onBottomBack = { goPrev() },
+        onBottomNext = { goNext() },
+        onSaveDraft = { saveDraft() },
+    )
 }
 
 @Preview

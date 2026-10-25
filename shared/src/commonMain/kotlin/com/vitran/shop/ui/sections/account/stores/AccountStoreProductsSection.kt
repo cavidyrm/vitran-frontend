@@ -1,5 +1,6 @@
 package com.vitran.shop.ui.sections.account.stores
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -72,6 +74,7 @@ internal fun AccountStoreProductsSection(
     taxonomyError: String?,
     onTaxonomyRetry: () -> Unit,
     onCreateProduct: () -> Unit,
+    onProductOpen: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SellerShopProductsViewModel = vitranKoinViewModel { parametersOf(shopId) },
 ) {
@@ -157,7 +160,10 @@ internal fun AccountStoreProductsSection(
             else -> {
                 AccountCard {
                     list.items.forEachIndexed { index, product ->
-                        ProductRow(product)
+                        ProductRow(
+                            product = product,
+                            onClick = { onProductOpen(product.id.value) },
+                        )
                         if (index < list.items.lastIndex) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = VitranSpacing.lg),
@@ -347,10 +353,14 @@ private fun CategoryFilter(
 }
 
 @Composable
-private fun ProductRow(product: SellerProductSummary) {
+private fun ProductRow(
+    product: SellerProductSummary,
+    onClick: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = VitranSpacing.lg, vertical = VitranSpacing.md),
         verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
     ) {

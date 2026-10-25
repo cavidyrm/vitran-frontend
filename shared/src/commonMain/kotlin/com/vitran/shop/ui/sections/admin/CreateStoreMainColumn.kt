@@ -192,6 +192,7 @@ fun CreateStoreStepBody(
     taxonomyLoading: Boolean = false,
     taxonomyError: String? = null,
     onTaxonomyRetry: () -> Unit = {},
+    readOnly: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -217,12 +218,14 @@ fun CreateStoreStepBody(
                 taxonomyLoading = taxonomyLoading,
                 taxonomyError = taxonomyError,
                 onTaxonomyRetry = onTaxonomyRetry,
+                readOnly = readOnly,
             )
             CreateStoreStep.Brand -> CreateStoreBrandStep(
                 state = state,
                 onStateChange = onStateChange,
                 fieldErrors = fieldErrors,
                 onClearFieldError = onClearFieldError,
+                readOnly = readOnly,
             )
             CreateStoreStep.Contact -> CreateStoreContactStep(
                 state = state,
@@ -233,17 +236,20 @@ fun CreateStoreStepBody(
                 onCitiesRetry = onCitiesRetry,
                 fieldErrors = fieldErrors,
                 onClearFieldError = onClearFieldError,
+                readOnly = readOnly,
             )
             CreateStoreStep.Policies -> CreateStorePoliciesStep(
                 state = state,
                 onStateChange = onStateChange,
                 fieldErrors = fieldErrors,
+                readOnly = readOnly,
             )
             CreateStoreStep.Publish -> CreateStorePublishStep(
                 state = state,
                 onViewStore = onViewStore,
                 onPublish = onPublish,
                 onAddProduct = onAddProduct,
+                readOnly = readOnly,
             )
         }
     }
@@ -261,6 +267,7 @@ private fun CreateStoreBasicsStep(
     taxonomyLoading: Boolean = false,
     taxonomyError: String? = null,
     onTaxonomyRetry: () -> Unit = {},
+    readOnly: Boolean = false,
 ) {
     AdminFormCard(
         title = stringResource(Res.string.admin_card_identity),
@@ -277,8 +284,11 @@ private fun CreateStoreBasicsStep(
             placeholder = stringResource(Res.string.admin_field_store_name_placeholder),
             required = true,
             error = fieldErrors["title"],
+            readOnly = readOnly,
         )
-        TitleAvailabilityLine(title = state.storeName, status = titleCheck)
+        if (!readOnly) {
+            TitleAvailabilityLine(title = state.storeName, status = titleCheck)
+        }
         // Not sent on POST /seller/shops: legal_name, owner_name, slogan.
         // Row(
         //     modifier = Modifier.fillMaxWidth(),
@@ -320,6 +330,7 @@ private fun CreateStoreBasicsStep(
                 placeholder = stringResource(Res.string.admin_field_category_placeholder),
                 helper = stringResource(Res.string.admin_field_category_helper),
                 error = fieldErrors["category_slugs"],
+                enabled = !readOnly,
             )
         }
     }
@@ -334,6 +345,7 @@ private fun CreateStoreBasicsStep(
             slugError = fieldErrors["slug"],
             onClearSlugError = { onClearFieldError("slug") },
             slugCheck = slugCheck,
+            readOnly = readOnly,
         )
     }
 }
@@ -345,6 +357,7 @@ private fun CreateStoreUrlBuilder(
     slugError: String? = null,
     onClearSlugError: () -> Unit = {},
     slugCheck: SlugCheckUiStatus = SlugCheckUiStatus.Idle,
+    readOnly: Boolean = false,
 ) {
     var copied by remember { mutableStateOf(false) }
     AdminTextField(
@@ -360,6 +373,7 @@ private fun CreateStoreUrlBuilder(
         placeholder = "noor-gallery",
         error = slugError,
         ltr = true,
+        readOnly = readOnly,
         trailing = {
             Text(
                 text = stringResource(
@@ -378,7 +392,9 @@ private fun CreateStoreUrlBuilder(
         fontSize = 12.sp,
         lineHeight = 18.sp,
     )
-    SlugAvailabilityLine(slug = state.slug, status = slugCheck)
+    if (!readOnly) {
+        SlugAvailabilityLine(slug = state.slug, status = slugCheck)
+    }
 }
 
 @Composable
@@ -437,6 +453,7 @@ private fun CreateStoreBrandStep(
     onStateChange: (CreateStoreFormState) -> Unit,
     fieldErrors: Map<String, String> = emptyMap(),
     onClearFieldError: (String) -> Unit = {},
+    readOnly: Boolean = false,
     imagePicker: ImagePicker = koinInject(),
 ) {
     val scope = rememberCoroutineScope()
@@ -537,17 +554,30 @@ private fun CreateStoreBrandStep(
         //         )
         //     }
         // }
-        AdminMediaDropzone(
-            label = stringResource(Res.string.admin_field_icon),
-            imageUrl = state.avatarUrl.takeIf { it.isNotBlank() },
-            previewBytes = state.logoPreviewBytes,
-            onPick = { pickLogo() },
-            onRemove = {
-                onStateChange(state.copy(avatarUrl = "", logoPreviewBytes = null, dirty = true))
-            },
-            height = AdminTokens.LogoDropzoneSize,
-            circular = true,
-        )
+        if (!readOnly) {
+            AdminMediaDropzone(
+                label = stringResource(Res.string.admin_field_icon),
+                imageUrl = state.avatarUrl.takeIf { it.isNotBlank() },
+                previewBytes = state.logoPreviewBytes,
+                onPick = { pickLogo() },
+                onRemove = {
+                    onStateChange(state.copy(avatarUrl = "", logoPreviewBytes = null, dirty = true))
+                },
+                height = AdminTokens.LogoDropzoneSize,
+                circular = true,
+            )
+        } else if (state.avatarUrl.isNotBlank() || state.logoPreviewBytes != null) {
+            AdminMediaDropzone(
+                label = stringResource(Res.string.admin_field_icon),
+                imageUrl = state.avatarUrl.takeIf { it.isNotBlank() },
+                previewBytes = state.logoPreviewBytes,
+                onPick = {},
+                onRemove = {},
+                height = AdminTokens.LogoDropzoneSize,
+                circular = true,
+                interactive = false,
+            )
+        }
         AdminTextField(
             label = stringResource(Res.string.admin_field_avatar_url),
             value = state.avatarUrl,
@@ -557,6 +587,7 @@ private fun CreateStoreBrandStep(
             },
             placeholder = stringResource(Res.string.admin_field_avatar_url_placeholder),
             error = fieldErrors["avatar_url"],
+            readOnly = readOnly,
         )
     }
     // Not sent on POST /seller/shops: theme presets.
@@ -618,8 +649,9 @@ private fun CreateStoreBrandStep(
                 onStateChange(state.copy(about = it, dirty = true))
             },
             placeholder = stringResource(Res.string.admin_field_about_placeholder),
-            showToolbar = true,
+            showToolbar = !readOnly,
             error = fieldErrors["description"],
+            readOnly = readOnly,
         )
     }
 }
@@ -813,6 +845,7 @@ private fun CreateStoreContactStep(
     onCitiesRetry: () -> Unit,
     fieldErrors: Map<String, String> = emptyMap(),
     onClearFieldError: (String) -> Unit = {},
+    readOnly: Boolean = false,
 ) {
     AdminFormCard(
         title = stringResource(Res.string.admin_card_location),
@@ -837,6 +870,7 @@ private fun CreateStoreContactStep(
             placeholder = stringResource(Res.string.admin_field_phone_placeholder),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             error = fieldErrors["phone_number"],
+            readOnly = readOnly,
         )
         AdminTextField(
             label = stringResource(Res.string.admin_field_support_times),
@@ -847,6 +881,7 @@ private fun CreateStoreContactStep(
             },
             placeholder = stringResource(Res.string.admin_field_support_times_placeholder),
             error = fieldErrors["support_times"],
+            readOnly = readOnly,
         )
         AdminTextField(
             label = stringResource(Res.string.admin_field_address),
@@ -857,6 +892,7 @@ private fun CreateStoreContactStep(
             },
             singleLine = false,
             error = fieldErrors["address"],
+            readOnly = readOnly,
         )
         when {
             citiesLoading -> ReferenceDataLoading(message = "در حال بارگذاری شهرها…")
@@ -871,7 +907,7 @@ private fun CreateStoreContactStep(
                 },
                 placeholder = stringResource(Res.string.admin_field_city_placeholder),
                 error = fieldErrors["city_id"],
-                enabled = cityOptions.isNotEmpty(),
+                enabled = !readOnly && cityOptions.isNotEmpty(),
             )
         }
     }
@@ -885,8 +921,9 @@ private fun CreateStoreContactStep(
                 key(channel.id) {
                     SocialChannelRow(
                         channel = channel,
-                        canMoveUp = index > 0,
-                        canMoveDown = index < state.socialChannels.lastIndex,
+                        canMoveUp = index > 0 && !readOnly,
+                        canMoveDown = index < state.socialChannels.lastIndex && !readOnly,
+                        readOnly = readOnly,
                         onMove = { delta ->
                             onStateChange(state.moveSocial(index, index + delta))
                         },
@@ -916,7 +953,7 @@ private fun CreateStoreContactStep(
             val used = state.socialChannels.map { it.kind }.toSet()
             // Email is not a create-shop field.
             val canAdd = StoreSocialKind.entries.any { it !in used && it != StoreSocialKind.Email }
-            if (canAdd) {
+            if (canAdd && !readOnly) {
                 Text(
                     text = "+ ${stringResource(Res.string.admin_social_add_new)}",
                     color = MaterialTheme.colorScheme.onSurface,
@@ -960,6 +997,7 @@ private fun SocialChannelRow(
     onHandleChange: (String) -> Unit,
     onRemove: () -> Unit,
     error: String? = null,
+    readOnly: Boolean = false,
 ) {
     val label = when (channel.kind) {
         StoreSocialKind.Instagram -> stringResource(Res.string.admin_field_instagram)
@@ -1017,7 +1055,8 @@ private fun SocialChannelRow(
                 Box(
                     modifier = Modifier
                         .size(VitranSize.touchTarget)
-                        .pointerInput(canMoveUp, canMoveDown) {
+                        .pointerInput(canMoveUp, canMoveDown, readOnly) {
+                            if (readOnly) return@pointerInput
                             detectVerticalDragGestures(
                                 onDragEnd = { drag = 0f },
                                 onDragCancel = { drag = 0f },
@@ -1053,12 +1092,14 @@ private fun SocialChannelRow(
                 )
                 Text(text = label, fontWeight = FontWeight.Medium, fontSize = 13.sp)
             }
-            Text(
-                text = stringResource(Res.string.admin_social_remove),
-                color = AdminTokens.Helper,
-                fontSize = 12.sp,
-                modifier = Modifier.clickable(role = Role.Button, onClick = onRemove),
-            )
+            if (!readOnly) {
+                Text(
+                    text = stringResource(Res.string.admin_social_remove),
+                    color = AdminTokens.Helper,
+                    fontSize = 12.sp,
+                    modifier = Modifier.clickable(role = Role.Button, onClick = onRemove),
+                )
+            }
         }
         AdminTextField(
             label = label,
@@ -1067,6 +1108,7 @@ private fun SocialChannelRow(
             prefix = prefix,
             placeholder = placeholder,
             error = error,
+            readOnly = readOnly,
         )
     }
 }
@@ -1076,6 +1118,7 @@ private fun CreateStorePoliciesStep(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
     fieldErrors: Map<String, String> = emptyMap(),
+    readOnly: Boolean = false,
 ) {
     // Not sent on POST /seller/shops: policy mode, templates, and free-text
     // policies / shipping / returns. The request uses rules, shipping_methods,
@@ -1086,6 +1129,7 @@ private fun CreateStorePoliciesStep(
             onStateChange(state.copy(profile = profile, dirty = true))
         },
         fieldErrors = fieldErrors,
+        readOnly = readOnly,
     )
 }
 
@@ -1095,6 +1139,7 @@ private fun CreateStorePublishStep(
     onViewStore: () -> Unit,
     onPublish: () -> Unit,
     onAddProduct: () -> Unit,
+    readOnly: Boolean = false,
 ) {
     val ready = state.canPublish
     val name = state.storeName.ifBlank {
@@ -1139,6 +1184,7 @@ private fun CreateStorePublishStep(
                 stringResource(Res.string.admin_publish_check_city),
                 state.cityId?.toLongOrNull() != null,
             )
+            if (!readOnly) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
@@ -1179,16 +1225,19 @@ private fun CreateStorePublishStep(
                     )
                 }
             }
+            }
         }
     }
-    AdminEmptyPromptCard(
-        title = stringResource(Res.string.admin_empty_products_title),
-        body = stringResource(Res.string.admin_empty_products_body),
-        actionLabel = stringResource(Res.string.admin_empty_products_action),
-        emoji = "📦",
-        emphasized = false,
-        onAction = onAddProduct,
-    )
+    if (!readOnly) {
+        AdminEmptyPromptCard(
+            title = stringResource(Res.string.admin_empty_products_title),
+            body = stringResource(Res.string.admin_empty_products_body),
+            actionLabel = stringResource(Res.string.admin_empty_products_action),
+            emoji = "📦",
+            emphasized = false,
+            onAction = onAddProduct,
+        )
+    }
 }
 
 @Composable

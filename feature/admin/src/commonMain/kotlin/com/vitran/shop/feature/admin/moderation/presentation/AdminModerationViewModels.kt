@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
+import com.vitran.shop.feature.admin.moderation.data.AdminShopModerationCache
 import com.vitran.shop.feature.admin.moderation.domain.AdminModerationQuery
 import com.vitran.shop.feature.admin.moderation.domain.AdminModerationRepository
 import com.vitran.shop.feature.admin.moderation.domain.AdminProductDetails
+import com.vitran.shop.feature.admin.moderation.domain.withStoredFieldsFrom
 import com.vitran.shop.feature.admin.moderation.domain.AdminProductSummary
 import com.vitran.shop.feature.admin.moderation.domain.AdminShopSummary
 import com.vitran.shop.feature.admin.moderation.domain.ConfirmedAdminComment
@@ -28,7 +30,10 @@ data class AdminShopsUiState(
     val error: AppError? = null,
 )
 
-class AdminShopsViewModel(private val repository: AdminModerationRepository) : ViewModel() {
+class AdminShopsViewModel(
+    private val repository: AdminModerationRepository,
+    private val shopCache: AdminShopModerationCache,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AdminShopsUiState())
     val uiState = _uiState.asStateFlow()
     private var loadGeneration = 0
@@ -65,6 +70,12 @@ class AdminShopsViewModel(private val repository: AdminModerationRepository) : V
         val query = AdminModerationQuery(active = false)
         if (query == _uiState.value.query) return
         load(query)
+    }
+
+    fun syncCachedShops() {
+        _uiState.update { state ->
+            state.copy(shops = state.shops.map { shop -> shopCache.find(shop.id) ?: shop })
+        }
     }
 
     fun confirm(id: ShopId) {
@@ -109,6 +120,47 @@ class AdminShopsViewModel(private val repository: AdminModerationRepository) : V
     private companion object {
         const val USER_ID_DEBOUNCE_MS = 400L
     }
+}
+
+sealed interface AdminShopDetailUiState {
+    data object Missing : AdminShopDetailUiState
+
+    data class Content(
+        val shop: AdminShopSummary,
+        val confirming: Boolean = false,
+        val error: AppError? = null,
+    ) : AdminShopDetailUiState
+}
+
+class AdminShopDetailViewModel(
+    private val shopId: ShopId,
+    private val repository: AdminModerationRepository,
+    private val cache: AdminShopModerationCache,
+) : ViewModel() {
+    private val _uiState = MutableStateFlow<AdminShopDetailUiState>(readCache())
+    val uiState = _uiState.asStateFlow()
+
+    fun reload() {
+        _uiState.value = readCache()
+    }
+
+    fun confirm() {
+        val current = _uiState.value as? AdminShopDetailUiState.Content ?: return
+        if (current.confirming || current.shop.confirmed) return
+        _uiState.value = current.copy(confirming = true, error = null)
+        viewModelScope.launch {
+            when (val result = repository.confirmShop(shopId)) {
+                is AppResult.Success ->
+                    _uiState.value = AdminShopDetailUiState.Content(shop = result.value)
+                is AppResult.Failure ->
+                    _uiState.value = current.copy(confirming = false, error = result.error)
+            }
+        }
+    }
+
+    private fun readCache(): AdminShopDetailUiState =
+        cache.find(shopId)?.let { AdminShopDetailUiState.Content(it) }
+            ?: AdminShopDetailUiState.Missing
 }
 
 data class AdminProductsUiState(
@@ -237,7 +289,9 @@ class AdminProductDetailsViewModel(
         _uiState.value = current.copy(confirming = true)
         viewModelScope.launch {
             _uiState.value = when (val result = repository.confirmProduct(productId)) {
-                is AppResult.Success -> AdminProductDetailsUiState.Content(result.value)
+                is AppResult.Success -> AdminProductDetailsUiState.Content(
+                    result.value.withStoredFieldsFrom(current.product),
+                )
                 is AppResult.Failure -> AdminProductDetailsUiState.Error(result.error)
             }
         }

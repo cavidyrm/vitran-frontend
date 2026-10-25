@@ -20,13 +20,14 @@ import com.vitran.shop.ui.screens.AccountCityDetailScreen
 import com.vitran.shop.ui.screens.AccountScreen
 import com.vitran.shop.ui.screens.AccountSettingsScreen
 import com.vitran.shop.ui.screens.AccountStoreEditScreen
+import com.vitran.shop.ui.screens.AccountStoreProductDetailScreen
 import com.vitran.shop.ui.screens.AccountStoresScreen
-import com.vitran.shop.ui.screens.AccountStoreEditScreen
 import com.vitran.shop.ui.screens.AccountUserDetailScreen
 import com.vitran.shop.ui.screens.AccountUsersScreen
 import com.vitran.shop.ui.screens.AdminPlansScreen
 import com.vitran.shop.ui.screens.AdminCommentConfirmScreen
 import com.vitran.shop.ui.screens.AdminProductModerationDetailScreen
+import com.vitran.shop.ui.screens.AdminShopModerationDetailScreen
 import com.vitran.shop.ui.screens.AdminProductsModerationScreen
 import com.vitran.shop.ui.screens.AdminShopsModerationScreen
 import com.vitran.shop.ui.screens.AdminStaticPageEditorScreen
@@ -236,6 +237,13 @@ fun AppNavHost(
                     onFooterLinkClick = onFooterLink,
                 )
             }
+            entry<Route.AccountStoreProductDetail> { key ->
+                AccountStoreProductDetailScreen(
+                    shopId = key.shopId,
+                    productId = key.productId,
+                    onBack = { navigator.goBack() },
+                )
+            }
             entry<Route.AccountStoreEdit> { key ->
                 AccountStoreEditScreen(
                     shopId = key.shopId,
@@ -244,6 +252,14 @@ fun AppNavHost(
                     onOpenSaved = { navigator.navigate(Route.Saved) },
                     onCreateProduct = {
                         navigator.push(Route.CreateProduct(shopId = key.shopId))
+                    },
+                    onProductOpen = { productId ->
+                        navigator.push(
+                            Route.AccountStoreProductDetail(
+                                shopId = key.shopId,
+                                productId = productId.toString(),
+                            ),
+                        )
                     },
                     onFooterLinkClick = onFooterLink,
                 )
@@ -395,7 +411,17 @@ fun AppNavHost(
                 )
             }
             entry<Route.AdminShops> {
-                AdminShopsModerationScreen(onBack = { navigator.goBack() })
+                AdminShopsModerationScreen(
+                    onBack = { navigator.goBack() },
+                    onShopOpen = { navigator.push(Route.AdminShopDetail(it)) },
+                )
+            }
+            entry<Route.AdminShopDetail> { key ->
+                AdminShopModerationDetailScreen(
+                    shopId = key.id,
+                    onBack = { navigator.goBack() },
+                    onViewStore = { navigator.push(Route.Store(shopId = key.id.toString())) },
+                )
             }
             entry<Route.AdminProducts> {
                 AdminProductsModerationScreen(

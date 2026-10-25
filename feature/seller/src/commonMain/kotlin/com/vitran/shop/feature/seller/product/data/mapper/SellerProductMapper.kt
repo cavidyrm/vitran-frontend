@@ -85,6 +85,10 @@ internal fun SellerProductDto.toDomain(
             ?: previous?.createdAt,
         updatedAt = updatedAt?.let { runCatching { Instant.parse(it) }.getOrNull() }
             ?: previous?.updatedAt,
+        slug = slug?.takeIf { it.isNotBlank() } ?: previous?.slug,
+        seoTitle = seoTitle?.takeIf { it.isNotBlank() } ?: previous?.seoTitle,
+        seoDescription = seoDescription?.takeIf { it.isNotBlank() } ?: previous?.seoDescription,
+        noindex = noindex ?: previous?.noindex ?: false,
     )
 }
 

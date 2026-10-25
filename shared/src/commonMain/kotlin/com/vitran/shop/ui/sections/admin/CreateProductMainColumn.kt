@@ -27,6 +27,7 @@ import com.vitran.shop.ui.components.admin.AdminMediaUploadPanel
 import com.vitran.shop.ui.components.admin.AdminMultilineField
 import com.vitran.shop.ui.components.admin.AdminTaxonomyNode
 import com.vitran.shop.ui.components.admin.AdminTaxonomyPicker
+import com.vitran.shop.ui.components.admin.breadcrumbLabel
 import com.vitran.shop.ui.components.admin.AdminTextButton
 import com.vitran.shop.ui.components.admin.AdminTextField
 import com.vitran.shop.ui.components.admin.AdminTokens
@@ -104,8 +105,10 @@ fun CreateProductMainColumn(
     onTaxonomyRetry: () -> Unit = {},
     onUploadImages: (() -> Unit)? = null,
     onSelectExistingImages: (() -> Unit)? = null,
+    readOnly: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    val showSeo = !readOnly || state.hasStoredSeo()
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AdminTokens.CardGap),
@@ -118,12 +121,13 @@ fun CreateProductMainColumn(
                 fontSize = 13.sp,
             )
         }
-        TitleDescriptionCard(state, onStateChange, titleAnchor)
+        TitleDescriptionCard(state, onStateChange, titleAnchor, readOnly)
         MediaCard(
             state = state,
             onStateChange = onStateChange,
             onUploadImages = onUploadImages,
             onSelectExistingImages = onSelectExistingImages,
+            readOnly = readOnly,
         )
         CategoryCard(
             state = state,
@@ -133,12 +137,17 @@ fun CreateProductMainColumn(
             taxonomyLoading = taxonomyLoading,
             taxonomyError = taxonomyError,
             onTaxonomyRetry = onTaxonomyRetry,
+            readOnly = readOnly,
         )
-        PriceCard(state, onStateChange, priceAnchor)
-        InventoryCard(state, onStateChange)
-        ShippingCard(state, onStateChange)
-        CreateProductVariantsCard(state, onStateChange)
-        SeoCard(state, onStateChange)
+        PriceCard(state, onStateChange, priceAnchor, readOnly)
+        if (!readOnly) {
+            InventoryCard(state, onStateChange)
+            ShippingCard(state, onStateChange)
+            CreateProductVariantsCard(state, onStateChange)
+        }
+        if (showSeo) {
+            SeoCard(state, onStateChange, readOnly)
+        }
     }
 }
 
@@ -148,6 +157,7 @@ private fun TitleDescriptionCard(
     state: CreateProductFormState,
     onStateChange: (CreateProductFormState) -> Unit,
     titleAnchor: BringIntoViewRequester,
+    readOnly: Boolean,
 ) {
     AdminFormCard(
         title = stringResource(Res.string.admin_product_card_basics),
@@ -160,29 +170,33 @@ private fun TitleDescriptionCard(
             value = state.title,
             onValueChange = { onStateChange(state.withTitle(it)) },
             placeholder = stringResource(Res.string.admin_product_field_title_placeholder),
-            required = true,
+            required = !readOnly,
+            readOnly = readOnly,
             error = state.errors.title,
         )
-        AdminTextField(
-            label = stringResource(Res.string.admin_product_field_slug),
-            value = state.slug,
-            onValueChange = {
-                onStateChange(
-                    state.copy(
-                        slug = slugifyStoreName(it).ifBlank { it.trim().lowercase() },
-                        slugManuallyEdited = true,
-                    ).markedDirty().clearedErrors(),
-                )
-            },
-            prefix = stringResource(Res.string.admin_product_url_prefix),
-            helper = if (state.slug.isNotBlank() && state.errors.slug == null) {
-                stringResource(Res.string.admin_product_slug_available)
-            } else {
-                null
-            },
-            error = state.errors.slug,
-            ltr = true,
-        )
+        if (!readOnly || state.slug.isNotBlank()) {
+            AdminTextField(
+                label = stringResource(Res.string.admin_product_field_slug),
+                value = state.slug,
+                onValueChange = {
+                    onStateChange(
+                        state.copy(
+                            slug = slugifyStoreName(it).ifBlank { it.trim().lowercase() },
+                            slugManuallyEdited = true,
+                        ).markedDirty().clearedErrors(),
+                    )
+                },
+                prefix = stringResource(Res.string.admin_product_url_prefix),
+                helper = if (!readOnly && state.slug.isNotBlank() && state.errors.slug == null) {
+                    stringResource(Res.string.admin_product_slug_available)
+                } else {
+                    null
+                },
+                error = state.errors.slug,
+                readOnly = readOnly,
+                ltr = true,
+            )
+        }
         if (state.title.length >= CreateProductMocks.TitleMaxLength - 20) {
             Text(
                 text = stringResource(Res.string.admin_product_field_title_count, state.title.length),
@@ -194,7 +208,8 @@ private fun TitleDescriptionCard(
             label = stringResource(Res.string.admin_product_field_description),
             value = state.description,
             onValueChange = { onStateChange(state.copy(description = it).markedDirty()) },
-            showToolbar = true,
+            showToolbar = !readOnly,
+            readOnly = readOnly,
         )
     }
 }
@@ -205,6 +220,7 @@ private fun MediaCard(
     onStateChange: (CreateProductFormState) -> Unit,
     onUploadImages: (() -> Unit)? = null,
     onSelectExistingImages: (() -> Unit)? = null,
+    readOnly: Boolean = false,
 ) {
     AdminFormCard(title = stringResource(Res.string.admin_product_card_media)) {
         AdminMediaUploadPanel(
@@ -238,14 +254,17 @@ private fun MediaCard(
             onRemove = { id -> onStateChange(state.removeMedia(id)) },
             onSetPrimary = { id -> onStateChange(state.setPrimaryMedia(id)) },
             onMove = { id, towardStart -> onStateChange(state.moveMedia(id, towardStart)) },
+            readOnly = readOnly,
         )
-        Text(
-            text = stringResource(Res.string.admin_product_cover_hint),
-            color = AdminTokens.Helper,
-            fontSize = 13.sp,
-        )
+        if (!readOnly) {
+            Text(
+                text = stringResource(Res.string.admin_product_cover_hint),
+                color = AdminTokens.Helper,
+                fontSize = 13.sp,
+            )
+        }
         val removed = state.removedMedia
-        if (removed != null) {
+        if (!readOnly && removed != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md)) {
                 Text(
                     text = stringResource(Res.string.admin_product_media_removed),
@@ -271,12 +290,21 @@ private fun CategoryCard(
     taxonomyLoading: Boolean,
     taxonomyError: String?,
     onTaxonomyRetry: () -> Unit,
+    readOnly: Boolean = false,
 ) {
     AdminFormCard(
         hasError = state.errors.category != null,
         modifier = Modifier.bringIntoViewRequester(categoryAnchor),
     ) {
-        when {
+        if (readOnly) {
+            val categoryLabel = state.categoryId?.let { taxonomyRoots.breadcrumbLabel(it) } ?: state.categoryId.orEmpty()
+            AdminTextField(
+                label = stringResource(Res.string.admin_product_field_category),
+                value = categoryLabel,
+                onValueChange = {},
+                readOnly = true,
+            )
+        } else when {
             taxonomyLoading -> ReferenceDataLoading(message = "در حال بارگذاری دسته‌بندی‌ها…")
             taxonomyError != null -> ReferenceDataError(message = taxonomyError, onRetry = onTaxonomyRetry)
             taxonomyRoots.isEmpty() -> ReferenceDataEmpty(message = "دسته‌بندی‌ای یافت نشد.")
@@ -307,6 +335,7 @@ private fun PriceCard(
     state: CreateProductFormState,
     onStateChange: (CreateProductFormState) -> Unit,
     priceAnchor: BringIntoViewRequester,
+    readOnly: Boolean,
 ) {
     AdminFormCard(
         title = stringResource(Res.string.admin_product_card_price),
@@ -328,14 +357,10 @@ private fun PriceCard(
                 null
             },
             error = state.errors.price,
+            readOnly = readOnly,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
-        if (!state.compareAtEnabled) {
-            AdminTextButton(
-                label = stringResource(Res.string.admin_product_add_compare_at),
-                onClick = { onStateChange(state.copy(compareAtEnabled = true).markedDirty()) },
-            )
-        } else {
+        if (state.compareAtEnabled) {
             AdminTextField(
                 label = stringResource(Res.string.admin_product_field_compare_at),
                 value = state.compareAtPrice,
@@ -349,7 +374,13 @@ private fun PriceCard(
                 placeholder = stringResource(Res.string.admin_product_field_price_placeholder),
                 prefix = stringResource(Res.string.admin_product_price_prefix),
                 error = state.errors.compareAt,
+                readOnly = readOnly,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+        } else if (!readOnly) {
+            AdminTextButton(
+                label = stringResource(Res.string.admin_product_add_compare_at),
+                onClick = { onStateChange(state.copy(compareAtEnabled = true).markedDirty()) },
             )
         }
     }
@@ -462,6 +493,7 @@ private fun ShippingCard(
 private fun SeoCard(
     state: CreateProductFormState,
     onStateChange: (CreateProductFormState) -> Unit,
+    readOnly: Boolean = false,
 ) {
     val previewTitle = state.seoTitle.ifBlank { state.title }.ifBlank {
         stringResource(Res.string.admin_product_seo_preview_fallback_title)
@@ -476,29 +508,43 @@ private fun SeoCard(
             url = previewUrl,
             description = previewDesc,
         )
-        AdminTextButton(
-            label = stringResource(
-                if (state.seoExpanded) Res.string.admin_product_seo_collapse else Res.string.admin_product_seo_expand,
-            ),
-            onClick = { onStateChange(state.copy(seoExpanded = !state.seoExpanded)) },
-        )
+        if (!readOnly) {
+            AdminTextButton(
+                label = stringResource(
+                    if (state.seoExpanded) {
+                        Res.string.admin_product_seo_collapse
+                    } else {
+                        Res.string.admin_product_seo_expand
+                    },
+                ),
+                onClick = { onStateChange(state.copy(seoExpanded = !state.seoExpanded)) },
+            )
+        }
         AdminToggleRow(
             label = stringResource(Res.string.admin_product_noindex),
             checked = state.noindex,
             onCheckedChange = { onStateChange(state.copy(noindex = it).markedDirty()) },
+            enabled = !readOnly,
         )
-        if (state.seoExpanded) {
+        val seoFieldsVisible = if (readOnly) {
+            state.seoTitle.isNotBlank() || state.seoDescription.isNotBlank()
+        } else {
+            state.seoExpanded
+        }
+        if (seoFieldsVisible) {
             AdminTextField(
                 label = stringResource(Res.string.admin_product_field_seo_title),
                 value = state.seoTitle,
                 onValueChange = { onStateChange(state.copy(seoTitle = it).markedDirty()) },
                 placeholder = state.title.ifBlank { null },
+                readOnly = readOnly,
             )
             AdminMultilineField(
                 label = stringResource(Res.string.admin_product_field_seo_desc),
                 value = state.seoDescription,
                 onValueChange = { onStateChange(state.copy(seoDescription = it).markedDirty()) },
                 placeholder = stringResource(Res.string.admin_product_field_seo_desc_placeholder),
+                readOnly = readOnly,
             )
         }
     }

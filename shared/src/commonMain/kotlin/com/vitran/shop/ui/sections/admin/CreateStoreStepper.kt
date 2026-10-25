@@ -76,6 +76,7 @@ fun CreateStoreStepper(
     state: CreateStoreFormState,
     onStepClick: (CreateStoreStep) -> Unit,
     modifier: Modifier = Modifier,
+    readOnly: Boolean = false,
 ) {
     val currentIndex = CreateStoreStepOrder.indexOf(current)
     Row(
@@ -88,7 +89,7 @@ fun CreateStoreStepper(
     ) {
         CreateStoreStepOrder.forEachIndexed { index, step ->
             val selected = step == current
-            val done = index < currentIndex || (state.stepComplete(step) && !selected)
+            val done = !readOnly && (index < currentIndex || (state.stepComplete(step) && !selected))
             Row(
                 modifier = Modifier.clickable(role = Role.Button) { onStepClick(step) },
                 verticalAlignment = Alignment.CenterVertically,

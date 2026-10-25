@@ -112,13 +112,14 @@ fun AdminMultilineField(
     helper: String? = null,
     error: String? = null,
     showToolbar: Boolean = false,
+    readOnly: Boolean = false,
 ) {
     AdminLabeledField(label = label, helper = helper, error = error, modifier = modifier) {
         val shape = RoundedCornerShape(AdminTokens.FieldRadius)
         var focused by remember { mutableStateOf(false) }
         val border = when {
             error != null -> AdminTokens.Destructive
-            focused -> AdminTokens.FieldBorderFocused
+            focused && !readOnly -> AdminTokens.FieldBorderFocused
             else -> AdminTokens.FieldBorder
         }
         Column(
@@ -127,14 +128,16 @@ fun AdminMultilineField(
                 .clip(shape)
                 .border(1.dp, border, shape),
         ) {
-            if (showToolbar) {
+            if (showToolbar && !readOnly) {
                 AdminRichTextToolbar()
             }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = AdminTokens.MultilineMinHeight)
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(
+                        if (readOnly) AdminTokens.DropdownHover else MaterialTheme.colorScheme.surface,
+                    )
                     .padding(horizontal = VitranSpacing.lg, vertical = VitranSpacing.md),
             ) {
                 BasicTextField(
@@ -143,6 +146,8 @@ fun AdminMultilineField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged { focused = it.isFocused },
+                    enabled = !readOnly,
+                    readOnly = readOnly,
                     textStyle = adminFieldTextStyle(),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
                     decorationBox = { inner ->

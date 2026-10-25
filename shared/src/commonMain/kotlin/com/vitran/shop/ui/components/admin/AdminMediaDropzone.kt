@@ -54,6 +54,7 @@ fun AdminMediaDropzone(
     onPick: () -> Unit,
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
+    interactive: Boolean = true,
     height: Dp = AdminTokens.CoverDropzoneHeight,
     circular: Boolean = false,
     hint: String? = null,
@@ -83,6 +84,7 @@ fun AdminMediaDropzone(
                 height = height,
                 hint = hint ?: stringResource(Res.string.admin_media_drop_hint),
                 onClick = onPick,
+                interactive = interactive,
             )
             if (specs.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -105,6 +107,7 @@ fun AdminMediaDropzone(
                 zoom = zoom,
                 offsetX = offsetX,
                 offsetY = offsetY,
+                interactive = interactive,
             )
         }
     }
@@ -116,6 +119,7 @@ private fun EmptyDropzone(
     height: Dp,
     hint: String,
     onClick: () -> Unit,
+    interactive: Boolean,
 ) {
     val shape = if (circular) CircleShape else RoundedCornerShape(AdminTokens.FieldRadius)
     val dashColor = AdminTokens.FieldBorder
@@ -139,13 +143,14 @@ private fun EmptyDropzone(
                     )
                 }
             }
-            .clickable(role = Role.Button, onClick = onClick),
+            .then(if (interactive) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
         ) {
+            if (interactive) {
             Box(
                 modifier = Modifier
                     .size(36.dp)
@@ -159,6 +164,7 @@ private fun EmptyDropzone(
                     size = VitranSize.iconSmall,
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
+            }
             }
             if (!circular) {
                 Text(
@@ -181,6 +187,7 @@ private fun FilledDropzone(
     zoom: Float = 1f,
     offsetX: Float = 0f,
     offsetY: Float = 0f,
+    interactive: Boolean = true,
 ) {
     val shape = if (circular) CircleShape else RoundedCornerShape(AdminTokens.FieldRadius)
     Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
@@ -188,7 +195,7 @@ private fun FilledDropzone(
             modifier = Modifier
                 .then(if (circular) Modifier.size(height) else Modifier.fillMaxWidth().height(height))
                 .clip(shape)
-                .clickable(role = Role.Button, onClick = onPick),
+                .then(if (interactive) Modifier.clickable(role = Role.Button, onClick = onPick) else Modifier),
         ) {
             AsyncImage(
                 model = model,
@@ -204,6 +211,7 @@ private fun FilledDropzone(
                     },
                 contentScale = ContentScale.Crop,
             )
+            if (interactive) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -221,8 +229,9 @@ private fun FilledDropzone(
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
             }
+            }
         }
-        if (!circular) {
+        if (interactive && !circular) {
             Row(horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md)) {
                 Text(
                     text = stringResource(Res.string.admin_media_size_mock),

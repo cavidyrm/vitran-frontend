@@ -20,6 +20,8 @@ object RouteMapper {
             Route.AccountSettings -> "/account/settings"
             Route.AccountStores -> "/account/stores"
             is Route.AccountStoreEdit -> "/account/stores/${route.shopId}"
+            is Route.AccountStoreProductDetail ->
+                "/account/stores/${route.shopId}/products/${route.productId}"
             Route.AccountUsers -> "/account/users"
             is Route.AccountUserDetail -> "/account/users/${route.userId}"
             Route.AccountCities -> "/account/cities"
@@ -37,6 +39,7 @@ object RouteMapper {
             Route.AdminShops -> "/admin/moderation/shops"
             Route.AdminProducts -> "/admin/moderation/products"
             is Route.AdminProductDetail -> "/admin/moderation/products/${route.id}"
+            is Route.AdminShopDetail -> "/admin/moderation/shops/${route.id}"
             Route.AdminComments -> "/admin/moderation/comments"
             Route.AdminTaxonomy -> "/admin/taxonomy"
             Route.AdminStaticPages -> "/admin/content/pages"
@@ -100,11 +103,19 @@ object RouteMapper {
             else -> parseProductPath(normalized)
                 ?: parseStorePath(normalized)
                 ?: parseAccountUserPath(normalized)
+                ?: parseAccountStoreProductPath(normalized)
                 ?: parseAccountStorePath(normalized)
                 ?: parseAccountCityPath(normalized)
+                ?: parseAdminShopPath(normalized)
                 ?: parseAdminProductPath(normalized)
                 ?: parseAdminStaticPagePath(normalized)
         }
+    }
+
+    private fun parseAdminShopPath(path: String): Route.AdminShopDetail? {
+        val parts = path.trim('/').split('/')
+        if (parts.size != 4 || parts.take(3) != listOf("admin", "moderation", "shops")) return null
+        return parts[3].toLongOrNull()?.let { Route.AdminShopDetail(it) }
     }
 
     private fun parseAdminProductPath(path: String): Route.AdminProductDetail? {
@@ -146,6 +157,17 @@ object RouteMapper {
         val userId = parts[2]
         if (userId.isEmpty() || userId.contains('/')) return null
         return Route.AccountUserDetail(userId = userId)
+    }
+
+    private fun parseAccountStoreProductPath(path: String): Route.AccountStoreProductDetail? {
+        // /account/stores/{shopId}/products/{productId}
+        val parts = path.trim('/').split('/')
+        if (parts.size != 5) return null
+        if (parts[0] != "account" || parts[1] != "stores" || parts[3] != "products") return null
+        val shopId = parts[2]
+        val productId = parts[4]
+        if (shopId.isEmpty() || productId.isEmpty() || shopId == "products") return null
+        return Route.AccountStoreProductDetail(shopId = shopId, productId = productId)
     }
 
     private fun parseAccountStorePath(path: String): Route.AccountStoreEdit? {

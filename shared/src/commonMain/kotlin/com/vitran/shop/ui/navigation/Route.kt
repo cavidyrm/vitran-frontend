@@ -74,6 +74,16 @@ sealed interface Route : NavKey {
         val shopId: String,
     ) : Route
 
+    /**
+     * Seller product detail. Path `/account/stores/{shopId}/products/{productId}`.
+     * Child route; shopper chrome stays hidden, same as add product.
+     */
+    @Serializable
+    data class AccountStoreProductDetail(
+        val shopId: String,
+        val productId: String,
+    ) : Route
+
     /** City management list — path `/account/cities`. Child of Account. */
     @Serializable
     data object AccountCities : Route
@@ -167,6 +177,10 @@ sealed interface Route : NavKey {
     @Serializable
     data class AdminProductDetail(val id: Long) : Route
 
+    /** Read-only create-store wizard. Path `/admin/moderation/shops/{id}`. */
+    @Serializable
+    data class AdminShopDetail(val id: Long) : Route
+
     @Serializable
     data object AdminComments : Route
 
@@ -254,6 +268,7 @@ fun Route.isTopLevel(): Boolean =
         Route.AdminShops,
         Route.AdminProducts,
         is Route.AdminProductDetail,
+        is Route.AdminShopDetail,
         Route.AdminComments,
         Route.AdminTaxonomy,
         Route.AdminStaticPages,
@@ -266,6 +281,7 @@ fun Route.isTopLevel(): Boolean =
         Route.AccountSettings,
         Route.AccountStores,
         is Route.AccountStoreEdit,
+        is Route.AccountStoreProductDetail,
         Route.AccountUsers,
         is Route.AccountUserDetail,
         Route.AccountCities,
@@ -311,9 +327,12 @@ fun Route.hidesChrome(): Boolean =
         this is Route.AdminShops ||
         this is Route.AdminProducts ||
         this is Route.AdminProductDetail ||
+        this is Route.AdminShopDetail ||
+        this is Route.AccountStoreEdit ||
         this is Route.AdminComments ||
         this is Route.AdminTaxonomy ||
         this is Route.AdminStaticPages ||
         this is Route.AdminStaticPageEdit ||
         this is Route.CreateProduct ||
+        this is Route.AccountStoreProductDetail ||
         this is Route.CreateCategory

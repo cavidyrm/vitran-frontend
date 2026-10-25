@@ -34,6 +34,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vitran.shop.core.platform.file.ImagePicker
 import com.vitran.shop.core.platform.file.SelectedFile
@@ -47,14 +49,11 @@ import com.vitran.shop.feature.admin.content.presentation.AdminStaticPageEditorV
 import com.vitran.shop.feature.admin.content.presentation.AdminStaticPagesViewModel
 import com.vitran.shop.feature.admin.catalog.location.presentation.AdminCitiesViewModel
 import com.vitran.shop.feature.admin.moderation.presentation.AdminCommentsViewModel
-import com.vitran.shop.feature.admin.moderation.presentation.AdminProductDetailsUiState
-import com.vitran.shop.feature.admin.moderation.presentation.AdminProductDetailsViewModel
 import com.vitran.shop.feature.admin.moderation.presentation.AdminProductsViewModel
 import com.vitran.shop.feature.admin.moderation.presentation.AdminShopsViewModel
 import com.vitran.shop.feature.content.domain.model.HtmlContent
 import com.vitran.shop.feature.content.domain.model.StaticPageId
 import com.vitran.shop.feature.content.domain.model.StaticPageSlug
-import com.vitran.shop.feature.marketplace.product.domain.model.ProductId
 import com.vitran.shop.feature.taxonomy.domain.model.CategoryNode
 import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
 import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
@@ -113,12 +112,16 @@ private fun AdminThinScaffold(
 @Composable
 fun AdminShopsModerationScreen(
     onBack: () -> Unit,
+    onShopOpen: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AdminShopsViewModel = vitranKoinViewModel(),
     citiesViewModel: AdminCitiesViewModel = vitranKoinViewModel(),
     taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.syncCachedShops()
+    }
     val citiesState by citiesViewModel.uiState.collectAsStateWithLifecycle()
     val taxonomyState by taxonomyViewModel.uiState.collectAsStateWithLifecycle()
     var userIdText by remember { mutableStateOf("") }
@@ -153,11 +156,17 @@ fun AdminShopsModerationScreen(
                 subtitle = "شناسه ${shop.id.value}",
             ) {
                 VitranText(if (shop.confirmed) "تأیید شده" else "در انتظار تأیید", VitranTextStyle.Body)
-                if (!shop.confirmed) {
-                    AdminPrimaryButton(
-                        label = "تأیید فروشگاه",
-                        onClick = { viewModel.confirm(shop.id) },
+                Row(horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
+                    AdminSecondaryButton(
+                        label = "جزئیات",
+                        onClick = { onShopOpen(shop.id.value) },
                     )
+                    if (!shop.confirmed) {
+                        AdminPrimaryButton(
+                            label = "تأیید فروشگاه",
+                            onClick = { viewModel.confirm(shop.id) },
+                        )
+                    }
                 }
             }
         }
@@ -226,41 +235,6 @@ fun AdminProductsModerationScreen(
             }
         }
         state.error?.let { VitranText(it.message ?: "خطا در دریافت محصولات", VitranTextStyle.Body) }
-    }
-}
-
-@Composable
-fun AdminProductModerationDetailScreen(
-    productId: Long,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: AdminProductDetailsViewModel = vitranKoinViewModel {
-        parametersOf(ProductId(productId))
-    },
-) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-    AdminThinScaffold("جزئیات محصول", onBack, modifier) {
-        when (val current = state) {
-            AdminProductDetailsUiState.Loading -> CircularProgressIndicator()
-            is AdminProductDetailsUiState.Error ->
-                VitranText(current.error.message ?: "دریافت محصول انجام نشد", VitranTextStyle.Body)
-            is AdminProductDetailsUiState.Content -> AdminFormCard(
-                title = current.product.title,
-                subtitle = "شناسه ${current.product.id.value}",
-            ) {
-                VitranText(
-                    if (current.product.confirmed) "محصول تأیید شده است" else "محصول در انتظار تأیید است",
-                    VitranTextStyle.Body,
-                )
-                VitranText("قیمت: ${current.product.priceAmount ?: 0}", VitranTextStyle.Body)
-                if (!current.product.confirmed) {
-                    AdminPrimaryButton(
-                        label = if (current.confirming) "در حال تأیید…" else "تأیید محصول",
-                        onClick = viewModel::confirm,
-                    )
-                }
-            }
-        }
     }
 }
 

@@ -72,6 +72,7 @@ fun CreateProductStatusCard(
     state: CreateProductFormState,
     onStateChange: (CreateProductFormState) -> Unit,
     modifier: Modifier = Modifier,
+    readOnly: Boolean = false,
 ) {
     val options = rememberStatusOptions()
     val selected = options.firstOrNull { it.id == state.status.name }
@@ -84,10 +85,13 @@ fun CreateProductStatusCard(
             valueId = state.status.name,
             options = options,
             onSelect = { option ->
-                val next = ProductPublishStatus.entries.first { it.name == option.id }
-                onStateChange(state.copy(status = next).markedDirty())
+                if (!readOnly) {
+                    val next = ProductPublishStatus.entries.first { it.name == option.id }
+                    onStateChange(state.copy(status = next).markedDirty())
+                }
             },
             helper = selected?.description,
+            enabled = !readOnly,
         )
     }
 }

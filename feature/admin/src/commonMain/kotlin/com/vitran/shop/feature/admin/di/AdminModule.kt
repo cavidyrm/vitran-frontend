@@ -20,11 +20,13 @@ import com.vitran.shop.feature.admin.content.domain.AdminContentRepository
 import com.vitran.shop.feature.admin.content.presentation.AdminStaticPageEditorViewModel
 import com.vitran.shop.feature.admin.content.presentation.AdminStaticPagesViewModel
 import com.vitran.shop.feature.admin.moderation.data.AdminModerationApi
+import com.vitran.shop.feature.admin.moderation.data.AdminShopModerationCache
 import com.vitran.shop.feature.admin.moderation.data.DefaultAdminModerationRepository
 import com.vitran.shop.feature.admin.moderation.domain.AdminModerationRepository
 import com.vitran.shop.feature.admin.moderation.presentation.AdminCommentsViewModel
 import com.vitran.shop.feature.admin.moderation.presentation.AdminProductDetailsViewModel
 import com.vitran.shop.feature.admin.moderation.presentation.AdminProductsViewModel
+import com.vitran.shop.feature.admin.moderation.presentation.AdminShopDetailViewModel
 import com.vitran.shop.feature.admin.moderation.presentation.AdminShopsViewModel
 import com.vitran.shop.feature.admin.plans.data.AdminPlanApi
 import com.vitran.shop.feature.admin.plans.data.DefaultAdminPlanRepository
@@ -50,7 +52,8 @@ val adminModule = module {
     single { AdminUserApi(get(), get(), get()) }
     single<AdminUserRepository> { DefaultAdminUserRepository(get()) }
     single { AdminModerationApi(get(), get(), get()) }
-    single<AdminModerationRepository> { DefaultAdminModerationRepository(get(), get(), get()) }
+    single { AdminShopModerationCache() }
+    single<AdminModerationRepository> { DefaultAdminModerationRepository(get(), get(), get(), get()) }
     single { AdminPlanApi(get(), get(), get()) }
     single<AdminPlanRepository> { DefaultAdminPlanRepository(get(), get()) }
     single { AdminContentApi(get(), get(), get()) }
@@ -75,7 +78,8 @@ val adminModule = module {
             permissions = get(),
         )
     }
-    viewModel { AdminShopsViewModel(get()) }
+    viewModel { AdminShopsViewModel(get(), get()) }
+    viewModel { parameters -> AdminShopDetailViewModel(parameters.get(), get(), get()) }
     viewModel { AdminProductsViewModel(get()) }
     viewModel { AdminCommentsViewModel(get()) }
     viewModel { parameters -> AdminProductDetailsViewModel(parameters.get(), get()) }

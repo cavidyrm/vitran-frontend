@@ -68,6 +68,7 @@ fun ShopProfileEditor(
     onProfileChange: (ShopProfileDraft) -> Unit,
     fieldErrors: Map<String, String> = emptyMap(),
     showClearActions: Boolean = false,
+    readOnly: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val dayOptions = shopDayOptions()
@@ -84,6 +85,7 @@ fun ShopProfileEditor(
                     onProfileChange(profile.touch("seo_title") { it.copy(seoTitle = value) })
                 },
                 error = fieldErrors["seo_title"],
+                readOnly = readOnly,
             )
             AdminMultilineField(
                 label = stringResource(Res.string.admin_profile_seo_desc),
@@ -92,6 +94,7 @@ fun ShopProfileEditor(
                     onProfileChange(profile.touch("seo_description") { it.copy(seoDescription = value) })
                 },
                 error = fieldErrors["seo_description"],
+                readOnly = readOnly,
             )
             AdminToggleRow(
                 label = stringResource(Res.string.admin_profile_noindex),
@@ -99,12 +102,14 @@ fun ShopProfileEditor(
                 onCheckedChange = { checked ->
                     onProfileChange(profile.touch("noindex") { it.copy(noindex = checked) })
                 },
+                enabled = !readOnly,
             )
         }
         AdminFormCard(title = stringResource(Res.string.admin_profile_rules)) {
             profile.rules.forEachIndexed { index, rule ->
                 RuleEditor(
                     rule = rule,
+                    readOnly = readOnly,
                     onChange = { next ->
                         onProfileChange(
                             profile.touch("rules") { draft ->
@@ -121,6 +126,7 @@ fun ShopProfileEditor(
                     },
                 )
             }
+            if (!readOnly) {
             AdminTextButton(
                 label = stringResource(Res.string.admin_profile_add_rule),
                 onClick = {
@@ -129,6 +135,7 @@ fun ShopProfileEditor(
                     )
                 },
             )
+            }
             fieldErrors["rules"]?.let { message ->
                 AdminTextField(
                     label = stringResource(Res.string.admin_profile_rules),
@@ -143,6 +150,7 @@ fun ShopProfileEditor(
             profile.shippingMethods.forEachIndexed { index, method ->
                 ShippingEditor(
                     method = method,
+                    readOnly = readOnly,
                     onChange = { next ->
                         onProfileChange(
                             profile.touch("shipping_methods") { draft ->
@@ -161,6 +169,7 @@ fun ShopProfileEditor(
                     },
                 )
             }
+            if (!readOnly) {
             AdminTextButton(
                 label = stringResource(Res.string.admin_profile_add_shipping),
                 onClick = {
@@ -171,9 +180,11 @@ fun ShopProfileEditor(
                     )
                 },
             )
+            }
             profile.workingHours.forEachIndexed { index, hours ->
                 HoursEditor(
                     hours = hours,
+                    readOnly = readOnly,
                     dayOptions = dayOptions,
                     onChange = { next ->
                         onProfileChange(
@@ -191,6 +202,7 @@ fun ShopProfileEditor(
                     },
                 )
             }
+            if (!readOnly) {
             AdminTextButton(
                 label = stringResource(Res.string.admin_profile_add_hours),
                 onClick = {
@@ -201,6 +213,7 @@ fun ShopProfileEditor(
                     )
                 },
             )
+            }
             AdminSelectField(
                 label = stringResource(Res.string.admin_profile_fulfillment),
                 valueId = profile.fulfillmentType.takeIf { it.isNotBlank() },
@@ -211,6 +224,7 @@ fun ShopProfileEditor(
                     )
                 },
                 error = fieldErrors["fulfillment_type"],
+                enabled = !readOnly,
             )
             AdminTextField(
                 label = stringResource(Res.string.admin_profile_webhook),
@@ -221,8 +235,9 @@ fun ShopProfileEditor(
                 placeholder = stringResource(Res.string.admin_profile_webhook_hint),
                 error = fieldErrors["webhook_url"],
                 ltr = true,
+                readOnly = readOnly,
             )
-            if (showClearActions) {
+            if (showClearActions && !readOnly) {
                 AdminToggleRow(
                     label = stringResource(Res.string.admin_profile_clear_avatar),
                     checked = profile.clearAvatar,
@@ -247,23 +262,28 @@ private fun RuleEditor(
     rule: ShopRuleDraft,
     onChange: (ShopRuleDraft) -> Unit,
     onRemove: () -> Unit,
+    readOnly: Boolean = false,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
         AdminTextField(
             label = stringResource(Res.string.admin_profile_rule_title),
             value = rule.title,
             onValueChange = { onChange(rule.copy(title = it)) },
+            readOnly = readOnly,
         )
         AdminMultilineField(
             label = stringResource(Res.string.admin_profile_rule_body),
             value = rule.body,
             onValueChange = { onChange(rule.copy(body = it)) },
+            readOnly = readOnly,
         )
-        AdminTextButton(
-            label = stringResource(Res.string.admin_profile_remove),
-            onClick = onRemove,
-            destructive = true,
-        )
+        if (!readOnly) {
+            AdminTextButton(
+                label = stringResource(Res.string.admin_profile_remove),
+                onClick = onRemove,
+                destructive = true,
+            )
+        }
     }
 }
 
@@ -272,6 +292,7 @@ private fun ShippingEditor(
     method: ShopShippingDraft,
     onChange: (ShopShippingDraft) -> Unit,
     onRemove: () -> Unit,
+    readOnly: Boolean = false,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
         Row(
@@ -283,12 +304,14 @@ private fun ShippingEditor(
                 value = method.code,
                 onValueChange = { onChange(method.copy(code = it)) },
                 ltr = true,
+                readOnly = readOnly,
                 modifier = Modifier.weight(1f),
             )
             AdminTextField(
                 label = stringResource(Res.string.admin_profile_shipping_title),
                 value = method.title,
                 onValueChange = { onChange(method.copy(title = it)) },
+                readOnly = readOnly,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -302,6 +325,7 @@ private fun ShippingEditor(
                 onValueChange = { onChange(method.copy(cost = it)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 ltr = true,
+                readOnly = readOnly,
                 modifier = Modifier.weight(1f),
             )
             AdminTextField(
@@ -310,6 +334,7 @@ private fun ShippingEditor(
                 onValueChange = { onChange(method.copy(minDays = it)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 ltr = true,
+                readOnly = readOnly,
                 modifier = Modifier.weight(1f),
             )
             AdminTextField(
@@ -318,6 +343,7 @@ private fun ShippingEditor(
                 onValueChange = { onChange(method.copy(maxDays = it)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 ltr = true,
+                readOnly = readOnly,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -325,12 +351,15 @@ private fun ShippingEditor(
             label = stringResource(Res.string.admin_profile_shipping_active),
             checked = method.active,
             onCheckedChange = { onChange(method.copy(active = it)) },
+            enabled = !readOnly,
         )
-        AdminTextButton(
-            label = stringResource(Res.string.admin_profile_remove),
-            onClick = onRemove,
-            destructive = true,
-        )
+        if (!readOnly) {
+            AdminTextButton(
+                label = stringResource(Res.string.admin_profile_remove),
+                onClick = onRemove,
+                destructive = true,
+            )
+        }
     }
 }
 
@@ -340,6 +369,7 @@ private fun HoursEditor(
     dayOptions: List<AdminSelectOption>,
     onChange: (ShopHoursDraft) -> Unit,
     onRemove: () -> Unit,
+    readOnly: Boolean = false,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
         AdminSelectField(
@@ -347,6 +377,7 @@ private fun HoursEditor(
             valueId = hours.day,
             options = dayOptions,
             onSelect = { onChange(hours.copy(day = it.id)) },
+            enabled = !readOnly,
         )
         if (!hours.closed) {
             Row(
@@ -358,6 +389,7 @@ private fun HoursEditor(
                     value = hours.opensAt,
                     onValueChange = { onChange(hours.copy(opensAt = it)) },
                     ltr = true,
+                    readOnly = readOnly,
                     modifier = Modifier.weight(1f),
                 )
                 AdminTextField(
@@ -365,6 +397,7 @@ private fun HoursEditor(
                     value = hours.closesAt,
                     onValueChange = { onChange(hours.copy(closesAt = it)) },
                     ltr = true,
+                    readOnly = readOnly,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -373,12 +406,15 @@ private fun HoursEditor(
             label = stringResource(Res.string.admin_profile_hours_closed),
             checked = hours.closed,
             onCheckedChange = { onChange(hours.copy(closed = it)) },
+            enabled = !readOnly,
         )
-        AdminTextButton(
-            label = stringResource(Res.string.admin_profile_remove),
-            onClick = onRemove,
-            destructive = true,
-        )
+        if (!readOnly) {
+            AdminTextButton(
+                label = stringResource(Res.string.admin_profile_remove),
+                onClick = onRemove,
+                destructive = true,
+            )
+        }
     }
 }
 

@@ -27,6 +27,7 @@ import com.vitran.shop.feature.seller.product.domain.usecase.SetProductActiveUse
 import com.vitran.shop.feature.seller.product.domain.usecase.SetProductMainImageUseCase
 import com.vitran.shop.feature.seller.product.domain.usecase.UpdateProductUseCase
 import com.vitran.shop.feature.seller.product.presentation.CreateProductViewModel
+import com.vitran.shop.feature.seller.product.presentation.SellerProductDetailViewModel
 import com.vitran.shop.feature.seller.product.presentation.SellerShopProductsViewModel
 import com.vitran.shop.feature.seller.referral.data.remote.ReferralApi
 import com.vitran.shop.feature.seller.referral.data.repository.DefaultReferralRepository
@@ -171,6 +172,12 @@ val sellerModule = module {
         SellerShopProductsViewModel(
             shopId = parameters.get(),
             sellerProductRepository = get(),
+        )
+    }
+    viewModel { parameters ->
+        SellerProductDetailViewModel(
+            productId = parameters.get(),
+            repository = get(),
         )
     }
     viewModel { parameters ->

@@ -19,6 +19,10 @@ data class SellerProductDetails(
     val images: List<SellerProductImage>,
     val createdAt: Instant?,
     val updatedAt: Instant?,
+    val slug: String? = null,
+    val seoTitle: String? = null,
+    val seoDescription: String? = null,
+    val noindex: Boolean = false,
     val publicationState: ProductPublicationState =
         productPublicationState(active = active, confirmed = confirmed),
 )

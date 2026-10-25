@@ -46,6 +46,8 @@ fun CreateStoreBottomBar(
     onSaveDraft: () -> Unit,
     onPublish: () -> Unit,
     modifier: Modifier = Modifier,
+    lastStepLabel: String? = null,
+    lastStepEnabled: Boolean = canPublish && !published,
 ) {
     val isFirst = step == CreateStoreStep.Basics
     val isLast = step == CreateStoreStep.Publish
@@ -96,11 +98,11 @@ fun CreateStoreBottomBar(
             // )
             if (isLast) {
                 AdminBarButton(
-                    label = stringResource(
+                    label = lastStepLabel ?: stringResource(
                         if (published) Res.string.admin_publish_done else Res.string.admin_create_store_publish,
                     ),
                     emphasized = true,
-                    enabled = canPublish && !published,
+                    enabled = if (lastStepLabel != null) lastStepEnabled else canPublish && !published,
                     brandColor = brandColor,
                     onBrandColor = onBrandColor,
                     prominent = true,

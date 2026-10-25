@@ -39,6 +39,10 @@ fun CreateProductHeaderBar(
     storeName: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    title: String? = null,
+    subtitle: String? = null,
+    breadcrumb: String? = null,
+    trailing: @Composable (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier
@@ -67,12 +71,12 @@ fun CreateProductHeaderBar(
             verticalArrangement = Arrangement.spacedBy(VitranSpacing.xs),
         ) {
             Text(
-                text = stringResource(Res.string.admin_create_product_breadcrumb),
+                text = breadcrumb ?: stringResource(Res.string.admin_create_product_breadcrumb),
                 color = AdminTokens.Helper,
                 fontSize = 12.sp,
             )
             Text(
-                text = stringResource(Res.string.admin_create_product_title),
+                text = title ?: stringResource(Res.string.admin_create_product_title),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.SemiBold,
@@ -80,7 +84,7 @@ fun CreateProductHeaderBar(
                 ),
             )
             Text(
-                text = stringResource(Res.string.admin_create_product_subtitle),
+                text = subtitle ?: stringResource(Res.string.admin_create_product_subtitle),
                 color = AdminTokens.Helper,
                 fontSize = 13.sp,
             )
@@ -91,5 +95,6 @@ fun CreateProductHeaderBar(
                 fontSize = 13.sp,
             )
         }
+        trailing?.invoke()
     }
 }

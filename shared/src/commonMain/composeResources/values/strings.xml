@@ -525,6 +525,21 @@
     <string name="admin_publish_done">منتشر شد</string>
     <!-- Admin / add product -->
     <string name="admin_create_product_title">افزودن محصول</string>
+    <string name="admin_product_detail_title">جزئیات محصول</string>
+    <string name="admin_product_detail_subtitle">اطلاعات ذخیره‌شده این محصول</string>
+    <string name="admin_product_detail_breadcrumb">محصولات / جزئیات</string>
+    <string name="admin_product_detail_confirm">تأیید محصول</string>
+    <string name="admin_product_detail_confirming">در حال تأیید…</string>
+    <string name="admin_product_detail_loading">در حال دریافت محصول…</string>
+    <string name="admin_product_detail_error">دریافت محصول انجام نشد</string>
+    <string name="admin_product_detail_retry">تلاش دوباره</string>
+    <string name="admin_product_media_empty">تصویری برای این محصول ثبت نشده است</string>
+    <string name="admin_shop_detail_title">جزئیات فروشگاه</string>
+    <string name="admin_shop_detail_subtitle">اطلاعات ذخیره‌شده این فروشگاه</string>
+    <string name="admin_shop_detail_confirm">تأیید فروشگاه</string>
+    <string name="admin_shop_detail_confirming">در حال تأیید…</string>
+    <string name="admin_shop_detail_missing">این فروشگاه در فهرست بررسی نیست</string>
+    <string name="admin_shop_detail_back">بازگشت به فهرست</string>
     <string name="admin_create_product_subtitle">اطلاعات، قیمت، موجودی و نحوه نمایش محصول را مشخص کنید.</string>
     <string name="admin_create_product_breadcrumb">محصولات / افزودن محصول</string>
     <string name="admin_create_product_store">فروشگاه: %1$s</string>
@@ -861,6 +876,7 @@
     <string name="account_stores_status_hidden">تأییدشده، مخفی</string>
     <string name="account_stores_status_unknown">نامشخص</string>
     <string name="account_store_edit_title">ویرایش فروشگاه</string>
+    <string name="account_store_edit_subtitle">اطلاعات، تماس و قوانین فروشگاه</string>
     <string name="account_store_edit_loading">در حال دریافت اطلاعات فروشگاه…</string>
     <string name="account_store_edit_error">خطا در دریافت اطلاعات فروشگاه</string>
     <string name="account_store_edit_save">ذخیره تغییرات</string>

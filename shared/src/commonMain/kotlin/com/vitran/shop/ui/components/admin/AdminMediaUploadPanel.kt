@@ -44,6 +44,7 @@ import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.admin_product_media_add
 import vitranshop.shared.generated.resources.admin_product_media_add_a11y
+import vitranshop.shared.generated.resources.admin_product_media_empty
 import vitranshop.shared.generated.resources.admin_product_media_helper
 import vitranshop.shared.generated.resources.admin_product_media_move_next
 import vitranshop.shared.generated.resources.admin_product_media_move_prev
@@ -80,9 +81,17 @@ fun AdminMediaUploadPanel(
     onSetPrimary: (String) -> Unit,
     onMove: (String, towardStart: Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    readOnly: Boolean = false,
 ) {
     val helper = stringResource(Res.string.admin_product_media_helper)
-    if (tiles.isEmpty()) {
+    if (readOnly && tiles.isEmpty()) {
+        Text(
+            text = stringResource(Res.string.admin_product_media_empty),
+            color = AdminTokens.Helper,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+            modifier = modifier,
+        )
+    } else if (tiles.isEmpty()) {
         EmptyMediaDropzone(
             uploadLabel = stringResource(Res.string.admin_product_media_upload),
             selectLabel = stringResource(Res.string.admin_product_media_select_existing),
@@ -105,10 +114,10 @@ fun AdminMediaUploadPanel(
                     tile = primary,
                     size = PrimaryMediaSize,
                     showPrimaryBadge = true,
-                    onRemove = { onRemove(primary.id) },
+                    onRemove = if (readOnly) null else ({ onRemove(primary.id) }),
                     onSetPrimary = null,
                     onMoveStart = null,
-                    onMoveEnd = if (tiles.size > 1) ({ onMove(primary.id, false) }) else null,
+                    onMoveEnd = if (!readOnly && tiles.size > 1) ({ onMove(primary.id, false) }) else null,
                 )
                 FlowRow(
                     modifier = Modifier.weight(1f),
@@ -120,20 +129,28 @@ fun AdminMediaUploadPanel(
                             tile = tile,
                             size = MediaTileSize,
                             showPrimaryBadge = false,
-                            onRemove = { onRemove(tile.id) },
-                            onSetPrimary = { onSetPrimary(tile.id) },
-                            onMoveStart = { onMove(tile.id, true) },
-                            onMoveEnd = if (index < tiles.size - 2) ({ onMove(tile.id, false) }) else null,
+                            onRemove = if (readOnly) null else ({ onRemove(tile.id) }),
+                            onSetPrimary = if (readOnly) null else ({ onSetPrimary(tile.id) }),
+                            onMoveStart = if (readOnly) null else ({ onMove(tile.id, true) }),
+                            onMoveEnd = if (!readOnly && index < tiles.size - 2) {
+                                { onMove(tile.id, false) }
+                            } else {
+                                null
+                            },
                         )
                     }
-                    AddMediaTile(onClick = onUpload)
+                    if (!readOnly) {
+                        AddMediaTile(onClick = onUpload)
+                    }
                 }
             }
-            Text(
-                text = helper,
-                color = AdminTokens.Helper,
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-            )
+            if (!readOnly) {
+                Text(
+                    text = helper,
+                    color = AdminTokens.Helper,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                )
+            }
         }
     }
 }
@@ -189,7 +206,7 @@ private fun MediaThumb(
     tile: AdminMediaTile,
     size: androidx.compose.ui.unit.Dp,
     showPrimaryBadge: Boolean,
-    onRemove: () -> Unit,
+    onRemove: (() -> Unit)?,
     onSetPrimary: (() -> Unit)?,
     onMoveStart: (() -> Unit)?,
     onMoveEnd: (() -> Unit)?,
@@ -237,22 +254,24 @@ private fun MediaThumb(
                     .padding(horizontal = VitranSpacing.sm, vertical = 2.dp),
             )
         }
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(VitranSpacing.xs)
-                .size(VitranSize.touchTarget / 2)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
-                .clickable(role = Role.Button, onClick = onRemove),
-            contentAlignment = Alignment.Center,
-        ) {
-            VitranIcon(
-                painter = painterResource(Res.drawable.ic_close),
-                contentDescription = stringResource(Res.string.admin_product_media_remove_a11y),
-                size = VitranSize.iconSmall,
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
+        if (onRemove != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(VitranSpacing.xs)
+                    .size(VitranSize.touchTarget / 2)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
+                    .clickable(role = Role.Button, onClick = onRemove),
+                contentAlignment = Alignment.Center,
+            ) {
+                VitranIcon(
+                    painter = painterResource(Res.drawable.ic_close),
+                    contentDescription = stringResource(Res.string.admin_product_media_remove_a11y),
+                    size = VitranSize.iconSmall,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
         Row(
             modifier = Modifier

@@ -56,6 +56,7 @@ fun AdminTaxonomyPicker(
     placeholder: String? = null,
     helper: String? = null,
     searchPlaceholder: String? = null,
+    enabled: Boolean = true,
 ) {
     val displayText = valueId?.let { roots.breadcrumbLabel(it) }
     val queryPlaceholder = searchPlaceholder ?: stringResource(Res.string.admin_taxonomy_search)
@@ -64,7 +65,7 @@ fun AdminTaxonomyPicker(
         helper = helper,
         displayText = displayText,
         placeholder = placeholder,
-        enabled = true,
+        enabled = enabled,
         modifier = modifier,
     ) { dismiss ->
         TaxonomyMenu(
@@ -112,6 +113,7 @@ fun AdminTaxonomyMultiPicker(
                     val labelText = selectedLabels[index]
                     TaxonomySelectedChip(
                         label = labelText,
+                        removable = enabled,
                         onRemove = { onToggle(AdminTaxonomyNode(id = id, label = labelText)) },
                     )
                 }
@@ -141,6 +143,7 @@ fun AdminTaxonomyMultiPicker(
 private fun TaxonomySelectedChip(
     label: String,
     onRemove: () -> Unit,
+    removable: Boolean = true,
 ) {
     Row(
         modifier = Modifier
@@ -156,12 +159,14 @@ private fun TaxonomySelectedChip(
             fontWeight = FontWeight.Medium,
             fontSize = 13.sp,
         )
-        Text(
-            text = stringResource(Res.string.admin_social_remove),
-            color = AdminTokens.Helper,
-            fontSize = 12.sp,
-            modifier = Modifier.clickable(role = Role.Button, onClick = onRemove),
-        )
+        if (removable) {
+            Text(
+                text = stringResource(Res.string.admin_social_remove),
+                color = AdminTokens.Helper,
+                fontSize = 12.sp,
+                modifier = Modifier.clickable(role = Role.Button, onClick = onRemove),
+            )
+        }
     }
 }
 

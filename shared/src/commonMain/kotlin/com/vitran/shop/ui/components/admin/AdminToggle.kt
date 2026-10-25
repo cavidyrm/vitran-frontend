@@ -37,9 +37,12 @@ fun AdminToggleRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Row(
-        modifier = modifier.clickable(role = Role.Button) { onCheckedChange(!checked) },
+        modifier = modifier.clickable(enabled = enabled, role = Role.Button) {
+            onCheckedChange(!checked)
+        },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
     ) {

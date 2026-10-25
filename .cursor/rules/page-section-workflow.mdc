@@ -40,9 +40,11 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - About Us (`/about`, `AboutScreen`) is **not** shop.app storefront. Visual source: `docs/ui-reference/about/`. Do **not** open shop.app for this page. Keep shopper AppShell chrome; responsive compact vs `mdBreakpoint` (768dp two-column hero/story).
 
 ## Current focus
-- Active screen: **About Us** — `/about` (`AboutScreen`)
-- Visual: hero (breadcrumb + CTA + image + trust card), 4 feature cards, story + checklist, soft stats bar, purple join CTA, SiteFooter. Shopper chrome stays. Entry from footer «درباره ما» or URL.
-- Reference: `docs/ui-reference/about/about-desktop.png`
+- Active screen: **shop detail in the create-store wizard** (`CreateStoreScreen` layout).
+- Admin: `/admin/moderation/shops/{id}` (`AdminShopModerationDetailScreen`); read-only wizard from the cached list row; confirm stays in the header. No shopper chrome.
+- Seller: `/account/stores/{id}` (`AccountStoreEditScreen`); same wizard, `PATCH` save stays, collections and products stay under the form. Account chrome hidden.
+- Product detail for admin review and the seller remains as previously built.
+- About Us (`/about`) remains as previously built.
 - Manage plans / Store plan / Account / Auth / admin create flows remain complete for listed sections
 - Store collections on `StoreScreen` come from `GET /shops/{id}/collections` (title and product count; no cover image). Seller create/update/delete is on the store edit screen. Do not invent a second collection model.
 
@@ -60,7 +62,7 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - Account / Profile sections: `shared/.../ui/sections/account/`
 - Account users list sections: `shared/.../ui/sections/account/users/`
 - Account cities list sections: `shared/.../ui/sections/account/cities/`
-- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt`, `ForgotPasswordScreen.kt`, `ResetPasswordScreen.kt`, `AccountScreen.kt`, `ProfileScreen.kt`, `ReferralsScreen.kt`, `FollowingScreen.kt`, `AccountSettingsScreen.kt`, `AccountStoresScreen.kt`, `AccountUsersScreen.kt`, `AccountUserDetailScreen.kt`, `AccountCitiesScreen.kt`, `AccountCityDetailScreen.kt`, `AccountCityCreateScreen.kt`, `StorePlanScreen.kt`, `StorePlanUpgradeScreen.kt`, `AdminPlansScreen.kt`, `AboutScreen.kt`, `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
+- Screen assembly: `shared/.../ui/screens/LoginScreen.kt`, `RegisterScreen.kt`, `RegisterVerifyScreen.kt`, `ForgotPasswordScreen.kt`, `ResetPasswordScreen.kt`, `AccountScreen.kt`, `ProfileScreen.kt`, `ReferralsScreen.kt`, `FollowingScreen.kt`, `AccountSettingsScreen.kt`, `AccountStoresScreen.kt`, `AccountStoreEditScreen.kt`, `AccountStoreProductDetailScreen.kt`, `AdminProductModerationDetailScreen.kt`, `AdminShopModerationDetailScreen.kt`, `AccountUsersScreen.kt`, `AccountUserDetailScreen.kt`, `AccountCitiesScreen.kt`, `AccountCityDetailScreen.kt`, `AccountCityCreateScreen.kt`, `StorePlanScreen.kt`, `StorePlanUpgradeScreen.kt`, `AdminPlansScreen.kt`, `AboutScreen.kt`, `CreateCategoryScreen.kt`, `CreateProductScreen.kt`, `CreateStoreScreen.kt`, `StoreScreen.kt`, `ProductDetailScreen.kt`, `CategoriesScreen.kt`, `HomeScreen.kt`
 - Shell: `shared/.../ui/shell/AppShell.kt`, `AppContentContainer.kt`
 
 ## Visual reference

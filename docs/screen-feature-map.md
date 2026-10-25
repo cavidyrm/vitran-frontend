@@ -29,7 +29,7 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | FollowingScreen | `/account/following` | Engagement (follows) | `GET /me/follows/shops` | Inline mock in section | — | Yes | Schema unresolved — mock kept; follow **mutations** wired on PDP/store |
 | AccountSettingsScreen | `/account/settings` | Account | Profile preferences (partial `/auth/profile`) | Local `remember` state | `AccountSettingsViewModel` | Yes | |
 | AccountStoresScreen | `/account/stores` | Seller Shops | `GET /seller/shops?per_page=20` | — | `SellerShopsViewModel` ✅ | — | Every role; row opens edit |
-| AccountStoreEditScreen | `/account/stores/{id}` | Seller Shops | `GET/PATCH /seller/shops/{id}` | — | `EditShopViewModel` ✅ | — | Pending after save |
+| AccountStoreEditScreen | `/account/stores/{id}` | Seller Shops | `GET/PATCH /seller/shops/{id}` | — | `EditShopViewModel` ✅ | — | Create-store wizard; save stays PATCH; chrome hidden |
 | AccountUsersScreen | `/account/users` | Admin Users | `GET /admin/users` | Preview fixtures only | `AdminUsersViewModel` ✅ | Yes | Real page-mode API; RBAC-gated entry |
 | AccountUserDetailScreen | `/account/users/{id}` | Admin Users | `GET/PATCH /admin/users/{id}` | Preview fixtures only | `AdminUserDetailViewModel` ✅ | Yes | Preserves Super Admin; current-user refresh |
 | AccountCitiesScreen | `/account/cities` | Admin Cities | public `GET /cities` + admin mutations | Preview fixtures only | `AdminCitiesViewModel` ✅ | Yes | Real city source |
@@ -44,14 +44,16 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 | StorePlanScreen | `/admin/stores/plan` | Seller Subscription | `GET /seller/shops/{id}/subscription` | Preview fixtures | `StorePlanViewModel` ✅ | Yes | Per-shop; billing history deferred |
 | StorePlanUpgradeScreen | `/admin/stores/plan/upgrade` | Seller Subscription | Plans public + purchase | Preview fixtures | `StorePlanUpgradeViewModel` ✅ | Yes | External payment handoff + verify; no yearly toggle |
 | AdminPlansScreen | `/admin/plans` | Admin Plans | `GET/POST/PATCH/DELETE /admin/plans` | Preview fixtures only | `AdminPlansViewModel` ✅ | Yes | Real CRUD; raw features preserved; Super Admin delete |
-| AdminShopsModerationScreen | `/admin/moderation/shops` | Admin Moderation | `GET /admin/shops`, confirm PATCH | — | `AdminShopsViewModel` ✅ | — | Thin real-API queue; public cache invalidation |
+| AdminShopsModerationScreen | `/admin/moderation/shops` | Admin Moderation | `GET /admin/shops`, confirm PATCH | — | `AdminShopsViewModel` ✅ | — | List caches rows for detail; public cache invalidation |
+| AdminShopModerationDetailScreen | `/admin/moderation/shops/{id}` | Admin Moderation | cached `GET /admin/shops` row, confirm PATCH | — | `AdminShopDetailViewModel` ✅ | — | Read-only create-store wizard; no admin GET by id |
 | AdminProductsModerationScreen | `/admin/moderation/products` | Admin Moderation | `GET /admin/products`, confirm PATCH | — | `AdminProductsViewModel` ✅ | — | Thin real-API queue; filters `active`, `shop_id`, `category_slug`, `user_id` |
-| AdminProductModerationDetailScreen | `/admin/moderation/products/{id}` | Admin Moderation | `GET /admin/products/{id}`, confirm PATCH | — | `AdminProductDetailsViewModel` ✅ | — | Preserves active vs confirmed |
+| AdminProductModerationDetailScreen | `/admin/moderation/products/{id}` | Admin Moderation | `GET /admin/products/{id}`, confirm PATCH | — | `AdminProductDetailsViewModel` ✅ | — | Read-only create-product form; confirm stays in the header |
 | AdminCommentConfirmScreen | `/admin/moderation/comments` | Admin Moderation | confirm PATCH only | — | `AdminCommentsViewModel` ✅ | — | **Blocked list contract**; known-ID mutation only |
 | AdminTaxonomyScreen | `/admin/taxonomy` | Admin Taxonomy | import/name/icon endpoints | Local form input only | taxonomy admin ViewModels ✅ | — | Multipart keys verified; response schemas unresolved |
 | AdminStaticPagesScreen | `/admin/content/pages` | Admin CMS | `GET/DELETE /admin/static-pages` | — | `AdminStaticPagesViewModel` ✅ | — | Real API; Super Admin delete |
 | AdminStaticPageEditorScreen | `/admin/content/pages/{id|new}` | Admin CMS | `GET/POST/PATCH /admin/static-pages` | — | `AdminStaticPageEditorViewModel` ✅ | — | Real HTML editor |
-| CreateProductScreen | `/admin/products/new` | Seller Product | `POST /seller/shops/{id}/products` multipart, `GET /categories` | Preview mocks only (`CreateProductMocks`); unsupported fields local-only | `CreateProductViewModel` ✅, `TaxonomyPickerViewModel` ✅ | Real create + taxonomy + `ImagePicker`; no list/edit UI yet |
+| CreateProductScreen | `/admin/products/new` | Seller Product | `POST /seller/shops/{id}/products` multipart, `GET /categories` | Preview mocks only (`CreateProductMocks`); unsupported fields local-only | `CreateProductViewModel` ✅, `TaxonomyPickerViewModel` ✅ | Real create + taxonomy + `ImagePicker`; no edit UI yet |
+| AccountStoreProductDetailScreen | `/account/stores/{shopId}/products/{productId}` | Seller Product | `GET /seller/products/{id}` | — | `SellerProductDetailViewModel` ✅ | — | Read-only create-product form; opened from the store product row |
 | CreateCategoryScreen | `/admin/categories/new` | Admin Catalog / Taxonomy | `GET /categories` | `ProductTaxonomyMocks.kt` (Preview only) | `TaxonomyPickerViewModel` | Real API — taxonomy tree | Standard taxonomy picker |
 | ProductDetailScreen | `/products/{id}/{slug}` | Public Product | `GET /products/{id}`, reviews, save/follow | Preview fixtures only | `ProductDetailsViewModel` ✅, `ProductEngagementViewModel` ✅, `ProductReviewsViewModel` ✅ | Yes | No purchase CTAs; reviews hide unverified meta |
 | StoreScreen | `/m/{shopId}` | Public Shop | `GET /shops/{id}` or slug + products list | Cover, collections, menu mocks | `ShopDetailsViewModel` ✅, `ShopEngagementViewModel` ✅ | Yes | Follow wired; mock product-review sheet not opened |
@@ -83,7 +85,7 @@ From [`ui-reference/screens.md`](ui-reference/screens.md):
 | AccountScreen | `SessionRepository` + `AccountRepository`; admin rows stay role-gated; «فروشگاه‌های من» is visible for every role |
 | CreateStoreScreen | Session update after shop create via `CreateShopUseCase` (not Auth ViewModel) |
 | Seller list | `AccountStoresScreen` via `SellerShopsViewModel` (`GET /seller/shops`) |
-| Seller edit | `AccountStoreEditScreen` via `EditShopViewModel` (`GET/PATCH /seller/shops/{id}`) |
+| Seller edit | `AccountStoreEditScreen` via `EditShopViewModel` (`GET/PATCH /seller/shops/{id}`); create-store wizard, collections and products under the form |
 | Seller details / API key | ViewModels in `:feature:seller` ready; Compose screens deferred |
 | Seller analytics / boosts | `SellerAnalyticsViewModel`, `SellerBoostsViewModel`, `CreateBoostViewModel` ready; **no new Compose screens** (Phase 10) |
 | StorePlanScreen | Wired Phase 9 — shop from SellerShopRepository; SubscriptionRepository |

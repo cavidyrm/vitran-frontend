@@ -47,13 +47,13 @@ Centralized in `productPublicationState(active, confirmed)`. Do not scatter raw 
 
 ## 6. Seller Product list
 
-`GET /seller/products` with cursor pagination and optional `shop_id`, `active`, `confirmed`, `category_slug`. Implemented in Data; no list UI yet.
+`GET /seller/products` with cursor pagination and optional `shop_id`, `active`, `confirmed`, `category_slug`. The store edit screen lists these rows. Opening a row goes to `/account/stores/{shopId}/products/{productId}` (`GET /seller/products/{id}`) and shows the create-product form read-only.
 
 ## 7. Create Product
 
 Multipart fields (Postman-verified): `title`, exactly one `category_slug`, `price`, `description`, `active`, optional `compare_at_price`, optional `seo_title`, `seo_description`, `noindex`, optional `slug`, repeated `images` (≤5).
 
-UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/screens/CreateProductScreen.kt) + `CreateProductViewModel`. The basics card sends `slug`. The SEO card sends `seoTitle`, `seoDescription`, and `noindex` when the toggle is on. The first image is the cover; after create the client calls set-main when that image is not already `is_main`. SKU, inventory, and variants remain local-only.
+UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/screens/CreateProductScreen.kt) + `CreateProductViewModel`. The basics card sends `slug`. The SEO card sends `seoTitle`, `seoDescription`, and `noindex` when the toggle is on. The first image is the cover; after create the client calls set-main when that image is not already `is_main`. SKU, inventory, and variants remain local-only. Admin review and the seller's own detail reuse this form read-only; those local-only cards stay hidden, and SEO or slug appear only when the response includes them.
 
 ## 8. Update Product
 

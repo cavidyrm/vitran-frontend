@@ -38,6 +38,9 @@ fun CreateStoreHeaderBar(
     autosaveStatus: AutosaveStatus,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    title: String? = null,
+    subtitle: String? = null,
+    trailing: @Composable () -> Unit = {},
 ) {
     Row(
         modifier = modifier
@@ -64,7 +67,7 @@ fun CreateStoreHeaderBar(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = stringResource(Res.string.admin_create_store_title),
+                text = title ?: stringResource(Res.string.admin_create_store_title),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.SemiBold,
@@ -72,11 +75,12 @@ fun CreateStoreHeaderBar(
                 ),
             )
             Text(
-                text = stringResource(Res.string.admin_create_store_subtitle),
+                text = subtitle ?: stringResource(Res.string.admin_create_store_subtitle),
                 color = AdminTokens.Helper,
                 fontSize = 13.sp,
             )
         }
+        trailing()
         // Draft autosave is not supported yet.
         // when (autosaveStatus) {
         //     AutosaveStatus.Idle -> Unit
