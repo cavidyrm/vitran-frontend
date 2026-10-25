@@ -147,10 +147,11 @@ fun CreateStorePhonePreview(
                         .border(3.dp, theme.pageBackground, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
+                    val preview = state.logoPreviewBytes?.takeIf { it.isNotEmpty() }
                     val icon = state.avatarUrl.takeIf { it.isNotBlank() } ?: state.iconUrl
-                    if (icon != null) {
+                    if (preview != null || icon != null) {
                         AsyncImage(
-                            model = resolveNetworkImageUrl(icon),
+                            model = preview ?: resolveNetworkImageUrl(icon.orEmpty()),
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,

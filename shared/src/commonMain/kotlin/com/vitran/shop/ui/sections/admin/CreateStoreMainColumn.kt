@@ -7,8 +7,6 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +26,8 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vitran.shop.core.platform.file.ImagePicker
 import com.vitran.shop.feature.seller.shop.presentation.SlugCheckUiStatus
 import com.vitran.shop.feature.seller.shop.presentation.TitleCheckUiStatus
 import com.vitran.shop.ui.components.VitranIcon
@@ -57,7 +58,9 @@ import com.vitran.shop.ui.sections.reference.ReferenceDataLoading
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSize
 import com.vitran.shop.ui.theme.VitranSpacing
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.admin_card_about_sub
@@ -67,8 +70,6 @@ import vitranshop.shared.generated.resources.admin_card_location
 import vitranshop.shared.generated.resources.admin_card_location_sub
 import vitranshop.shared.generated.resources.admin_card_media
 import vitranshop.shared.generated.resources.admin_card_media_sub
-import vitranshop.shared.generated.resources.admin_card_policies
-import vitranshop.shared.generated.resources.admin_card_policies_sub
 import vitranshop.shared.generated.resources.admin_card_social
 import vitranshop.shared.generated.resources.admin_card_social_sub
 import vitranshop.shared.generated.resources.admin_card_theme
@@ -97,9 +98,6 @@ import vitranshop.shared.generated.resources.admin_field_legal_name
 import vitranshop.shared.generated.resources.admin_field_owner_name
 import vitranshop.shared.generated.resources.admin_field_phone
 import vitranshop.shared.generated.resources.admin_field_phone_placeholder
-import vitranshop.shared.generated.resources.admin_field_policies
-import vitranshop.shared.generated.resources.admin_field_returns
-import vitranshop.shared.generated.resources.admin_field_shipping
 import vitranshop.shared.generated.resources.admin_field_slogan
 import vitranshop.shared.generated.resources.admin_field_slogan_placeholder
 import vitranshop.shared.generated.resources.admin_field_store_name
@@ -119,10 +117,6 @@ import vitranshop.shared.generated.resources.admin_media_spec_formats
 import vitranshop.shared.generated.resources.admin_media_spec_max
 import vitranshop.shared.generated.resources.admin_media_spec_size
 import vitranshop.shared.generated.resources.admin_media_zoom
-import vitranshop.shared.generated.resources.admin_policy_mode_auto
-import vitranshop.shared.generated.resources.admin_policy_mode_manual
-import vitranshop.shared.generated.resources.admin_policy_mode_template
-import vitranshop.shared.generated.resources.admin_policy_templates_label
 import vitranshop.shared.generated.resources.admin_empty_products_action
 import vitranshop.shared.generated.resources.admin_empty_products_body
 import vitranshop.shared.generated.resources.admin_empty_products_title
@@ -150,9 +144,6 @@ import vitranshop.shared.generated.resources.admin_social_placeholder_website
 import vitranshop.shared.generated.resources.admin_social_placeholder_whatsapp
 import vitranshop.shared.generated.resources.admin_social_remove
 import vitranshop.shared.generated.resources.admin_summary_status
-import vitranshop.shared.generated.resources.admin_tab_policies
-import vitranshop.shared.generated.resources.admin_tab_returns
-import vitranshop.shared.generated.resources.admin_tab_shipping
 import vitranshop.shared.generated.resources.admin_theme_include_background
 import vitranshop.shared.generated.resources.admin_theme_include_button
 import vitranshop.shared.generated.resources.admin_theme_include_cards
@@ -288,29 +279,30 @@ private fun CreateStoreBasicsStep(
             error = fieldErrors["title"],
         )
         TitleAvailabilityLine(title = state.storeName, status = titleCheck)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md),
-        ) {
-            AdminTextField(
-                label = stringResource(Res.string.admin_field_legal_name),
-                value = state.legalName,
-                onValueChange = { onStateChange(state.copy(legalName = it, dirty = true)) },
-                modifier = Modifier.weight(1f),
-            )
-            AdminTextField(
-                label = stringResource(Res.string.admin_field_owner_name),
-                value = state.ownerName,
-                onValueChange = { onStateChange(state.copy(ownerName = it, dirty = true)) },
-                modifier = Modifier.weight(1f),
-            )
-        }
-        AdminTextField(
-            label = stringResource(Res.string.admin_field_slogan),
-            value = state.slogan,
-            onValueChange = { onStateChange(state.copy(slogan = it, dirty = true)) },
-            placeholder = stringResource(Res.string.admin_field_slogan_placeholder),
-        )
+        // Not sent on POST /seller/shops: legal_name, owner_name, slogan.
+        // Row(
+        //     modifier = Modifier.fillMaxWidth(),
+        //     horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md),
+        // ) {
+        //     AdminTextField(
+        //         label = stringResource(Res.string.admin_field_legal_name),
+        //         value = state.legalName,
+        //         onValueChange = { onStateChange(state.copy(legalName = it, dirty = true)) },
+        //         modifier = Modifier.weight(1f),
+        //     )
+        //     AdminTextField(
+        //         label = stringResource(Res.string.admin_field_owner_name),
+        //         value = state.ownerName,
+        //         onValueChange = { onStateChange(state.copy(ownerName = it, dirty = true)) },
+        //         modifier = Modifier.weight(1f),
+        //     )
+        // }
+        // AdminTextField(
+        //     label = stringResource(Res.string.admin_field_slogan),
+        //     value = state.slogan,
+        //     onValueChange = { onStateChange(state.copy(slogan = it, dirty = true)) },
+        //     placeholder = stringResource(Res.string.admin_field_slogan_placeholder),
+        // )
         when {
             taxonomyLoading -> ReferenceDataLoading(message = "در حال بارگذاری دسته‌ها…")
             taxonomyError != null -> ReferenceDataError(
@@ -439,96 +431,120 @@ private fun SlugAvailabilityLine(
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CreateStoreBrandStep(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
     fieldErrors: Map<String, String> = emptyMap(),
     onClearFieldError: (String) -> Unit = {},
+    imagePicker: ImagePicker = koinInject(),
 ) {
-    var editingCover by remember { mutableStateOf(false) }
-    var cropPreset by remember { mutableStateOf("wide") }
+    val scope = rememberCoroutineScope()
+    val currentState by rememberUpdatedState(state)
+    val currentOnStateChange by rememberUpdatedState(onStateChange)
+    var pickingLogo by remember { mutableStateOf(false) }
+    fun pickLogo() {
+        if (pickingLogo) return
+        pickingLogo = true
+        scope.launch {
+            try {
+                val file = imagePicker.pickImages(1).firstOrNull() ?: return@launch
+                val bytes = runCatching { file.readBytes() }.getOrNull()
+                if (bytes == null || bytes.isEmpty()) return@launch
+                currentOnStateChange(
+                    currentState.copy(logoPreviewBytes = bytes, dirty = true),
+                )
+            } finally {
+                pickingLogo = false
+            }
+        }
+    }
     AdminFormCard(
         title = stringResource(Res.string.admin_card_media),
         subtitle = stringResource(Res.string.admin_card_media_sub),
         icon = painterResource(Res.drawable.ic_nav_home),
     ) {
-        AdminMediaDropzone(
-            label = stringResource(Res.string.admin_field_cover),
-            imageUrl = state.coverUrl,
-            onPick = {
-                onStateChange(
-                    state.copy(
-                        coverUrl = CreateStoreMocks.MockCoverUrl,
-                        coverZoom = 1f,
-                        coverOffsetX = 0f,
-                        coverOffsetY = 0f,
-                        dirty = true,
-                    ),
-                )
-                editingCover = true
-            },
-            onRemove = {
-                onStateChange(
-                    state.copy(
-                        coverUrl = null,
-                        coverZoom = 1f,
-                        coverOffsetX = 0f,
-                        coverOffsetY = 0f,
-                        dirty = true,
-                    ),
-                )
-                editingCover = false
-            },
-            specs = listOf(
-                stringResource(Res.string.admin_media_spec_size),
-                stringResource(Res.string.admin_media_spec_max),
-                stringResource(Res.string.admin_media_spec_formats),
-            ),
-            zoom = state.coverZoom,
-            offsetX = state.coverOffsetX,
-            offsetY = state.coverOffsetY,
-        )
-        if (state.coverUrl != null) {
-            Text(
-                text = stringResource(Res.string.admin_media_edit),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium,
-                fontSize = 13.sp,
-                modifier = Modifier.clickable(role = Role.Button) { editingCover = !editingCover },
-            )
-            if (editingCover) {
-                CoverEditor(
-                    cropPreset = cropPreset,
-                    onCropPreset = { id ->
-                        cropPreset = id
-                        val (zoom, offsetY) = when (id) {
-                            "banner" -> 1.35f to -0.2f
-                            "free" -> 1.15f to 0f
-                            else -> 1f to 0f
-                        }
-                        onStateChange(
-                            state.copy(
-                                coverZoom = zoom,
-                                coverOffsetY = offsetY,
-                                dirty = true,
-                            ),
-                        )
-                    },
-                    zoom = state.coverZoom,
-                    offsetX = state.coverOffsetX,
-                    onZoom = { onStateChange(state.copy(coverZoom = it, dirty = true)) },
-                    onOffsetX = { onStateChange(state.copy(coverOffsetX = it, dirty = true)) },
-                    brand = state.theme.primary,
-                )
-            }
-        }
+        // Not sent on POST /seller/shops: cover image and crop.
+        // var editingCover by remember { mutableStateOf(false) }
+        // var cropPreset by remember { mutableStateOf("wide") }
+        // AdminMediaDropzone(
+        //     label = stringResource(Res.string.admin_field_cover),
+        //     imageUrl = state.coverUrl,
+        //     onPick = {
+        //         onStateChange(
+        //             state.copy(
+        //                 coverUrl = CreateStoreMocks.MockCoverUrl,
+        //                 coverZoom = 1f,
+        //                 coverOffsetX = 0f,
+        //                 coverOffsetY = 0f,
+        //                 dirty = true,
+        //             ),
+        //         )
+        //         editingCover = true
+        //     },
+        //     onRemove = {
+        //         onStateChange(
+        //             state.copy(
+        //                 coverUrl = null,
+        //                 coverZoom = 1f,
+        //                 coverOffsetX = 0f,
+        //                 coverOffsetY = 0f,
+        //                 dirty = true,
+        //             ),
+        //         )
+        //         editingCover = false
+        //     },
+        //     specs = listOf(
+        //         stringResource(Res.string.admin_media_spec_size),
+        //         stringResource(Res.string.admin_media_spec_max),
+        //         stringResource(Res.string.admin_media_spec_formats),
+        //     ),
+        //     zoom = state.coverZoom,
+        //     offsetX = state.coverOffsetX,
+        //     offsetY = state.coverOffsetY,
+        // )
+        // if (state.coverUrl != null) {
+        //     Text(
+        //         text = stringResource(Res.string.admin_media_edit),
+        //         color = MaterialTheme.colorScheme.onSurface,
+        //         fontWeight = FontWeight.Medium,
+        //         fontSize = 13.sp,
+        //         modifier = Modifier.clickable(role = Role.Button) { editingCover = !editingCover },
+        //     )
+        //     if (editingCover) {
+        //         CoverEditor(
+        //             cropPreset = cropPreset,
+        //             onCropPreset = { id ->
+        //                 cropPreset = id
+        //                 val (zoom, offsetY) = when (id) {
+        //                     "banner" -> 1.35f to -0.2f
+        //                     "free" -> 1.15f to 0f
+        //                     else -> 1f to 0f
+        //                 }
+        //                 onStateChange(
+        //                     state.copy(
+        //                         coverZoom = zoom,
+        //                         coverOffsetY = offsetY,
+        //                         dirty = true,
+        //                     ),
+        //                 )
+        //             },
+        //             zoom = state.coverZoom,
+        //             offsetX = state.coverOffsetX,
+        //             onZoom = { onStateChange(state.copy(coverZoom = it, dirty = true)) },
+        //             onOffsetX = { onStateChange(state.copy(coverOffsetX = it, dirty = true)) },
+        //             brand = state.theme.primary,
+        //         )
+        //     }
+        // }
         AdminMediaDropzone(
             label = stringResource(Res.string.admin_field_icon),
             imageUrl = state.avatarUrl.takeIf { it.isNotBlank() },
-            onPick = {},
-            onRemove = { onStateChange(state.copy(avatarUrl = "", dirty = true)) },
+            previewBytes = state.logoPreviewBytes,
+            onPick = { pickLogo() },
+            onRemove = {
+                onStateChange(state.copy(avatarUrl = "", logoPreviewBytes = null, dirty = true))
+            },
             height = AdminTokens.LogoDropzoneSize,
             circular = true,
         )
@@ -543,51 +559,52 @@ private fun CreateStoreBrandStep(
             error = fieldErrors["avatar_url"],
         )
     }
-    AdminFormCard(
-        title = stringResource(Res.string.admin_card_theme),
-        subtitle = stringResource(Res.string.admin_card_theme_sub),
-        icon = painterResource(Res.drawable.ic_filter_sliders),
-    ) {
-        Text(
-            text = stringResource(Res.string.admin_theme_presets),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Medium,
-            fontSize = 13.sp,
-        )
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
-            verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
-        ) {
-            CreateStoreMocks.themes.forEach { theme ->
-                val selected = theme.id == state.themeId
-                Column(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(VitranRadius.medium))
-                        .border(
-                            width = if (selected) 2.dp else 1.dp,
-                            color = if (selected) theme.primary else AdminTokens.CardBorder,
-                            shape = RoundedCornerShape(VitranRadius.medium),
-                        )
-                        .background(
-                            if (selected) theme.secondary.copy(alpha = 0.5f)
-                            else MaterialTheme.colorScheme.surface,
-                        )
-                        .clickable(role = Role.Button) { onStateChange(state.withTheme(theme.id)) }
-                        .padding(horizontal = VitranSpacing.md, vertical = VitranSpacing.sm),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(text = theme.emoji, fontSize = 20.sp)
-                    Text(
-                        text = theme.name,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 12.sp,
-                    )
-                }
-            }
-        }
-        ThemeIncludesPreview(theme = state.theme)
-    }
+    // Not sent on POST /seller/shops: theme presets.
+    // AdminFormCard(
+    //     title = stringResource(Res.string.admin_card_theme),
+    //     subtitle = stringResource(Res.string.admin_card_theme_sub),
+    //     icon = painterResource(Res.drawable.ic_filter_sliders),
+    // ) {
+    //     Text(
+    //         text = stringResource(Res.string.admin_theme_presets),
+    //         color = MaterialTheme.colorScheme.onSurface,
+    //         fontWeight = FontWeight.Medium,
+    //         fontSize = 13.sp,
+    //     )
+    //     FlowRow(
+    //         horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
+    //         verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
+    //     ) {
+    //         CreateStoreMocks.themes.forEach { theme ->
+    //             val selected = theme.id == state.themeId
+    //             Column(
+    //                 modifier = Modifier
+    //                     .clip(RoundedCornerShape(VitranRadius.medium))
+    //                     .border(
+    //                         width = if (selected) 2.dp else 1.dp,
+    //                         color = if (selected) theme.primary else AdminTokens.CardBorder,
+    //                         shape = RoundedCornerShape(VitranRadius.medium),
+    //                     )
+    //                     .background(
+    //                         if (selected) theme.secondary.copy(alpha = 0.5f)
+    //                         else MaterialTheme.colorScheme.surface,
+    //                     )
+    //                     .clickable(role = Role.Button) { onStateChange(state.withTheme(theme.id)) }
+    //                     .padding(horizontal = VitranSpacing.md, vertical = VitranSpacing.sm),
+    //                 horizontalAlignment = Alignment.CenterHorizontally,
+    //                 verticalArrangement = Arrangement.spacedBy(4.dp),
+    //             ) {
+    //                 Text(text = theme.emoji, fontSize = 20.sp)
+    //                 Text(
+    //                     text = theme.name,
+    //                     fontWeight = FontWeight.SemiBold,
+    //                     fontSize = 12.sp,
+    //                 )
+    //             }
+    //         }
+    //     }
+    //     ThemeIncludesPreview(theme = state.theme)
+    // }
     AdminFormCard(
         title = stringResource(Res.string.admin_field_about),
         subtitle = stringResource(Res.string.admin_card_about_sub),
@@ -802,31 +819,25 @@ private fun CreateStoreContactStep(
         subtitle = stringResource(Res.string.admin_card_location_sub),
         icon = painterResource(Res.drawable.ic_social_email),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(VitranSpacing.md),
-        ) {
-            AdminTextField(
-                label = stringResource(Res.string.admin_field_email),
-                value = state.email,
-                onValueChange = { onStateChange(state.copy(email = it, dirty = true)) },
-                placeholder = stringResource(Res.string.admin_field_email_placeholder),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.weight(1f),
-            )
-            AdminTextField(
-                label = stringResource(Res.string.admin_field_phone),
-                value = state.phone,
-                onValueChange = {
-                    onClearFieldError("phone_number")
-                    onStateChange(state.copy(phone = it, dirty = true))
-                },
-                placeholder = stringResource(Res.string.admin_field_phone_placeholder),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                modifier = Modifier.weight(1f),
-                error = fieldErrors["phone_number"],
-            )
-        }
+        // Not sent on POST /seller/shops: email.
+        // AdminTextField(
+        //     label = stringResource(Res.string.admin_field_email),
+        //     value = state.email,
+        //     onValueChange = { onStateChange(state.copy(email = it, dirty = true)) },
+        //     placeholder = stringResource(Res.string.admin_field_email_placeholder),
+        //     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        // )
+        AdminTextField(
+            label = stringResource(Res.string.admin_field_phone),
+            value = state.phone,
+            onValueChange = {
+                onClearFieldError("phone_number")
+                onStateChange(state.copy(phone = it, dirty = true))
+            },
+            placeholder = stringResource(Res.string.admin_field_phone_placeholder),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            error = fieldErrors["phone_number"],
+        )
         AdminTextField(
             label = stringResource(Res.string.admin_field_support_times),
             value = state.supportTimes,
@@ -903,7 +914,8 @@ private fun CreateStoreContactStep(
                 }
             }
             val used = state.socialChannels.map { it.kind }.toSet()
-            val canAdd = StoreSocialKind.entries.any { it !in used }
+            // Email is not a create-shop field.
+            val canAdd = StoreSocialKind.entries.any { it !in used && it != StoreSocialKind.Email }
             if (canAdd) {
                 Text(
                     text = "+ ${stringResource(Res.string.admin_social_add_new)}",
@@ -911,7 +923,7 @@ private fun CreateStoreContactStep(
                     fontWeight = FontWeight.Medium,
                     fontSize = 13.sp,
                     modifier = Modifier.clickable(role = Role.Button) {
-                        val next = StoreSocialKind.entries.first { it !in used }
+                        val next = StoreSocialKind.entries.first { it !in used && it != StoreSocialKind.Email }
                         onStateChange(
                             state.copy(
                                 socialChannels = state.socialChannels + StoreSocialChannel(
@@ -1059,153 +1071,15 @@ private fun SocialChannelRow(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CreateStorePoliciesStep(
     state: CreateStoreFormState,
     onStateChange: (CreateStoreFormState) -> Unit,
     fieldErrors: Map<String, String> = emptyMap(),
 ) {
-    var tab by remember { mutableStateOf(0) }
-    Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.lg)) {
-    AdminFormCard(
-        title = stringResource(Res.string.admin_card_policies),
-        subtitle = stringResource(Res.string.admin_card_policies_sub),
-        icon = painterResource(Res.drawable.ic_policy_about),
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
-            PolicyModeRow(
-                selected = state.policyMode,
-                onSelect = { mode ->
-                    when (mode) {
-                        PolicyInputMode.Manual -> onStateChange(state.copy(policyMode = mode, dirty = true))
-                        PolicyInputMode.Template -> onStateChange(state.copy(policyMode = mode, dirty = true))
-                        PolicyInputMode.Auto -> {
-                            val generated = CreateStoreMocks.autoPolicyCopy(state.storeName)
-                            onStateChange(
-                                state.copy(
-                                    policyMode = mode,
-                                    policies = generated.policies,
-                                    shipping = generated.shipping,
-                                    returns = generated.returns,
-                                    policyTemplateId = generated.id,
-                                    dirty = true,
-                                ),
-                            )
-                        }
-                    }
-                },
-            )
-            if (state.policyMode == PolicyInputMode.Template) {
-                Text(
-                    text = stringResource(Res.string.admin_policy_templates_label),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 13.sp,
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
-                    verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
-                ) {
-                    CreateStoreMocks.policyTemplates.forEach { template ->
-                        val selected = state.policyTemplateId == template.id
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(VitranRadius.small))
-                                .background(
-                                    if (selected) state.theme.primary.copy(alpha = 0.12f)
-                                    else AdminTokens.DropdownHover,
-                                )
-                                .border(
-                                    1.dp,
-                                    if (selected) state.theme.primary else AdminTokens.FieldBorder,
-                                    RoundedCornerShape(VitranRadius.small),
-                                )
-                                .clickable(role = Role.Button) {
-                                    onStateChange(
-                                        state.copy(
-                                            policyTemplateId = template.id,
-                                            policies = template.policies,
-                                            shipping = template.shipping,
-                                            returns = template.returns,
-                                            dirty = true,
-                                        ),
-                                    )
-                                }
-                                .padding(horizontal = VitranSpacing.md, vertical = VitranSpacing.sm),
-                        ) {
-                            Text(
-                                text = template.label,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = if (selected) state.theme.primary else MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(VitranRadius.medium))
-                .background(AdminTokens.DropdownHover)
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            listOf(
-                stringResource(Res.string.admin_tab_policies),
-                stringResource(Res.string.admin_tab_shipping),
-                stringResource(Res.string.admin_tab_returns),
-            ).forEachIndexed { index, title ->
-                val selected = tab == index
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(36.dp)
-                        .clip(RoundedCornerShape(VitranRadius.small))
-                        .background(if (selected) MaterialTheme.colorScheme.surface else AdminTokens.DropdownHover)
-                        .clickable(role = Role.Button) { tab = index },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = title,
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                        fontSize = 13.sp,
-                        color = if (selected) {
-                            MaterialTheme.colorScheme.onSurface
-                        } else {
-                            AdminTokens.Helper
-                        },
-                    )
-                }
-            }
-        }
-        val editorReadOnly = state.policyMode != PolicyInputMode.Manual
-        when (tab) {
-            0 -> AdminMultilineField(
-                label = stringResource(Res.string.admin_field_policies),
-                value = state.policies,
-                onValueChange = {
-                    if (!editorReadOnly) onStateChange(state.copy(policies = it, dirty = true))
-                },
-                showToolbar = state.policyMode == PolicyInputMode.Manual,
-            )
-            1 -> AdminMultilineField(
-                label = stringResource(Res.string.admin_field_shipping),
-                value = state.shipping,
-                onValueChange = {
-                    if (!editorReadOnly) onStateChange(state.copy(shipping = it, dirty = true))
-                },
-            )
-            else -> AdminMultilineField(
-                label = stringResource(Res.string.admin_field_returns),
-                value = state.returns,
-                onValueChange = {
-                    if (!editorReadOnly) onStateChange(state.copy(returns = it, dirty = true))
-                },
-            )
-        }
-    }
+    // Not sent on POST /seller/shops: policy mode, templates, and free-text
+    // policies / shipping / returns. The request uses rules, shipping_methods,
+    // working_hours, seo_*, noindex, fulfillment_type, and webhook_url.
     ShopProfileEditor(
         profile = state.profile,
         onProfileChange = { profile ->
@@ -1213,56 +1087,6 @@ private fun CreateStorePoliciesStep(
         },
         fieldErrors = fieldErrors,
     )
-    }
-}
-
-@Composable
-private fun PolicyModeRow(
-    selected: PolicyInputMode,
-    onSelect: (PolicyInputMode) -> Unit,
-) {
-    val options = listOf(
-        PolicyInputMode.Manual to stringResource(Res.string.admin_policy_mode_manual),
-        PolicyInputMode.Template to stringResource(Res.string.admin_policy_mode_template),
-        PolicyInputMode.Auto to stringResource(Res.string.admin_policy_mode_auto),
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
-        options.forEach { (mode, label) ->
-            val isOn = selected == mode
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(VitranRadius.small))
-                    .clickable(role = Role.Button) { onSelect(mode) }
-                    .padding(vertical = VitranSpacing.xs),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(18.dp)
-                        .clip(CircleShape)
-                        .border(
-                            1.5.dp,
-                            if (isOn) MaterialTheme.colorScheme.onSurface else AdminTokens.FieldBorder,
-                            CircleShape,
-                        )
-                        .padding(3.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (isOn) {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.onSurface),
-                        )
-                    }
-                }
-                Text(text = label, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-            }
-        }
-    }
 }
 
 @Composable

@@ -32,12 +32,10 @@ import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
-import vitranshop.shared.generated.resources.admin_summary_never_saved
 import vitranshop.shared.generated.resources.admin_preview_store_fallback
 import vitranshop.shared.generated.resources.admin_status_draft
 import vitranshop.shared.generated.resources.admin_status_published
 import vitranshop.shared.generated.resources.admin_summary_copy_link
-import vitranshop.shared.generated.resources.admin_summary_last_saved
 import vitranshop.shared.generated.resources.admin_summary_percent
 import vitranshop.shared.generated.resources.admin_summary_progress
 import vitranshop.shared.generated.resources.admin_summary_public_url
@@ -171,24 +169,25 @@ fun CreateStoreSummaryCard(
                 )
             }
         }
-        SummaryDivider()
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(Res.string.admin_summary_last_saved),
-                color = AdminTokens.Helper,
-                fontSize = 12.sp,
-            )
-            Text(
-                text = lastSavedLabel ?: stringResource(Res.string.admin_summary_never_saved),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-            )
-        }
+        // Draft save time is not supported yet.
+        // SummaryDivider()
+        // Row(
+        //     modifier = Modifier.fillMaxWidth(),
+        //     horizontalArrangement = Arrangement.SpaceBetween,
+        //     verticalAlignment = Alignment.CenterVertically,
+        // ) {
+        //     Text(
+        //         text = stringResource(Res.string.admin_summary_last_saved),
+        //         color = AdminTokens.Helper,
+        //         fontSize = 12.sp,
+        //     )
+        //     Text(
+        //         text = lastSavedLabel ?: stringResource(Res.string.admin_summary_never_saved),
+        //         color = MaterialTheme.colorScheme.onSurface,
+        //         fontWeight = FontWeight.Medium,
+        //         fontSize = 12.sp,
+        //     )
+        // }
     }
 }
 

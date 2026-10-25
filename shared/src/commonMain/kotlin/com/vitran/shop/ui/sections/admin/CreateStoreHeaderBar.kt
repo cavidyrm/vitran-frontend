@@ -28,8 +28,6 @@ import com.vitran.shop.ui.theme.VitranSpacing
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import vitranshop.shared.generated.resources.Res
-import vitranshop.shared.generated.resources.admin_autosave_saved
-import vitranshop.shared.generated.resources.admin_autosave_saving
 import vitranshop.shared.generated.resources.admin_create_store_back_a11y
 import vitranshop.shared.generated.resources.admin_create_store_subtitle
 import vitranshop.shared.generated.resources.admin_create_store_title
@@ -79,19 +77,20 @@ fun CreateStoreHeaderBar(
                 fontSize = 13.sp,
             )
         }
-        when (autosaveStatus) {
-            AutosaveStatus.Idle -> Unit
-            AutosaveStatus.Saving -> Text(
-                text = stringResource(Res.string.admin_autosave_saving),
-                color = AdminTokens.Helper,
-                fontSize = 12.sp,
-            )
-            AutosaveStatus.Saved -> Text(
-                text = stringResource(Res.string.admin_autosave_saved),
-                color = AdminTokens.Success,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-            )
-        }
+        // Draft autosave is not supported yet.
+        // when (autosaveStatus) {
+        //     AutosaveStatus.Idle -> Unit
+        //     AutosaveStatus.Saving -> Text(
+        //         text = stringResource(Res.string.admin_autosave_saving),
+        //         color = AdminTokens.Helper,
+        //         fontSize = 12.sp,
+        //     )
+        //     AutosaveStatus.Saved -> Text(
+        //         text = stringResource(Res.string.admin_autosave_saved),
+        //         color = AdminTokens.Success,
+        //         fontWeight = FontWeight.Medium,
+        //         fontSize = 12.sp,
+        //     )
+        // }
     }
 }

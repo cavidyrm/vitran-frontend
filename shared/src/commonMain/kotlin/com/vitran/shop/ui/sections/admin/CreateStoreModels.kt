@@ -100,6 +100,8 @@ data class CreateStoreFormState(
     val cityId: String? = null,
     val categorySlugs: List<String> = emptyList(),
     val avatarUrl: String = "",
+    /** Local logo chosen in the brand step. Not sent on create; `avatarUrl` is. */
+    val logoPreviewBytes: ByteArray? = null,
     val policies: String = "",
     val shipping: String = "",
     val returns: String = "",
@@ -187,13 +189,24 @@ data class CreateStoreFormState(
         storeName.isNotBlank() && slug.isNotBlank()
 
     fun brandComplete(): Boolean =
-        coverUrl != null || iconUrl != null || about.isNotBlank()
+        avatarUrl.isNotBlank() || logoPreviewBytes != null || about.isNotBlank()
 
     fun contactComplete(): Boolean =
-        email.isNotBlank() || phone.isNotBlank() || socialChannels.any { it.handle.isNotBlank() }
+        phone.isNotBlank() ||
+            address.isNotBlank() ||
+            cityId != null ||
+            supportTimes.isNotBlank() ||
+            socialChannels.any { it.handle.isNotBlank() }
 
     fun policiesComplete(): Boolean =
-        policies.isNotBlank() || shipping.isNotBlank() || returns.isNotBlank()
+        profile.seoTitle.isNotBlank() ||
+            profile.seoDescription.isNotBlank() ||
+            profile.noindex ||
+            profile.rules.any { it.title.isNotBlank() || it.body.isNotBlank() } ||
+            profile.shippingMethods.any { it.code.isNotBlank() || it.title.isNotBlank() } ||
+            profile.workingHours.isNotEmpty() ||
+            profile.fulfillmentType.isNotBlank() ||
+            profile.webhookUrl.isNotBlank()
 
     fun publishComplete(): Boolean = published
 

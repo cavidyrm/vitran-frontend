@@ -36,8 +36,6 @@ import com.vitran.shop.feature.seller.shop.presentation.CreateShopUiEffect
 import com.vitran.shop.feature.seller.shop.presentation.CreateShopViewModel
 import com.vitran.shop.feature.seller.shop.presentation.SlugCheckUiStatus
 import com.vitran.shop.feature.seller.shop.presentation.TitleCheckUiStatus
-import com.vitran.shop.feature.seller.shop.domain.model.ShopRule
-import com.vitran.shop.feature.seller.shop.domain.model.ShopShippingMethod
 import com.vitran.shop.feature.seller.shop.presentation.buildCreateShopCommand
 import com.vitran.shop.feature.seller.shop.presentation.toRules
 import com.vitran.shop.feature.seller.shop.presentation.toShippingMethods
@@ -200,19 +198,8 @@ fun CreateStoreScreen(
             return
         }
         val social = state.socialChannels.associate { it.kind to it.handle }
-        val rules =
-            state.profile.toRules().ifEmpty {
-                buildList {
-                    if (state.policies.isNotBlank()) add(ShopRule(title = "قوانین", body = state.policies.trim()))
-                    if (state.returns.isNotBlank()) add(ShopRule(title = "مرجوعی", body = state.returns.trim()))
-                }
-            }
-        val shippingMethods =
-            state.profile.toShippingMethods().ifEmpty {
-                state.shipping.trim().takeIf { it.isNotEmpty() }?.let { title ->
-                    listOf(ShopShippingMethod(code = "default", title = title))
-                } ?: emptyList()
-            }
+        val rules = state.profile.toRules()
+        val shippingMethods = state.profile.toShippingMethods()
         val command =
             buildCreateShopCommand(
                 title = state.storeName,

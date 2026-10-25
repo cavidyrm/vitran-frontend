@@ -61,7 +61,10 @@ fun AdminMediaDropzone(
     zoom: Float = 1f,
     offsetX: Float = 0f,
     offsetY: Float = 0f,
+    previewBytes: ByteArray? = null,
 ) {
+    val preview = previewBytes?.takeIf { it.isNotEmpty() }
+    val remoteUrl = imageUrl?.takeIf { it.isNotBlank() }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
@@ -74,7 +77,7 @@ fun AdminMediaDropzone(
                 fontSize = 13.sp,
             ),
         )
-        if (imageUrl.isNullOrBlank()) {
+        if (preview == null && remoteUrl == null) {
             EmptyDropzone(
                 circular = circular,
                 height = height,
@@ -94,7 +97,7 @@ fun AdminMediaDropzone(
             }
         } else {
             FilledDropzone(
-                imageUrl = imageUrl,
+                model = preview ?: resolveNetworkImageUrl(remoteUrl.orEmpty()),
                 circular = circular,
                 height = height,
                 onPick = onPick,
@@ -170,7 +173,7 @@ private fun EmptyDropzone(
 
 @Composable
 private fun FilledDropzone(
-    imageUrl: String,
+    model: Any,
     circular: Boolean,
     height: Dp,
     onPick: () -> Unit,
@@ -188,7 +191,7 @@ private fun FilledDropzone(
                 .clickable(role = Role.Button, onClick = onPick),
         ) {
             AsyncImage(
-                model = resolveNetworkImageUrl(imageUrl),
+                model = model,
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()

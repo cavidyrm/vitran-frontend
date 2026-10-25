@@ -31,8 +31,6 @@ import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.admin_create_store_back
 import vitranshop.shared.generated.resources.admin_create_store_next
 import vitranshop.shared.generated.resources.admin_create_store_publish
-import vitranshop.shared.generated.resources.admin_create_store_save
-import vitranshop.shared.generated.resources.admin_last_saved
 import vitranshop.shared.generated.resources.admin_publish_done
 
 @Composable
@@ -67,15 +65,17 @@ fun CreateStoreBottomBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        if (lastSavedLabel != null) {
-            Text(
-                text = stringResource(Res.string.admin_last_saved, lastSavedLabel),
-                color = AdminTokens.Helper,
-                fontSize = 12.sp,
-            )
-        } else {
-            Box {}
-        }
+        // Draft save is not supported yet.
+        // if (lastSavedLabel != null) {
+        //     Text(
+        //         text = stringResource(Res.string.admin_last_saved, lastSavedLabel),
+        //         color = AdminTokens.Helper,
+        //         fontSize = 12.sp,
+        //     )
+        // } else {
+        //     Box {}
+        // }
+        Box {}
         Row(horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
             if (!isFirst) {
                 AdminBarButton(
@@ -86,13 +86,14 @@ fun CreateStoreBottomBar(
                     onClick = onBack,
                 )
             }
-            AdminBarButton(
-                label = stringResource(Res.string.admin_create_store_save),
-                emphasized = false,
-                brandColor = brandColor,
-                onBrandColor = onBrandColor,
-                onClick = onSaveDraft,
-            )
+            // Draft save is not supported yet.
+            // AdminBarButton(
+            //     label = stringResource(Res.string.admin_create_store_save),
+            //     emphasized = false,
+            //     brandColor = brandColor,
+            //     onBrandColor = onBrandColor,
+            //     onClick = onSaveDraft,
+            // )
             if (isLast) {
                 AdminBarButton(
                     label = stringResource(
