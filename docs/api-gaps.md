@@ -109,7 +109,7 @@ Postman requests **without saved response examples** (or with incomplete example
 | Field | Status |
 |-------|--------|
 | **Status** | Verified from Postman collection |
-| **Create/Update fields** | `title`, exactly one `category_slug`, `price`, optional `compare_at_price`, `description`, optional `seo_title`, `seo_description`, `noindex`, `active`, `images` (file, repeat, ≤5) |
+| **Create/Update fields** | `title`, exactly one `category_slug`, `price`, optional `compare_at_price`, `description`, optional `seo_title`, `seo_description`, `noindex`, optional `slug` (create; API reason `slug`), `active`, `images` (file, repeat, ≤5) |
 | **Image key** | `images` (not `image`) |
 | **Cover** | `main_image` plus `images[].is_main`. Set with `PATCH /seller/products/{id}/images/{imageId}/main`. Cards use `main_image.url`. |
 | **Update images** | Appended; total ≤ 5 (collection description). Deleting the cover promotes the lowest `sort_order`. |

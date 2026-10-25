@@ -356,6 +356,7 @@ class SellerProductApiRepositoryTest {
                         seoTitle = "Blue Widget | Vitran",
                         seoDescription = "Meta",
                         noindex = true,
+                        slug = "blue-widget",
                     ),
                 ),
             )
@@ -364,6 +365,8 @@ class SellerProductApiRepositoryTest {
         assertTrue(bodyText.contains("seo_description"))
         assertTrue(bodyText.contains("noindex"))
         assertTrue(bodyText.contains("true"))
+        assertTrue(bodyText.contains("name=slug") || bodyText.contains("name=\"slug\""))
+        assertTrue(bodyText.contains("blue-widget"))
     }
 
     @Test

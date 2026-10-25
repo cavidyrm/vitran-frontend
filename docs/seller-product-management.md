@@ -51,9 +51,9 @@ Centralized in `productPublicationState(active, confirmed)`. Do not scatter raw 
 
 ## 7. Create Product
 
-Multipart fields (Postman-verified): `title`, exactly one `category_slug`, `price`, `description`, `active`, optional `compare_at_price`, optional `seo_title`, `seo_description`, `noindex`, repeated `images` (≤5).
+Multipart fields (Postman-verified): `title`, exactly one `category_slug`, `price`, `description`, `active`, optional `compare_at_price`, optional `seo_title`, `seo_description`, `noindex`, optional `slug`, repeated `images` (≤5).
 
-UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/screens/CreateProductScreen.kt) + `CreateProductViewModel`. The SEO card sends `seoTitle`, `seoDescription`, and `noindex` when the toggle is on. The first image is the cover; after create the client calls set-main when that image is not already `is_main`. SKU, inventory, variants, and the local product slug remain local-only.
+UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/screens/CreateProductScreen.kt) + `CreateProductViewModel`. The basics card sends `slug`. The SEO card sends `seoTitle`, `seoDescription`, and `noindex` when the toggle is on. The first image is the cover; after create the client calls set-main when that image is not already `is_main`. SKU, inventory, and variants remain local-only.
 
 ## 8. Update Product
 

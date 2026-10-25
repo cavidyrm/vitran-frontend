@@ -188,6 +188,7 @@ class CreateProductViewModelTest {
                 categoryId = "aa-1",
                 orderedMediaIds = emptyList(),
                 mode = CreateProductSubmitMode.Publish,
+                slug = "blue-widget",
             )
             advanceUntilIdle()
             assertFalse(vm.uiState.value.isSubmitting)
@@ -197,6 +198,7 @@ class CreateProductViewModelTest {
             )
             assertTrue(repo.lastCreate?.desiredActive == true)
             assertEquals(1200L, repo.lastCreate?.compareAtPriceAmount)
+            assertEquals("blue-widget", repo.lastCreate?.slug)
         } finally {
             Dispatchers.resetMain()
         }
@@ -245,6 +247,10 @@ class CreateProductViewModelTest {
                                             reason = "title",
                                             messages = listOf("عنوان کوتاه است"),
                                         ),
+                                        com.vitran.shop.core.domain.error.FieldError(
+                                            reason = "slug",
+                                            messages = listOf("نامک محصول نامعتبر است."),
+                                        ),
                                     ),
                             ),
                         ),
@@ -260,6 +266,7 @@ class CreateProductViewModelTest {
             vm.submit("T", "", "10", "", "1", emptyList(), CreateProductSubmitMode.Draft)
             advanceUntilIdle()
             assertEquals("عنوان کوتاه است", vm.uiState.value.fieldErrors.title)
+            assertEquals("نامک محصول نامعتبر است.", vm.uiState.value.fieldErrors.slug)
             assertNull(vm.uiState.value.createdProduct)
         } finally {
             Dispatchers.resetMain()

@@ -190,7 +190,7 @@ See [api-feature-map.md](api-feature-map.md) for full endpoint index.
 
 | Operation | Method / path | Notes |
 |-----------|---------------|-------|
-| Create seller product (with images) | `POST /seller/shops/{id}/products` | multipart; optional `compare_at_price`, `seo_title`, `seo_description`, `noindex` |
+| Create seller product (with images) | `POST /seller/shops/{id}/products` | multipart; optional `compare_at_price`, `seo_title`, `seo_description`, `noindex`, `slug` |
 | Update seller product | `PATCH /seller/products/{id}` | multipart; optional `compare_at_price` (empty string clears); optional SEO fields |
 | Set product cover | `PATCH /seller/products/{id}/images/{imageId}/main` | no body; response includes `main_image` and `images[].is_main` |
 | Upload category icon | `PUT /admin/categories/{slug}/icon` | multipart |

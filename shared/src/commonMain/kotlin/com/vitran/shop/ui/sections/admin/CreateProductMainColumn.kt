@@ -152,7 +152,7 @@ private fun TitleDescriptionCard(
     AdminFormCard(
         title = stringResource(Res.string.admin_product_card_basics),
         subtitle = stringResource(Res.string.admin_product_card_basics_sub),
-        hasError = state.errors.title != null,
+        hasError = state.errors.title != null || state.errors.slug != null,
         modifier = Modifier.bringIntoViewRequester(titleAnchor),
     ) {
         AdminTextField(
@@ -162,6 +162,26 @@ private fun TitleDescriptionCard(
             placeholder = stringResource(Res.string.admin_product_field_title_placeholder),
             required = true,
             error = state.errors.title,
+        )
+        AdminTextField(
+            label = stringResource(Res.string.admin_product_field_slug),
+            value = state.slug,
+            onValueChange = {
+                onStateChange(
+                    state.copy(
+                        slug = slugifyStoreName(it).ifBlank { it.trim().lowercase() },
+                        slugManuallyEdited = true,
+                    ).markedDirty().clearedErrors(),
+                )
+            },
+            prefix = stringResource(Res.string.admin_product_url_prefix),
+            helper = if (state.slug.isNotBlank() && state.errors.slug == null) {
+                stringResource(Res.string.admin_product_slug_available)
+            } else {
+                null
+            },
+            error = state.errors.slug,
+            ltr = true,
         )
         if (state.title.length >= CreateProductMocks.TitleMaxLength - 20) {
             Text(
@@ -479,25 +499,6 @@ private fun SeoCard(
                 value = state.seoDescription,
                 onValueChange = { onStateChange(state.copy(seoDescription = it).markedDirty()) },
                 placeholder = stringResource(Res.string.admin_product_field_seo_desc_placeholder),
-            )
-            AdminTextField(
-                label = stringResource(Res.string.admin_product_field_slug),
-                value = state.slug,
-                onValueChange = {
-                    onStateChange(
-                        state.copy(
-                            slug = slugifyStoreName(it).ifBlank { it.trim().lowercase() },
-                            slugManuallyEdited = true,
-                        ).markedDirty(),
-                    )
-                },
-                prefix = stringResource(Res.string.admin_product_url_prefix),
-                helper = if (state.slug.isNotBlank()) {
-                    stringResource(Res.string.admin_product_slug_available)
-                } else {
-                    null
-                },
-                ltr = true,
             )
         }
     }

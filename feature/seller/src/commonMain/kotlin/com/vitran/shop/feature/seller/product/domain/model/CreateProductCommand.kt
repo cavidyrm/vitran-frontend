@@ -16,4 +16,5 @@ data class CreateProductCommand(
     val seoTitle: String? = null,
     val seoDescription: String? = null,
     val noindex: Boolean? = null,
+    val slug: String? = null,
 )

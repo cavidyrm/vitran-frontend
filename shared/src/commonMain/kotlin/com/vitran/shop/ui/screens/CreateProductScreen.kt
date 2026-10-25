@@ -133,12 +133,13 @@ fun CreateProductScreen(
                             title = fe.title,
                             price = fe.price,
                             category = fe.category,
+                            slug = fe.slug,
                             summary = fe.summary ?: createUi.generalError?.message,
                         ),
                 )
             scope.launch {
                 when {
-                    fe.title != null -> titleAnchor.bringIntoView()
+                    fe.title != null || fe.slug != null -> titleAnchor.bringIntoView()
                     fe.price != null -> priceAnchor.bringIntoView()
                     fe.category != null -> categoryAnchor.bringIntoView()
                 }
@@ -170,7 +171,7 @@ fun CreateProductScreen(
             state = state.copy(errors = errors)
             scope.launch {
                 when {
-                    errors.title != null -> titleAnchor.bringIntoView()
+                    errors.title != null || errors.slug != null -> titleAnchor.bringIntoView()
                     errors.price != null || errors.compareAt != null -> priceAnchor.bringIntoView()
                     errors.category != null -> categoryAnchor.bringIntoView()
                 }
@@ -198,6 +199,7 @@ fun CreateProductScreen(
             seoTitle = state.seoTitle,
             seoDescription = state.seoDescription,
             noindex = state.noindex,
+            slug = state.slug,
             mode =
                 if (mode == ProductSaveMode.Publish) {
                     CreateProductSubmitMode.Publish

@@ -76,10 +76,11 @@ data class ProductFieldErrors(
     val price: String? = null,
     val category: String? = null,
     val compareAt: String? = null,
+    val slug: String? = null,
     val summary: String? = null,
 ) {
     val hasAny: Boolean
-        get() = title != null || price != null || category != null || compareAt != null
+        get() = title != null || price != null || category != null || compareAt != null || slug != null
 }
 
 @Immutable

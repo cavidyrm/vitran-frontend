@@ -50,10 +50,11 @@ data class CreateProductFieldErrors(
     val title: String? = null,
     val price: String? = null,
     val category: String? = null,
+    val slug: String? = null,
     val summary: String? = null,
 ) {
     val hasAny: Boolean
-        get() = title != null || price != null || category != null || summary != null
+        get() = title != null || price != null || category != null || slug != null || summary != null
 }
 
 data class CreateProductUiState(
@@ -221,6 +222,7 @@ class CreateProductViewModel(
         seoTitle: String = "",
         seoDescription: String = "",
         noindex: Boolean = false,
+        slug: String = "",
     ) {
         if (_uiState.value.isSubmitting) return
         val shopId = _uiState.value.selectedShopId
@@ -277,6 +279,7 @@ class CreateProductViewModel(
                 seoTitle = seoTitle.trim().takeIf { it.isNotEmpty() },
                 seoDescription = seoDescription.trim().takeIf { it.isNotEmpty() },
                 noindex = noindex.takeIf { it },
+                slug = slug.trim().takeIf { it.isNotEmpty() },
             )
 
         val maxImages = _uiState.value.maxImages
@@ -324,7 +327,7 @@ class CreateProductViewModel(
                     }
                     is AppResult.Failure -> {
                         val split = result.error.splitForForm(
-                            knownReasons = setOf("title", "price"),
+                            knownReasons = setOf("title", "price", "slug"),
                             reasonAliases = CreateProductReasonAliases,
                         )
                         _uiState.update {
@@ -334,6 +337,7 @@ class CreateProductViewModel(
                                     title = split.fieldErrors["title"],
                                     price = split.fieldErrors["price"],
                                     category = split.fieldErrors["category"],
+                                    slug = split.fieldErrors["slug"],
                                     summary = split.fieldErrors["summary"],
                                 ),
                                 generalError = when {

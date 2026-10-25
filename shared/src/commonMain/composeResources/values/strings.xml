@@ -648,7 +648,7 @@
     <string name="admin_product_field_seo_title">عنوان سئو</string>
     <string name="admin_product_field_seo_desc">توضیحات متا</string>
     <string name="admin_product_field_seo_desc_placeholder">توضیح کوتاه برای نتایج جستجو</string>
-    <string name="admin_product_field_slug">آدرس محصول</string>
+    <string name="admin_product_field_slug">نامک</string>
     <string name="admin_product_url_prefix">vitran.shop/products/</string>
     <string name="admin_product_slug_available">✓ آدرس آزاد است</string>
     <string name="admin_product_seo_preview_title">پیش‌نمایش نتایج جستجو</string>

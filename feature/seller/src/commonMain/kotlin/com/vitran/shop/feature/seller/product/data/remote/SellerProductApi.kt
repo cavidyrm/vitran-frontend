@@ -140,6 +140,7 @@ internal suspend fun buildCreateMultipart(command: CreateProductCommand): MultiP
             command.seoTitle?.takeIf { it.isNotBlank() }?.let { append("seo_title", it) }
             command.seoDescription?.takeIf { it.isNotBlank() }?.let { append("seo_description", it) }
             command.noindex?.let { append("noindex", it.toString()) }
+            command.slug?.takeIf { it.isNotBlank() }?.let { append("slug", it) }
             append("active", command.desiredActive.toString())
             appendPreparedImages(imageParts)
         },
