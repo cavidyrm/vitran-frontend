@@ -92,15 +92,13 @@ Postman requests **without saved response examples** (or with incomplete example
 | GET | `/api/v1/seller/shops/{id}/analytics` | Shop analytics dashboard |
 | GET | `/api/v1/seller/shops/{id}/analytics/export` | Analytics CSV export |
 | GET | `/api/v1/catalog/search` | Advanced catalog search |
-| GET | `/api/v1/home/screen` | Server-driven home screen |
-| GET | `/api/v1/me/home/feed` | Custom personalized home feed |
 | PUT | `/api/v1/me/profile/sizing` | Update sizing profile |
 | POST | `/api/v1/me/follows/shops/{id}` | Follow shop |
 | GET | `/api/v1/me/follows/shops` | List followed shops |
 | GET | `/api/v1/me/follows/shops/{id}` | Get followed shop |
 | DELETE | `/api/v1/me/follows/shops/{id}` | Unfollow shop |
 
-**Category attributes:** `GET /categories/{slug}/attributes` has an example but only `"attributes": []` — **non-empty item schema unverified (Phase 4 deferred).** Seller product create/update multipart has **no attributes fields** (Postman-verified) — Phase 8 does not invent attribute encoding.
+**Category attributes:** `GET /categories/{slug}/attributes` has an example but only `"attributes": []` — **non-empty item schema unverified.** Create/update accept optional `attributes[<attribute_slug>]=<value_slug>`. The client can send that field; the product form does not invent a picker until a non-empty attributes example exists.
 
 ---
 
@@ -109,11 +107,14 @@ Postman requests **without saved response examples** (or with incomplete example
 | Field | Status |
 |-------|--------|
 | **Status** | Verified from Postman collection |
-| **Create/Update fields** | `title`, exactly one `category_slug`, `price`, optional `compare_at_price`, `description`, optional `seo_title`, `seo_description`, `noindex`, optional `slug` (create; API reason `slug`), `active`, `images` (file, repeat, ≤5) |
+| **Create/Update fields** | `title`, exactly one `category_slug`, `price`, optional `compare_at_price`, optional `price_after_off` (`< price`; empty clears on update), `description`, optional `seo_title`, `seo_description`, `noindex`, optional `slug` (create and update), `status` (`draft`\|`active`\|`inactive`, default `draft`; omit on update to keep), optional `attributes[<slug>]=<value_slug>` (omit on update to keep), `active`, `images` |
 | **Image key** | `images` (not `image`) |
+| **Image limits** | Field description: max count from the shop plan, each file ≤ 5 MB. PATCH prose still says “total ≤ 5”. Client uses the plan max and rejects a file over 5 MB. |
 | **Cover** | `main_image` plus `images[].is_main`. Set with `PATCH /seller/products/{id}/images/{imageId}/main`. Cards use `main_image.url`. |
-| **Update images** | Appended; total ≤ 5 (collection description). Deleting the cover promotes the lowest `sort_order`. |
+| **Update images** | Appended. Deleting the cover promotes the lowest `sort_order`. |
+| **No variants** | Products have no variant/option model. One price per product. |
 | **compare_at_price** | Optional pre-discount price. Product is on sale when set and greater than `price`. Update: omit to leave unchanged; send empty to clear. |
+| **price_after_off** | Optional selling price after discount. Must be lower than `price`. |
 | **List filters** | `active`, `shop_id`, `category_slug` (+ cursor pagination); `confirmed` accepted as optional client query when used |
 | **Open** | Exact server error reasons for publish-unapproved / plan limits; seller list item fields beyond Postman example; GET detail may omit `description` |
 
@@ -293,10 +294,10 @@ See [admin-and-cms.md](admin-and-cms.md).
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
-| **Issue** | `GET /home` Postman has envelope; live probe to `vitran.ir` returned 404. Non-empty item shapes for `featured`, `popular`, `categories`, `following`, `personal` unverified. |
-| **Client impact** | `HomeApi` + `HomeFeed` counts implemented; `HomeScreen` sections remain mock until schemas captured. |
-| **Phase 5 handling** | `HomeDtos` stores section arrays as `JsonElement`; `HomeFeed.itemsVerified = false`. |
+| **Status** | Legacy |
+| **Issue** | `GET /home` is kept for old builds. Saved examples are full product cards (`personal`, `popular`, and the other fixed arrays). The shopper home does not render this envelope. |
+| **Client impact** | `HomeApi.getHome` still decodes the envelope. Section arrays stay `JsonElement`. `HomeScreen` uses `GET /home/screen`. |
+| **Phase 5 handling** | `HomeFeed.itemsVerified = false`. Do not switch the shopper UI back to this endpoint. |
 
 ---
 
@@ -315,10 +316,10 @@ See [admin-and-cms.md](admin-and-cms.md).
 
 | Field | Status |
 |-------|--------|
-| **Status** | UNRESOLVED — NOT INVENTED |
-| **Issue** | `GET /me/home/feed` has no response example in Postman. |
-| **Client impact** | Not implemented. `HomeViewModel` uses public `/home` only. |
-| **Phase 5 handling** | Implement only after authenticated probe captures schema. |
+| **Status** | Legacy — not called |
+| **Issue** | `GET /me/home/feed` now has a saved example (`data.feed.sections.{name}` with cursor pages). The collection marks it legacy; new screens use `GET /home/screen`. 401 without a token; 400 when no section query is sent. |
+| **Client impact** | Not implemented. `HomeViewModel` loads `GET /home/screen`. |
+| **Phase 5 handling** | Do not add a second home feed client. |
 
 ---
 
@@ -488,10 +489,10 @@ See [admin-and-cms.md](admin-and-cms.md).
 
 | Field | Status |
 |-------|--------|
-| **Status** | Open |
-| **Issue** | `GET /home/screen` has a description (`data.screen.sections`, skip unknown `type`/`layout`, `more.path`) but no saved example. |
-| **Client impact** | Flexible DTO implemented; `HomeViewModel` still uses `GET /home` until a UI pass with a live payload. |
-| **Handling** | Do not invent rails beyond documented `picked-for-you` pagination. |
+| **Status** | Resolved by backend update |
+| **Issue** | `GET /home/screen` and section pagination use `key`, `type` (`products`\|`shops`\|`categories`\|`banners`), `layout` (`horizontal_rail`\|`grid`\|`chips`\|`hero`), `items.results`, and optional `tracking`. Queries require `platform` and `app_version`. Saved examples: guest screen, `for-you` (401 without a token), `featured` (stale cursor = empty page), `popular` (cursor `pop:12`), `summer-campaign`. |
+| **Client impact** | `HomeViewModel` loads `GET /home/screen`. Unknown type/layout is skipped. Shop item objects still have no saved example — a rail is skipped unless each result has `id` and `title` or `name`. |
+| **Handling** | Admin home responses are now `data.home_sections` / `data.home_section` (create **409** on a duplicate slug). The client still does not call them; there is no admin UI. |
 
 ---
 

@@ -7,6 +7,7 @@ import com.vitran.shop.feature.auth.domain.ReferralCodeValidator
 import com.vitran.shop.ui.sections.auth.isValidAuthPassword
 import com.vitran.shop.ui.sections.auth.isValidIranMobile
 import com.vitran.shop.ui.sections.auth.resetPasswordRulesOf
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,11 +31,16 @@ class AppSessionCoordinator(
 ) {
     private var started = false
 
-    fun start() {
+    suspend fun start() {
         if (started) return
         started = true
-        scope.launch {
+        try {
             sessionRepository.restore()
+        } catch (cancellation: CancellationException) {
+            started = false
+            throw cancellation
+        } catch (_: Throwable) {
+            // restore() sets Anonymous when storage cannot be read.
         }
         scope.launch {
             sessionRepository.sessionState.collect { state ->

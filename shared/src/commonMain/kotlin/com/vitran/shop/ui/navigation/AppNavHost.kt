@@ -14,6 +14,8 @@ import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.auth.domain.error.AuthError
 import com.vitran.shop.feature.auth.domain.error.toAuthError
 import com.vitran.shop.feature.auth.domain.usecase.LogoutUseCase
+import com.vitran.shop.feature.engagement.analytics.domain.model.MarketplaceAnalyticsTracker
+import com.vitran.shop.feature.engagement.analytics.domain.model.UserPersonalizationEvent
 import com.vitran.shop.ui.screens.AccountCitiesScreen
 import com.vitran.shop.ui.screens.AccountCityCreateScreen
 import com.vitran.shop.ui.screens.AccountCityDetailScreen
@@ -80,6 +82,7 @@ fun AppNavHost(
     var signingOut by remember { mutableStateOf(false) }
     var signOutError by remember { mutableStateOf<String?>(null) }
     val logoutUseCase: LogoutUseCase = koinInject()
+    val analyticsTracker: MarketplaceAnalyticsTracker = koinInject()
     val signOutScope = rememberCoroutineScope()
     val signOutNetworkError = stringResource(Res.string.account_sign_out_error_network)
     val signOutGenericError = stringResource(Res.string.account_sign_out_error_generic)
@@ -105,8 +108,10 @@ fun AppNavHost(
         navigator.handleSiteFooterLink(navState, id)
     }
     val onSearchSubmit: (String) -> Unit = { query ->
-        if (query.isNotBlank()) {
-            navigator.push(Route.Search(query = query.trim()))
+        val trimmed = query.trim()
+        if (trimmed.isNotBlank()) {
+            analyticsTracker.track(UserPersonalizationEvent.Search(trimmed))
+            navigator.push(Route.Search(query = trimmed))
         }
     }
     val onProductOpen: (
@@ -134,6 +139,7 @@ fun AppNavHost(
                     onStoreOpen = { shopId ->
                         navigator.push(Route.Store(shopId = shopId))
                     },
+                    onCategoryOpen = { navigator.navigate(Route.Categories) },
                     onSearchSubmit = onSearchSubmit,
                     onFooterLinkClick = onFooterLink,
                 )

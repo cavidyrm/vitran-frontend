@@ -26,6 +26,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vitran.shop.di.vitranKoinViewModel
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
+import com.vitran.shop.feature.seller.product.domain.model.ProductListingStatus
 import com.vitran.shop.feature.seller.product.presentation.CreateProductSubmitMode
 import com.vitran.shop.feature.seller.product.presentation.CreateProductUiEffect
 import com.vitran.shop.feature.seller.product.presentation.CreateProductViewModel
@@ -155,17 +156,18 @@ fun CreateProductScreen(
             scope.launch {
                 when {
                     errors.title != null || errors.slug != null -> titleAnchor.bringIntoView()
-                    errors.price != null || errors.compareAt != null -> priceAnchor.bringIntoView()
+                    errors.price != null || errors.compareAt != null || errors.priceAfterOff != null ->
+                        priceAnchor.bringIntoView()
                     errors.category != null -> categoryAnchor.bringIntoView()
                 }
             }
             return
         }
         val nextStatus =
-            if (mode == ProductSaveMode.Publish) {
-                ProductPublishStatus.Active
-            } else {
-                ProductPublishStatus.Draft
+            when {
+                mode == ProductSaveMode.Publish -> ProductPublishStatus.Active
+                state.status == ProductPublishStatus.Inactive -> ProductPublishStatus.Inactive
+                else -> ProductPublishStatus.Draft
             }
         state =
             state.copy(
@@ -183,6 +185,12 @@ fun CreateProductScreen(
             seoDescription = state.seoDescription,
             noindex = state.noindex,
             slug = state.slug,
+            priceAfterOffText = state.priceAfterOff,
+            listingStatus = when (nextStatus) {
+                ProductPublishStatus.Active -> ProductListingStatus.Active
+                ProductPublishStatus.Draft -> ProductListingStatus.Draft
+                ProductPublishStatus.Inactive -> ProductListingStatus.Inactive
+            },
             mode =
                 if (mode == ProductSaveMode.Publish) {
                     CreateProductSubmitMode.Publish

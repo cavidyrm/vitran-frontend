@@ -22,8 +22,10 @@ import com.vitran.shop.feature.engagement.state.EngagementStateStore
 import com.vitran.shop.feature.engagement.state.SaveStatus
 import com.vitran.shop.feature.engagement.wishlist.data.repository.DefaultWishlistRepository
 import com.vitran.shop.feature.engagement.wishlist.domain.usecase.SetProductSavedUseCase
+import com.vitran.shop.feature.engagement.analytics.domain.model.UserEventMetadata
 import com.vitran.shop.feature.marketplace.product.domain.model.ProductId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
+import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -58,6 +60,25 @@ class AnalyticsAndVisitorSessionTest {
         assertTrue(shopEncoded.contains("\"event\""))
         assertTrue(shopEncoded.contains("product_view"))
         assertTrue(!shopEncoded.contains("event_type"))
+    }
+
+    @Test
+    fun viewProduct_sendsCategorySlugAndHomeMetadata() {
+        val json = createNetworkJson()
+        val encoded = json.encodeToString(
+            com.vitran.shop.feature.engagement.analytics.data.remote.dto.UserEventRequestDto.serializer(),
+            UserPersonalizationEvent.ViewProduct(
+                productId = ProductId(501),
+                shopId = ShopId(3),
+                categorySlug = CategorySlug("aa-1-2"),
+                metadata = UserEventMetadata(from = "home", sectionKey = "popular", position = 3),
+            ).toRequest("visitor-abc-123"),
+        )
+        assertTrue(encoded.contains("\"category_slug\":\"aa-1-2\""))
+        assertTrue(encoded.contains("\"section_key\":\"popular\""))
+        assertTrue(encoded.contains("\"from\":\"home\""))
+        assertTrue(encoded.contains("\"position\":3"))
+        assertTrue(!encoded.contains("search_query"))
     }
 
     @Test

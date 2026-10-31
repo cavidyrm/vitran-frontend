@@ -129,13 +129,13 @@ Presentation: per-entity pending flags set **before** the coroutine; ignore dupl
 | User personalization | `UserEventRequestDto` | `event_type` | Optional |
 | Shop | `ShopAnalyticsEventRequestDto` | `event` | None |
 
-Typed events only (`UserPersonalizationEvent`, `ShopAnalyticsEvent`). Context fields from verified examples: `session_id`, `product_id`, `shop_id`, `category_slug`, `city_id`. No invented `query` / `search_term`.
+Typed events only (`UserPersonalizationEvent`, `ShopAnalyticsEvent`). `POST /events` sends `session_id`, and when present `product_id`, `shop_id`, `category_slug`, `search_query`, and `metadata` (`from`, `section_key`, `position`). Shop analytics still sends `event`, `category_slug`, and `city_id`.
 
-`category_slug: 1` stays Gap 1: domain `CategorySlug` is String; analytics DTO uses `String?`.
+`category_slug` is a taxonomy string (example `aa-1-2`). Domain `CategorySlug` is String; the analytics DTO uses `String?`.
 
 `DefaultMarketplaceAnalyticsTracker` is application-scoped with named `engagementAnalyticsScope` (`SupervisorJob`). Failures log in debug, never fail save/follow/contact, no snackbar, no offline queue, no mutation retry.
 
-Emit once from ViewModel load-success / explicit action (`onProductDisplayed`, follow success, wishlist add success). Not unfollow/remove. Promotion / `search` / `click_category` are typed but **not emitted**.
+Emit `view_product` from PDP `onProductDisplayed` (with the product `category_slug`) and from a home rail open (with `metadata`). Emit `click_category` when a home category chip is tapped. Emit `search` with `search_query` when the shopper submits search. Follow success and wishlist add still emit. Not unfollow/remove. Promotion events stay typed and are not emitted.
 
 Contact already records shop analytics; `ContactProductUseCase` also sends best-effort `UserPersonalizationEvent.PurchaseIntent` for personalization only.
 

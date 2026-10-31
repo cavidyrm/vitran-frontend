@@ -4,7 +4,9 @@ import com.vitran.shop.core.network.logging.NetworkLogger
 import com.vitran.shop.feature.engagement.analytics.data.remote.ShopAnalyticsApi
 import com.vitran.shop.feature.engagement.analytics.data.remote.UserEventApi
 import com.vitran.shop.feature.engagement.analytics.data.remote.dto.ShopAnalyticsEventRequestDto
+import com.vitran.shop.feature.engagement.analytics.data.remote.dto.UserEventMetadataDto
 import com.vitran.shop.feature.engagement.analytics.data.remote.dto.UserEventRequestDto
+import com.vitran.shop.feature.engagement.analytics.domain.model.UserEventMetadata
 import com.vitran.shop.feature.engagement.analytics.domain.model.MarketplaceAnalyticsTracker
 import com.vitran.shop.feature.engagement.analytics.domain.model.ShopAnalyticsEvent
 import com.vitran.shop.feature.engagement.analytics.domain.model.UserPersonalizationEvent
@@ -54,6 +56,8 @@ internal fun UserPersonalizationEvent.toRequest(sessionId: String): UserEventReq
             sessionId = sessionId,
             productId = productId.value,
             shopId = shopId?.value,
+            categorySlug = categorySlug?.value,
+            metadata = metadata?.toDto(),
         )
         is UserPersonalizationEvent.ViewShop -> UserEventRequestDto(
             eventType = "view_shop",
@@ -77,15 +81,26 @@ internal fun UserPersonalizationEvent.toRequest(sessionId: String): UserEventReq
             productId = productId.value,
             shopId = shopId.value,
         )
-        UserPersonalizationEvent.Search -> UserEventRequestDto(
+        is UserPersonalizationEvent.Search -> UserEventRequestDto(
             eventType = "search",
             sessionId = sessionId,
+            searchQuery = searchQuery,
         )
-        UserPersonalizationEvent.ClickCategory -> UserEventRequestDto(
+        is UserPersonalizationEvent.ClickCategory -> UserEventRequestDto(
             eventType = "click_category",
             sessionId = sessionId,
+            categorySlug = categorySlug.value,
         )
     }
+
+private fun UserEventMetadata.toDto(): UserEventMetadataDto? {
+    if (from.isNullOrBlank() && sectionKey.isNullOrBlank() && position == null) return null
+    return UserEventMetadataDto(
+        from = from?.takeIf { it.isNotBlank() },
+        sectionKey = sectionKey?.takeIf { it.isNotBlank() },
+        position = position,
+    )
+}
 
 internal fun ShopAnalyticsEvent.toRequest(sessionId: String): ShopAnalyticsEventRequestDto =
     when (this) {

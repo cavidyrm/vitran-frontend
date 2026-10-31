@@ -1,9 +1,15 @@
 package com.vitran.shop.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -18,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -30,7 +37,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.collectAsState
 import com.vitran.shop.di.vitranKoinViewModel
 import com.vitran.shop.feature.home.presentation.HomeUiState
 import com.vitran.shop.feature.home.presentation.HomeViewModel
@@ -41,14 +48,14 @@ import com.vitran.shop.ui.components.OmniboxMobileSearchSheet
 import com.vitran.shop.ui.components.OmniboxResult
 import com.vitran.shop.ui.components.SiteFooter
 import com.vitran.shop.ui.components.SiteFooterLinkId
-import com.vitran.shop.ui.sections.home.HomeCategoriesRow
-import com.vitran.shop.ui.sections.home.HomeCategoryMosaicsRow
-import com.vitran.shop.ui.sections.home.HomeCategoryShopsFeed
 import com.vitran.shop.ui.sections.home.HomeHero
-import com.vitran.shop.ui.sections.home.rememberMockHomeCategories
-import com.vitran.shop.ui.sections.home.rememberMockHomeCategoryMosaics
-import com.vitran.shop.ui.sections.home.rememberMockHomeCategoryShopSections
+import com.vitran.shop.ui.sections.home.HomeServerFeed
 import com.vitran.shop.ui.shell.LocalDesktopLayout
+import com.vitran.shop.ui.theme.VitranSpacing
+import org.jetbrains.compose.resources.stringResource
+import vitranshop.shared.generated.resources.Res
+import vitranshop.shared.generated.resources.home_feed_error
+import vitranshop.shared.generated.resources.home_feed_retry
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
@@ -71,14 +78,16 @@ fun HomeScreen(
         priceLabel: String,
     ) -> Unit = { _, _, _, _, _ -> },
     onStoreOpen: (shopId: String) -> Unit = {},
+    onCategoryOpen: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
     onFooterLinkClick: (SiteFooterLinkId) -> Unit = {},
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = vitranKoinViewModel(),
 ) {
-    val homeState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    @Suppress("UNUSED_VARIABLE")
-    val useApiSections = (homeState as? HomeUiState.Content)?.useApiSections == true
+    LaunchedEffect(homeViewModel) {
+        homeViewModel.bind(this)
+    }
+    val homeState by homeViewModel.uiState.collectAsState()
     val isDesktop = LocalDesktopLayout.current
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
@@ -225,32 +234,52 @@ fun HomeScreen(
                         .zIndex(10f),
                 )
             }
-            HomeCategoriesRow(
-                categories = rememberMockHomeCategories(),
-                onCategoryClick = { /* mock — category landing not wired yet */ },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            HomeCategoryMosaicsRow(
-                mosaics = rememberMockHomeCategoryMosaics(),
-                onCategoryClick = { /* mock — category landing not wired yet */ },
-                onTileClick = { _, _ -> /* mock — subcategory landing not wired yet */ },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            HomeCategoryShopsFeed(
-                sections = rememberMockHomeCategoryShopSections(),
-                onCategoryClick = { /* mock — category landing not wired yet */ },
-                onShopClick = { _, shop -> onStoreOpen(shop.id) },
-                onProductClick = { _, shop, peek ->
-                    onProductOpen(
-                        peek.id,
-                        peek.title,
-                        peek.imageUrl,
-                        shop.name,
-                        peek.priceLabel,
+            when (val state = homeState) {
+                HomeUiState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = VitranSpacing.xxxl),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(VitranSpacing.xxl))
+                    }
+                }
+                is HomeUiState.Error -> {
+                    val message = state.message ?: stringResource(Res.string.home_feed_error)
+                    val retry = stringResource(Res.string.home_feed_retry)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(VitranSpacing.lg),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(text = message, color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            text = retry,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(top = VitranSpacing.sm)
+                                .clickable(role = Role.Button, onClick = homeViewModel::retry),
+                        )
+                    }
+                }
+                is HomeUiState.Content -> {
+                    HomeServerFeed(
+                        sections = state.screen.sections,
+                        loadingMoreKeys = state.loadingMoreKeys,
+                        onProductOpen = { id, title, imageUrl, priceLabel ->
+                            onProductOpen(id, title, imageUrl, "", priceLabel)
+                        },
+                        onShopOpen = onStoreOpen,
+                        onCategoryOpen = onCategoryOpen,
+                        onLoadMore = homeViewModel::loadMore,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = VitranSpacing.lg),
                     )
-                },
-                modifier = Modifier.fillMaxWidth(),
-            )
+                }
+            }
             SiteFooter(
                 onLinkClick = onFooterLinkClick,
                 onLanguageClick = { /* mock — language settings not wired yet */ },

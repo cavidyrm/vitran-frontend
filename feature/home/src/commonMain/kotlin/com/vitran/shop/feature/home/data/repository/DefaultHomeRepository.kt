@@ -7,10 +7,12 @@ import com.vitran.shop.feature.home.data.mapper.toDomain
 import com.vitran.shop.feature.home.data.remote.HomeApi
 import com.vitran.shop.feature.home.data.remote.dto.HomeSectionsDto
 import com.vitran.shop.feature.home.domain.model.HomeFeed
+import com.vitran.shop.feature.home.domain.model.HomeRail
 import com.vitran.shop.feature.home.domain.model.HomeScreen
-import com.vitran.shop.feature.home.domain.model.HomeSectionPage
 import com.vitran.shop.feature.home.domain.repository.HomeRepository
 import com.vitran.shop.feature.location.domain.model.CityId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 
@@ -27,7 +29,7 @@ internal class DefaultHomeRepository(
         val cityKey = cityId.toCityKey()
         if (!forceRefresh) {
             homeSnapshotDao.get(cityKey)?.let { entity ->
-                return AppResult.Success(entity.toDomain(json, cityId))
+                entity.toFeed(json, cityId)?.let { return AppResult.Success(it) }
             }
         }
 
@@ -46,9 +48,9 @@ internal class DefaultHomeRepository(
                 AppResult.Success(feed)
             }
             is AppResult.Failure -> {
-                val cached = homeSnapshotDao.get(cityKey)
+                val cached = homeSnapshotDao.get(cityKey)?.toFeed(json, cityId)
                 if (cached != null) {
-                    AppResult.Success(cached.toDomain(json, cityId))
+                    AppResult.Success(cached)
                 } else {
                     AppResult.Failure(result.error)
                 }
@@ -56,15 +58,28 @@ internal class DefaultHomeRepository(
         }
     }
 
-    override suspend fun getHomeScreen(cityId: CityId?): AppResult<HomeScreen> =
-        homeApi.getHomeScreen(cityId).mapSuccess { it.toDomain(cityId) }
+    override suspend fun getHomeScreen(
+        cityId: CityId?,
+        forceRefresh: Boolean,
+    ): AppResult<HomeScreen> = withContext(Dispatchers.Default) {
+        // Room is not on this path: the wasm SQLite worker resumes on the UI thread,
+        // and waiting for it there freezes the page. forceRefresh still always refetches.
+        when (val result = homeApi.getHomeScreen(cityId)) {
+            is AppResult.Success -> AppResult.Success(result.value.toDomain(cityId))
+            is AppResult.Failure -> result
+        }
+    }
 
-    override suspend fun getPickedForYouSection(
+    override suspend fun getHomeSection(
+        path: String,
         limit: Int,
         cursor: String?,
+        cursorParam: String,
         cityId: CityId?,
-    ): AppResult<HomeSectionPage> =
-        homeApi.getPickedForYouSection(limit, cursor, cityId).mapSuccess { it.section.toDomain() }
+    ): AppResult<HomeRail> =
+        withContext(Dispatchers.Default) {
+            homeApi.getHomeSection(path, limit, cursor, cursorParam, cityId).mapSuccess { it.section.toDomain() }
+        }
 }
 
 private inline fun <T, R> AppResult<T>.mapSuccess(transform: (T) -> R): AppResult<R> = when (this) {
@@ -74,7 +89,7 @@ private inline fun <T, R> AppResult<T>.mapSuccess(transform: (T) -> R): AppResul
 
 private fun CityId?.toCityKey(): String = this?.value?.toString().orEmpty()
 
-private fun HomeSnapshotEntity.toDomain(json: Json, cityId: CityId?): HomeFeed {
-    val sections = json.decodeFromString(HomeSectionsDto.serializer(), payloadJson)
-    return sections.toDomain(cityId)
-}
+private fun HomeSnapshotEntity.toFeed(json: Json, cityId: CityId?): HomeFeed? =
+    runCatching {
+        json.decodeFromString(HomeSectionsDto.serializer(), payloadJson).toDomain(cityId)
+    }.getOrNull()

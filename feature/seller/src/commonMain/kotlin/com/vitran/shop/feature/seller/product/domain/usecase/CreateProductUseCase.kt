@@ -3,6 +3,7 @@ package com.vitran.shop.feature.seller.product.domain.usecase
 import com.vitran.shop.core.domain.error.AppError
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.feature.seller.product.domain.model.CreateProductCommand
+import com.vitran.shop.feature.seller.product.domain.model.MaxProductImageBytes
 import com.vitran.shop.feature.seller.product.domain.model.SellerProductDetails
 import com.vitran.shop.feature.seller.product.domain.repository.SellerProductRepository
 
@@ -26,6 +27,16 @@ class CreateProductUseCase(
         val limit = maxImages?.takeIf { it > 0 } ?: DefaultMaxProductImages
         if (command.images.size > limit) {
             return AppResult.Failure(AppError.Validation(message = "images max $limit"))
+        }
+        val priceAfterOff = command.priceAfterOffAmount
+        if (priceAfterOff != null && priceAfterOff >= command.priceAmount) {
+            return AppResult.Failure(AppError.Validation(message = "price_after_off invalid"))
+        }
+        for (image in command.images) {
+            val size = image.sizeBytes
+            if (size != null && size > MaxProductImageBytes) {
+                return AppResult.Failure(AppError.Validation(message = "image too large"))
+            }
         }
         return sellerProductRepository.createProduct(
             command.copy(title = title, description = command.description.trim()),

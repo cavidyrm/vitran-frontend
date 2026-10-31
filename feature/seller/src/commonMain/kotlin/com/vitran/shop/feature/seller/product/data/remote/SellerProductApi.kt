@@ -141,6 +141,11 @@ internal suspend fun buildCreateMultipart(command: CreateProductCommand): MultiP
             command.seoDescription?.takeIf { it.isNotBlank() }?.let { append("seo_description", it) }
             command.noindex?.let { append("noindex", it.toString()) }
             command.slug?.takeIf { it.isNotBlank() }?.let { append("slug", it) }
+            command.priceAfterOffAmount?.let { append("price_after_off", it.toString()) }
+            command.listingStatus?.let { append("status", it.wireValue) }
+            command.attributes.forEach { (attributeSlug, valueSlug) ->
+                append("attributes[$attributeSlug]", valueSlug)
+            }
             append("active", command.desiredActive.toString())
             appendPreparedImages(imageParts)
         },
@@ -163,6 +168,16 @@ internal suspend fun buildUpdateMultipart(command: UpdateProductCommand): MultiP
             command.seoTitle?.let { append("seo_title", it) }
             command.seoDescription?.let { append("seo_description", it) }
             command.noindex?.let { append("noindex", it.toString()) }
+            command.slug?.takeIf { it.isNotBlank() }?.let { append("slug", it) }
+            when {
+                command.clearPriceAfterOff -> append("price_after_off", "")
+                command.priceAfterOffAmount != null ->
+                    append("price_after_off", command.priceAfterOffAmount.toString())
+            }
+            command.listingStatus?.let { append("status", it.wireValue) }
+            command.attributes?.forEach { (attributeSlug, valueSlug) ->
+                append("attributes[$attributeSlug]", valueSlug)
+            }
             command.desiredActive?.let { append("active", it.toString()) }
             appendPreparedImages(imageParts)
         },

@@ -24,6 +24,7 @@ import com.vitran.shop.feature.seller.product.domain.model.ProductImageId
 import com.vitran.shop.feature.seller.product.domain.model.ProductPublicationState
 import com.vitran.shop.feature.seller.product.domain.model.SellerProductDetails
 import com.vitran.shop.feature.seller.product.domain.model.SellerProductImage
+import com.vitran.shop.feature.seller.product.domain.model.ProductListingStatus
 import com.vitran.shop.feature.seller.product.domain.model.UpdateProductCommand
 import com.vitran.shop.feature.seller.product.domain.query.SellerProductActiveFilter
 import com.vitran.shop.feature.seller.product.domain.query.SellerProductListQuery
@@ -367,6 +368,62 @@ class SellerProductApiRepositoryTest {
         assertTrue(bodyText.contains("true"))
         assertTrue(bodyText.contains("name=slug") || bodyText.contains("name=\"slug\""))
         assertTrue(bodyText.contains("blue-widget"))
+    }
+
+    @Test
+    fun createProduct_sendsPriceAfterOffStatusAndAttributes() = runTest {
+        val bodyText =
+            readBodyText(
+                buildCreateMultipart(
+                    CreateProductCommand(
+                        shopId = ShopId(1),
+                        title = "Blue Widget",
+                        description = "Desc",
+                        priceAmount = 150000,
+                        category = CategorySlug("aa-1-2"),
+                        desiredActive = false,
+                        slug = "blue-widget",
+                        priceAfterOffAmount = 140000,
+                        listingStatus = ProductListingStatus.Draft,
+                        attributes = mapOf("color" to "color__blue"),
+                    ),
+                ),
+            )
+        assertTrue(bodyText.contains("name=price_after_off") || bodyText.contains("name=\"price_after_off\""))
+        assertTrue(bodyText.contains("140000"))
+        assertTrue(bodyText.contains("name=status") || bodyText.contains("name=\"status\""))
+        assertTrue(bodyText.contains("draft"))
+        assertTrue(bodyText.contains("name=slug") || bodyText.contains("name=\"slug\""))
+        assertTrue(bodyText.contains("blue-widget"))
+        assertTrue(
+            bodyText.contains("name=attributes[color]") || bodyText.contains("name=\"attributes[color]\""),
+            bodyText,
+        )
+        assertTrue(bodyText.contains("color__blue"))
+    }
+
+    @Test
+    fun updateProduct_sendsSlugPriceAfterOffStatusAndAttributes() = runTest {
+        val bodyText =
+            readBodyText(
+                buildUpdateMultipart(
+                    UpdateProductCommand(
+                        productId = ProductId(1),
+                        slug = "blue-widget",
+                        priceAfterOffAmount = 140000,
+                        listingStatus = ProductListingStatus.Inactive,
+                        attributes = mapOf("color" to "color__blue"),
+                    ),
+                ),
+            )
+        assertTrue(bodyText.contains("name=slug") || bodyText.contains("name=\"slug\""))
+        assertTrue(bodyText.contains("blue-widget"))
+        assertTrue(bodyText.contains("name=price_after_off") || bodyText.contains("name=\"price_after_off\""))
+        assertTrue(bodyText.contains("140000"))
+        assertTrue(bodyText.contains("inactive"))
+        assertTrue(
+            bodyText.contains("name=attributes[color]") || bodyText.contains("name=\"attributes[color]\""),
+        )
     }
 
     @Test

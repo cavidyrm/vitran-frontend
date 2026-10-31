@@ -57,6 +57,7 @@ import vitranshop.shared.generated.resources.admin_product_field_category_helper
 import vitranshop.shared.generated.resources.admin_product_field_category_placeholder
 import vitranshop.shared.generated.resources.admin_product_field_category_search
 import vitranshop.shared.generated.resources.admin_product_field_compare_at
+import vitranshop.shared.generated.resources.admin_product_field_price_after_off
 import vitranshop.shared.generated.resources.admin_product_field_description
 import vitranshop.shared.generated.resources.admin_product_field_price
 import vitranshop.shared.generated.resources.admin_product_field_price_placeholder
@@ -143,7 +144,6 @@ fun CreateProductMainColumn(
         if (!readOnly) {
             InventoryCard(state, onStateChange)
             ShippingCard(state, onStateChange)
-            CreateProductVariantsCard(state, onStateChange)
         }
         if (showSeo) {
             SeoCard(state, onStateChange, readOnly)
@@ -339,7 +339,7 @@ private fun PriceCard(
 ) {
     AdminFormCard(
         title = stringResource(Res.string.admin_product_card_price),
-        hasError = state.errors.price != null || state.errors.compareAt != null,
+        hasError = state.errors.price != null || state.errors.compareAt != null || state.errors.priceAfterOff != null,
         modifier = Modifier.bringIntoViewRequester(priceAnchor),
     ) {
         AdminTextField(
@@ -381,6 +381,22 @@ private fun PriceCard(
             AdminTextButton(
                 label = stringResource(Res.string.admin_product_add_compare_at),
                 onClick = { onStateChange(state.copy(compareAtEnabled = true).markedDirty()) },
+            )
+        }
+        if (!readOnly || state.priceAfterOff.isNotBlank()) {
+            AdminTextField(
+                label = stringResource(Res.string.admin_product_field_price_after_off),
+                value = state.priceAfterOff,
+                onValueChange = {
+                    onStateChange(
+                        state.copy(priceAfterOff = formatMoneyInput(it)).clearedErrors().markedDirty(),
+                    )
+                },
+                placeholder = stringResource(Res.string.admin_product_field_price_placeholder),
+                prefix = stringResource(Res.string.admin_product_price_prefix),
+                error = state.errors.priceAfterOff,
+                readOnly = readOnly,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
         }
     }

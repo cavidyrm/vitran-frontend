@@ -170,6 +170,7 @@ fun CategoriesProductRowsFeed(
 fun CategoriesProductRow(
     section: CategoriesProductRowSection,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
     onSectionClick: () -> Unit = {},
     onProductClick: (CategoriesProduct) -> Unit = {},
     onSaveClick: (CategoriesProduct) -> Unit = {},
@@ -252,6 +253,16 @@ fun CategoriesProductRow(
                         tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
+            }
+            if (!subtitle.isNullOrBlank()) {
+                Text(
+                    text = subtitle,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = horizontalPad, vertical = VitranSpacing.xs),
+                )
             }
 
             Spacer(modifier = Modifier.height(headerToCarousel))

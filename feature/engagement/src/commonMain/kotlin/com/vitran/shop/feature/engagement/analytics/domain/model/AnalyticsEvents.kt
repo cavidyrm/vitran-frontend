@@ -6,12 +6,24 @@ import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 
 /**
+ * Home-rail attribution copied onto `POST /events` `metadata`.
+ * [position] is the 1-based card index inside the rail.
+ */
+data class UserEventMetadata(
+    val from: String? = null,
+    val sectionKey: String? = null,
+    val position: Int? = null,
+)
+
+/**
  * User personalization — POST /events field `event_type`.
  */
 sealed interface UserPersonalizationEvent {
     data class ViewProduct(
         val productId: ProductId,
         val shopId: ShopId? = null,
+        val categorySlug: CategorySlug? = null,
+        val metadata: UserEventMetadata? = null,
     ) : UserPersonalizationEvent
 
     data class ViewShop(
@@ -32,11 +44,13 @@ sealed interface UserPersonalizationEvent {
         val shopId: ShopId,
     ) : UserPersonalizationEvent
 
-    /** Typed for transport; do not emit until query payload is verified. */
-    data object Search : UserPersonalizationEvent
+    data class Search(
+        val searchQuery: String,
+    ) : UserPersonalizationEvent
 
-    /** Typed for transport; do not emit until category field is verified. */
-    data object ClickCategory : UserPersonalizationEvent
+    data class ClickCategory(
+        val categorySlug: CategorySlug,
+    ) : UserPersonalizationEvent
 }
 
 /**

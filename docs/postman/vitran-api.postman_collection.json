@@ -2252,7 +2252,12 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"success\": true,\n  \"message\": \"لیست کالکشن‌ها با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"collections\": {\n      \"per_page\": 20,\n      \"has_more\": false,\n      \"results\": [\n        {\n          \"id\": 1,\n          \"shop_id\": 1,\n          \"title\": \"Summer\",\n          \"description\": \"Warm-weather picks\",\n          \"product_count\": 2,\n          \"created_at\": \"2026-06-09T12:00:00Z\",\n          \"updated_at\": \"2026-06-09T12:00:00Z\"\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
@@ -2271,7 +2276,12 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"success\": true,\n  \"message\": \"اطلاعات کالکشن با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"collection\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"title\": \"Summer\",\n      \"description\": \"Warm-weather picks\",\n      \"product_count\": 2,\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    },\n    \"products\": {\n      \"per_page\": 20,\n      \"has_more\": false,\n      \"results\": [\n        { \"id\": 4, \"title\": \"Blue Widget\", \"slug\": \"blue-widget\", \"price\": 150000 }\n      ]\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
@@ -2279,9 +2289,23 @@
         {
           "name": "Create collection",
           "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Summer\",\n  \"description\": \"Warm-weather picks\",\n  \"product_ids\": [4, 5]\n}"
@@ -2295,7 +2319,12 @@
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"success\": true,\n  \"message\": \"کالکشن با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"collection\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"title\": \"Summer\",\n      \"description\": \"Warm-weather picks\",\n      \"product_count\": 2,\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T12:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
@@ -2303,7 +2332,16 @@
         {
           "name": "List my collections",
           "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/seller/shops/1/collections?per_page=20",
@@ -2314,7 +2352,16 @@
         {
           "name": "Get my collection",
           "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/seller/shops/1/collections/1?per_page=20",
@@ -2325,9 +2372,23 @@
         {
           "name": "Update collection",
           "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Summer sale\",\n  \"product_ids\": [4]\n}"
@@ -2341,15 +2402,58 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"success\": true,\n  \"message\": \"کالکشن با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"collection\": {\n      \"id\": 1,\n      \"shop_id\": 1,\n      \"title\": \"Summer sale\",\n      \"product_count\": 1,\n      \"created_at\": \"2026-06-09T12:00:00Z\",\n      \"updated_at\": \"2026-06-09T14:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
         {
+          "name": "Add product to collection (after create)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_ids\": [\n    4,\n    5,\n    6\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/seller/shops/1/collections/1",
+            "description": "Step after 'Create product' when the shop has collections. 1) `GET /seller/shops/1/collections` to see them; 2) `GET .../collections/{id}` for current product ids; 3) PATCH with the full list: existing ids + the new product id (here 6). `product_ids` replaces membership; omitting it keeps it; max 500."
+          },
+          "response": []
+        },
+        {
           "name": "Delete collection",
           "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "DELETE",
             "header": [],
             "url": "{{baseUrl}}/api/v1/seller/shops/1/collections/1",
@@ -2361,7 +2465,12 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"success\": true,\n  \"message\": \"کالکشن با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
             }
           ]
@@ -2691,6 +2800,12 @@
                   "type": "text"
                 },
                 {
+                  "key": "slug",
+                  "value": "blue-widget",
+                  "type": "text",
+                  "description": "Optional URL slug. Auto-generated from the title when omitted."
+                },
+                {
                   "key": "category_slug",
                   "value": "aa-1-2",
                   "type": "text",
@@ -2706,6 +2821,12 @@
                   "value": "200000",
                   "type": "text",
                   "description": "Optional pre-discount price. Product is on sale when this is set and greater than `price`. Omit/empty to clear."
+                },
+                {
+                  "key": "price_after_off",
+                  "value": "140000",
+                  "type": "text",
+                  "description": "Optional selling price after discount. Must be lower than `price`. "
                 },
                 {
                   "key": "description",
@@ -2731,6 +2852,18 @@
                   "description": "true hides the public URL from search engines"
                 },
                 {
+                  "key": "status",
+                  "value": "draft",
+                  "type": "text",
+                  "description": "draft | active | inactive. Defaults to `draft`."
+                },
+                {
+                  "key": "attributes[color]",
+                  "value": "color__blue",
+                  "type": "text",
+                  "description": "Optional taxonomy attribute values as `attributes[<attribute_slug>]=<value_slug>` (repeat per attribute). See GET /categories/{slug}/attributes. "
+                },
+                {
                   "key": "active",
                   "value": "true",
                   "type": "text",
@@ -2740,12 +2873,12 @@
                   "key": "images",
                   "type": "file",
                   "src": [],
-                  "description": "Repeat for up to 5 images"
+                  "description": "Repeat for multiple files. Max count comes from the shop's plan; each file ≤ 5 MB (jpeg, png, webp, gif)."
                 }
               ]
             },
             "url": "{{baseUrl}}/api/v1/seller/shops/1/products",
-            "description": "Requires `user` token and shop ownership. Seller sets `active`; `confirmed=false` until admin approves. Send exactly one `category_slug` (taxonomy slug, or legacy `category_id` with the same value). It must belong to the shop. A second value or a comma-separated list is rejected. Optional `compare_at_price` marks a discount (same units as `price`)."
+            "description": "Requires `user` token and shop ownership. Seller sets `active`; `confirmed=false` until admin approves. Send exactly one `category_slug` (taxonomy slug, or legacy `category_id` with the same value). It must belong to the shop. A second value or a comma-separated list is rejected. Optional `compare_at_price` marks a discount (same units as `price`).\n\nOptional `slug`, `price_after_off` (< price), `status` (draft|active|inactive, default draft) and `attributes[<slug>]=<value_slug>`.\n\n**No variants:** products have no variant/option model; each product is a single priced item (use `attributes[...]` for taxonomy values).\n\n**Add to collection (optional step):** product creation has no collection field. If the shop has collections (`GET /seller/shops/{shop_id}/collections`), add the new product afterwards with `PATCH /seller/shops/{shop_id}/collections/{id}`. `product_ids` REPLACES the membership, so send the collection's existing product ids plus the new id (max 500). See 'Add product to collection (after create)' in Shop collections."
           },
           "response": [
             {
@@ -2787,6 +2920,12 @@
                   "type": "text"
                 },
                 {
+                  "key": "slug",
+                  "value": "blue-widget",
+                  "type": "text",
+                  "description": "Optional. Omit to keep the current slug."
+                },
+                {
                   "key": "category_slug",
                   "value": "aa-1-2",
                   "type": "text",
@@ -2802,6 +2941,12 @@
                   "value": "200000",
                   "type": "text",
                   "description": "Optional pre-discount price. Send empty to clear the discount. Omit the field to leave unchanged."
+                },
+                {
+                  "key": "price_after_off",
+                  "value": "140000",
+                  "type": "text",
+                  "description": "Optional selling price after discount. Must be lower than `price`. Send empty to clear; omit to leave unchanged."
                 },
                 {
                   "key": "description",
@@ -2827,6 +2972,18 @@
                   "description": "Omit to leave unchanged"
                 },
                 {
+                  "key": "status",
+                  "value": "draft",
+                  "type": "text",
+                  "description": "draft | active | inactive. Omit to leave unchanged."
+                },
+                {
+                  "key": "attributes[color]",
+                  "value": "color__blue",
+                  "type": "text",
+                  "description": "Optional taxonomy attribute values as `attributes[<attribute_slug>]=<value_slug>` (repeat per attribute). See GET /categories/{slug}/attributes. Omit to leave attributes unchanged."
+                },
+                {
                   "key": "active",
                   "value": "true",
                   "type": "text"
@@ -2835,12 +2992,12 @@
                   "key": "images",
                   "type": "file",
                   "src": [],
-                  "description": "Optional — appended; total ≤ 5"
+                  "description": "Repeat for multiple files. Max count comes from the shop's plan; each file ≤ 5 MB (jpeg, png, webp, gif). Appended to existing images."
                 }
               ]
             },
             "url": "{{baseUrl}}/api/v1/seller/products/1",
-            "description": "Sets `confirmed=false` (admin re-approval). Seller sets `active` in form. New `images` appended (total ≤ 5). `category_slug` is required and must be exactly one taxonomy slug that belongs to the shop."
+            "description": "Sets `confirmed=false` (admin re-approval). Seller sets `active` in form. New `images` appended (total ≤ 5). `category_slug` is required and must be exactly one taxonomy slug that belongs to the shop.\n\nOptional `slug`, `price_after_off`, `status`, `attributes[...]` as on create. Collection membership is managed via the collection PATCH endpoint, not here."
           },
           "response": [
             {
@@ -3635,28 +3792,70 @@
       "name": "Home",
       "item": [
         {
-          "name": "Get home screen (server-driven)",
+          "name": "Get home screen — guest",
           "request": {
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ],
-              "description": "Optional — omit token for guest rails. Authenticated rails (picked-for-you, following, for-you) are omitted for guests."
+              "type": "noauth"
             },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/home/screen?city_id=1",
-            "description": "Server-driven homepage. Render `data.screen.sections` in order; skip unknown `type`/`layout`. Seeded rails include `picked-for-you` (`source=product_matches`) when the user is logged in and has matches. Paginate a rail with `more.path`, e.g. `GET /home/sections/picked-for-you?cursor=…`."
+            "url": "{{baseUrl}}/api/v1/home/screen?city_id=1&platform=ios&app_version=1.4.0",
+            "description": "Server-driven home page for a guest (no token). Returns `data.screen` = `{ revision, city_id, sections[] }`.\n\nAlways send `platform` (ios|android|web) and `app_version` (e.g. 1.4.0) — rails restricted to a platform or a minimum app version are left out otherwise. `city_id` (or `city_slug`) filters products and shops.\n\nRender `sections` **in order**; switch on `type` (products|shops|categories|banners) and `layout` (horizontal_rail|grid|chips|hero); **skip unknown values**. Data is in `items.results`. Paginate with `more.path` + `items.next_cursor` while `items.has_more`.\n\nReliability: a rail whose data fails is dropped instead of failing the screen; rails that need an account (for-you, following, favourites, picked-for-you) are never sent to guests; `revision` is an opaque layout fingerprint — compare for equality only.\n\nGuide: docs/frontend/home-screen/README.md"
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK — guest",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"چیدمان صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"screen\": {\n      \"revision\": 3791378435928646,\n      \"city_id\": 1,\n      \"sections\": [\n        {\n          \"id\": 7,\n          \"key\": \"summer-campaign\",\n          \"type\": \"banners\",\n          \"layout\": \"hero\",\n          \"title\": \"حراج تابستانه\",\n          \"requires_auth\": false,\n          \"hide_when_empty\": true,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 5,\n            \"has_more\": false,\n            \"results\": [\n              {\n                \"id\": 12,\n                \"title\": \"تا ۴۰٪ تخفیف\",\n                \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n                \"action\": {\n                  \"type\": \"open_section\",\n                  \"value\": \"popular\"\n                }\n              },\n              {\n                \"id\": 13,\n                \"image_url\": \"https://cdn.vitran.ir/banners/shop.jpg\",\n                \"action\": {\n                  \"type\": \"open_shop\",\n                  \"value\": \"3\"\n                }\n              }\n            ]\n          },\n          \"tracking\": {\n            \"section_key\": \"summer-campaign\",\n            \"source\": \"banners\",\n            \"position\": 1\n          }\n        },\n        {\n          \"id\": 1,\n          \"key\": \"categories\",\n          \"type\": \"categories\",\n          \"layout\": \"chips\",\n          \"title\": \"دسته‌بندی‌ها\",\n          \"requires_auth\": false,\n          \"hide_when_empty\": false,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 8,\n            \"has_more\": false,\n            \"results\": [\n              {\n                \"slug\": \"aa-1\",\n                \"title\": \"Apparel & Accessories\",\n                \"name\": \"پوشاک\",\n                \"full_name\": \"Apparel & Accessories\",\n                \"icon_url\": \"https://cdn.vitran.ir/icons/aa-1.png\",\n                \"level\": 0,\n                \"is_leaf\": false,\n                \"sort_order\": 0\n              }\n            ]\n          },\n          \"tracking\": {\n            \"section_key\": \"categories\",\n            \"source\": \"categories\",\n            \"position\": 2\n          }\n        },\n        {\n          \"id\": 6,\n          \"key\": \"popular\",\n          \"type\": \"products\",\n          \"layout\": \"grid\",\n          \"title\": \"پربازدید\",\n          \"requires_auth\": false,\n          \"hide_when_empty\": false,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 12,\n            \"has_more\": true,\n            \"next_cursor\": \"pop:12\",\n            \"total\": 87,\n            \"results\": [\n              {\n                \"id\": 501,\n                \"shop_id\": 3,\n                \"title\": \"کاپشن زمستانه\",\n                \"slug\": \"winter-jacket\",\n                \"category_slug\": \"aa-1-2\",\n                \"price\": 890000,\n                \"status\": \"active\",\n                \"active\": true,\n                \"confirmed\": true,\n                \"noindex\": false,\n                \"rating_avg\": 4.5,\n                \"rating_count\": 12,\n                \"city_id\": 1,\n                \"city\": {\n                  \"id\": 1,\n                  \"name\": \"تهران\",\n                  \"slug\": \"tehran\"\n                },\n                \"category\": {\n                  \"slug\": \"aa-1-2\",\n                  \"title\": \"Coats & Jackets\",\n                  \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n                  \"level\": 2,\n                  \"is_leaf\": true,\n                  \"sort_order\": 0\n                },\n                \"main_image\": {\n                  \"id\": 9,\n                  \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                  \"sort_order\": 0,\n                  \"is_main\": true\n                },\n                \"images\": [\n                  {\n                    \"id\": 9,\n                    \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                    \"sort_order\": 0,\n                    \"is_main\": true\n                  }\n                ],\n                \"created_at\": \"2026-10-20T09:12:44Z\",\n                \"updated_at\": \"2026-10-28T17:03:10Z\",\n                \"compare_at_price\": 1200000\n              }\n            ]\n          },\n          \"more\": {\n            \"path\": \"/home/sections/popular\",\n            \"cursor_param\": \"cursor\"\n          },\n          \"tracking\": {\n            \"section_key\": \"popular\",\n            \"source\": \"popular_products\",\n            \"position\": 3\n          }\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 Bad platform",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"platform\",\n      \"messages\": [\n        \"پلتفرم باید ios، android یا web باشد.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/screen?platform=tv"
+              }
+            },
+            {
+              "name": "400 Bad app_version",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"app_version\",\n      \"messages\": [\n        \"نسخه برنامه نامعتبر است. نمونه: 1.4.0\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/screen?platform=ios&app_version=v1"
+              }
+            }
+          ]
         },
         {
-          "name": "Paginate home section (picked-for-you)",
+          "name": "Get home screen — logged in",
           "request": {
             "auth": {
               "type": "bearer",
@@ -3667,12 +3866,48 @@
                   "type": "string"
                 }
               ],
-              "description": "Required — `picked-for-you` is auth-only (product_matches source)."
+              "description": "User token. Without it this is the guest call."
             },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/home/sections/picked-for-you?limit=20",
-            "description": "Paginate the **picked-for-you** rail from `GET /home/screen` (`more.path`). Same products as **Product Matches — Me → List product matches**, shaped as a home section. Query: `limit` (default 12, max 100), optional `cursor` from previous `next_cursor`, optional `city_id`."
+            "url": "{{baseUrl}}/api/v1/home/screen?city_id=1&platform=android&app_version=1.4.0",
+            "description": "Same as the guest call, with `Authorization: Bearer {{accessToken}}`. Rails with `requires_auth: true` (for-you, following, picked-for-you, …) appear at their `sort_order` position and `revision` differs from the guest layout. Refetch the screen after login and logout."
+          },
+          "response": [
+            {
+              "name": "200 OK — logged in",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"چیدمان صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"screen\": {\n      \"revision\": 5089458452175228,\n      \"city_id\": 1,\n      \"sections\": [\n        {\n          \"id\": 7,\n          \"key\": \"summer-campaign\",\n          \"type\": \"banners\",\n          \"layout\": \"hero\",\n          \"title\": \"حراج تابستانه\",\n          \"requires_auth\": false,\n          \"hide_when_empty\": true,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 5,\n            \"has_more\": false,\n            \"results\": [\n              {\n                \"id\": 12,\n                \"title\": \"تا ۴۰٪ تخفیف\",\n                \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n                \"action\": {\n                  \"type\": \"open_section\",\n                  \"value\": \"popular\"\n                }\n              },\n              {\n                \"id\": 13,\n                \"image_url\": \"https://cdn.vitran.ir/banners/shop.jpg\",\n                \"action\": {\n                  \"type\": \"open_shop\",\n                  \"value\": \"3\"\n                }\n              }\n            ]\n          },\n          \"tracking\": {\n            \"section_key\": \"summer-campaign\",\n            \"source\": \"banners\",\n            \"position\": 1\n          }\n        },\n        {\n          \"id\": 1,\n          \"key\": \"categories\",\n          \"type\": \"categories\",\n          \"layout\": \"chips\",\n          \"title\": \"دسته‌بندی‌ها\",\n          \"requires_auth\": false,\n          \"hide_when_empty\": false,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 8,\n            \"has_more\": false,\n            \"results\": [\n              {\n                \"slug\": \"aa-1\",\n                \"title\": \"Apparel & Accessories\",\n                \"name\": \"پوشاک\",\n                \"full_name\": \"Apparel & Accessories\",\n                \"icon_url\": \"https://cdn.vitran.ir/icons/aa-1.png\",\n                \"level\": 0,\n                \"is_leaf\": false,\n                \"sort_order\": 0\n              }\n            ]\n          },\n          \"tracking\": {\n            \"section_key\": \"categories\",\n            \"source\": \"categories\",\n            \"position\": 2\n          }\n        },\n        {\n          \"id\": 3,\n          \"key\": \"for-you\",\n          \"type\": \"products\",\n          \"layout\": \"horizontal_rail\",\n          \"title\": \"برای شما\",\n          \"requires_auth\": true,\n          \"hide_when_empty\": true,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 12,\n            \"has_more\": false,\n            \"results\": [\n              {\n                \"id\": 77,\n                \"shop_id\": 3,\n                \"title\": \"کیف دستی چرم\",\n                \"slug\": \"leather-bag\",\n                \"category_slug\": \"aa-1-2\",\n                \"price\": 650000,\n                \"status\": \"active\",\n                \"active\": true,\n                \"confirmed\": true,\n                \"noindex\": false,\n                \"rating_avg\": 4.5,\n                \"rating_count\": 12,\n                \"city_id\": 1,\n                \"city\": {\n                  \"id\": 1,\n                  \"name\": \"تهران\",\n                  \"slug\": \"tehran\"\n                },\n                \"category\": {\n                  \"slug\": \"aa-1-2\",\n                  \"title\": \"Coats & Jackets\",\n                  \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n                  \"level\": 2,\n                  \"is_leaf\": true,\n                  \"sort_order\": 0\n                },\n                \"main_image\": {\n                  \"id\": 9,\n                  \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                  \"sort_order\": 0,\n                  \"is_main\": true\n                },\n                \"images\": [\n                  {\n                    \"id\": 9,\n                    \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                    \"sort_order\": 0,\n                    \"is_main\": true\n                  }\n                ],\n                \"created_at\": \"2026-10-20T09:12:44Z\",\n                \"updated_at\": \"2026-10-28T17:03:10Z\"\n              }\n            ]\n          },\n          \"more\": {\n            \"path\": \"/home/sections/for-you\",\n            \"cursor_param\": \"cursor\"\n          },\n          \"tracking\": {\n            \"section_key\": \"for-you\",\n            \"source\": \"personal_products\",\n            \"position\": 3\n          }\n        },\n        {\n          \"id\": 4,\n          \"key\": \"following\",\n          \"type\": \"products\",\n          \"layout\": \"horizontal_rail\",\n          \"title\": \"فروشگاه‌های دنبال‌شده\",\n          \"requires_auth\": true,\n          \"hide_when_empty\": true,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 12,\n            \"has_more\": true,\n            \"next_cursor\": \"488\",\n            \"total\": 31,\n            \"results\": [\n              {\n                \"id\": 512,\n                \"shop_id\": 3,\n                \"title\": \"پیراهن کتان\",\n                \"slug\": \"linen-shirt\",\n                \"category_slug\": \"aa-1-2\",\n                \"price\": 420000,\n                \"status\": \"active\",\n                \"active\": true,\n                \"confirmed\": true,\n                \"noindex\": false,\n                \"rating_avg\": 4.5,\n                \"rating_count\": 12,\n                \"city_id\": 1,\n                \"city\": {\n                  \"id\": 1,\n                  \"name\": \"تهران\",\n                  \"slug\": \"tehran\"\n                },\n                \"category\": {\n                  \"slug\": \"aa-1-2\",\n                  \"title\": \"Coats & Jackets\",\n                  \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n                  \"level\": 2,\n                  \"is_leaf\": true,\n                  \"sort_order\": 0\n                },\n                \"main_image\": {\n                  \"id\": 9,\n                  \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                  \"sort_order\": 0,\n                  \"is_main\": true\n                },\n                \"images\": [\n                  {\n                    \"id\": 9,\n                    \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                    \"sort_order\": 0,\n                    \"is_main\": true\n                  }\n                ],\n                \"created_at\": \"2026-10-20T09:12:44Z\",\n                \"updated_at\": \"2026-10-28T17:03:10Z\"\n              }\n            ]\n          },\n          \"more\": {\n            \"path\": \"/home/sections/following\",\n            \"cursor_param\": \"cursor\"\n          },\n          \"tracking\": {\n            \"section_key\": \"following\",\n            \"source\": \"following_products\",\n            \"position\": 4\n          }\n        },\n        {\n          \"id\": 6,\n          \"key\": \"popular\",\n          \"type\": \"products\",\n          \"layout\": \"grid\",\n          \"title\": \"پربازدید\",\n          \"requires_auth\": false,\n          \"hide_when_empty\": false,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 12,\n            \"has_more\": true,\n            \"next_cursor\": \"pop:12\",\n            \"total\": 87,\n            \"results\": [\n              {\n                \"id\": 501,\n                \"shop_id\": 3,\n                \"title\": \"کاپشن زمستانه\",\n                \"slug\": \"winter-jacket\",\n                \"category_slug\": \"aa-1-2\",\n                \"price\": 890000,\n                \"status\": \"active\",\n                \"active\": true,\n                \"confirmed\": true,\n                \"noindex\": false,\n                \"rating_avg\": 4.5,\n                \"rating_count\": 12,\n                \"city_id\": 1,\n                \"city\": {\n                  \"id\": 1,\n                  \"name\": \"تهران\",\n                  \"slug\": \"tehran\"\n                },\n                \"category\": {\n                  \"slug\": \"aa-1-2\",\n                  \"title\": \"Coats & Jackets\",\n                  \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n                  \"level\": 2,\n                  \"is_leaf\": true,\n                  \"sort_order\": 0\n                },\n                \"main_image\": {\n                  \"id\": 9,\n                  \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                  \"sort_order\": 0,\n                  \"is_main\": true\n                },\n                \"images\": [\n                  {\n                    \"id\": 9,\n                    \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                    \"sort_order\": 0,\n                    \"is_main\": true\n                  }\n                ],\n                \"created_at\": \"2026-10-20T09:12:44Z\",\n                \"updated_at\": \"2026-10-28T17:03:10Z\",\n                \"compare_at_price\": 1200000\n              }\n            ]\n          },\n          \"more\": {\n            \"path\": \"/home/sections/popular\",\n            \"cursor_param\": \"cursor\"\n          },\n          \"tracking\": {\n            \"section_key\": \"popular\",\n            \"source\": \"popular_products\",\n            \"position\": 5\n          }\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get home screen — client info in headers",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-App-Platform",
+                "value": "web"
+              },
+              {
+                "key": "X-App-Version",
+                "value": "3.0.0"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/home/screen?city_id=1",
+            "description": "`platform` / `app_version` can be sent as headers `X-App-Platform` / `X-App-Version` instead of query parameters (the query string wins when both are present). Useful for an HTTP client interceptor."
           },
           "response": [
             {
@@ -3686,12 +3921,261 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"slug\": \"picked-for-you\",\n      \"title\": \"Picked for you\",\n      \"type\": \"product_grid\",\n      \"layout\": \"horizontal_scroll\",\n      \"source\": \"product_matches\",\n      \"per_page\": 20,\n      \"has_more\": false,\n      \"results\": [\n        {\n          \"id\": 501,\n          \"title\": \"Jacket\",\n          \"price\": 890000,\n          \"compare_at_price\": 1200000\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"چیدمان صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"screen\": {\n      \"revision\": 1428866075226617,\n      \"city_id\": 1,\n      \"sections\": [\n        {\n          \"id\": 1,\n          \"key\": \"categories\",\n          \"type\": \"categories\",\n          \"layout\": \"chips\",\n          \"title\": \"دسته‌بندی‌ها\",\n          \"requires_auth\": false,\n          \"hide_when_empty\": false,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 8,\n            \"has_more\": false,\n            \"results\": [\n              {\n                \"slug\": \"aa-1\",\n                \"title\": \"Apparel & Accessories\",\n                \"name\": \"پوشاک\",\n                \"full_name\": \"Apparel & Accessories\",\n                \"icon_url\": \"https://cdn.vitran.ir/icons/aa-1.png\",\n                \"level\": 0,\n                \"is_leaf\": false,\n                \"sort_order\": 0\n              }\n            ]\n          },\n          \"tracking\": {\n            \"section_key\": \"categories\",\n            \"source\": \"categories\",\n            \"position\": 1\n          }\n        },\n        {\n          \"id\": 6,\n          \"key\": \"popular\",\n          \"type\": \"products\",\n          \"layout\": \"grid\",\n          \"title\": \"پربازدید\",\n          \"requires_auth\": false,\n          \"hide_when_empty\": false,\n          \"empty\": false,\n          \"items\": {\n            \"per_page\": 12,\n            \"has_more\": true,\n            \"next_cursor\": \"pop:12\",\n            \"total\": 87,\n            \"results\": [\n              {\n                \"id\": 501,\n                \"shop_id\": 3,\n                \"title\": \"کاپشن زمستانه\",\n                \"slug\": \"winter-jacket\",\n                \"category_slug\": \"aa-1-2\",\n                \"price\": 890000,\n                \"status\": \"active\",\n                \"active\": true,\n                \"confirmed\": true,\n                \"noindex\": false,\n                \"rating_avg\": 4.5,\n                \"rating_count\": 12,\n                \"city_id\": 1,\n                \"city\": {\n                  \"id\": 1,\n                  \"name\": \"تهران\",\n                  \"slug\": \"tehran\"\n                },\n                \"category\": {\n                  \"slug\": \"aa-1-2\",\n                  \"title\": \"Coats & Jackets\",\n                  \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n                  \"level\": 2,\n                  \"is_leaf\": true,\n                  \"sort_order\": 0\n                },\n                \"main_image\": {\n                  \"id\": 9,\n                  \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                  \"sort_order\": 0,\n                  \"is_main\": true\n                },\n                \"images\": [\n                  {\n                    \"id\": 9,\n                    \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                    \"sort_order\": 0,\n                    \"is_main\": true\n                  }\n                ],\n                \"created_at\": \"2026-10-20T09:12:44Z\",\n                \"updated_at\": \"2026-10-28T17:03:10Z\",\n                \"compare_at_price\": 1200000\n              }\n            ]\n          },\n          \"more\": {\n            \"path\": \"/home/sections/popular\",\n            \"cursor_param\": \"cursor\"\n          },\n          \"tracking\": {\n            \"section_key\": \"popular\",\n            \"source\": \"popular_products\",\n            \"position\": 2\n          }\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
         {
-          "name": "Get home feed",
+          "name": "Get home section — first page (popular)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Optional. Required only for rails with `requires_auth: true`."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home/sections/popular?city_id=1&platform=ios&app_version=1.4.0",
+            "description": "One rail by `key` (same object as an entry of `data.screen.sections`, without `tracking.position`). Use it for \"load more\", \"see all\" (banner `open_section`) and to refresh one rail.\n\nQuery: `limit` (default = the rail's `item_limit`, max 100), `cursor` (opaque `items.next_cursor` of the previous page), `city_id`, `platform`, `app_version`.\n\n`popular` ranks live products by product views of the last 30 days in the city (`POST /events` view_product); without view data it shows the newest products. Its cursor looks like `pop:12` — never build or change cursors.\n\nErrors: 401 rail needs login, 404 unknown / inactive / out of schedule / not for this platform or app version, 400 bad query."
+          },
+          "response": [
+            {
+              "name": "200 OK — first page",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"id\": 6,\n      \"key\": \"popular\",\n      \"type\": \"products\",\n      \"layout\": \"grid\",\n      \"title\": \"پربازدید\",\n      \"requires_auth\": false,\n      \"hide_when_empty\": false,\n      \"empty\": false,\n      \"items\": {\n        \"per_page\": 12,\n        \"has_more\": true,\n        \"next_cursor\": \"pop:12\",\n        \"total\": 87,\n        \"results\": [\n          {\n            \"id\": 501,\n            \"shop_id\": 3,\n            \"title\": \"کاپشن زمستانه\",\n            \"slug\": \"winter-jacket\",\n            \"category_slug\": \"aa-1-2\",\n            \"price\": 890000,\n            \"status\": \"active\",\n            \"active\": true,\n            \"confirmed\": true,\n            \"noindex\": false,\n            \"rating_avg\": 4.5,\n            \"rating_count\": 12,\n            \"city_id\": 1,\n            \"city\": {\n              \"id\": 1,\n              \"name\": \"تهران\",\n              \"slug\": \"tehran\"\n            },\n            \"category\": {\n              \"slug\": \"aa-1-2\",\n              \"title\": \"Coats & Jackets\",\n              \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n              \"level\": 2,\n              \"is_leaf\": true,\n              \"sort_order\": 0\n            },\n            \"main_image\": {\n              \"id\": 9,\n              \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n              \"sort_order\": 0,\n              \"is_main\": true\n            },\n            \"images\": [\n              {\n                \"id\": 9,\n                \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                \"sort_order\": 0,\n                \"is_main\": true\n              }\n            ],\n            \"created_at\": \"2026-10-20T09:12:44Z\",\n            \"updated_at\": \"2026-10-28T17:03:10Z\",\n            \"compare_at_price\": 1200000\n          }\n        ]\n      },\n      \"more\": {\n        \"path\": \"/home/sections/popular\",\n        \"cursor_param\": \"cursor\"\n      },\n      \"tracking\": {\n        \"section_key\": \"popular\",\n        \"source\": \"popular_products\"\n      }\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Unknown key",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"بخش صفحه اصلی یافت نشد.\",\n  \"code\": 404,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"_global\",\n      \"messages\": [\n        \"بخش صفحه اصلی یافت نشد.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/nope"
+              }
+            },
+            {
+              "name": "400 Bad limit",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"limit\",\n      \"messages\": [\n        \"تعداد آیتم بخش نامعتبر است.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/popular?limit=abc"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get home section — next page (cursor)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Optional."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home/sections/popular?cursor=pop:12&limit=12&city_id=1&platform=ios&app_version=1.4.0",
+            "description": "Next page of a paginating rail: send back `items.next_cursor` unchanged as `cursor`. Append `items.results`; stop when `has_more` is false (`next_cursor` is then \"\"). `total` is omitted when a cursor is sent."
+          },
+          "response": [
+            {
+              "name": "200 OK — page 2",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"id\": 6,\n      \"key\": \"popular\",\n      \"type\": \"products\",\n      \"layout\": \"grid\",\n      \"title\": \"پربازدید\",\n      \"requires_auth\": false,\n      \"hide_when_empty\": false,\n      \"empty\": false,\n      \"items\": {\n        \"per_page\": 12,\n        \"has_more\": true,\n        \"next_cursor\": \"pop:24\",\n        \"results\": [\n          {\n            \"id\": 388,\n            \"shop_id\": 3,\n            \"title\": \"کوله‌پشتی\",\n            \"slug\": \"backpack\",\n            \"category_slug\": \"aa-1-2\",\n            \"price\": 450000,\n            \"status\": \"active\",\n            \"active\": true,\n            \"confirmed\": true,\n            \"noindex\": false,\n            \"rating_avg\": 4.5,\n            \"rating_count\": 12,\n            \"city_id\": 1,\n            \"city\": {\n              \"id\": 1,\n              \"name\": \"تهران\",\n              \"slug\": \"tehran\"\n            },\n            \"category\": {\n              \"slug\": \"aa-1-2\",\n              \"title\": \"Coats & Jackets\",\n              \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n              \"level\": 2,\n              \"is_leaf\": true,\n              \"sort_order\": 0\n            },\n            \"main_image\": {\n              \"id\": 9,\n              \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n              \"sort_order\": 0,\n              \"is_main\": true\n            },\n            \"images\": [\n              {\n                \"id\": 9,\n                \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                \"sort_order\": 0,\n                \"is_main\": true\n              }\n            ],\n            \"created_at\": \"2026-10-20T09:12:44Z\",\n            \"updated_at\": \"2026-10-28T17:03:10Z\"\n          }\n        ]\n      },\n      \"more\": {\n        \"path\": \"/home/sections/popular\",\n        \"cursor_param\": \"cursor\"\n      },\n      \"tracking\": {\n        \"section_key\": \"popular\",\n        \"source\": \"popular_products\"\n      }\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 OK — last page",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"id\": 6,\n      \"key\": \"popular\",\n      \"type\": \"products\",\n      \"layout\": \"grid\",\n      \"title\": \"پربازدید\",\n      \"requires_auth\": false,\n      \"hide_when_empty\": false,\n      \"empty\": false,\n      \"items\": {\n        \"per_page\": 12,\n        \"has_more\": false,\n        \"next_cursor\": \"\",\n        \"results\": [\n          {\n            \"id\": 120,\n            \"shop_id\": 3,\n            \"title\": \"شال گردن\",\n            \"slug\": \"scarf\",\n            \"category_slug\": \"aa-1-2\",\n            \"price\": 180000,\n            \"status\": \"active\",\n            \"active\": true,\n            \"confirmed\": true,\n            \"noindex\": false,\n            \"rating_avg\": 4.5,\n            \"rating_count\": 12,\n            \"city_id\": 1,\n            \"city\": {\n              \"id\": 1,\n              \"name\": \"تهران\",\n              \"slug\": \"tehran\"\n            },\n            \"category\": {\n              \"slug\": \"aa-1-2\",\n              \"title\": \"Coats & Jackets\",\n              \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n              \"level\": 2,\n              \"is_leaf\": true,\n              \"sort_order\": 0\n            },\n            \"main_image\": {\n              \"id\": 9,\n              \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n              \"sort_order\": 0,\n              \"is_main\": true\n            },\n            \"images\": [\n              {\n                \"id\": 9,\n                \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                \"sort_order\": 0,\n                \"is_main\": true\n              }\n            ],\n            \"created_at\": \"2026-10-20T09:12:44Z\",\n            \"updated_at\": \"2026-10-28T17:03:10Z\"\n          }\n        ]\n      },\n      \"more\": {\n        \"path\": \"/home/sections/popular\",\n        \"cursor_param\": \"cursor\"\n      },\n      \"tracking\": {\n        \"section_key\": \"popular\",\n        \"source\": \"popular_products\"\n      }\n    }\n  },\n  \"errors\": []\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/popular?cursor=pop:84&limit=12&city_id=1&platform=ios&app_version=1.4.0"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get home section — needs login (for-you)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Required."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home/sections/for-you?city_id=1&platform=ios&app_version=1.4.0",
+            "description": "`for-you` (source personal_products) is filled from the user's favourite categories (learned from `POST /events` sent with a token and `category_slug`), de-duplicated and topped up with popular products, so it is full even for a new user. One page only (`has_more` always false).\n\nSame rules for `following`, `picked-for-you` (product_matches) and any rail with `requires_auth: true`: without a token → **401**."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"id\": 3,\n      \"key\": \"for-you\",\n      \"type\": \"products\",\n      \"layout\": \"horizontal_rail\",\n      \"title\": \"برای شما\",\n      \"requires_auth\": true,\n      \"hide_when_empty\": true,\n      \"empty\": false,\n      \"items\": {\n        \"per_page\": 12,\n        \"has_more\": false,\n        \"results\": [\n          {\n            \"id\": 77,\n            \"shop_id\": 3,\n            \"title\": \"کیف دستی چرم\",\n            \"slug\": \"leather-bag\",\n            \"category_slug\": \"aa-1-2\",\n            \"price\": 650000,\n            \"status\": \"active\",\n            \"active\": true,\n            \"confirmed\": true,\n            \"noindex\": false,\n            \"rating_avg\": 4.5,\n            \"rating_count\": 12,\n            \"city_id\": 1,\n            \"city\": {\n              \"id\": 1,\n              \"name\": \"تهران\",\n              \"slug\": \"tehran\"\n            },\n            \"category\": {\n              \"slug\": \"aa-1-2\",\n              \"title\": \"Coats & Jackets\",\n              \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n              \"level\": 2,\n              \"is_leaf\": true,\n              \"sort_order\": 0\n            },\n            \"main_image\": {\n              \"id\": 9,\n              \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n              \"sort_order\": 0,\n              \"is_main\": true\n            },\n            \"images\": [\n              {\n                \"id\": 9,\n                \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                \"sort_order\": 0,\n                \"is_main\": true\n              }\n            ],\n            \"created_at\": \"2026-10-20T09:12:44Z\",\n            \"updated_at\": \"2026-10-28T17:03:10Z\"\n          }\n        ]\n      },\n      \"more\": {\n        \"path\": \"/home/sections/for-you\",\n        \"cursor_param\": \"cursor\"\n      },\n      \"tracking\": {\n        \"section_key\": \"for-you\",\n        \"source\": \"personal_products\"\n      }\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "401 Guest",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"برای مشاهده این بخش باید وارد شوید.\",\n  \"code\": 401,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"_global\",\n      \"messages\": [\n        \"برای مشاهده این بخش باید وارد شوید.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/for-you"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get home section — banners rail",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home/sections/summer-campaign?platform=android&app_version=2.0",
+            "description": "A `banners` rail (layout `hero`). Each banner has `image_url` and a tap `action` `{type, value}`: none | open_product (id) | open_shop (id) | open_category (slug) | open_section (rail key) | open_url (http/https). Ignore unknown action types. Banners never paginate.\n\nA rail limited by platform / app version / schedule answers **404** to clients it is not for."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"id\": 7,\n      \"key\": \"summer-campaign\",\n      \"type\": \"banners\",\n      \"layout\": \"hero\",\n      \"title\": \"حراج تابستانه\",\n      \"requires_auth\": false,\n      \"hide_when_empty\": true,\n      \"empty\": false,\n      \"items\": {\n        \"per_page\": 5,\n        \"has_more\": false,\n        \"results\": [\n          {\n            \"id\": 12,\n            \"title\": \"تا ۴۰٪ تخفیف\",\n            \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n            \"action\": {\n              \"type\": \"open_section\",\n              \"value\": \"popular\"\n            }\n          },\n          {\n            \"id\": 13,\n            \"image_url\": \"https://cdn.vitran.ir/banners/shop.jpg\",\n            \"action\": {\n              \"type\": \"open_shop\",\n              \"value\": \"3\"\n            }\n          }\n        ]\n      },\n      \"tracking\": {\n        \"section_key\": \"summer-campaign\",\n        \"source\": \"banners\"\n      }\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Not for this platform",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"بخش صفحه اصلی یافت نشد.\",\n  \"code\": 404,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"_global\",\n      \"messages\": [\n        \"بخش صفحه اصلی یافت نشد.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/summer-campaign?platform=web"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get home section — cursor on a one-page rail",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home/sections/featured?cursor=12&platform=ios&app_version=1.4.0",
+            "description": "Rails backed by featured_products, personal_products, product_matches, categories and banners have a single page. A `cursor` returns an empty last page — never page one again — so a stale cursor cannot create duplicates."
+          },
+          "response": [
+            {
+              "name": "200 OK — empty last page",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"id\": 2,\n      \"key\": \"featured\",\n      \"type\": \"products\",\n      \"layout\": \"horizontal_rail\",\n      \"title\": \"ویژه\",\n      \"requires_auth\": false,\n      \"hide_when_empty\": true,\n      \"empty\": true,\n      \"items\": {\n        \"per_page\": 12,\n        \"has_more\": false,\n        \"results\": []\n      },\n      \"more\": {\n        \"path\": \"/home/sections/featured\",\n        \"cursor_param\": \"cursor\"\n      },\n      \"tracking\": {\n        \"section_key\": \"featured\",\n        \"source\": \"featured_products\"\n      }\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get home feed (legacy)",
           "request": {
             "auth": {
               "type": "bearer",
@@ -3707,7 +4191,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/home?city_id=1",
-            "description": "Homepage feed (categories, featured products, boosts). Optional JWT adds personalized `following` preview (up to 12 latest products from followed shops). Optional `city_id` filters by city."
+            "description": "**Legacy** — kept for old app builds; new screens use `GET /home/screen`. Fixed object with `featured`, `personal`, `following`, `popular`, `categories` (no pagination, not affected by the admin CMS). Optional JWT fills `personal` and `following` (omitted when empty). Optional `city_id` / `city_slug`. Guide: docs/frontend/home-screen/legacy.md"
           },
           "response": [
             {
@@ -3721,12 +4205,12 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home\": {\n      \"featured\": [],\n      \"popular\": [],\n      \"categories\": [],\n      \"following\": [],\n      \"personal\": []\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست محصولات با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home\": {\n      \"featured\": [],\n      \"personal\": [\n        {\n          \"id\": 77,\n          \"shop_id\": 3,\n          \"title\": \"کیف دستی چرم\",\n          \"slug\": \"leather-bag\",\n          \"category_slug\": \"aa-1-2\",\n          \"price\": 650000,\n          \"status\": \"active\",\n          \"active\": true,\n          \"confirmed\": true,\n          \"noindex\": false,\n          \"rating_avg\": 4.5,\n          \"rating_count\": 12,\n          \"city_id\": 1,\n          \"city\": {\n            \"id\": 1,\n            \"name\": \"تهران\",\n            \"slug\": \"tehran\"\n          },\n          \"category\": {\n            \"slug\": \"aa-1-2\",\n            \"title\": \"Coats & Jackets\",\n            \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n            \"level\": 2,\n            \"is_leaf\": true,\n            \"sort_order\": 0\n          },\n          \"main_image\": {\n            \"id\": 9,\n            \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n            \"sort_order\": 0,\n            \"is_main\": true\n          },\n          \"images\": [\n            {\n              \"id\": 9,\n              \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n              \"sort_order\": 0,\n              \"is_main\": true\n            }\n          ],\n          \"created_at\": \"2026-10-20T09:12:44Z\",\n          \"updated_at\": \"2026-10-28T17:03:10Z\"\n        }\n      ],\n      \"popular\": [\n        {\n          \"id\": 501,\n          \"shop_id\": 3,\n          \"title\": \"کاپشن زمستانه\",\n          \"slug\": \"winter-jacket\",\n          \"category_slug\": \"aa-1-2\",\n          \"price\": 890000,\n          \"status\": \"active\",\n          \"active\": true,\n          \"confirmed\": true,\n          \"noindex\": false,\n          \"rating_avg\": 4.5,\n          \"rating_count\": 12,\n          \"city_id\": 1,\n          \"city\": {\n            \"id\": 1,\n            \"name\": \"تهران\",\n            \"slug\": \"tehran\"\n          },\n          \"category\": {\n            \"slug\": \"aa-1-2\",\n            \"title\": \"Coats & Jackets\",\n            \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n            \"level\": 2,\n            \"is_leaf\": true,\n            \"sort_order\": 0\n          },\n          \"main_image\": {\n            \"id\": 9,\n            \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n            \"sort_order\": 0,\n            \"is_main\": true\n          },\n          \"images\": [\n            {\n              \"id\": 9,\n              \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n              \"sort_order\": 0,\n              \"is_main\": true\n            }\n          ],\n          \"created_at\": \"2026-10-20T09:12:44Z\",\n          \"updated_at\": \"2026-10-28T17:03:10Z\",\n          \"compare_at_price\": 1200000\n        }\n      ],\n      \"categories\": [\n        {\n          \"slug\": \"aa-1\",\n          \"title\": \"Apparel & Accessories\",\n          \"name\": \"پوشاک\",\n          \"full_name\": \"Apparel & Accessories\",\n          \"icon_url\": \"https://cdn.vitran.ir/icons/aa-1.png\",\n          \"level\": 0,\n          \"is_leaf\": false,\n          \"sort_order\": 0\n        }\n      ]\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
         {
-          "name": "Get home feed (custom sections)",
+          "name": "Get home feed — custom sections (legacy)",
           "request": {
             "auth": {
               "type": "bearer",
@@ -3741,9 +4225,41 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10&product_matches=12",
-            "description": "Build a personalized home screen by requesting only the sections you need. Each section name is a query param with a limit (default 12, max 100).\n\n**Product sections:** `latest_products`, `following_products`, `favorite_products`, `featured_products`, `personal_products`, `popular_products`, `product_matches` (picked-for-you; requires auth + saved sizing profile).\n\n**Shop sections:** `latest_shops`, `following_shops` (shops you follow), `favorite_shops` (top live shops by rating and analytics views — discovery, not your follow list).\n\n**City filter:** `city_id` / `city_slug` — limits products and shops to those serving the city.\n\n**Pagination:** `{section}_cursor` for cursor mode on paginated sections (e.g. `following_products_cursor`). Response: `data.feed.sections.{section}` with `{ per_page, has_more, next_cursor?, results }`.\n\nReplaces the removed `/me/home/following-products` route — use `following_products` here instead."
+            "description": "**Legacy** — new screens use `GET /home/screen`. Build a personalized home screen by requesting only the sections you need. Each section name is a query param with a limit (default 12, max 100).\n\n**Product sections:** `latest_products`, `following_products`, `favorite_products`, `featured_products`, `personal_products`, `popular_products`, `product_matches` (picked-for-you; requires auth + saved sizing profile).\n\n**Shop sections:** `latest_shops`, `following_shops` (shops you follow), `favorite_shops` (top live shops by rating and analytics views — discovery, not your follow list).\n\n**City filter:** `city_id` / `city_slug` — limits products and shops to those serving the city.\n\n**Pagination:** `{section}_cursor` for cursor mode on paginated sections (e.g. `following_products_cursor`). Response: `data.feed.sections.{section}` with `{ per_page, has_more, next_cursor?, results }`.\n\nReplaces the removed `/me/home/following-products` route — use `following_products` here instead.\n\n`popular_products` is ranked by 30-day product views (cursor `pop:<n>`), `personal_products` is de-duplicated and topped up with popular products. Errors: 401 without a token; 400 when no section is given or a size is not a positive integer. Guide: docs/frontend/home-screen/legacy.md"
           },
-          "response": []
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"فید صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"feed\": {\n      \"city_id\": 1,\n      \"sections\": {\n        \"latest_products\": {\n          \"per_page\": 12,\n          \"has_more\": true,\n          \"next_cursor\": \"412\",\n          \"total\": 87,\n          \"results\": [\n            {\n              \"id\": 501,\n              \"shop_id\": 3,\n              \"title\": \"کاپشن زمستانه\",\n              \"slug\": \"winter-jacket\",\n              \"category_slug\": \"aa-1-2\",\n              \"price\": 890000,\n              \"status\": \"active\",\n              \"active\": true,\n              \"confirmed\": true,\n              \"noindex\": false,\n              \"rating_avg\": 4.5,\n              \"rating_count\": 12,\n              \"city_id\": 1,\n              \"city\": {\n                \"id\": 1,\n                \"name\": \"تهران\",\n                \"slug\": \"tehran\"\n              },\n              \"category\": {\n                \"slug\": \"aa-1-2\",\n                \"title\": \"Coats & Jackets\",\n                \"full_name\": \"Apparel & Accessories > Clothing > Coats & Jackets\",\n                \"level\": 2,\n                \"is_leaf\": true,\n                \"sort_order\": 0\n              },\n              \"main_image\": {\n                \"id\": 9,\n                \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                \"sort_order\": 0,\n                \"is_main\": true\n              },\n              \"images\": [\n                {\n                  \"id\": 9,\n                  \"url\": \"https://cdn.vitran.ir/p/9.jpg\",\n                  \"sort_order\": 0,\n                  \"is_main\": true\n                }\n              ],\n              \"created_at\": \"2026-10-20T09:12:44Z\",\n              \"updated_at\": \"2026-10-28T17:03:10Z\",\n              \"compare_at_price\": 1200000\n            }\n          ]\n        },\n        \"following_shops\": {\n          \"per_page\": 8,\n          \"has_more\": false,\n          \"next_cursor\": \"\",\n          \"total\": 1,\n          \"results\": [\n            {\n              \"id\": 3,\n              \"title\": \"فروشگاه نمونه\",\n              \"slug\": \"sample-shop\",\n              \"type\": \"retailer\",\n              \"city_id\": 1,\n              \"active\": true,\n              \"confirmed\": true,\n              \"avatar_url\": \"https://cdn.vitran.ir/s/3.jpg\",\n              \"rating_avg\": 4.6,\n              \"rating_count\": 40,\n              \"share_url\": \"https://vitran.ir/shops/sample-shop\"\n            }\n          ]\n        },\n        \"product_matches\": {\n          \"per_page\": 12,\n          \"has_more\": false,\n          \"results\": []\n        }\n      }\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 No section",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"_global\",\n      \"messages\": [\n        \"حداقل یک بخش فید باید مشخص شود.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/me/home/feed"
+              }
+            }
+          ]
         },
         {
           "name": "Track user event",
@@ -3756,7 +4272,7 @@
               }
             ],
             "url": "{{baseUrl}}/api/v1/events",
-            "description": "Optional JWT. Personalization/analytics events. Types: view_product, search, click_category, wishlist, purchase_intent, follow_shop, view_shop.",
+            "description": "Optional JWT. Feeds the home rails: `view_product` events rank the **popular** rail (last 30 days, per city); events sent **with a token and `category_slug`** teach the **for-you** rail the user's favourite categories.\n\nTypes: view_product (product_id, shop_id, category_slug) · view_shop (shop_id) · click_category (category_slug) · search (search_query) · wishlist · follow_shop · purchase_intent. Put the home `tracking` object in `metadata` to attribute a view to a rail. Guide: docs/frontend/home-screen/legacy.md",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -3770,7 +4286,12 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_type\": \"view_product\",\n  \"session_id\": \"visitor-abc-123\",\n  \"product_id\": 1,\n  \"shop_id\": 1\n}"
+              "raw": "{\n  \"event_type\": \"view_product\",\n  \"session_id\": \"visitor-abc-123\",\n  \"product_id\": 501,\n  \"shop_id\": 3,\n  \"category_slug\": \"aa-1-2\",\n  \"metadata\": {\n    \"from\": \"home\",\n    \"section_key\": \"popular\",\n    \"position\": 3\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": [
@@ -3785,7 +4306,627 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"event\": {\n      \"id\": 1,\n      \"event_type\": \"view_product\",\n      \"product_id\": 1\n    }\n  },\n  \"errors\": []\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"عملیات با موفقیت انجام شد\",\n  \"code\": 1,\n  \"data\": {\n    \"event\": {\n      \"id\": 23,\n      \"event_type\": \"view_product\",\n      \"product_id\": 501,\n      \"shop_id\": 3,\n      \"category_slug\": \"aa-1-2\",\n      \"session_id\": \"visitor-abc-123\",\n      \"metadata\": {\n        \"from\": \"home\",\n        \"section_key\": \"popular\",\n        \"position\": 3\n      },\n      \"created_at\": \"2026-10-31T20:29:10Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 Unknown event_type",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"event_type\",\n      \"messages\": [\n        \"نوع رویداد نامعتبر است.\"\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Server-driven home page (like a storefront app home): the API decides which rails appear, in what order, with which data. Use `GET /home/screen` + `GET /home/sections/:key`; `GET /home` and `GET /me/home/feed` are legacy. Set `accessToken` to a user token for the logged-in calls. Guide: docs/frontend/home-screen/README.md"
+    },
+    {
+      "name": "Home — Admin",
+      "description": "CMS for the server-driven home page: rails (sections) and banners, changed without an app release. Needs an admin token in `accessToken` (deleting a section needs a super-admin). Guide: docs/frontend/home-screen/admin.md",
+      "item": [
+        {
+          "name": "List home sections",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections",
+            "description": "All rails, active or not, ordered by `sort_order` then `id`. The public screen only shows active rails inside their schedule and matching the client."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست بخش‌های صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_sections\": [\n      {\n        \"id\": 1,\n        \"slug\": \"categories\",\n        \"source\": \"categories\",\n        \"item_kind\": \"categories\",\n        \"layout\": \"chips\",\n        \"title\": \"دسته‌بندی‌ها\",\n        \"item_limit\": 8,\n        \"sort_order\": 1,\n        \"active\": true,\n        \"audience\": \"all\",\n        \"hide_when_empty\": false,\n        \"platforms\": [],\n        \"created_at\": \"2026-01-01T00:00:00Z\",\n        \"updated_at\": \"2026-01-01T00:00:00Z\"\n      },\n      {\n        \"id\": 2,\n        \"slug\": \"featured\",\n        \"source\": \"featured_products\",\n        \"item_kind\": \"products\",\n        \"layout\": \"horizontal_rail\",\n        \"title\": \"ویژه\",\n        \"item_limit\": 12,\n        \"sort_order\": 2,\n        \"active\": true,\n        \"audience\": \"all\",\n        \"hide_when_empty\": true,\n        \"platforms\": [],\n        \"created_at\": \"2026-01-01T00:00:00Z\",\n        \"updated_at\": \"2026-01-01T00:00:00Z\"\n      },\n      {\n        \"id\": 14,\n        \"slug\": \"summer-campaign\",\n        \"source\": \"banners\",\n        \"item_kind\": \"banners\",\n        \"layout\": \"hero\",\n        \"title\": \"حراج تابستانه\",\n        \"item_limit\": 5,\n        \"sort_order\": 2,\n        \"active\": true,\n        \"audience\": \"all\",\n        \"hide_when_empty\": true,\n        \"platforms\": [\n          \"ios\",\n          \"android\"\n        ],\n        \"starts_at\": \"2026-07-01T00:00:00Z\",\n        \"ends_at\": \"2026-08-01T00:00:00Z\",\n        \"created_at\": \"2026-06-20T10:00:00Z\",\n        \"updated_at\": \"2026-06-20T10:00:00Z\"\n      },\n      {\n        \"id\": 3,\n        \"slug\": \"for-you\",\n        \"source\": \"personal_products\",\n        \"item_kind\": \"products\",\n        \"layout\": \"horizontal_rail\",\n        \"title\": \"برای شما\",\n        \"item_limit\": 12,\n        \"sort_order\": 3,\n        \"active\": true,\n        \"audience\": \"authenticated\",\n        \"hide_when_empty\": true,\n        \"platforms\": [],\n        \"created_at\": \"2026-01-01T00:00:00Z\",\n        \"updated_at\": \"2026-01-01T00:00:00Z\"\n      },\n      {\n        \"id\": 6,\n        \"slug\": \"popular\",\n        \"source\": \"popular_products\",\n        \"item_kind\": \"products\",\n        \"layout\": \"grid\",\n        \"title\": \"پربازدید\",\n        \"item_limit\": 12,\n        \"sort_order\": 6,\n        \"active\": true,\n        \"audience\": \"all\",\n        \"hide_when_empty\": false,\n        \"platforms\": [],\n        \"created_at\": \"2026-01-01T00:00:00Z\",\n        \"updated_at\": \"2026-01-01T00:00:00Z\"\n      }\n    ]\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create home section",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections",
+            "description": "Required: `slug` (3–100, lowercase, unique, cannot change later — it becomes the public `key`), `source`, `layout`, `title`.\n\n`source`: featured_products | personal_products | following_products | popular_products | latest_products | favorite_products | product_matches | latest_shops | following_shops | favorite_shops | categories | banners. Rails with user-only sources (personal, following, favorite_products, product_matches, following_shops) are never shown to guests.\n\n`layout`: horizontal_rail | grid | chips | hero. `audience`: all | authenticated | guest (default all). `item_limit` 1–100 (default 12). `platforms`: subset of ios|android|web (empty = all). `min_app_version`: e.g. 2.0.0. `starts_at`/`ends_at`: RFC 3339, empty = open ended, end exclusive. See docs/frontend/home-screen/admin.md",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"latest-picks\",\n  \"source\": \"latest_products\",\n  \"layout\": \"horizontal_rail\",\n  \"title\": \"تازه‌ها\",\n  \"item_limit\": 12,\n  \"sort_order\": 6,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true,\n  \"platforms\": [],\n  \"min_app_version\": \"\",\n  \"starts_at\": \"\",\n  \"ends_at\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 8,\n      \"slug\": \"latest-picks\",\n      \"source\": \"latest_products\",\n      \"item_kind\": \"products\",\n      \"layout\": \"horizontal_rail\",\n      \"title\": \"تازه‌ها\",\n      \"item_limit\": 12,\n      \"sort_order\": 6,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"platforms\": [],\n      \"created_at\": \"2026-06-20T10:00:00Z\",\n      \"updated_at\": \"2026-06-20T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "409 Slug exists",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"بخش با این نامک وجود دارد.\",\n  \"code\": 409,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"slug\",\n      \"messages\": [\n        \"بخش با این نامک وجود دارد.\"\n      ]\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Invalid source",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"source\",\n      \"messages\": [\n        \"منبع داده بخش نامعتبر است.\"\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create banners section (campaign)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections",
+            "description": "A `banners` rail for a campaign: iOS + Android only, July only. Add banners with **Create home banner**. Use `hide_when_empty: true` so the rail disappears when no banner is live.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"summer-campaign\",\n  \"source\": \"banners\",\n  \"layout\": \"hero\",\n  \"title\": \"حراج تابستانه\",\n  \"item_limit\": 5,\n  \"sort_order\": 2,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true,\n  \"platforms\": [\n    \"ios\",\n    \"android\"\n  ],\n  \"starts_at\": \"2026-07-01T00:00:00Z\",\n  \"ends_at\": \"2026-08-01T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 14,\n      \"slug\": \"summer-campaign\",\n      \"source\": \"banners\",\n      \"item_kind\": \"banners\",\n      \"layout\": \"hero\",\n      \"title\": \"حراج تابستانه\",\n      \"item_limit\": 5,\n      \"sort_order\": 2,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"platforms\": [\n        \"ios\",\n        \"android\"\n      ],\n      \"starts_at\": \"2026-07-01T00:00:00Z\",\n      \"ends_at\": \"2026-08-01T00:00:00Z\",\n      \"created_at\": \"2026-06-20T10:00:00Z\",\n      \"updated_at\": \"2026-06-20T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get home section",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections/14",
+            "description": "One rail by numeric id."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 14,\n      \"slug\": \"summer-campaign\",\n      \"source\": \"banners\",\n      \"item_kind\": \"banners\",\n      \"layout\": \"hero\",\n      \"title\": \"حراج تابستانه\",\n      \"item_limit\": 5,\n      \"sort_order\": 2,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"platforms\": [\n        \"ios\",\n        \"android\"\n      ],\n      \"starts_at\": \"2026-07-01T00:00:00Z\",\n      \"ends_at\": \"2026-08-01T00:00:00Z\",\n      \"created_at\": \"2026-06-20T10:00:00Z\",\n      \"updated_at\": \"2026-06-20T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Not found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"بخش صفحه اصلی یافت نشد.\",\n  \"code\": 404,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"_global\",\n      \"messages\": [\n        \"بخش صفحه اصلی یافت نشد.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/999"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update home section",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections/14",
+            "description": "Partial update: omit a field to keep it. `\"\"` clears `starts_at`, `ends_at` or `min_app_version`; `[]` for `platforms` means all. `slug` cannot change. Any change moves the screen `revision`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"حراج تابستانه ۱۴۰۵\",\n  \"ends_at\": \"2026-09-01T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 14,\n      \"slug\": \"summer-campaign\",\n      \"source\": \"banners\",\n      \"item_kind\": \"banners\",\n      \"layout\": \"hero\",\n      \"title\": \"حراج تابستانه ۱۴۰۵\",\n      \"item_limit\": 5,\n      \"sort_order\": 2,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"platforms\": [\n        \"ios\",\n        \"android\"\n      ],\n      \"starts_at\": \"2026-07-01T00:00:00Z\",\n      \"ends_at\": \"2026-09-01T00:00:00Z\",\n      \"created_at\": \"2026-06-20T10:00:00Z\",\n      \"updated_at\": \"2026-07-15T08:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 Bad schedule",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"ends_at\",\n      \"messages\": [\n        \"زمان پایان باید بعد از زمان شروع باشد.\"\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete home section (super-admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections/14",
+            "description": "Deletes the rail and its banners. Prefer `PATCH {\"active\": false}` to hide a rail you may need again."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Not found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"بخش صفحه اصلی یافت نشد.\",\n  \"code\": 404,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"_global\",\n      \"messages\": [\n        \"بخش صفحه اصلی یافت نشد.\"\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List home banners of a section",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections/14/banners",
+            "description": "All banners of a `banners` rail (live or not), by `sort_order`. The public screen shows only active banners inside their schedule."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"لیست بنرهای صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_banners\": [\n      {\n        \"id\": 12,\n        \"section_id\": 14,\n        \"title\": \"تا ۴۰٪ تخفیف\",\n        \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n        \"action\": {\n          \"type\": \"open_section\",\n          \"value\": \"popular\"\n        },\n        \"sort_order\": 1,\n        \"active\": true,\n        \"created_at\": \"2026-06-20T10:05:00Z\",\n        \"updated_at\": \"2026-06-20T10:05:00Z\"\n      },\n      {\n        \"id\": 13,\n        \"section_id\": 14,\n        \"image_url\": \"https://cdn.vitran.ir/banners/shop.jpg\",\n        \"action\": {\n          \"type\": \"open_shop\",\n          \"value\": \"3\"\n        },\n        \"sort_order\": 2,\n        \"active\": true,\n        \"starts_at\": \"2026-07-10T00:00:00Z\",\n        \"ends_at\": \"2026-07-20T00:00:00Z\",\n        \"created_at\": \"2026-06-20T10:06:00Z\",\n        \"updated_at\": \"2026-06-20T10:06:00Z\"\n      }\n    ]\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 Not a banners rail",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"section_id\",\n      \"messages\": [\n        \"منبع این بخش banners نیست.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/6/banners"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create home banner",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections/14/banners",
+            "description": "Required: `image_url` (public http/https URL of an already uploaded image). `action_type`: none | open_product (value = product id) | open_shop (shop id) | open_category (category slug) | open_section (rail slug) | open_url (http/https URL). Default none (value must be empty). Optional `starts_at`/`ends_at` per banner.\n\nThe response nests the action as `action: {type, value}`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n  \"title\": \"تا ۴۰٪ تخفیف\",\n  \"action_type\": \"open_section\",\n  \"action_value\": \"popular\",\n  \"sort_order\": 1,\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بنر صفحه اصلی با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_banner\": {\n      \"id\": 12,\n      \"section_id\": 14,\n      \"title\": \"تا ۴۰٪ تخفیف\",\n      \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n      \"action\": {\n        \"type\": \"open_section\",\n        \"value\": \"popular\"\n      },\n      \"sort_order\": 1,\n      \"active\": true,\n      \"created_at\": \"2026-06-20T10:05:00Z\",\n      \"updated_at\": \"2026-06-20T10:05:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 Invalid action",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"action_value\",\n      \"messages\": [\n        \"نوع یا مقدار اکشن بنر نامعتبر است.\"\n      ]\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Invalid image_url",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"image_url\",\n      \"messages\": [\n        \"آدرس تصویر باید یک URL معتبر http یا https باشد.\"\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get home banner",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/home/banners/12",
+            "description": "One banner by id."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بنر صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_banner\": {\n      \"id\": 12,\n      \"section_id\": 14,\n      \"title\": \"تا ۴۰٪ تخفیف\",\n      \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n      \"action\": {\n        \"type\": \"open_section\",\n        \"value\": \"popular\"\n      },\n      \"sort_order\": 1,\n      \"active\": true,\n      \"created_at\": \"2026-06-20T10:05:00Z\",\n      \"updated_at\": \"2026-06-20T10:05:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Not found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"بنر صفحه اصلی یافت نشد.\",\n  \"code\": 404,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"_global\",\n      \"messages\": [\n        \"بنر صفحه اصلی یافت نشد.\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/banners/999"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update home banner",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/banners/12",
+            "description": "Partial update; `\"\"` clears `starts_at` / `ends_at`. Changes the screen `revision` so apps pick it up on the next fetch.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"تا ۵۰٪ تخفیف\",\n  \"active\": false,\n  \"ends_at\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بنر صفحه اصلی با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_banner\": {\n      \"id\": 12,\n      \"section_id\": 14,\n      \"title\": \"تا ۵۰٪ تخفیف\",\n      \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n      \"action\": {\n        \"type\": \"open_section\",\n        \"value\": \"popular\"\n      },\n      \"sort_order\": 1,\n      \"active\": false,\n      \"created_at\": \"2026-06-20T10:05:00Z\",\n      \"updated_at\": \"2026-07-15T08:10:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete home banner",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token (delete section needs a super-admin)."
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/home/banners/12",
+            "description": "Deletes one banner."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بنر صفحه اصلی با موفقیت حذف شد\",\n  \"code\": 1,\n  \"data\": {},\n  \"errors\": []\n}"
+            },
+            {
+              "name": "404 Not found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"بنر صفحه اصلی یافت نشد.\",\n  \"code\": 404,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"_global\",\n      \"messages\": [\n        \"بنر صفحه اصلی یافت نشد.\"\n      ]\n    }\n  ]\n}"
             }
           ]
         }

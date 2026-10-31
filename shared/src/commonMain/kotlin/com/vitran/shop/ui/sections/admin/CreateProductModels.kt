@@ -6,6 +6,7 @@ import com.vitran.shop.ui.components.admin.AdminSelectOption
 enum class ProductPublishStatus {
     Draft,
     Active,
+    Inactive,
 }
 
 enum class ProductSaveMode {
@@ -76,11 +77,13 @@ data class ProductFieldErrors(
     val price: String? = null,
     val category: String? = null,
     val compareAt: String? = null,
+    val priceAfterOff: String? = null,
     val slug: String? = null,
     val summary: String? = null,
 ) {
     val hasAny: Boolean
-        get() = title != null || price != null || category != null || compareAt != null || slug != null
+        get() = title != null || price != null || category != null || compareAt != null ||
+            priceAfterOff != null || slug != null
 }
 
 @Immutable
@@ -93,6 +96,7 @@ data class CreateProductFormState(
     val price: String = "",
     val compareAtEnabled: Boolean = false,
     val compareAtPrice: String = "",
+    val priceAfterOff: String = "",
     val inventoryTracked: Boolean = true,
     val quantity: String = "",
     val skuEnabled: Boolean = false,
@@ -348,12 +352,22 @@ data class CreateProductFormState(
         } else {
             null
         }
+        val afterOff = parseMoney(priceAfterOff)
+        val priceAfterOffError = when {
+            priceAfterOff.isNotBlank() && afterOff == null -> "قیمت بعد از تخفیف معتبر نیست."
+            afterOff != null && parsedPrice != null && afterOff >= parsedPrice ->
+                "قیمت بعد از تخفیف باید کمتر از قیمت فروش باشد."
+            else -> null
+        }
         val categoryError = if (mode == ProductSaveMode.Publish && categoryId == null && type.isBlank()) {
             "دسته‌بندی یا نوع محصول را انتخاب کنید."
         } else {
             null
         }
-        val summary = if (titleError != null || priceError != null || categoryError != null || compareError != null) {
+        val summary = if (
+            titleError != null || priceError != null || categoryError != null ||
+            compareError != null || priceAfterOffError != null
+        ) {
             "بعضی فیلدها نیاز به اصلاح دارند."
         } else {
             null
@@ -363,6 +377,7 @@ data class CreateProductFormState(
             price = priceError,
             category = categoryError,
             compareAt = compareError,
+            priceAfterOff = priceAfterOffError,
             summary = summary,
         )
     }
@@ -431,9 +446,12 @@ fun productStatusOptions(
     draftDesc: String,
     activeLabel: String,
     activeDesc: String,
+    inactiveLabel: String,
+    inactiveDesc: String,
 ): List<AdminSelectOption> = listOf(
     AdminSelectOption(ProductPublishStatus.Draft.name, draftLabel, draftDesc),
     AdminSelectOption(ProductPublishStatus.Active.name, activeLabel, activeDesc),
+    AdminSelectOption(ProductPublishStatus.Inactive.name, inactiveLabel, inactiveDesc),
 )
 
 internal fun cartesianCombinations(options: List<CreateProductOptionDraft>): List<List<String>> {

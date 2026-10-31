@@ -6,7 +6,7 @@ import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 
 /**
  * Multipart PATCH fields. Null means omit from the request.
- * New [images] are appended by the backend (total ≤ 5).
+ * New [images] are appended. Count comes from the shop plan; each file is at most 5 MB.
  */
 data class UpdateProductCommand(
     val productId: ProductId,
@@ -25,4 +25,12 @@ data class UpdateProductCommand(
     val seoDescription: String? = null,
     /** Null omits the field. */
     val noindex: Boolean? = null,
+    /** Null omits the field. Blank is not sent; omit keeps the current slug. */
+    val slug: String? = null,
+    /** Null omits. [clearPriceAfterOff] sends an empty field to clear the discount price. */
+    val priceAfterOffAmount: Long? = null,
+    val clearPriceAfterOff: Boolean = false,
+    val listingStatus: ProductListingStatus? = null,
+    /** Null omits and leaves attributes unchanged. */
+    val attributes: Map<String, String>? = null,
 )

@@ -31,7 +31,10 @@ alwaysApply: true
 - Never ship PDP placeholders like title `محصول`, merchant `فروشگاه`, price `—`, or “description coming soon” — use realistic fake copy.
 
 ## API contract
-- Source of truth: `docs/postman/vitran-api.postman_collection.json` (131 requests, 128 `/api/v1` business routes). Summary: `docs/api-contract.md`.
+- Source of truth: `docs/postman/vitran-api.postman_collection.json` (149 requests, 141 `/api/v1` route templates). Summary: `docs/api-contract.md`.
+- Home screen: `GET /home/screen` and `GET /home/sections/{key}` send `platform` and `app_version`. Sections use `key`, `type` (`products`\|`shops`\|`categories`\|`banners`), `layout` (`horizontal_rail`\|`grid`\|`chips`\|`hero`), and `items.results`. Skip unknown type/layout. `next_cursor` is opaque (example `pop:12`). `GET /home` and `GET /me/home/feed` are legacy. Banner `action.type` unknown shows the image and ignores the tap.
+- `POST /events`: `view_product` sends `category_slug` and, from a home rail, `metadata` (`from`, `section_key`, `position`). `click_category` sends `category_slug`. `search` sends `search_query`.
+- Seller product create/update sends optional `slug`, `price_after_off`, `status` (`draft`\|`active`\|`inactive`), and `attributes[<slug>]`. No variant model. Image count comes from the shop plan; each file ≤ 5 MB.
 - `category_slug` / `category_slugs` are taxonomy **strings** (example `aa-1-2`). Keep the flexible serializer for legacy numbers; do not invent numeric category ids.
 - Product cards use `main_image.url` (or `images[]` where `is_main` is true). Do not assume `images[0]` is the cover.
 - Shop collections: public `GET /shops/{id}/collections` feeds `StoreScreen` tiles. Seller create/update/delete lives on the store edit screen. Collection rows have `product_count` and no cover image. Do not add a second collection model.

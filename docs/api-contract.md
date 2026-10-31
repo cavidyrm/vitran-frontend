@@ -1,6 +1,6 @@
 # API Contract Summary
 
-Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (131 requests, 128 `/api/v1` business routes).
+Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (149 requests, 141 `/api/v1` route templates).
 
 **Client active version:** `/api/v1` only. `/api/v2` mirror exists in the collection but is not implemented in the client until an explicit migration phase.
 
@@ -70,7 +70,7 @@ Future network layer concept: `AuthMode` in `:core:domain`.
 |------|----------|----------|
 | **None** | No Bearer token | `GET /cities`, `GET /shops`, `GET /plans`, static pages |
 | **Required** | Bearer access token | `GET /auth/me`, `PUT /auth/profile`, seller CRUD, admin APIs, `GET /me/favorites/*`, `/me/profile/*`, `/me/persons`, `/me/matches` |
-| **Optional** | Anonymous OK; auth may enrich response | `GET /api/v1/home`, `GET /home/screen`, `POST /api/v1/events`, `POST /products/{id}/contact`, public wishlist share |
+| **Optional** | Anonymous OK; auth may enrich response | `GET /api/v1/home`, `GET /home/screen`, `GET /home/sections/{key}`, `POST /api/v1/events`, `POST /products/{id}/contact`, public wishlist share |
 
 Postman saves tokens from auth responses into collection variables: `accessToken`, `refreshToken`, `tempToken`.
 
@@ -160,6 +160,51 @@ When `page`, `last_page`, or `total` are omitted, the client infers them (`page`
 
 ---
 
+## 6a. Server-driven home
+
+`GET /home/screen` and `GET /home/sections/{key}` always send `platform` (`ios` | `android` | `web`) and `app_version` (for example `1.0.0`). The same values are accepted as headers `X-App-Platform` and `X-App-Version`. Rails limited to a platform or a minimum app version are omitted when those values are missing or do not match. A direct section GET then returns **404**.
+
+`GET /home` and `GET /me/home/feed` stay in the collection for old builds. The shopper home calls `GET /home/screen` only.
+
+Guest calls omit `requires_auth` rails (`for-you`, `following`, favourites, `picked-for-you` / `product_matches`). A direct GET of those rails without a token returns **401**. `for-you` is one page (`has_more` is always false). Rails backed by `featured_products`, `personal_products`, `product_matches`, `categories`, and `banners` are also one page: a stale `cursor` returns an empty last page, not page one again. `popular` paginates; its cursor is opaque (example `pop:12`).
+
+`POST /events` (optional JWT) feeds those rails. `view_product` ranks **popular** (last 30 days, per city) and, when sent with a token and `category_slug`, teaches **for-you**. From a home rail the body also includes `metadata` `{ from, section_key, position }` (`position` is the 1-based card index). `click_category` sends `category_slug`. `search` sends `search_query`.
+
+`data.screen` has `revision`, `city_id`, and `sections` in order. Each section:
+
+| Field | Values |
+|-------|--------|
+| `key` | Stable rail id (replaces the old `slug`) |
+| `type` | `products` \| `shops` \| `categories` \| `banners` |
+| `layout` | `horizontal_rail` \| `grid` \| `chips` \| `hero` |
+| `items` | `{ per_page, has_more, next_cursor?, total?, results }` |
+| `more` | `{ path, cursor_param }` — `path` has no `/api/v1` prefix, e.g. `/home/sections/popular` |
+| flags | `requires_auth`, `hide_when_empty`, `empty`, optional `subtitle` |
+| `tracking` | `{ section_key, source, position? }` — rail fingerprint for `POST /events` metadata |
+
+Skip a section when `type` or `layout` is unknown, and when `empty` is true and `hide_when_empty` is true. Do not throw.
+
+Item shapes (illustrative fields; unknown keys ignored):
+
+- **products** — `id` required; `title`, `slug`, `category_slug`, `shop_id`, `price`, `compare_at_price`, `main_image` optional. Saved examples are full product cards; extra keys are ignored.
+- **categories** — `slug`, `name` or `title`, `level`, `is_leaf`
+- **banners** — `id`, `image_url`, optional `title`, `action: { type, value? }`
+- **shops** — no saved item example; require `id` plus `title` or `name`, otherwise skip the rail
+
+Banner `action.type`: `open_product`, `open_shop`, `open_category`, `open_section`, `open_url`, `none`. Unknown types show the image and do nothing on tap.
+
+Load more only when `more` is present and `items.has_more` is true:
+
+```text
+GET /api/v1{more.path}?{cursor_param}={next_cursor}&limit={per_page}&city_id=&platform=&app_version=
+```
+
+Append `data.section.items.results`. `total` is omitted once a cursor is sent. Stop when `has_more` is false.
+
+Admin home CRUD (`/admin/home/sections`, `/admin/home/banners`) now has saved responses: list is `data.home_sections[]`, one section is `data.home_section` (`id`, `slug`, `source`, `item_kind`, `layout`, `title`, `item_limit`, `sort_order`, `active`, `audience`, `hide_when_empty`, `platforms`, optional `starts_at` / `ends_at`). Create returns **409** when `slug` already exists. The client does not call these routes; there is no admin UI for them.
+
+---
+
 ## 7. Endpoint business domains
 
 See [api-feature-map.md](api-feature-map.md) for full endpoint index.
@@ -190,8 +235,8 @@ See [api-feature-map.md](api-feature-map.md) for full endpoint index.
 
 | Operation | Method / path | Notes |
 |-----------|---------------|-------|
-| Create seller product (with images) | `POST /seller/shops/{id}/products` | multipart; optional `compare_at_price`, `seo_title`, `seo_description`, `noindex`, `slug` |
-| Update seller product | `PATCH /seller/products/{id}` | multipart; optional `compare_at_price` (empty string clears); optional SEO fields |
+| Create seller product (with images) | `POST /seller/shops/{id}/products` | multipart; optional `compare_at_price`, `price_after_off` (`< price`), `status` (`draft`\|`active`\|`inactive`, default `draft`), `seo_title`, `seo_description`, `noindex`, `slug`, `attributes[<slug>]`; images repeat, max count from the shop plan, each file ≤ 5 MB. No variants. No collection field. |
+| Update seller product | `PATCH /seller/products/{id}` | multipart; same optional fields as create, including `slug`. Empty `compare_at_price` / `price_after_off` clears. Omit `attributes[...]` to leave them unchanged. Collection membership is a collection PATCH, not this request. |
 | Set product cover | `PATCH /seller/products/{id}/images/{imageId}/main` | no body; response includes `main_image` and `images[].is_main` |
 | Upload category icon | `PUT /admin/categories/{slug}/icon` | multipart |
 | Import Shopify taxonomy | `POST /admin/taxonomy/import` | multipart JSON files |

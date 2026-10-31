@@ -20,6 +20,7 @@ Maps Postman endpoint groups to client feature ownership, future data-layer serv
 | Location / Cities | Cities | `LocationApi` ✅ | `LocationRepository` ✅ | Public + admin |
 | Taxonomy | Taxonomy | `TaxonomyApi` ✅ (public read) | `TaxonomyRepository` ✅ | Public + admin |
 | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional |
+| Admin Home | Home — Admin | — | — | Required (admin); response known; not implemented (no admin UI) |
 | Marketplace Shops | Shops — Public, Shop collections | `PublicShopApi` ✅ | `ShopRepository` ✅ | Public |
 | Marketplace Products | Products — Public | `PublicProductApi` ✅ | `ProductRepository` ✅ | Public |
 | Catalog / Search | catalog/search, products/search | `PublicProductApi` ✅ (simple search) | `ProductRepository` ✅ | Public / catalog **deferred** |
@@ -86,11 +87,24 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/api/v1/health` | Health | Platform | HealthApi | — | Public | Yes |
 | GET | `/api/v2/health` | Health | Platform | HealthApi | — | Public | Yes |
 | GET | `/health` | Health | Platform | HealthApi | — | Public | Yes |
-| POST | `/api/v1/events` | Home | Engagement | `UserEventApi` ✅ | `MarketplaceAnalyticsTracker` ✅ | Optional | Yes |
-| GET | `/api/v1/home?city_id=1` | Home | Home | HomeApi | HomeRepository | Optional | Yes |
-| GET | `/api/v1/home/screen?city_id=1` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | **Missing** (flexible DTO; HomeViewModel still uses `GET /home`) |
-| GET | `/api/v1/home/sections/picked-for-you?limit=20` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Yes |
-| GET | `/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10&product_matches=12` | Home | Home | HomeApi | HomeRepository | Public | **Missing** |
+| POST | `/api/v1/events` | Home | Engagement | `UserEventApi` ✅ | `MarketplaceAnalyticsTracker` ✅ | Optional | Yes — `view_product` sends `category_slug` and home `metadata`; `click_category` sends `category_slug`; `search` sends `search_query` |
+| GET | `/api/v1/home?city_id=1` | Home | Home | HomeApi | HomeRepository | Optional | Legacy envelope kept; shopper home uses `/home/screen` |
+| GET | `/api/v1/home/screen?city_id=1&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Yes (`screen.sections`, `tracking`, skip unknown type/layout). 400 on bad `platform` / `app_version` |
+| GET | `/api/v1/home/sections/featured?cursor=12&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | One-page rail; a stale cursor returns an empty last page |
+| GET | `/api/v1/home/sections/for-you?city_id=1&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | `requires_auth`; 401 without a token; `has_more` always false |
+| GET | `/api/v1/home/sections/popular?city_id=1&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Paginates; cursor is opaque (`pop:12`) |
+| GET | `/api/v1/home/sections/summer-campaign?platform=android&app_version=2.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Banners rail; banners do not paginate; wrong platform/version is 404 |
+| GET | `/api/v1/admin/home/sections` | Home — Admin | Admin Home | — | — | Required | Not implemented (`data.home_sections`; no admin UI) |
+| POST | `/api/v1/admin/home/sections` | Home — Admin | Admin Home | — | — | Required | Not implemented (`data.home_section`; 409 duplicate slug; no admin UI) |
+| GET | `/api/v1/admin/home/sections/14` | Home — Admin | Admin Home | — | — | Required | Not implemented (no admin UI) |
+| PATCH | `/api/v1/admin/home/sections/14` | Home — Admin | Admin Home | — | — | Required | Not implemented (no admin UI) |
+| DELETE | `/api/v1/admin/home/sections/14` | Home — Admin | Admin Home | — | — | Required | Not implemented (no admin UI) |
+| GET | `/api/v1/admin/home/sections/14/banners` | Home — Admin | Admin Home | — | — | Required | Not implemented (no admin UI) |
+| POST | `/api/v1/admin/home/sections/14/banners` | Home — Admin | Admin Home | — | — | Required | Not implemented (no admin UI) |
+| GET | `/api/v1/admin/home/banners/12` | Home — Admin | Admin Home | — | — | Required | Not implemented (no admin UI) |
+| PATCH | `/api/v1/admin/home/banners/12` | Home — Admin | Admin Home | — | — | Required | Not implemented (no admin UI) |
+| DELETE | `/api/v1/admin/home/banners/12` | Home — Admin | Admin Home | — | — | Required | Not implemented (no admin UI) |
+| GET | `/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10&product_matches=12` | Home | Home | — | — | Required | Legacy example saved; shopper home does not call it |
 | GET | `/api/v1/payments/callback?Authority=mock-99000&Status=OK` | Payments — Public | Payments | — | — | Provider | Backend/provider only — not client |
 | GET | `/api/v1/admin/plans` | Plans — Admin | Admin Plans | `AdminPlanApi` ✅ | `AdminPlanRepository` ✅ | Required | Implemented |
 | POST | `/api/v1/admin/plans` | Plans — Admin | Admin Plans | `AdminPlanApi` ✅ | `AdminPlanRepository` ✅ | Required | Implemented |

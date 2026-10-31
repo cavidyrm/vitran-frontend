@@ -51,13 +51,13 @@ Centralized in `productPublicationState(active, confirmed)`. Do not scatter raw 
 
 ## 7. Create Product
 
-Multipart fields (Postman-verified): `title`, exactly one `category_slug`, `price`, `description`, `active`, optional `compare_at_price`, optional `seo_title`, `seo_description`, `noindex`, optional `slug`, repeated `images` (≤5).
+Multipart fields (Postman-verified): `title`, exactly one `category_slug`, `price`, `description`, `active`, optional `compare_at_price`, optional `price_after_off` (must be lower than `price`), `status` (`draft`|`active`|`inactive`, default `draft`), optional `seo_title`, `seo_description`, `noindex`, optional `slug`, optional `attributes[<slug>]=<value_slug>`, repeated `images` (count from the shop plan, each file ≤ 5 MB). There is no variant model and no collection field on create.
 
-UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/screens/CreateProductScreen.kt) + `CreateProductViewModel`. The basics card sends `slug`. The SEO card sends `seoTitle`, `seoDescription`, and `noindex` when the toggle is on. The first image is the cover; after create the client calls set-main when that image is not already `is_main`. SKU, inventory, and variants remain local-only. Admin review and the seller's own detail reuse this form read-only; those local-only cards stay hidden, and SEO or slug appear only when the response includes them.
+UI: [`CreateProductScreen`](../shared/src/commonMain/kotlin/com/vitran/shop/ui/screens/CreateProductScreen.kt) + `CreateProductViewModel`. The basics card sends `slug` and `price_after_off`. Save-as-draft sends `status=draft` and `active=false`; publish sends `status=active` and `active=true`. The status card can also select `inactive`. The SEO card sends `seoTitle`, `seoDescription`, and `noindex` when the toggle is on. The first image is the cover; after create the client calls set-main when that image is not already `is_main`. The variants card is not shown. Attribute values are sent only when the caller supplies them; the form has no picker while `GET /categories/{slug}/attributes` returns an empty list. Admin review and the seller's own detail reuse this form read-only.
 
 ## 8. Update Product
 
-`PATCH /seller/products/{id}` multipart — same text fields, including optional SEO, plus appended `images`. Empty `seo_title` / `seo_description` clears those fields. Data + `UpdateProductUseCase` (public cache invalidation). No edit UI yet. `category_slug` is required on update.
+`PATCH /seller/products/{id}` multipart — same text fields as create, including optional `slug`, `price_after_off`, `status`, and `attributes[...]`, plus appended `images`. Empty `seo_title` / `seo_description` / `compare_at_price` / `price_after_off` clears those fields. Omit `attributes[...]` to leave them unchanged. Data + `UpdateProductUseCase` (public cache invalidation). No edit UI yet. `category_slug` is required on update. Collection membership stays on the collection PATCH.
 
 ## 9. Active / publish endpoint
 
@@ -106,7 +106,7 @@ Built with Ktor `MultiPartFormDataContent` / `formData` on the shared `HttpClien
 
 ## 19. Image validation
 
-Client enforces max images from `ShopEntitlements.limits.maxImages` when known (fallback 5). MIME passed when known. No invented byte-size limits. Backend remains authoritative for plan limits.
+Client enforces max images from `ShopEntitlements.limits.maxImages` when known (fallback 5) and rejects a file larger than 5 MB. MIME passed when known. Backend remains authoritative for plan limits. The PATCH description still says “total ≤ 5”; the image field says the max comes from the plan.
 
 ## 20. Binary logging / security
 
@@ -121,11 +121,11 @@ Create uses taxonomy picker (`TaxonomyPickerViewModel`) → `CategorySlug` strin
 
 ## 22. Category attribute integration
 
-**Not implemented.** Postman product create/update has no attributes fields; `GET /categories/{slug}/attributes` schema still empty (Gap 5).
+Create/update accept optional `attributes[<attribute_slug>]=<value_slug>` (repeat per attribute). `GET /categories/{slug}/attributes` still returns `"attributes": []`, so the form does not build a picker. The multipart builder sends the map when a command includes it.
 
 ## 23. Attribute serialization
 
-**N/A — not invented.**
+Form field name is `attributes[<slug>]` with the value slug as the part body. One part per attribute. Omitted on update when the map is null.
 
 ## 24. category_slug contract
 
@@ -161,7 +161,7 @@ Preview fixtures in `CreateProductMocks` preserved for tooling.
 
 ## 29. API gaps
 
-See [`api-gaps.md`](api-gaps.md) Phase 8 updates (category_slug, create active, multipart fields, attributes deferred, image key `images`, append semantics).
+See [`api-gaps.md`](api-gaps.md) Phase 8 updates (category_slug, create active, multipart fields, optional `attributes[<slug>]`, image key `images`, plan image cap, 5 MB per file).
 
 ## 30. Phase 9 capability integration points
 

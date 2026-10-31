@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -100,6 +101,8 @@ fun HomeCategoriesRow(
     categories: List<HomeCategory>,
     modifier: Modifier = Modifier,
     onCategoryClick: (HomeCategory) -> Unit = {},
+    /** Null keeps the gap measured under the home search hero. */
+    topPadding: Dp? = null,
 ) {
     val isDesktop = LocalDesktopLayout.current
     val listState = rememberLazyListState()
@@ -110,7 +113,7 @@ fun HomeCategoriesRow(
     val scrollStepPx = with(density) { CategoryScrollStep.toPx() }
     val endOverhang = if (isRtl) -CategoryArrowOverhang else CategoryArrowOverhang
     // shop.app measured: desktop search→pill ≈ 38, compact ≈ 30.
-    val topPad = if (isDesktop) 36.dp else VitranSpacing.xxxl
+    val topPad = topPadding ?: if (isDesktop) 36.dp else VitranSpacing.xxxl
     // shop.app shelf `mb-space-6` compact / `lg:mb-space-20` — contributes to pills→mosaic gap.
     val bottomPad = if (isDesktop) VitranSpacing.xl else 6.dp
     // Center the 42dp button on the 44dp pill band (below topPad).

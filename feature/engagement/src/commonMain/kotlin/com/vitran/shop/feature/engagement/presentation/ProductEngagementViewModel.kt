@@ -15,6 +15,7 @@ import com.vitran.shop.feature.engagement.state.SaveStatus
 import com.vitran.shop.feature.engagement.wishlist.domain.usecase.SetProductSavedUseCase
 import com.vitran.shop.feature.marketplace.product.domain.model.ProductId
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
+import com.vitran.shop.feature.taxonomy.domain.model.CategorySlug
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -81,14 +82,24 @@ class ProductEngagementViewModel(
         ProductEngagementUiState(),
     )
 
-    fun onProductDisplayed() {
+    fun onProductDisplayed(categorySlug: CategorySlug? = null) {
         if (viewTracked) return
         viewTracked = true
         analyticsTracker.track(
-            UserPersonalizationEvent.ViewProduct(productId = productId, shopId = shopId),
+            UserPersonalizationEvent.ViewProduct(
+                productId = productId,
+                shopId = shopId,
+                categorySlug = categorySlug,
+            ),
         )
         shopId?.let { id ->
-            analyticsTracker.track(id, ShopAnalyticsEvent.ProductView(productId = productId))
+            analyticsTracker.track(
+                id,
+                ShopAnalyticsEvent.ProductView(
+                    productId = productId,
+                    categorySlug = categorySlug,
+                ),
+            )
         }
     }
 

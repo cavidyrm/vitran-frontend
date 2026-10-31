@@ -11,6 +11,8 @@ import com.vitran.shop.core.platform.file.ImagePicker
 import com.vitran.shop.core.platform.file.SelectedFile
 import com.vitran.shop.feature.marketplace.shop.domain.model.ShopId
 import com.vitran.shop.feature.seller.product.domain.model.CreateProductCommand
+import com.vitran.shop.feature.seller.product.domain.model.MaxProductImageBytes
+import com.vitran.shop.feature.seller.product.domain.model.ProductListingStatus
 import com.vitran.shop.feature.seller.product.domain.model.ProductPublicationState
 import com.vitran.shop.feature.seller.product.domain.model.SellerProductDetails
 import com.vitran.shop.feature.seller.product.domain.usecase.CreateProductUseCase
@@ -187,9 +189,15 @@ class CreateProductViewModel(
                 }
                 val items = mutableListOf<LocalProductImage>()
                 val fileMap = _uiState.value.localFilesByMediaId.toMutableMap()
+                var rejectedOversized = false
                 for (file in files) {
-                    val id = "local-${Uuid.random()}"
                     val bytes = runCatching { file.readBytes() }.getOrNull()
+                    val size = bytes?.size?.toLong() ?: file.sizeBytes
+                    if (size != null && size > MaxProductImageBytes) {
+                        rejectedOversized = true
+                        continue
+                    }
+                    val id = "local-${Uuid.random()}"
                     fileMap[id] = file
                     items +=
                         LocalProductImage(
@@ -199,7 +207,15 @@ class CreateProductViewModel(
                         )
                 }
                 _uiState.update {
-                    it.copy(isPickingImages = false, localFilesByMediaId = fileMap)
+                    it.copy(
+                        isPickingImages = false,
+                        localFilesByMediaId = fileMap,
+                        generalError = if (rejectedOversized) {
+                            AppError.Validation(message = "هر تصویر باید حداکثر ۵ مگابایت باشد.")
+                        } else {
+                            it.generalError
+                        },
+                    )
                 }
                 onResult(items)
             }
@@ -223,6 +239,9 @@ class CreateProductViewModel(
         seoDescription: String = "",
         noindex: Boolean = false,
         slug: String = "",
+        priceAfterOffText: String = "",
+        listingStatus: ProductListingStatus? = null,
+        attributes: Map<String, String> = emptyMap(),
     ) {
         if (_uiState.value.isSubmitting) return
         val shopId = _uiState.value.selectedShopId
@@ -253,6 +272,23 @@ class CreateProductViewModel(
             }
             return
         }
+        val priceAfterOffAmount = parseOptionalMoneyAmount(priceAfterOffText)
+        if (priceAfterOffText.isNotBlank() && priceAfterOffAmount == null) {
+            _uiState.update {
+                it.copy(fieldErrors = CreateProductFieldErrors(price = "قیمت بعد از تخفیف معتبر نیست."))
+            }
+            return
+        }
+        if (
+            priceAfterOffAmount != null &&
+            priceAmount != null &&
+            priceAfterOffAmount >= priceAmount
+        ) {
+            _uiState.update {
+                it.copy(fieldErrors = CreateProductFieldErrors(price = "قیمت بعد از تخفیف باید کمتر از قیمت فروش باشد."))
+            }
+            return
+        }
         val trimmedTitle = title.trim()
         if (trimmedTitle.isBlank()) {
             _uiState.update {
@@ -266,6 +302,10 @@ class CreateProductViewModel(
                 _uiState.value.localFilesByMediaId[id]
             }
 
+        val status = listingStatus ?: when (mode) {
+            CreateProductSubmitMode.Publish -> ProductListingStatus.Active
+            CreateProductSubmitMode.Draft -> ProductListingStatus.Draft
+        }
         val command =
             CreateProductCommand(
                 shopId = shopId,
@@ -274,12 +314,15 @@ class CreateProductViewModel(
                 priceAmount = priceAmount,
                 compareAtPriceAmount = compareAtPriceAmount,
                 category = category,
-                desiredActive = mode == CreateProductSubmitMode.Publish,
+                desiredActive = status == ProductListingStatus.Active,
                 images = images,
                 seoTitle = seoTitle.trim().takeIf { it.isNotEmpty() },
                 seoDescription = seoDescription.trim().takeIf { it.isNotEmpty() },
                 noindex = noindex.takeIf { it },
                 slug = slug.trim().takeIf { it.isNotEmpty() },
+                priceAfterOffAmount = priceAfterOffAmount,
+                listingStatus = status,
+                attributes = attributes,
             )
 
         val maxImages = _uiState.value.maxImages
@@ -361,6 +404,8 @@ private val CreateProductReasonAliases = mapOf(
     "description" to "summary",
     "active" to "summary",
     "compare_at_price" to "price",
+    "price_after_off" to "price",
+    "status" to "summary",
 )
 
 private fun parseMoneyAmount(raw: String): Long? =

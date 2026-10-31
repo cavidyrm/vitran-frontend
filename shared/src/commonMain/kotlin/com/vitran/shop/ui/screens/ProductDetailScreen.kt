@@ -126,9 +126,8 @@ fun ProductDetailScreen(
     }
 
     LaunchedEffect(detailsState) {
-        if (detailsState is ProductDetailsUiState.Content) {
-            engagementViewModel.onProductDisplayed()
-        }
+        val content = detailsState as? ProductDetailsUiState.Content ?: return@LaunchedEffect
+        engagementViewModel.onProductDisplayed(content.product.categorySlug)
     }
     LaunchedEffect(engagementViewModel) {
         engagementViewModel.effects.collect { effect ->

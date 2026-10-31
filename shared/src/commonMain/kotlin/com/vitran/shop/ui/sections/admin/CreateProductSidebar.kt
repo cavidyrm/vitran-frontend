@@ -49,6 +49,8 @@ import vitranshop.shared.generated.resources.admin_product_status_active
 import vitranshop.shared.generated.resources.admin_product_status_active_desc
 import vitranshop.shared.generated.resources.admin_product_status_draft
 import vitranshop.shared.generated.resources.admin_product_status_draft_desc
+import vitranshop.shared.generated.resources.admin_product_status_inactive
+import vitranshop.shared.generated.resources.admin_product_status_inactive_desc
 import vitranshop.shared.generated.resources.admin_product_type_add
 
 @Composable
@@ -157,10 +159,10 @@ fun CreateProductPreviewCard(
     modifier: Modifier = Modifier,
 ) {
     val statusLabel = stringResource(
-        if (state.status == ProductPublishStatus.Active) {
-            Res.string.admin_product_status_active
-        } else {
-            Res.string.admin_product_status_draft
+        when (state.status) {
+            ProductPublishStatus.Active -> Res.string.admin_product_status_active
+            ProductPublishStatus.Draft -> Res.string.admin_product_status_draft
+            ProductPublishStatus.Inactive -> Res.string.admin_product_status_inactive
         },
     )
     AdminFormCard(
@@ -221,7 +223,9 @@ private fun rememberStatusOptions(): List<AdminSelectOption> {
     val activeDesc = stringResource(Res.string.admin_product_status_active_desc)
     val draft = stringResource(Res.string.admin_product_status_draft)
     val draftDesc = stringResource(Res.string.admin_product_status_draft_desc)
-    return remember(active, activeDesc, draft, draftDesc) {
-        productStatusOptions(draft, draftDesc, active, activeDesc)
+    val inactive = stringResource(Res.string.admin_product_status_inactive)
+    val inactiveDesc = stringResource(Res.string.admin_product_status_inactive_desc)
+    return remember(active, activeDesc, draft, draftDesc, inactive, inactiveDesc) {
+        productStatusOptions(draft, draftDesc, active, activeDesc, inactive, inactiveDesc)
     }
 }

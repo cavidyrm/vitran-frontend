@@ -13,6 +13,19 @@ data class UserEventRequestDto(
     val productId: Long? = null,
     @SerialName("shop_id")
     val shopId: Long? = null,
+    @SerialName("category_slug")
+    val categorySlug: String? = null,
+    @SerialName("search_query")
+    val searchQuery: String? = null,
+    val metadata: UserEventMetadataDto? = null,
+)
+
+@Serializable
+data class UserEventMetadataDto(
+    val from: String? = null,
+    @SerialName("section_key")
+    val sectionKey: String? = null,
+    val position: Int? = null,
 )
 
 @Serializable

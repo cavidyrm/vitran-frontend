@@ -6,6 +6,7 @@ import com.vitran.shop.core.session.data.CredentialStore
 import com.vitran.shop.core.session.data.SessionCredentialPersistence
 import com.vitran.shop.core.session.domain.SessionCredentials
 import com.vitran.shop.core.session.domain.SessionState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +32,13 @@ internal class DefaultSessionRepository(
     override suspend fun restore() {
         mutex.withLock {
             _sessionState.value = SessionState.Restoring
-            val stored = persistence.read()
+            val stored = try {
+                persistence.read()
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Throwable) {
+                null
+            }
             if (stored == null) {
                 credentialStore.clear()
                 _sessionState.value = SessionState.Anonymous

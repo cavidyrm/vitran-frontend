@@ -99,6 +99,10 @@
     <string name="home_category_food">غذا و نوشیدنی</string>
     <string name="home_categories_scroll_prev_a11y">دسته‌بندی قبلی</string>
     <string name="home_categories_scroll_next_a11y">دسته‌بندی بعدی</string>
+    <string name="home_feed_load_more">مشاهده بیشتر</string>
+    <string name="home_feed_retry">تلاش دوباره</string>
+    <string name="home_feed_error">بارگذاری صفحه اصلی انجام نشد.</string>
+    <string name="home_banner_a11y">بنر %1$s</string>
     <string name="home_category_mosaics_scroll_prev_a11y">کارت دسته‌بندی قبلی</string>
     <string name="home_category_mosaics_scroll_next_a11y">کارت دسته‌بندی بعدی</string>
     <string name="home_category_mosaic_open_a11y">مشاهده %1$s</string>
@@ -641,6 +645,10 @@
     <string name="admin_product_status_active_desc">محصول در فروشگاه منتشر می‌شود.</string>
     <string name="admin_product_status_draft">پیش‌نویس</string>
     <string name="admin_product_status_draft_desc">فقط برای مدیران فروشگاه قابل مشاهده است.</string>
+    <string name="admin_product_status_inactive">غیرفعال</string>
+    <string name="admin_product_status_inactive_desc">محصول ذخیره می‌شود و در فروشگاه دیده نمی‌شود.</string>
+    <string name="admin_product_field_price_after_off">قیمت بعد از تخفیف</string>
+    <string name="admin_product_image_too_large">هر تصویر باید حداکثر ۵ مگابایت باشد.</string>
     <string name="admin_product_card_organization">سازمان‌دهی محصول</string>
     <string name="admin_product_org_info_a11y">راهنمای سازمان‌دهی محصول</string>
     <string name="admin_product_field_type">نوع محصول</string>

@@ -19,7 +19,7 @@ Navigation: Navigation 3 — [`Route`](../shared/src/commonMain/kotlin/com/vitra
 
 | Existing Screen | Route | Business Feature | Expected API / Domain | Runtime fake data | Future ViewModel | Previews | Notes |
 |-----------------|-------|------------------|----------------------|-------------------|------------------|----------|-------|
-| HomeScreen | `/` | Home | `GET /home`, `POST /events` | Category rows, mosaics, shop feeds (`HomeCategory*.kt`, `HeroCollageModels.kt`) when API items unverified | `HomeViewModel` ✅ | Yes | Omnibox → `Route.Search`; API sections deferred |
+| HomeScreen | `/` | Home | `GET /home/screen`, `GET /home/sections/{key}`, `POST /events` | Server-driven rails (`products`, `categories`, `banners`, `shops`); unknown type/layout skipped | `HomeViewModel` ✅ | Yes | Omnibox → `Route.Search`; banner actions open product, shop, categories, in-page section, or an external URL |
 | CategoriesScreen | `/categories` | Catalog / Marketplace | Taxonomy ✅, `GET /shops/browse`, `GET /products?category_slug=` | Visual fallbacks in `BrowseCategoryVisuals.kt`; mock when feeds empty | `CategoriesBrowseViewModel` ✅, `ShopBrowseViewModel` ✅, `ProductListViewModel` ✅ | Partial | Explore / browse |
 | OffersScreen | `/offers` | Deals | TBD — no dedicated API in collection | `PlaceholderScreen` | `OffersViewModel` | — | Placeholder only |
 | SavedScreen | `/saved` | Engagement / Wishlist | `GET /me/favorites/products` | `PlaceholderScreen` | `WishlistViewModel` ✅ (unconnected) | — | Placeholder only — API exists |
