@@ -33,6 +33,7 @@ alwaysApply: true
 ## API contract
 - Source of truth: `docs/postman/vitran-api.postman_collection.json` (149 requests, 141 `/api/v1` route templates). Summary: `docs/api-contract.md`.
 - Home screen: `GET /home/screen` and `GET /home/sections/{key}` send `platform` and `app_version`. Sections use `key`, `type` (`products`\|`shops`\|`categories`\|`banners`), `layout` (`horizontal_rail`\|`grid`\|`chips`\|`hero`), and `items.results`. Skip unknown type/layout. `next_cursor` is opaque (example `pop:12`). `GET /home` and `GET /me/home/feed` are legacy. Banner `action.type` unknown shows the image and ignores the tap.
+- Admin home CMS is `/admin/home` (`AdminHomeApi`). The account-hub row is visible only to admin and super-admin. Deleting a section is super-admin only. Banner image URLs are http(s); there is no image upload.
 - `POST /events`: `view_product` sends `category_slug` and, from a home rail, `metadata` (`from`, `section_key`, `position`). `click_category` sends `category_slug`. `search` sends `search_query`.
 - Seller product create/update sends optional `slug`, `price_after_off`, `status` (`draft`\|`active`\|`inactive`), and `attributes[<slug>]`. No variant model. Image count comes from the shop plan; each file ≤ 5 MB.
 - `category_slug` / `category_slugs` are taxonomy **strings** (example `aa-1-2`). Keep the flexible serializer for legacy numbers; do not invent numeric category ids.

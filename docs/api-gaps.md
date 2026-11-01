@@ -492,7 +492,7 @@ See [admin-and-cms.md](admin-and-cms.md).
 | **Status** | Resolved by backend update |
 | **Issue** | `GET /home/screen` and section pagination use `key`, `type` (`products`\|`shops`\|`categories`\|`banners`), `layout` (`horizontal_rail`\|`grid`\|`chips`\|`hero`), `items.results`, and optional `tracking`. Queries require `platform` and `app_version`. Saved examples: guest screen, `for-you` (401 without a token), `featured` (stale cursor = empty page), `popular` (cursor `pop:12`), `summer-campaign`. |
 | **Client impact** | `HomeViewModel` loads `GET /home/screen`. Unknown type/layout is skipped. Shop item objects still have no saved example — a rail is skipped unless each result has `id` and `title` or `name`. |
-| **Handling** | Admin home responses are now `data.home_sections` / `data.home_section` (create **409** on a duplicate slug). The client still does not call them; there is no admin UI. |
+| **Handling** | Admin home is implemented at `/admin/home` for admin and super-admin. Responses are `data.home_sections` / `data.home_section` / `data.home_banner` (create **409** on a duplicate slug, shown on the slug field). Section delete is super-admin only. |
 
 ---
 

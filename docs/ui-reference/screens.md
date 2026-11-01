@@ -37,6 +37,7 @@
 16. Store plan & credit (merchant admin) — route `/admin/stores/plan` (`StorePlanScreen`); current plan summary, usage meters, benefits, payment history, upgrade promo; no shopper chrome; mock-only. Opened from Account when merchant has a store, or the URL. Visual: `docs/ui-reference/admin/store-plan/dashboard-desktop.png`
 17. Upgrade store plan (merchant admin) — route `/admin/stores/plan/upgrade` (`StorePlanUpgradeScreen`); billing toggle, Start/Growth/Professional cards, comparison table, support bar; no shopper chrome; mock-only. Opened from plan dashboard CTAs or the URL. Visual: `docs/ui-reference/admin/store-plan/upgrade-desktop.png`
 18. Manage plans (platform admin) — route `/admin/plans` (`AdminPlansScreen`); stats, plans table, create/edit form, preview; mock create/edit/delete; no shopper chrome. Opened from Account hub or the URL. Visual: `docs/ui-reference/admin/store-plan/admin-plans-desktop.png`
+18b. Home layout (platform admin) — routes `/admin/home` and `/admin/home/sections/{id}` (`AdminHomeScreens.kt`). Account hub row «چیدمان صفحه اصلی» only when the user is admin or super-admin. Section delete is super-admin only. No shopper chrome. Thin admin cards; no dedicated screenshot.
 19. About Us — route `/about` (`AboutScreen`); hero, feature cards, story, stats bar, join CTA; shopper chrome stays; entry from SiteFooter + URL. Visual: `docs/ui-reference/about/about-desktop.png`
 
 ## Bottom / Side nav tabs

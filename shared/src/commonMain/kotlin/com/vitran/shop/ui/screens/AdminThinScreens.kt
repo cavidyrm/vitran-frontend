@@ -83,7 +83,7 @@ import vitranshop.shared.generated.resources.Res
 import vitranshop.shared.generated.resources.ic_chevron_right
 
 @Composable
-private fun AdminThinScaffold(
+internal fun AdminThinScaffold(
     title: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,

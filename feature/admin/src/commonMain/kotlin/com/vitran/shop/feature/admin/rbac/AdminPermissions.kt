@@ -25,6 +25,9 @@ class AdminPermissions {
     fun canDeleteStaticPage(roles: Set<UserRole>): Boolean =
         UserRole.SuperAdmin in roles
 
+    fun canDeleteHomeSection(roles: Set<UserRole>): Boolean =
+        UserRole.SuperAdmin in roles
+
     fun assignableRoles(actorRoles: Set<UserRole>): List<UserRole> = buildList {
         if (!canEditUserRoles(actorRoles)) return@buildList
         add(UserRole.User)

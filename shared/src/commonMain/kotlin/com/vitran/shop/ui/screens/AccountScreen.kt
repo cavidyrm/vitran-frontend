@@ -50,6 +50,7 @@ fun AccountScreen(
     onOpenAdminComments: () -> Unit = {},
     onOpenAdminTaxonomy: () -> Unit = {},
     onOpenAdminContent: () -> Unit = {},
+    onOpenAdminHome: () -> Unit = {},
     onSignOut: () -> Unit = {},
     isSigningOut: Boolean = false,
     signOutError: String? = null,
@@ -127,6 +128,11 @@ fun AccountScreen(
                 title = "مدیریت محتوا",
                 subtitle = "ویرایش صفحه‌های ثابت سایت",
                 onClick = onOpenAdminContent,
+            )
+            AccountHubAdminRow(
+                title = "چیدمان صفحه اصلی",
+                subtitle = "بخش‌ها و بنرهای صفحه اصلی",
+                onClick = onOpenAdminHome,
             )
         }
         AccountRecentlyViewedSection(

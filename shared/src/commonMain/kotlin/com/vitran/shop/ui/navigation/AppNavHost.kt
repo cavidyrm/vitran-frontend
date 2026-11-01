@@ -32,6 +32,8 @@ import com.vitran.shop.ui.screens.AdminProductModerationDetailScreen
 import com.vitran.shop.ui.screens.AdminShopModerationDetailScreen
 import com.vitran.shop.ui.screens.AdminProductsModerationScreen
 import com.vitran.shop.ui.screens.AdminShopsModerationScreen
+import com.vitran.shop.ui.screens.AdminHomeSectionEditorScreen
+import com.vitran.shop.ui.screens.AdminHomeSectionsScreen
 import com.vitran.shop.ui.screens.AdminStaticPageEditorScreen
 import com.vitran.shop.ui.screens.AdminStaticPagesScreen
 import com.vitran.shop.ui.screens.AdminTaxonomyScreen
@@ -173,6 +175,7 @@ fun AppNavHost(
                     onOpenAdminComments = { navigator.push(Route.AdminComments) },
                     onOpenAdminTaxonomy = { navigator.push(Route.AdminTaxonomy) },
                     onOpenAdminContent = { navigator.push(Route.AdminStaticPages) },
+                    onOpenAdminHome = { navigator.push(Route.AdminHome) },
                     onSignOut = onSignOut,
                     isSigningOut = signingOut,
                     signOutError = signOutError,
@@ -457,6 +460,19 @@ fun AppNavHost(
             entry<Route.AdminStaticPageEdit> { key ->
                 AdminStaticPageEditorScreen(
                     pageId = key.id?.toLongOrNull(),
+                    onBack = { navigator.goBack() },
+                )
+            }
+            entry<Route.AdminHome> {
+                AdminHomeSectionsScreen(
+                    onBack = { navigator.goBack() },
+                    onCreate = { navigator.push(Route.AdminHomeSectionEdit()) },
+                    onEdit = { navigator.push(Route.AdminHomeSectionEdit(it)) },
+                )
+            }
+            entry<Route.AdminHomeSectionEdit> { key ->
+                AdminHomeSectionEditorScreen(
+                    sectionId = key.id,
                     onBack = { navigator.goBack() },
                 )
             }

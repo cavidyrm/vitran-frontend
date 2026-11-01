@@ -201,7 +201,7 @@ GET /api/v1{more.path}?{cursor_param}={next_cursor}&limit={per_page}&city_id=&pl
 
 Append `data.section.items.results`. `total` is omitted once a cursor is sent. Stop when `has_more` is false.
 
-Admin home CRUD (`/admin/home/sections`, `/admin/home/banners`) now has saved responses: list is `data.home_sections[]`, one section is `data.home_section` (`id`, `slug`, `source`, `item_kind`, `layout`, `title`, `item_limit`, `sort_order`, `active`, `audience`, `hide_when_empty`, `platforms`, optional `starts_at` / `ends_at`). Create returns **409** when `slug` already exists. The client does not call these routes; there is no admin UI for them.
+Admin home CRUD (`/admin/home/sections`, `/admin/home/banners`) is called from `/admin/home` for admin and super-admin. List is `data.home_sections[]`, one section is `data.home_section` (`id`, `slug`, `source`, `item_kind`, `layout`, `title`, `item_limit`, `sort_order`, `active`, `audience`, `hide_when_empty`, `platforms`, optional `min_app_version`, `starts_at` / `ends_at`). `slug` is sent only on create and stays fixed after that. Create returns **409** when `slug` already exists; that error is shown on the slug field. Deleting a section needs a super-admin. Banners are edited only when `source` is `banners`. A banner `image_url` must be `http` or `https`. Banner actions are `none`, `open_product`, `open_shop`, `open_category`, `open_section`, and `open_url`. The response nests `action: { type, value }`.
 
 ---
 

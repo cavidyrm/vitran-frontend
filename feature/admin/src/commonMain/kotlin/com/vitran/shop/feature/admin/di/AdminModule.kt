@@ -14,6 +14,11 @@ import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.CategoryEditV
 import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.TaxonomyBrowseViewModel
 import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.TaxonomyImportViewModel
 import com.vitran.shop.feature.admin.catalog.taxonomy.presentation.ValueNameEditViewModel
+import com.vitran.shop.feature.admin.home.data.AdminHomeApi
+import com.vitran.shop.feature.admin.home.data.DefaultAdminHomeRepository
+import com.vitran.shop.feature.admin.home.domain.AdminHomeRepository
+import com.vitran.shop.feature.admin.home.presentation.AdminHomeSectionEditorViewModel
+import com.vitran.shop.feature.admin.home.presentation.AdminHomeSectionsViewModel
 import com.vitran.shop.feature.admin.content.data.AdminContentApi
 import com.vitran.shop.feature.admin.content.data.DefaultAdminContentRepository
 import com.vitran.shop.feature.admin.content.domain.AdminContentRepository
@@ -58,6 +63,8 @@ val adminModule = module {
     single<AdminPlanRepository> { DefaultAdminPlanRepository(get(), get()) }
     single { AdminContentApi(get(), get(), get()) }
     single<AdminContentRepository> { DefaultAdminContentRepository(get(), get()) }
+    single { AdminHomeApi(get(), get(), get()) }
+    single<AdminHomeRepository> { DefaultAdminHomeRepository(get()) }
 
     viewModel { AdminUsersViewModel(get(), get(), get()) }
     viewModel { AdminCitiesViewModel(get(), get()) }
@@ -86,4 +93,8 @@ val adminModule = module {
     viewModel { AdminPlansViewModel(get(), get(), get()) }
     viewModel { AdminStaticPagesViewModel(get(), get(), get()) }
     viewModel { parameters -> AdminStaticPageEditorViewModel(parameters.getOrNull(), get()) }
+    viewModel { AdminHomeSectionsViewModel(get(), get(), get()) }
+    viewModel { parameters ->
+        AdminHomeSectionEditorViewModel(parameters.getOrNull(), get(), get(), get())
+    }
 }

@@ -193,6 +193,17 @@ sealed interface Route : NavKey {
     @Serializable
     data class AdminStaticPageEdit(val id: String? = null) : Route
 
+    /** Platform admin home CMS. Path `/admin/home`. */
+    @Serializable
+    data object AdminHome : Route
+
+    /**
+     * Edit or create one home section. Path `/admin/home/sections/{id}`
+     * or `/admin/home/sections/new` when [id] is null.
+     */
+    @Serializable
+    data class AdminHomeSectionEdit(val id: Long? = null) : Route
+
     /**
      * Merchant admin — add product. Path `/admin/products/new`.
      * Optional `shopId` is the query `shop_id` so the form targets that shop.
@@ -273,6 +284,8 @@ fun Route.isTopLevel(): Boolean =
         Route.AdminTaxonomy,
         Route.AdminStaticPages,
         is Route.AdminStaticPageEdit,
+        Route.AdminHome,
+        is Route.AdminHomeSectionEdit,
         is Route.CreateProduct,
         Route.CreateCategory,
         Route.Profile,
@@ -333,6 +346,8 @@ fun Route.hidesChrome(): Boolean =
         this is Route.AdminTaxonomy ||
         this is Route.AdminStaticPages ||
         this is Route.AdminStaticPageEdit ||
+        this is Route.AdminHome ||
+        this is Route.AdminHomeSectionEdit ||
         this is Route.CreateProduct ||
         this is Route.AccountStoreProductDetail ||
         this is Route.CreateCategory

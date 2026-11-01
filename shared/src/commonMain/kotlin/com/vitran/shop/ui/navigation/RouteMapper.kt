@@ -45,6 +45,9 @@ object RouteMapper {
             Route.AdminStaticPages -> "/admin/content/pages"
             is Route.AdminStaticPageEdit ->
                 route.id?.let { "/admin/content/pages/$it" } ?: "/admin/content/pages/new"
+            Route.AdminHome -> "/admin/home"
+            is Route.AdminHomeSectionEdit ->
+                route.id?.let { "/admin/home/sections/$it" } ?: "/admin/home/sections/new"
             is Route.CreateProduct -> {
                 val shopId = route.shopId?.takeIf { it.isNotBlank() }
                 if (shopId == null) {
@@ -94,6 +97,8 @@ object RouteMapper {
             "/admin/taxonomy" -> Route.AdminTaxonomy
             "/admin/content/pages" -> Route.AdminStaticPages
             "/admin/content/pages/new" -> Route.AdminStaticPageEdit()
+            "/admin/home" -> Route.AdminHome
+            "/admin/home/sections/new" -> Route.AdminHomeSectionEdit()
             "/admin/products/new" -> Route.CreateProduct()
             "/admin/categories/new" -> Route.CreateCategory
             "/about" -> Route.About
@@ -109,6 +114,7 @@ object RouteMapper {
                 ?: parseAdminShopPath(normalized)
                 ?: parseAdminProductPath(normalized)
                 ?: parseAdminStaticPagePath(normalized)
+                ?: parseAdminHomeSectionPath(normalized)
         }
     }
 
@@ -122,6 +128,12 @@ object RouteMapper {
         val parts = path.trim('/').split('/')
         if (parts.size != 4 || parts.take(3) != listOf("admin", "moderation", "products")) return null
         return parts[3].toLongOrNull()?.let { Route.AdminProductDetail(it) }
+    }
+
+    private fun parseAdminHomeSectionPath(path: String): Route.AdminHomeSectionEdit? {
+        val parts = path.trim('/').split('/')
+        if (parts.size != 4 || parts.take(3) != listOf("admin", "home", "sections")) return null
+        return parts[3].toLongOrNull()?.let { Route.AdminHomeSectionEdit(it) }
     }
 
     private fun parseAdminStaticPagePath(path: String): Route.AdminStaticPageEdit? {

@@ -27,11 +27,13 @@ class AdminPermissionsTest {
         assertFalse(permissions.canImportTaxonomy(admin))
         assertFalse(permissions.canDeletePlan(admin))
         assertFalse(permissions.canDeleteStaticPage(admin))
+        assertFalse(permissions.canDeleteHomeSection(admin))
 
         assertTrue(permissions.canDeleteCity(superAdmin))
         assertTrue(permissions.canImportTaxonomy(superAdmin))
         assertTrue(permissions.canDeletePlan(superAdmin))
         assertTrue(permissions.canDeleteStaticPage(superAdmin))
+        assertTrue(permissions.canDeleteHomeSection(superAdmin))
     }
 
     @Test
