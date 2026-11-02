@@ -418,7 +418,8 @@
               "mode": "raw",
               "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/auth/refresh"
+            "url": "{{baseUrl}}/api/v1/auth/refresh",
+            "description": ""
           },
           "response": [
             {
@@ -446,7 +447,8 @@
                 "value": "Bearer {{accessToken}}"
               }
             ],
-            "url": "{{baseUrl}}/api/v1/auth/logout"
+            "url": "{{baseUrl}}/api/v1/auth/logout",
+            "description": ""
           },
           "response": [
             {
@@ -1054,7 +1056,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/cities"
+            "url": "{{baseUrl}}/api/v1/cities",
+            "description": ""
           },
           "response": [
             {
@@ -1077,7 +1080,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/cities/1"
+            "url": "{{baseUrl}}/api/v1/cities/1",
+            "description": ""
           },
           "response": [
             {
@@ -1100,7 +1104,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/cities/slug/tehran"
+            "url": "{{baseUrl}}/api/v1/cities/slug/tehran",
+            "description": ""
           },
           "response": [
             {
@@ -1142,7 +1147,8 @@
               "mode": "raw",
               "raw": "{\n  \"slug\": \"shiraz\",\n  \"name\": \"شیراز\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/admin/cities"
+            "url": "{{baseUrl}}/api/v1/admin/cities",
+            "description": ""
           },
           "response": [
             {
@@ -1184,7 +1190,8 @@
               "mode": "raw",
               "raw": "{\n  \"slug\": \"tehran\",\n  \"name\": \"تهران\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/admin/cities/1"
+            "url": "{{baseUrl}}/api/v1/admin/cities/1",
+            "description": ""
           },
           "response": [
             {
@@ -1217,7 +1224,8 @@
             },
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/admin/cities/3"
+            "url": "{{baseUrl}}/api/v1/admin/cities/3",
+            "description": ""
           },
           "response": [
             {
@@ -1258,7 +1266,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/categories"
+            "url": "{{baseUrl}}/api/v1/categories",
+            "description": ""
           },
           "response": [
             {
@@ -1281,7 +1290,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/categories/aa-1-2-3-4"
+            "url": "{{baseUrl}}/api/v1/categories/aa-1-2-3-4",
+            "description": ""
           },
           "response": [
             {
@@ -1442,7 +1452,8 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"رنگ\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/admin/attributes/color/name"
+            "url": "{{baseUrl}}/api/v1/admin/attributes/color/name",
+            "description": ""
           },
           "response": []
         },
@@ -1470,7 +1481,8 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"آبی\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/admin/values/color__blue/name"
+            "url": "{{baseUrl}}/api/v1/admin/values/color__blue/name",
+            "description": ""
           },
           "response": []
         },
@@ -1479,7 +1491,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/categories/aa-1-2-3-4/return-reasons"
+            "url": "{{baseUrl}}/api/v1/categories/aa-1-2-3-4/return-reasons",
+            "description": ""
           },
           "response": []
         },
@@ -1598,7 +1611,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/shops/1"
+            "url": "{{baseUrl}}/api/v1/shops/1",
+            "description": ""
           },
           "response": [
             {
@@ -3417,7 +3431,8 @@
               "mode": "raw",
               "raw": "{\n  \"slug\": \"starter\",\n  \"title\": \"Starter\",\n  \"description\": \"For small shops\",\n  \"price_amount\": 150000,\n  \"duration_days\": 30,\n  \"max_products\": 50,\n  \"max_images\": 5,\n  \"max_shops\": 1,\n  \"features\": {\n    \"ranking_boost\": \"slight\",\n    \"contact_buttons\": true,\n    \"basic_analytics\": true,\n    \"offers_discounts\": true\n  },\n  \"active\": true,\n  \"sort_order\": 2\n}"
             },
-            "url": "{{baseUrl}}/api/v1/admin/plans"
+            "url": "{{baseUrl}}/api/v1/admin/plans",
+            "description": ""
           },
           "response": [
             {
@@ -3619,7 +3634,8 @@
             },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/admin/static-pages/1"
+            "url": "{{baseUrl}}/api/v1/admin/static-pages/1",
+            "description": ""
           },
           "response": [
             {
@@ -3805,6 +3821,14 @@
           "response": [
             {
               "name": "200 OK — guest",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/screen?city_id=1&platform=ios&app_version=1.4.0",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -3876,6 +3900,22 @@
           "response": [
             {
               "name": "200 OK — logged in",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/screen?city_id=1&platform=android&app_version=1.4.0",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "User token. Without it this is the guest call."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -3912,6 +3952,23 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-App-Platform",
+                    "value": "web"
+                  },
+                  {
+                    "key": "X-App-Version",
+                    "value": "3.0.0"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/home/screen?city_id=1",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -3947,6 +4004,22 @@
           "response": [
             {
               "name": "200 OK — first page",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/popular?city_id=1&platform=ios&app_version=1.4.0",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Optional. Required only for rails with `requires_auth: true`."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4018,6 +4091,22 @@
           "response": [
             {
               "name": "200 OK — page 2",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/popular?cursor=pop:12&limit=12&city_id=1&platform=ios&app_version=1.4.0",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Optional."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4071,6 +4160,22 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/for-you?city_id=1&platform=ios&app_version=1.4.0",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Required."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4103,6 +4208,41 @@
           ]
         },
         {
+          "name": "Get home section — category rail (Baby & Toddler)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/home/sections/baby-toddler?city_id=1&platform=ios&app_version=1.4.0",
+            "description": "A rail an admin limited to a category (`category_slug`). Same shape as any section, plus `category_slug`. Products come from the category and all its subcategories. Use this endpoint with `cursor` for \"see all\" — `GET /products?category_slug=` matches one exact category only."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/baby-toddler?city_id=1&platform=ios&app_version=1.4.0",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت دریافت شد\",\n  \"code\": 1,\n  \"data\": {\n    \"section\": {\n      \"id\": 21,\n      \"key\": \"baby-toddler\",\n      \"type\": \"products\",\n      \"layout\": \"horizontal_rail\",\n      \"title\": \"کودک و نوزاد\",\n      \"subtitle\": \"تازه‌ترین‌ها\",\n      \"requires_auth\": false,\n      \"category_slug\": \"bt\",\n      \"hide_when_empty\": true,\n      \"empty\": false,\n      \"items\": {\n        \"per_page\": 12,\n        \"has_more\": true,\n        \"next_cursor\": \"731\",\n        \"total\": 54,\n        \"results\": [\n          {\n            \"id\": 742,\n            \"shop_id\": 18,\n            \"title\": \"سرهمی نوزادی پنبه‌ای\",\n            \"slug\": \"cotton-baby-romper\",\n            \"category_slug\": \"bt-4-2\",\n            \"price\": 380000,\n            \"compare_at_price\": 450000,\n            \"status\": \"active\",\n            \"active\": true,\n            \"confirmed\": true,\n            \"rating_avg\": 4.7,\n            \"rating_count\": 9,\n            \"city_id\": 1,\n            \"main_image\": {\n              \"id\": 1201,\n              \"url\": \"https://cdn.vitran.ir/p/1201.jpg\",\n              \"sort_order\": 0,\n              \"is_main\": true\n            },\n            \"images\": [\n              {\n                \"id\": 1201,\n                \"url\": \"https://cdn.vitran.ir/p/1201.jpg\",\n                \"sort_order\": 0,\n                \"is_main\": true\n              }\n            ],\n            \"created_at\": \"2026-10-30T08:00:00Z\",\n            \"updated_at\": \"2026-10-30T08:00:00Z\"\n          }\n        ]\n      },\n      \"more\": {\n        \"path\": \"/home/sections/baby-toddler\",\n        \"cursor_param\": \"cursor\"\n      },\n      \"tracking\": {\n        \"section_key\": \"baby-toddler\",\n        \"source\": \"latest_products\"\n      }\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
           "name": "Get home section — banners rail",
           "request": {
             "auth": {
@@ -4116,6 +4256,14 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/summer-campaign?platform=android&app_version=2.0",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4161,6 +4309,14 @@
           "response": [
             {
               "name": "200 OK — empty last page",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home/sections/featured?cursor=12&platform=ios&app_version=1.4.0",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4196,6 +4352,22 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/home?city_id=1",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Optional — omit or clear token for anonymous feed."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4230,6 +4402,21 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/me/home/feed?city_id=1&latest_products=12&following_products=20&following_shops=8&favorite_products=12&latest_shops=10&favorite_shops=10&product_matches=12",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4297,6 +4484,36 @@
           "response": [
             {
               "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/events",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Optional JWT."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"event_type\": \"view_product\",\n  \"session_id\": \"visitor-abc-123\",\n  \"product_id\": 501,\n  \"shop_id\": 3,\n  \"category_slug\": \"aa-1-2\",\n  \"metadata\": {\n    \"from\": \"home\",\n    \"section_key\": \"popular\",\n    \"position\": 3\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
@@ -4310,6 +4527,36 @@
             },
             {
               "name": "400 Unknown event_type",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/events",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Optional JWT."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"event_type\": \"add_to_cart\",\n  \"product_id\": 501\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Bad Request",
               "code": 400,
               "_postman_previewlanguage": "json",
@@ -4352,6 +4599,22 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4401,6 +4664,36 @@
           "response": [
             {
               "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"latest-picks\",\n  \"source\": \"latest_products\",\n  \"layout\": \"horizontal_rail\",\n  \"title\": \"تازه‌ها\",\n  \"item_limit\": 12,\n  \"sort_order\": 6,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true,\n  \"platforms\": [],\n  \"min_app_version\": \"\",\n  \"starts_at\": \"\",\n  \"ends_at\": \"\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
@@ -4414,6 +4707,36 @@
             },
             {
               "name": "409 Slug exists",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"latest-picks\",\n  \"source\": \"latest_products\",\n  \"layout\": \"horizontal_rail\",\n  \"title\": \"تازه‌ها\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Conflict",
               "code": 409,
               "_postman_previewlanguage": "json",
@@ -4427,6 +4750,36 @@
             },
             {
               "name": "400 Invalid source",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"new-rail\",\n  \"source\": \"best_sellers\",\n  \"layout\": \"grid\",\n  \"title\": \"پرفروش‌ها\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Bad Request",
               "code": 400,
               "_postman_previewlanguage": "json",
@@ -4476,6 +4829,36 @@
           "response": [
             {
               "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"summer-campaign\",\n  \"source\": \"banners\",\n  \"layout\": \"hero\",\n  \"title\": \"حراج تابستانه\",\n  \"item_limit\": 5,\n  \"sort_order\": 2,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true,\n  \"platforms\": [\n    \"ios\",\n    \"android\"\n  ],\n  \"starts_at\": \"2026-07-01T00:00:00Z\",\n  \"ends_at\": \"2026-08-01T00:00:00Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
@@ -4486,6 +4869,275 @@
                 }
               ],
               "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 14,\n      \"slug\": \"summer-campaign\",\n      \"source\": \"banners\",\n      \"item_kind\": \"banners\",\n      \"layout\": \"hero\",\n      \"title\": \"حراج تابستانه\",\n      \"item_limit\": 5,\n      \"sort_order\": 2,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"platforms\": [\n        \"ios\",\n        \"android\"\n      ],\n      \"starts_at\": \"2026-07-01T00:00:00Z\",\n      \"ends_at\": \"2026-08-01T00:00:00Z\",\n      \"created_at\": \"2026-06-20T10:00:00Z\",\n      \"updated_at\": \"2026-06-20T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create category section (Baby & Toddler)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token."
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections",
+            "description": "A rail limited to one category **and all its subcategories** via `category_slug` (find slugs with `GET /api/v1/categories`; e.g. `aa` Apparel, `bt` Baby & Toddler, `el` Electronics). Works with `source` latest_products (newest), popular_products (most viewed) or featured_products (boosted); other sources answer 400 on `category_slug`. Clear it later with `PATCH {\"category_slug\": \"\"}`. Apps need no change; \"see all\" pages through `GET /home/sections/{key}` (covers the whole category tree). See docs/frontend/home-screen/HANDOVER.md",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"baby-toddler\",\n  \"source\": \"latest_products\",\n  \"category_slug\": \"bt\",\n  \"layout\": \"horizontal_rail\",\n  \"title\": \"کودک و نوزاد\",\n  \"subtitle\": \"تازه‌ترین‌ها\",\n  \"item_limit\": 12,\n  \"sort_order\": 3,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"baby-toddler\",\n  \"source\": \"latest_products\",\n  \"category_slug\": \"bt\",\n  \"layout\": \"horizontal_rail\",\n  \"title\": \"کودک و نوزاد\",\n  \"subtitle\": \"تازه‌ترین‌ها\",\n  \"item_limit\": 12,\n  \"sort_order\": 3,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 21,\n      \"slug\": \"baby-toddler\",\n      \"source\": \"latest_products\",\n      \"item_kind\": \"products\",\n      \"layout\": \"horizontal_rail\",\n      \"title\": \"کودک و نوزاد\",\n      \"subtitle\": \"تازه‌ترین‌ها\",\n      \"item_limit\": 12,\n      \"sort_order\": 3,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"category_slug\": \"bt\",\n      \"platforms\": [],\n      \"created_at\": \"2026-11-02T10:00:00Z\",\n      \"updated_at\": \"2026-11-02T10:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 Category not allowed / unknown",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"category_slug\",\n      \"messages\": [\n        \"دسته‌بندی نامعتبر است یا برای این منبع داده قابل استفاده نیست (فقط latest_products، popular_products و featured_products).\"\n      ]\n    }\n  ]\n}",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"baby-following\",\n  \"source\": \"following_products\",\n  \"category_slug\": \"bt\",\n  \"layout\": \"horizontal_rail\",\n  \"title\": \"کودک و نوزاد\",\n  \"subtitle\": \"تازه‌ترین‌ها\",\n  \"item_limit\": 12,\n  \"sort_order\": 3,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create category section — most viewed clothing (grid)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token."
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections",
+            "description": "Most viewed products (last 30 days, per city) in **Apparel & Accessories** (`aa`) and all its subcategories, as a grid. The app pages it with `GET /home/sections/popular-apparel?cursor=pop:6`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"popular-apparel\",\n  \"source\": \"popular_products\",\n  \"category_slug\": \"aa\",\n  \"layout\": \"grid\",\n  \"title\": \"پربازدیدترین پوشاک\",\n  \"item_limit\": 6,\n  \"sort_order\": 5,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"popular-apparel\",\n  \"source\": \"popular_products\",\n  \"category_slug\": \"aa\",\n  \"layout\": \"grid\",\n  \"title\": \"پربازدیدترین پوشاک\",\n  \"item_limit\": 6,\n  \"sort_order\": 5,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 22,\n      \"slug\": \"popular-apparel\",\n      \"source\": \"popular_products\",\n      \"item_kind\": \"products\",\n      \"layout\": \"grid\",\n      \"title\": \"پربازدیدترین پوشاک\",\n      \"item_limit\": 6,\n      \"sort_order\": 5,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"category_slug\": \"aa\",\n      \"platforms\": [],\n      \"created_at\": \"2026-11-02T10:05:00Z\",\n      \"updated_at\": \"2026-11-02T10:05:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create category section — Electronics week (scheduled campaign)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token."
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections",
+            "description": "Boosted (featured) products in **Electronics** (`el`), iOS and Android only, shown from 20 to 27 November and hidden automatically outside that window, or while no Electronics product is boosted (`hide_when_empty`).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"electronics-week\",\n  \"source\": \"featured_products\",\n  \"category_slug\": \"el\",\n  \"layout\": \"horizontal_rail\",\n  \"title\": \"هفته الکترونیک\",\n  \"subtitle\": \"پیشنهادهای ویژه\",\n  \"item_limit\": 10,\n  \"sort_order\": 2,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true,\n  \"platforms\": [\n    \"ios\",\n    \"android\"\n  ],\n  \"starts_at\": \"2026-11-20T00:00:00Z\",\n  \"ends_at\": \"2026-11-27T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"slug\": \"electronics-week\",\n  \"source\": \"featured_products\",\n  \"category_slug\": \"el\",\n  \"layout\": \"horizontal_rail\",\n  \"title\": \"هفته الکترونیک\",\n  \"subtitle\": \"پیشنهادهای ویژه\",\n  \"item_limit\": 10,\n  \"sort_order\": 2,\n  \"active\": true,\n  \"audience\": \"all\",\n  \"hide_when_empty\": true,\n  \"platforms\": [\n    \"ios\",\n    \"android\"\n  ],\n  \"starts_at\": \"2026-11-20T00:00:00Z\",\n  \"ends_at\": \"2026-11-27T00:00:00Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت ایجاد شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 23,\n      \"slug\": \"electronics-week\",\n      \"source\": \"featured_products\",\n      \"item_kind\": \"products\",\n      \"layout\": \"horizontal_rail\",\n      \"title\": \"هفته الکترونیک\",\n      \"subtitle\": \"پیشنهادهای ویژه\",\n      \"item_limit\": 10,\n      \"sort_order\": 2,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"category_slug\": \"el\",\n      \"platforms\": [\n        \"ios\",\n        \"android\"\n      ],\n      \"starts_at\": \"2026-11-20T00:00:00Z\",\n      \"ends_at\": \"2026-11-27T00:00:00Z\",\n      \"created_at\": \"2026-11-02T10:10:00Z\",\n      \"updated_at\": \"2026-11-02T10:10:00Z\"\n    }\n  },\n  \"errors\": []\n}"
             }
           ]
         },
@@ -4511,6 +5163,22 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/14",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4578,6 +5246,36 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/14",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"حراج تابستانه ۱۴۰۵\",\n  \"ends_at\": \"2026-09-01T00:00:00Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4591,6 +5289,36 @@
             },
             {
               "name": "400 Bad schedule",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/14",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"starts_at\": \"2026-09-01T00:00:00Z\",\n  \"ends_at\": \"2026-08-01T00:00:00Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Bad Request",
               "code": 400,
               "_postman_previewlanguage": "json",
@@ -4601,6 +5329,214 @@
                 }
               ],
               "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"ends_at\",\n      \"messages\": [\n        \"زمان پایان باید بعد از زمان شروع باشد.\"\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update home section — change or clear category",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ],
+              "description": "Admin token."
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/home/sections/21",
+            "description": "`category_slug`: a slug switches the rail to that category tree, `\"\"` makes it an all-categories rail again, omit to keep it. Changing `source` of a category rail to one that does not support categories answers 400 (clear the category first).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_slug\": \"aa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK — switch to Apparel",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/21",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"category_slug\": \"aa\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 21,\n      \"slug\": \"baby-toddler\",\n      \"source\": \"latest_products\",\n      \"item_kind\": \"products\",\n      \"layout\": \"horizontal_rail\",\n      \"title\": \"کودک و نوزاد\",\n      \"subtitle\": \"تازه‌ترین‌ها\",\n      \"item_limit\": 12,\n      \"sort_order\": 3,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"category_slug\": \"aa\",\n      \"platforms\": [],\n      \"created_at\": \"2026-11-02T10:00:00Z\",\n      \"updated_at\": \"2026-11-03T09:00:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "200 OK — clear category (all categories)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/21",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"category_slug\": \"\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"بخش صفحه اصلی با موفقیت به‌روزرسانی شد\",\n  \"code\": 1,\n  \"data\": {\n    \"home_section\": {\n      \"id\": 21,\n      \"slug\": \"baby-toddler\",\n      \"source\": \"latest_products\",\n      \"item_kind\": \"products\",\n      \"layout\": \"horizontal_rail\",\n      \"title\": \"کودک و نوزاد\",\n      \"subtitle\": \"تازه‌ترین‌ها\",\n      \"item_limit\": 12,\n      \"sort_order\": 3,\n      \"active\": true,\n      \"audience\": \"all\",\n      \"hide_when_empty\": true,\n      \"platforms\": [],\n      \"created_at\": \"2026-11-02T10:00:00Z\",\n      \"updated_at\": \"2026-11-03T09:05:00Z\"\n    }\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "400 Unknown category",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/21",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"category_slug\": \"does-not-exist\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"category_slug\",\n      \"messages\": [\n        \"دسته‌بندی نامعتبر است یا برای این منبع داده قابل استفاده نیست (فقط latest_products، popular_products و featured_products).\"\n      ]\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Source does not support categories",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/21",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"source\": \"following_products\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"داده‌های ارسالی نامعتبر است.\",\n  \"code\": -2,\n  \"data\": null,\n  \"errors\": [\n    {\n      \"reason\": \"category_slug\",\n      \"messages\": [\n        \"دسته‌بندی نامعتبر است یا برای این منبع داده قابل استفاده نیست (فقط latest_products، popular_products و featured_products).\"\n      ]\n    }\n  ]\n}"
             }
           ]
         },
@@ -4626,6 +5562,22 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/14",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4639,6 +5591,22 @@
             },
             {
               "name": "404 Not found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/999",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                }
+              },
               "status": "Not Found",
               "code": 404,
               "_postman_previewlanguage": "json",
@@ -4674,6 +5642,22 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/14/banners",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4741,6 +5725,36 @@
           "response": [
             {
               "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/14/banners",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"image_url\": \"https://cdn.vitran.ir/banners/summer.jpg\",\n  \"title\": \"تا ۴۰٪ تخفیف\",\n  \"action_type\": \"open_section\",\n  \"action_value\": \"popular\",\n  \"sort_order\": 1,\n  \"active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
@@ -4754,6 +5768,36 @@
             },
             {
               "name": "400 Invalid action",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/14/banners",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"image_url\": \"https://cdn.vitran.ir/banners/x.jpg\",\n  \"action_type\": \"open_url\",\n  \"action_value\": \"javascript:alert(1)\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Bad Request",
               "code": 400,
               "_postman_previewlanguage": "json",
@@ -4767,6 +5811,36 @@
             },
             {
               "name": "400 Invalid image_url",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/sections/14/banners",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"image_url\": \"ftp://cdn.vitran.ir/banners/x.jpg\",\n  \"action_type\": \"none\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Bad Request",
               "code": 400,
               "_postman_previewlanguage": "json",
@@ -4802,6 +5876,22 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/banners/12",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4869,6 +5959,36 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/admin/home/banners/12",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"تا ۵۰٪ تخفیف\",\n  \"active\": false,\n  \"ends_at\": \"\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4904,6 +6024,22 @@
           "response": [
             {
               "name": "200 OK",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/banners/12",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -4917,6 +6053,22 @@
             },
             {
               "name": "404 Not found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/home/banners/999",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ],
+                  "description": "Admin token (delete section needs a super-admin)."
+                }
+              },
               "status": "Not Found",
               "code": 404,
               "_postman_previewlanguage": "json",
@@ -4990,7 +6142,8 @@
             },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/me/follows/shops/1"
+            "url": "{{baseUrl}}/api/v1/me/follows/shops/1",
+            "description": ""
           },
           "response": []
         },
@@ -5009,7 +6162,8 @@
             },
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/me/follows/shops/1"
+            "url": "{{baseUrl}}/api/v1/me/follows/shops/1",
+            "description": ""
           },
           "response": []
         }
@@ -5101,7 +6255,8 @@
             },
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/me/favorites/shops/1"
+            "url": "{{baseUrl}}/api/v1/me/favorites/shops/1",
+            "description": ""
           },
           "response": [
             {
@@ -5202,7 +6357,8 @@
             },
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/v1/me/favorites/products/1"
+            "url": "{{baseUrl}}/api/v1/me/favorites/products/1",
+            "description": ""
           },
           "response": [
             {

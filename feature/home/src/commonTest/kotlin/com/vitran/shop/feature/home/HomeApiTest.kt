@@ -2,6 +2,7 @@ package com.vitran.shop.feature.home
 
 import com.vitran.shop.core.domain.result.AppResult
 import com.vitran.shop.core.network.config.ApiEnvironment
+import com.vitran.shop.core.network.serialization.createNetworkJson
 import com.vitran.shop.feature.home.data.HomeClientContext
 import com.vitran.shop.feature.home.data.mapper.toDomain
 import com.vitran.shop.feature.home.data.remote.HomeApi
@@ -338,7 +339,59 @@ class HomeApiTest {
         assertEquals(501L, product.id)
         assertEquals("aa-1-2", product.categorySlug)
         assertEquals(3L, product.shopId)
+        assertNull(popular.categorySlug)
     }
+
+    @Test
+    fun babyToddlerSection_keepsCategorySlugAndSectionPath() {
+        val section = createNetworkJson()
+            .decodeFromString(HomeSectionDataDto.serializer(), babyToddlerSection)
+            .section
+            .toDomain()
+
+        assertEquals("baby-toddler", section.key)
+        assertEquals("bt", section.categorySlug)
+        assertEquals("تازه‌ترین‌ها", section.subtitle)
+        assertEquals("/home/sections/baby-toddler", section.morePath)
+        val product = section.items.results.single() as HomeRailItem.Product
+        assertEquals("bt-4-2", product.categorySlug)
+    }
+
+    private val babyToddlerSection = """
+        {
+          "section": {
+            "id": 21,
+            "key": "baby-toddler",
+            "type": "products",
+            "layout": "horizontal_rail",
+            "title": "کودک و نوزاد",
+            "subtitle": "تازه‌ترین‌ها",
+            "requires_auth": false,
+            "category_slug": "bt",
+            "hide_when_empty": true,
+            "empty": false,
+            "items": {
+              "per_page": 12,
+              "has_more": true,
+              "next_cursor": "731",
+              "total": 54,
+              "results": [
+                {
+                  "id": 742,
+                  "shop_id": 18,
+                  "title": "سرهمی نوزادی پنبه‌ای",
+                  "slug": "cotton-baby-romper",
+                  "category_slug": "bt-4-2",
+                  "price": 380000,
+                  "compare_at_price": 450000
+                }
+              ]
+            },
+            "more": { "path": "/home/sections/baby-toddler", "cursor_param": "cursor" },
+            "tracking": { "section_key": "baby-toddler", "source": "latest_products", "position": 3 }
+          }
+        }
+    """.trimIndent()
 
     private val guestScreenEnvelope = """
         {

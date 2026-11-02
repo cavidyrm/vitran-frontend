@@ -1,0 +1,518 @@
+openapi: 3.0.3
+info:
+  title: Vitran home screen API
+  version: "1.1.0"
+  description: |
+    Server-driven home page. Render sections in order, switch on `type` and
+    `layout`, skip anything unknown. Guide: README.md in this folder.
+servers:
+  - url: https://vitran.ir/api/v1
+  - url: http://localhost:8080/api/v1
+security:
+  - {}
+  - bearerAuth: []
+paths:
+  /home/screen:
+    get:
+      summary: Whole home page (first page of every rail)
+      operationId: getHomeScreen
+      parameters:
+        - $ref: "#/components/parameters/CityId"
+        - $ref: "#/components/parameters/Platform"
+        - $ref: "#/components/parameters/AppVersion"
+      responses:
+        "200":
+          description: Screen
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [screen]
+                        properties:
+                          screen:
+                            $ref: "#/components/schemas/Screen"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          description: Rail definitions could not be read. A failing rail's data never causes this; that rail is dropped instead.
+  /home/sections/{key}:
+    get:
+      summary: One rail, any page
+      operationId: getHomeSection
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema: { type: string }
+          description: Section `key` from the screen.
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100 }
+          description: Defaults to the rail's configured size (`item_limit`). Values above 100 are capped.
+        - name: cursor
+          in: query
+          schema: { type: string }
+          description: Opaque `items.next_cursor` of the previous page (e.g. `412`, `pop:24`). On a one-page rail it returns an empty page.
+        - $ref: "#/components/parameters/CityId"
+        - $ref: "#/components/parameters/Platform"
+        - $ref: "#/components/parameters/AppVersion"
+      responses:
+        "200":
+          description: Section
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [section]
+                        properties:
+                          section:
+                            $ref: "#/components/schemas/Section"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Rail has `requires_auth` and no valid token was sent.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+              example:
+                success: false
+                message: برای مشاهده این بخش باید وارد شوید.
+                code: 401
+                data: null
+                errors: [ { reason: _global, messages: [ برای مشاهده این بخش باید وارد شوید. ] } ]
+        "404":
+          description: Unknown or inactive key; rail outside its schedule or not for this platform / app version; guest-only rail requested with a token.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+              example:
+                success: false
+                message: بخش صفحه اصلی یافت نشد.
+                code: 404
+                data: null
+                errors: [ { reason: _global, messages: [ بخش صفحه اصلی یافت نشد. ] } ]
+  /events:
+    post:
+      summary: Track a user event (feeds the popular and "for you" rails)
+      operationId: trackEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_type]
+              properties:
+                event_type:
+                  type: string
+                  enum: [view_product, search, click_category, wishlist, purchase_intent, follow_shop, view_shop]
+                product_id: { type: integer }
+                shop_id: { type: integer }
+                category_slug: { type: string, description: Needed (with a token) for "for you" to learn the user's categories. }
+                search_query: { type: string }
+                session_id: { type: string }
+                metadata: { type: object, additionalProperties: true }
+            example: { event_type: view_product, product_id: 501, shop_id: 3, category_slug: aa-1-2, session_id: 6f1c2a }
+      responses:
+        "201":
+          description: Recorded
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /admin/home/sections:
+    get:
+      summary: "Admin: list all rails (active or not)"
+      operationId: adminListHomeSections
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      responses:
+        "200":
+          description: "`data.home_sections`"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          home_sections: { type: array, items: { $ref: "#/components/schemas/AdminSection" } }
+    post:
+      summary: "Admin: create a rail"
+      operationId: adminCreateHomeSection
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminSectionInput" }
+            example:
+              slug: summer-campaign
+              source: banners
+              layout: hero
+              title: حراج تابستانه
+              item_limit: 5
+              sort_order: 2
+              active: true
+              audience: all
+              hide_when_empty: true
+              platforms: [ios, android]
+              starts_at: "2026-07-01T00:00:00Z"
+              ends_at: "2026-08-01T00:00:00Z"
+      responses:
+        "201": { description: "`data.home_section`" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "409": { description: Slug already exists (`reason` slug). }
+  /admin/home/sections/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      summary: "Admin: get a rail"
+      operationId: adminGetHomeSection
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      responses:
+        "200": { description: "`data.home_section`" }
+        "404": { description: Not found }
+    patch:
+      summary: "Admin: update a rail (omit a field to keep it; \"\" clears starts_at, ends_at, min_app_version; [] platforms = all)"
+      operationId: adminUpdateHomeSection
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminSectionInput" }
+            example: { title: حراج تابستانه ۱۴۰۵, ends_at: "2026-12-01T00:00:00Z" }
+      responses:
+        "200": { description: "`data.home_section`" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "404": { description: Not found }
+    delete:
+      summary: "Super-admin: delete a rail and its banners"
+      operationId: adminDeleteHomeSection
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      responses:
+        "200": { description: Deleted }
+        "404": { description: Not found }
+  /admin/home/sections/{id}/banners:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      summary: "Admin: list a banners rail's banners (live or not)"
+      operationId: adminListHomeBanners
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      responses:
+        "200": { description: "`data.home_banners`" }
+        "400": { description: Rail source is not banners (`reason` section_id). }
+        "404": { description: Rail not found }
+    post:
+      summary: "Admin: add a banner"
+      operationId: adminCreateHomeBanner
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminBannerInput" }
+            example:
+              image_url: https://cdn.vitran.ir/banners/summer.jpg
+              title: تا ۴۰٪ تخفیف
+              action_type: open_section
+              action_value: popular
+              sort_order: 1
+              active: true
+      responses:
+        "201": { description: "`data.home_banner`" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "404": { description: Rail not found }
+  /admin/home/banners/{banner_id}:
+    parameters:
+      - { name: banner_id, in: path, required: true, schema: { type: integer } }
+    get:
+      summary: "Admin: get a banner"
+      operationId: adminGetHomeBanner
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      responses:
+        "200": { description: "`data.home_banner`" }
+        "404": { description: Not found }
+    patch:
+      summary: "Admin: update a banner"
+      operationId: adminUpdateHomeBanner
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminBannerInput" }
+            example: { title: تا ۵۰٪ تخفیف, active: false, ends_at: "" }
+      responses:
+        "200": { description: "`data.home_banner`" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "404": { description: Not found }
+    delete:
+      summary: "Admin: delete a banner"
+      operationId: adminDeleteHomeBanner
+      tags: [admin]
+      security: [ { bearerAuth: [] } ]
+      responses:
+        "200": { description: Deleted }
+        "404": { description: Not found }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    CityId:
+      name: city_id
+      in: query
+      schema: { type: integer }
+      description: Filters products and shops to a city. `city_slug` is also accepted.
+    Platform:
+      name: platform
+      in: query
+      schema: { type: string, enum: [ios, android, web] }
+      description: Also accepted as header `X-App-Platform`. Query wins.
+    AppVersion:
+      name: app_version
+      in: query
+      schema: { type: string, pattern: '^\d+(\.\d+){0,3}$', example: "1.4.0" }
+      description: Also accepted as header `X-App-Version`. Query wins.
+  responses:
+    ValidationError:
+      description: Bad parameter (`code` -2, field errors in `errors`).
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+          example:
+            success: false
+            message: داده‌های ارسالی نامعتبر است.
+            code: -2
+            data: null
+            errors: [ { reason: platform, messages: [ پلتفرم باید ios، android یا web باشد. ] } ]
+  schemas:
+    Envelope:
+      type: object
+      required: [success, message, code, data, errors]
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        code: { type: integer, description: "1 = success, -2 = validation error, otherwise the HTTP status (401, 404, 409, …)" }
+        data: { type: object, nullable: true }
+        errors:
+          type: array
+          items: { $ref: "#/components/schemas/FieldError" }
+    ErrorEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            success: { type: boolean, enum: [false] }
+    FieldError:
+      type: object
+      required: [reason, messages]
+      properties:
+        reason: { type: string, description: "Offending field (`platform`, `limit`, `slug`, …) or `_global`." }
+        messages: { type: array, items: { type: string }, description: "Localized, safe to show." }
+    Screen:
+      type: object
+      required: [revision, sections]
+      properties:
+        revision:
+          type: integer
+          format: int64
+          maximum: 9007199254740991
+          description: |
+            Opaque layout fingerprint, safe as a JavaScript number. Same layout -> same value
+            on every request and server. Changes when rails are added, removed, edited or
+            reordered, when a scheduled rail or banner starts or ends, and when banners change.
+            Compare for equality only.
+        city_id: { type: integer }
+        sections:
+          type: array
+          description: Render in this order.
+          items: { $ref: "#/components/schemas/Section" }
+    Section:
+      type: object
+      required: [key, type, layout, title, requires_auth, hide_when_empty, empty, items]
+      properties:
+        id: { type: integer }
+        key: { type: string }
+        type:
+          type: string
+          description: Skip values you do not know.
+          enum: [products, shops, categories, banners]
+        layout:
+          type: string
+          description: Skip values you do not know. `hero` is for banners.
+          enum: [horizontal_rail, grid, chips, hero]
+        title: { type: string }
+        subtitle: { type: string }
+        category_slug: { type: string, description: "Present when the rail is limited to a category and its subcategories (e.g. bt). See-all still uses /home/sections/{key}." }
+        requires_auth: { type: boolean, description: "True when the rail needs a logged-in user (audience or user-only data source). Guests never receive such rails." }
+        hide_when_empty: { type: boolean }
+        empty: { type: boolean }
+        items: { $ref: "#/components/schemas/Items" }
+        more:
+          type: object
+          description: Present for products and shops rails.
+          required: [path, cursor_param]
+          properties:
+            path: { type: string, description: "Relative to the API prefix, e.g. /home/sections/popular" }
+            cursor_param: { type: string, example: cursor }
+        tracking: { $ref: "#/components/schemas/Tracking" }
+    Tracking:
+      type: object
+      required: [section_key, source]
+      properties:
+        section_key: { type: string }
+        source: { type: string }
+        position: { type: integer, minimum: 1, description: Only on /home/screen. }
+    Items:
+      type: object
+      required: [per_page, has_more, results]
+      properties:
+        per_page: { type: integer }
+        has_more: { type: boolean }
+        next_cursor: { type: string, description: 'Opaque. Absent or "" when there is no next page.' }
+        total: { type: integer, description: Only on the first page of some rails. Do not depend on it. }
+        results:
+          type: array
+          description: Shape depends on the section `type`.
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/Product"
+              - $ref: "#/components/schemas/Shop"
+              - $ref: "#/components/schemas/Category"
+              - $ref: "#/components/schemas/Banner"
+    Product:
+      type: object
+      required: [id, shop_id, title, slug, category_slug, price]
+      properties:
+        id: { type: integer }
+        shop_id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        category_slug: { type: string }
+        price: { type: integer }
+        compare_at_price: { type: integer, description: On sale when present and greater than price. }
+        price_after_off: { type: integer }
+        rating_avg: { type: number }
+        rating_count: { type: integer }
+        main_image: { $ref: "#/components/schemas/Image" }
+        images:
+          type: array
+          items: { $ref: "#/components/schemas/Image" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Image:
+      type: object
+      properties:
+        id: { type: integer }
+        url: { type: string }
+        sort_order: { type: integer }
+        is_main: { type: boolean }
+    Shop:
+      type: object
+      required: [id, title, slug, type]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        avatar_url: { type: string }
+        description: { type: string }
+        city_id: { type: integer }
+        type: { type: string, enum: [retailer, wholesaler] }
+        rating_avg: { type: number }
+        rating_count: { type: integer }
+        share_url: { type: string }
+    Category:
+      type: object
+      required: [slug, title, level, is_leaf]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        name: { type: string, description: Localized display name. Prefer over title. }
+        icon_url: { type: string }
+        level: { type: integer }
+        is_leaf: { type: boolean }
+        product_count: { type: integer }
+        shop_count: { type: integer }
+    Banner:
+      type: object
+      required: [id, image_url, action]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        subtitle: { type: string }
+        image_url: { type: string, format: uri }
+        action: { $ref: "#/components/schemas/Action" }
+    Action:
+      type: object
+      required: [type]
+      description: Ignore unknown `type` values (treat as none).
+      properties:
+        type:
+          type: string
+          enum: [none, open_product, open_shop, open_category, open_section, open_url]
+        value:
+          type: string
+          description: |
+            open_product / open_shop: id. open_category: category slug.
+            open_section: section key. open_url: http(s) URL. Omitted for none.
+    AdminSectionInput:
+      type: object
+      properties:
+        slug: { type: string, minLength: 3, maxLength: 100, description: Create only. Becomes the public `key`. }
+        source:
+          type: string
+          enum: [featured_products, personal_products, following_products, popular_products, latest_products, favorite_products, product_matches, latest_shops, following_shops, favorite_shops, categories, banners]
+        layout: { type: string, enum: [horizontal_rail, grid, chips, hero] }
+        category_slug: { type: string, example: bt, description: 'Only with latest_products, popular_products, featured_products. Limits the rail to this category and all subcategories. "" = all categories (clears on PATCH).' }
+        title: { type: string, minLength: 2, maxLength: 200 }
+        subtitle: { type: string }
+        item_limit: { type: integer, minimum: 1, maximum: 100, default: 12 }
+        sort_order: { type: integer }
+        active: { type: boolean }
+        audience: { type: string, enum: [all, authenticated, guest], default: all }
+        hide_when_empty: { type: boolean }
+        platforms: { type: array, items: { type: string, enum: [ios, android, web] }, description: Empty = all. }
+        min_app_version: { type: string, example: "2.0.0" }
+        starts_at: { type: string, format: date-time, description: 'RFC 3339; "" clears on PATCH.' }
+        ends_at: { type: string, format: date-time, description: 'Exclusive; must be after starts_at; "" clears on PATCH.' }
+    AdminSection:
+      allOf:
+        - $ref: "#/components/schemas/AdminSectionInput"
+        - type: object
+          properties:
+            id: { type: integer }
+            item_kind: { type: string, enum: [products, shops, categories, banners] }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+    AdminBannerInput:
+      type: object
+      properties:
+        image_url: { type: string, format: uri, description: Required on create. http(s) only. }
+        title: { type: string }
+        subtitle: { type: string }
+        action_type: { type: string, enum: [none, open_product, open_shop, open_category, open_section, open_url], default: none }
+        action_value: { type: string, description: See Action. Must be empty for none. }
+        sort_order: { type: integer }
+        active: { type: boolean }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }

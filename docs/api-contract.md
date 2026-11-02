@@ -1,6 +1,6 @@
 # API Contract Summary
 
-Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (149 requests, 141 `/api/v1` route templates).
+Client-facing summary of the Vitran marketplace backend. **Source of truth:** [`postman/vitran-api.postman_collection.json`](postman/vitran-api.postman_collection.json) (154 requests, 141 `/api/v1` route templates). Home-screen field guide: [`frontend/home-screen/`](frontend/home-screen/).
 
 **Client active version:** `/api/v1` only. `/api/v2` mirror exists in the collection but is not implemented in the client until an explicit migration phase.
 
@@ -179,10 +179,12 @@ Guest calls omit `requires_auth` rails (`for-you`, `following`, favourites, `pic
 | `layout` | `horizontal_rail` \| `grid` \| `chips` \| `hero` |
 | `items` | `{ per_page, has_more, next_cursor?, total?, results }` |
 | `more` | `{ path, cursor_param }` — `path` has no `/api/v1` prefix, e.g. `/home/sections/popular` |
-| flags | `requires_auth`, `hide_when_empty`, `empty`, optional `subtitle` |
+| flags | `requires_auth`, `hide_when_empty`, `empty`, optional `subtitle`, optional `category_slug` |
 | `tracking` | `{ section_key, source, position? }` — rail fingerprint for `POST /events` metadata |
 
 Skip a section when `type` or `layout` is unknown, and when `empty` is true and `hide_when_empty` is true. Do not throw.
+
+`category_slug` is present when a product rail is limited to that category and its subcategories (for example `bt`). See-all still pages `GET /home/sections/{key}`. `GET /products?category_slug=` matches one exact category and is not a substitute.
 
 Item shapes (illustrative fields; unknown keys ignored):
 
@@ -201,7 +203,7 @@ GET /api/v1{more.path}?{cursor_param}={next_cursor}&limit={per_page}&city_id=&pl
 
 Append `data.section.items.results`. `total` is omitted once a cursor is sent. Stop when `has_more` is false.
 
-Admin home CRUD (`/admin/home/sections`, `/admin/home/banners`) is called from `/admin/home` for admin and super-admin. List is `data.home_sections[]`, one section is `data.home_section` (`id`, `slug`, `source`, `item_kind`, `layout`, `title`, `item_limit`, `sort_order`, `active`, `audience`, `hide_when_empty`, `platforms`, optional `min_app_version`, `starts_at` / `ends_at`). `slug` is sent only on create and stays fixed after that. Create returns **409** when `slug` already exists; that error is shown on the slug field. Deleting a section needs a super-admin. Banners are edited only when `source` is `banners`. A banner `image_url` must be `http` or `https`. Banner actions are `none`, `open_product`, `open_shop`, `open_category`, `open_section`, and `open_url`. The response nests `action: { type, value }`.
+Admin home CRUD (`/admin/home/sections`, `/admin/home/banners`) is called from `/admin/home` for admin and super-admin. List is `data.home_sections[]`, one section is `data.home_section` (`id`, `slug`, `source`, `item_kind`, `layout`, `title`, optional `subtitle`, `item_limit`, `sort_order`, `active`, `audience`, `hide_when_empty`, `platforms`, optional `category_slug`, `min_app_version`, `starts_at` / `ends_at`). `slug` is sent only on create and stays fixed after that. Optional `subtitle` is sent on create and update; an empty string clears it. `category_slug` is sent only for `latest_products`, `popular_products`, and `featured_products` (the category and its subcategories; `""` means all categories). Other sources omit it, unless a saved slug must be cleared with `""` so a source change does not return 400. Create returns **409** when `slug` already exists; that error is shown on the slug field. A 400 on `category_slug` is shown on the category field. Deleting a section needs a super-admin. Banners are edited only when `source` is `banners`. A banner `image_url` must be `http` or `https`. Banner actions are `none`, `open_product`, `open_shop`, `open_category`, `open_section`, and `open_url`. The response nests `action: { type, value }`.
 
 ---
 

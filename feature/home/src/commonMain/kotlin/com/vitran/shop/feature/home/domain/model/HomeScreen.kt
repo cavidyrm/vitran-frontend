@@ -57,6 +57,8 @@ data class HomeRail(
     val layout: HomeRailLayout,
     val title: String?,
     val subtitle: String?,
+    /** Set when the rail is limited to this category and its subcategories. See-all still uses [morePath]. */
+    val categorySlug: String? = null,
     val requiresAuth: Boolean,
     val hideWhenEmpty: Boolean,
     val empty: Boolean,

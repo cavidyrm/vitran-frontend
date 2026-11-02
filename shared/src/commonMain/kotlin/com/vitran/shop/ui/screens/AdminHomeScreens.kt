@@ -17,6 +17,10 @@ import com.vitran.shop.feature.admin.home.domain.AdminHomeBanner
 import com.vitran.shop.feature.admin.home.domain.AdminHomeSection
 import com.vitran.shop.feature.admin.home.domain.SaveAdminHomeBannerCommand
 import com.vitran.shop.feature.admin.home.domain.SaveAdminHomeSectionCommand
+import com.vitran.shop.feature.admin.home.domain.homeSectionCategorySources
+import com.vitran.shop.feature.admin.home.domain.resolveHomeSectionCategorySlug
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerUiState
+import com.vitran.shop.feature.taxonomy.presentation.TaxonomyPickerViewModel
 import com.vitran.shop.feature.admin.home.presentation.AdminHomeAccess
 import com.vitran.shop.feature.admin.home.presentation.AdminHomeSectionEditorViewModel
 import com.vitran.shop.feature.admin.home.presentation.AdminHomeSectionsViewModel
@@ -27,8 +31,11 @@ import com.vitran.shop.ui.components.admin.AdminPrimaryButton
 import com.vitran.shop.ui.components.admin.AdminSecondaryButton
 import com.vitran.shop.ui.components.admin.AdminSelectField
 import com.vitran.shop.ui.components.admin.AdminSelectOption
+import com.vitran.shop.ui.components.admin.AdminTaxonomyPicker
 import com.vitran.shop.ui.components.admin.AdminTextField
+import com.vitran.shop.ui.components.admin.AdminTokens
 import com.vitran.shop.ui.components.admin.AdminToggleRow
+import com.vitran.shop.ui.sections.reference.toAdminTaxonomyNodes
 import com.vitran.shop.di.vitranKoinViewModel
 import com.vitran.shop.ui.theme.VitranSpacing
 import org.koin.core.parameter.parametersOf
@@ -93,8 +100,10 @@ fun AdminHomeSectionEditorScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AdminHomeSectionEditorViewModel = vitranKoinViewModel { parametersOf(sectionId) },
+    taxonomyViewModel: TaxonomyPickerViewModel = vitranKoinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val taxonomyState by taxonomyViewModel.uiState.collectAsStateWithLifecycle()
     var form by remember { mutableStateOf(HomeSectionForm()) }
     var boundSectionId by remember { mutableStateOf<Long?>(null) }
     var bannerForm by remember { mutableStateOf(HomeBannerForm()) }
@@ -145,8 +154,12 @@ fun AdminHomeSectionEditorScreen(
                     slugLocked = state.section != null,
                     saving = state.saving,
                     fieldErrors = state.fieldErrors,
+                    taxonomyState = taxonomyState,
+                    onTaxonomyRetry = taxonomyViewModel::retry,
                     onChange = { form = it },
-                    onSave = { viewModel.saveSection(form.toCommand()) },
+                    onSave = {
+                        viewModel.saveSection(form.toCommand(state.section?.categorySlug))
+                    },
                 )
                 if (state.section?.source == "banners") {
                     HomeBannersCard(
@@ -185,6 +198,8 @@ private fun HomeSectionFormCard(
     slugLocked: Boolean,
     saving: Boolean,
     fieldErrors: Map<String, String>,
+    taxonomyState: TaxonomyPickerUiState,
+    onTaxonomyRetry: () -> Unit,
     onChange: (HomeSectionForm) -> Unit,
     onSave: () -> Unit,
 ) {
@@ -218,6 +233,26 @@ private fun HomeSectionFormCard(
             onValueChange = { onChange(form.copy(title = it)) },
             error = fieldErrors["title"],
         )
+        AdminTextField(
+            label = "زیرعنوان",
+            value = form.subtitle,
+            onValueChange = { onChange(form.copy(subtitle = it)) },
+            error = fieldErrors["subtitle"],
+            helper = "خالی یعنی بدون زیرعنوان.",
+        )
+        if (form.source in homeSectionCategorySources) {
+            HomeSectionCategoryField(
+                categorySlug = form.categorySlug,
+                taxonomyState = taxonomyState,
+                error = fieldErrors["category_slug"],
+                onCategorySlugChange = { onChange(form.copy(categorySlug = it)) },
+                onTaxonomyRetry = onTaxonomyRetry,
+            )
+        } else {
+            fieldErrors["category_slug"]?.let { message ->
+                VitranText(message, VitranTextStyle.Label, color = AdminTokens.Destructive)
+            }
+        }
         AdminTextField(
             label = "تعداد آیتم",
             value = form.itemLimit,
@@ -399,11 +434,60 @@ private fun HomeBannersCard(
     }
 }
 
+@Composable
+private fun HomeSectionCategoryField(
+    categorySlug: String,
+    taxonomyState: TaxonomyPickerUiState,
+    error: String?,
+    onCategorySlugChange: (String) -> Unit,
+    onTaxonomyRetry: () -> Unit,
+) {
+    val taxonomyRoots = when (taxonomyState) {
+        is TaxonomyPickerUiState.Content -> taxonomyState.roots.toAdminTaxonomyNodes()
+        else -> emptyList()
+    }
+    val selected = categorySlug.takeIf { it.isNotBlank() }
+    Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.sm)) {
+        AdminTaxonomyPicker(
+            label = "دسته‌بندی",
+            valueId = selected,
+            roots = taxonomyRoots,
+            onSelect = { node -> onCategorySlugChange(node.id) },
+            placeholder = "همه دسته‌ها",
+            helper = "این دسته و همه زیردسته‌هایش. خالی یعنی همه دسته‌ها.",
+        )
+        if (selected != null) {
+            AdminSecondaryButton(
+                label = "حذف دسته‌بندی",
+                onClick = { onCategorySlugChange("") },
+            )
+        }
+        when (taxonomyState) {
+            TaxonomyPickerUiState.Loading ->
+                VitranText("در حال بارگذاری دسته‌بندی‌ها…", VitranTextStyle.Label)
+            TaxonomyPickerUiState.Empty ->
+                VitranText("دسته‌بندی‌ای ثبت نشده است", VitranTextStyle.Label)
+            is TaxonomyPickerUiState.Error -> {
+                VitranText(
+                    text = taxonomyState.message,
+                    style = VitranTextStyle.Label,
+                    color = AdminTokens.Destructive,
+                )
+                AdminSecondaryButton(label = "تلاش مجدد", onClick = onTaxonomyRetry)
+            }
+            is TaxonomyPickerUiState.Content -> Unit
+        }
+        error?.let { VitranText(it, VitranTextStyle.Label, color = AdminTokens.Destructive) }
+    }
+}
+
 private data class HomeSectionForm(
     val slug: String = "",
     val source: String = "featured_products",
     val layout: String = "horizontal_rail",
     val title: String = "",
+    val subtitle: String = "",
+    val categorySlug: String = "",
     val itemLimit: String = "12",
     val sortOrder: String = "0",
     val active: Boolean = true,
@@ -433,6 +517,8 @@ private fun AdminHomeSection.toForm() = HomeSectionForm(
     source = source,
     layout = layout,
     title = title,
+    subtitle = subtitle.orEmpty(),
+    categorySlug = categorySlug.orEmpty(),
     itemLimit = itemLimit.toString(),
     sortOrder = sortOrder.toString(),
     active = active,
@@ -457,11 +543,17 @@ private fun AdminHomeBanner.toForm() = HomeBannerForm(
     endsAt = endsAt.orEmpty(),
 )
 
-private fun HomeSectionForm.toCommand() = SaveAdminHomeSectionCommand(
+private fun HomeSectionForm.toCommand(savedCategorySlug: String?) = SaveAdminHomeSectionCommand(
     slug = slug.trim(),
     source = source,
     layout = layout,
     title = title.trim(),
+    subtitle = subtitle.trim(),
+    categorySlug = resolveHomeSectionCategorySlug(
+        source = source,
+        typedSlug = categorySlug,
+        savedSlug = savedCategorySlug,
+    ),
     itemLimit = itemLimit.toIntOrNull() ?: 0,
     sortOrder = sortOrder.toIntOrNull() ?: 0,
     active = active,
@@ -489,18 +581,18 @@ private fun HomeBannerForm.toCommand() = SaveAdminHomeBannerCommand(
 )
 
 private val sourceOptions = listOf(
-    AdminSelectOption("featured_products", "محصولات ویژه"),
-    AdminSelectOption("personal_products", "برای شما"),
-    AdminSelectOption("following_products", "محصولات دنبال‌شده"),
-    AdminSelectOption("popular_products", "پربازدید"),
-    AdminSelectOption("latest_products", "تازه‌ها"),
-    AdminSelectOption("favorite_products", "علاقه‌مندی‌ها"),
-    AdminSelectOption("product_matches", "پیشنهاد اندازه"),
-    AdminSelectOption("latest_shops", "فروشگاه‌های تازه"),
-    AdminSelectOption("following_shops", "فروشگاه‌های دنبال‌شده"),
-    AdminSelectOption("favorite_shops", "فروشگاه‌های برتر"),
-    AdminSelectOption("categories", "دسته‌بندی‌ها"),
-    AdminSelectOption("banners", "بنر"),
+    AdminSelectOption("featured_products", "محصولات ویژه (featured_products)"),
+    AdminSelectOption("personal_products", "برای شما (personal_products)"),
+    AdminSelectOption("following_products", "محصولات دنبال‌شده (following_products)"),
+    AdminSelectOption("popular_products", "پربازدید (popular_products)"),
+    AdminSelectOption("latest_products", "تازه‌ها (latest_products)"),
+    AdminSelectOption("favorite_products", "علاقه‌مندی‌ها (favorite_products)"),
+    AdminSelectOption("product_matches", "پیشنهاد اندازه (product_matches)"),
+    AdminSelectOption("latest_shops", "فروشگاه‌های تازه (latest_shops)"),
+    AdminSelectOption("following_shops", "فروشگاه‌های دنبال‌شده (following_shops)"),
+    AdminSelectOption("favorite_shops", "فروشگاه‌های برتر (favorite_shops)"),
+    AdminSelectOption("categories", "دسته‌بندی‌ها (categories)"),
+    AdminSelectOption("banners", "بنر (banners)"),
 )
 
 private val layoutOptions = listOf(

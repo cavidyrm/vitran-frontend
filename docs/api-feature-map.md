@@ -89,15 +89,15 @@ Payment callback `GET /api/v1/payments/callback` — **backend/provider endpoint
 | GET | `/health` | Health | Platform | HealthApi | — | Public | Yes |
 | POST | `/api/v1/events` | Home | Engagement | `UserEventApi` ✅ | `MarketplaceAnalyticsTracker` ✅ | Optional | Yes — `view_product` sends `category_slug` and home `metadata`; `click_category` sends `category_slug`; `search` sends `search_query` |
 | GET | `/api/v1/home?city_id=1` | Home | Home | HomeApi | HomeRepository | Optional | Legacy envelope kept; shopper home uses `/home/screen` |
-| GET | `/api/v1/home/screen?city_id=1&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Yes (`screen.sections`, `tracking`, skip unknown type/layout). 400 on bad `platform` / `app_version` |
+| GET | `/api/v1/home/screen?city_id=1&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Yes (`screen.sections`, optional section `category_slug` and `subtitle`, `tracking`, skip unknown type/layout). See-all stays `/home/sections/{key}`. 400 on bad `platform` / `app_version` |
 | GET | `/api/v1/home/sections/featured?cursor=12&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | One-page rail; a stale cursor returns an empty last page |
 | GET | `/api/v1/home/sections/for-you?city_id=1&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | `requires_auth`; 401 without a token; `has_more` always false |
 | GET | `/api/v1/home/sections/popular?city_id=1&platform=ios&app_version=1.4.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Paginates; cursor is opaque (`pop:12`) |
 | GET | `/api/v1/home/sections/summer-campaign?platform=android&app_version=2.0` | Home | Home | `HomeApi` ✅ | `HomeRepository` ✅ | Optional | Banners rail; banners do not paginate; wrong platform/version is 404 |
 | GET | `/api/v1/admin/home/sections` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented (`data.home_sections`; `/admin/home`) |
-| POST | `/api/v1/admin/home/sections` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented (`data.home_section`; 409 duplicate slug on the slug field) |
+| POST | `/api/v1/admin/home/sections` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented (`data.home_section`; optional `subtitle`; `category_slug` for latest/popular/featured products; 409 duplicate slug on the slug field) |
 | GET | `/api/v1/admin/home/sections/14` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented |
-| PATCH | `/api/v1/admin/home/sections/14` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented; `slug` is not sent after create |
+| PATCH | `/api/v1/admin/home/sections/14` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented; `slug` is not sent after create. `category_slug: ""` clears a category limit; omit it when the source cannot use a category and none was saved |
 | DELETE | `/api/v1/admin/home/sections/14` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented; super-admin only |
 | GET | `/api/v1/admin/home/sections/14/banners` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented when `source` is `banners` |
 | POST | `/api/v1/admin/home/sections/14/banners` | Home — Admin | Admin Home | `AdminHomeApi` ✅ | `AdminHomeRepository` ✅ | Required | Implemented; `image_url` must be http(s) |

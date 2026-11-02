@@ -4,6 +4,7 @@ import com.vitran.shop.feature.admin.home.domain.AdminHomeBanner
 import com.vitran.shop.feature.admin.home.domain.AdminHomeSection
 import com.vitran.shop.feature.admin.home.domain.SaveAdminHomeBannerCommand
 import com.vitran.shop.feature.admin.home.domain.SaveAdminHomeSectionCommand
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -35,6 +36,8 @@ internal data class AdminHomeSectionDto(
     @SerialName("item_kind") val itemKind: String? = null,
     val layout: String,
     val title: String = "",
+    val subtitle: String? = null,
+    @SerialName("category_slug") val categorySlug: String? = null,
     @SerialName("item_limit") val itemLimit: Int = 12,
     @SerialName("sort_order") val sortOrder: Int = 0,
     val active: Boolean = true,
@@ -71,6 +74,9 @@ internal data class CreateAdminHomeSectionRequestDto(
     val source: String,
     val layout: String,
     val title: String,
+    val subtitle: String,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("category_slug") val categorySlug: String? = null,
     @SerialName("item_limit") val itemLimit: Int,
     @SerialName("sort_order") val sortOrder: Int,
     val active: Boolean,
@@ -87,6 +93,9 @@ internal data class UpdateAdminHomeSectionRequestDto(
     val source: String,
     val layout: String,
     val title: String,
+    val subtitle: String,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("category_slug") val categorySlug: String? = null,
     @SerialName("item_limit") val itemLimit: Int,
     @SerialName("sort_order") val sortOrder: Int,
     val active: Boolean,
@@ -117,6 +126,8 @@ internal fun AdminHomeSectionDto.toDomain() = AdminHomeSection(
     itemKind = itemKind,
     layout = layout,
     title = title,
+    subtitle = subtitle?.takeIf { it.isNotBlank() },
+    categorySlug = categorySlug?.takeIf { it.isNotBlank() },
     itemLimit = itemLimit,
     sortOrder = sortOrder,
     active = active,
@@ -146,6 +157,8 @@ internal fun SaveAdminHomeSectionCommand.toCreateDto() = CreateAdminHomeSectionR
     source = source,
     layout = layout,
     title = title,
+    subtitle = subtitle,
+    categorySlug = categorySlug,
     itemLimit = itemLimit,
     sortOrder = sortOrder,
     active = active,
@@ -161,6 +174,8 @@ internal fun SaveAdminHomeSectionCommand.toUpdateDto() = UpdateAdminHomeSectionR
     source = source,
     layout = layout,
     title = title,
+    subtitle = subtitle,
+    categorySlug = categorySlug,
     itemLimit = itemLimit,
     sortOrder = sortOrder,
     active = active,

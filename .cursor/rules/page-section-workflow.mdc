@@ -40,7 +40,7 @@ Do **not** mark a shopper section done until responsive sizes and the gap from t
 - About Us (`/about`, `AboutScreen`) is **not** shop.app storefront. Visual source: `docs/ui-reference/about/`. Do **not** open shop.app for this page. Keep shopper AppShell chrome; responsive compact vs `mdBreakpoint` (768dp two-column hero/story).
 
 ## Current focus
-- Active screen: **admin home CMS** (`/admin/home`, `AdminHomeScreens.kt`). Thin admin chrome. Hub row only for admin and super-admin. Section delete is super-admin only.
+- Active screen: **admin home CMS** (`/admin/home`, `AdminHomeScreens.kt`). Thin admin chrome. Hub row only for admin and super-admin. Section delete is super-admin only. Optional `subtitle`. `category_slug` only for `latest_products`, `popular_products`, and `featured_products` (`""` clears). Shopper see-all stays `GET /home/sections/{key}`.
 - Shop detail in the create-store wizard (`CreateStoreScreen` layout) remains as previously built.
 - Admin: `/admin/moderation/shops/{id}` (`AdminShopModerationDetailScreen`); read-only wizard from the cached list row; confirm stays in the header. No shopper chrome.
 - Seller: `/account/stores/{id}` (`AccountStoreEditScreen`); same wizard, `PATCH` save stays, collections and products stay under the form. Account chrome hidden.

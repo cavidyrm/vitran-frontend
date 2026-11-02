@@ -45,6 +45,7 @@ data class HomeScreenSectionDto(
     val layout: String? = null,
     val title: String? = null,
     val subtitle: String? = null,
+    @SerialName("category_slug") val categorySlug: String? = null,
     @SerialName("requires_auth") val requiresAuth: Boolean = false,
     @SerialName("hide_when_empty") val hideWhenEmpty: Boolean = false,
     val empty: Boolean = false,

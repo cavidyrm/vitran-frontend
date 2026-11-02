@@ -50,6 +50,7 @@ internal fun HomeScreenSectionDto.toDomain(): HomeRail {
         layout = HomeRailLayout.from(layout),
         title = title,
         subtitle = subtitle,
+        categorySlug = categorySlug?.takeIf { it.isNotBlank() },
         requiresAuth = requiresAuth,
         hideWhenEmpty = hideWhenEmpty,
         empty = empty,
