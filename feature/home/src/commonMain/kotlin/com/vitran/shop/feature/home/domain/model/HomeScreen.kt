@@ -122,10 +122,21 @@ sealed interface HomeRailItem {
     data class Shop(
         val id: Long,
         val title: String,
+        val avatarUrl: String? = null,
+        val ratingAvg: Double? = null,
+        val ratingCount: Int? = null,
+        val products: List<HomeShopProduct> = emptyList(),
     ) : HomeRailItem {
         override val stableId: String = "shop:$id"
     }
 }
+
+data class HomeShopProduct(
+    val id: Long,
+    val title: String,
+    val priceAmount: Long?,
+    val imageUrl: String,
+)
 
 sealed interface HomeBannerAction {
     data class OpenProduct(val productId: String) : HomeBannerAction

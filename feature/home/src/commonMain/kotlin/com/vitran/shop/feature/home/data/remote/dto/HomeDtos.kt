@@ -125,10 +125,22 @@ data class HomeBannerActionDto(
     val value: String? = null,
 )
 
-/** No saved shop-item example. Only id plus a display name are read. */
 @Serializable
 data class HomeShopItemDto(
     val id: Long? = null,
     val title: String? = null,
     val name: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    @SerialName("rating_avg") val ratingAvg: Double? = null,
+    @SerialName("rating_count") val ratingCount: Int? = null,
+    val products: List<HomeShopProductDto> = emptyList(),
+)
+
+@Serializable
+data class HomeShopProductDto(
+    val id: Long? = null,
+    val title: String? = null,
+    val price: Long? = null,
+    @SerialName("image_url") val imageUrl: String? = null,
+    @SerialName("main_image") val mainImage: HomeImageDto? = null,
 )

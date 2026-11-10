@@ -95,11 +95,15 @@ fun HomeMerchantSpotlightCard(
     onShopClick: () -> Unit = {},
     onProductClick: (HomeShopProductPeek) -> Unit = {},
 ) {
-    val a11y = stringResource(
-        Res.string.home_merchant_card_a11y,
-        shop.name,
-        shop.ratingLabel,
-    )
+    val a11y = if (shop.ratingLabel.isBlank()) {
+        shop.name
+    } else {
+        stringResource(
+            Res.string.home_merchant_card_a11y,
+            shop.name,
+            shop.ratingLabel,
+        )
+    }
     val cardInteraction = remember { MutableInteractionSource() }
     val cardHovered by cardInteraction.collectIsHoveredAsState()
     val coverScale by animateFloatAsState(
@@ -218,27 +222,29 @@ fun HomeMerchantSpotlightCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        VitranIcon(
-                            painter = painterResource(Res.drawable.ic_star_filled),
-                            contentDescription = null,
-                            size = StarSize,
-                            tint = overlayText,
-                        )
-                        Text(
-                            text = shop.ratingLabel,
-                            color = overlayText,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                lineHeight = 16.sp,
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                    if (shop.ratingLabel.isNotBlank()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            VitranIcon(
+                                painter = painterResource(Res.drawable.ic_star_filled),
+                                contentDescription = null,
+                                size = StarSize,
+                                tint = overlayText,
+                            )
+                            Text(
+                                text = shop.ratingLabel,
+                                color = overlayText,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    lineHeight = 16.sp,
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
                     }
                 }
 
@@ -259,17 +265,19 @@ fun HomeMerchantSpotlightCard(
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(PeekGap, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                shop.products.forEach { peek ->
-                    MerchantProductPeek(
-                        peek = peek,
-                        shopName = shop.name,
-                        onClick = { onProductClick(peek) },
-                    )
+            if (shop.products.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(PeekGap, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    shop.products.forEach { peek ->
+                        MerchantProductPeek(
+                            peek = peek,
+                            shopName = shop.name,
+                            onClick = { onProductClick(peek) },
+                        )
+                    }
                 }
             }
         }

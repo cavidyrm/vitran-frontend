@@ -8,7 +8,9 @@ import com.vitran.shop.feature.home.data.remote.dto.HomeScreenSectionDto
 import com.vitran.shop.feature.home.data.remote.dto.HomeSectionItemsDto
 import com.vitran.shop.feature.home.data.remote.dto.HomeSectionsDto
 import com.vitran.shop.feature.home.data.remote.dto.HomeShopItemDto
+import com.vitran.shop.feature.home.data.remote.dto.HomeShopProductDto
 import com.vitran.shop.feature.home.domain.model.HomeBannerAction
+import com.vitran.shop.feature.home.domain.model.HomeShopProduct
 import com.vitran.shop.feature.home.domain.model.HomeFeed
 import com.vitran.shop.feature.home.domain.model.HomeRail
 import com.vitran.shop.feature.home.domain.model.HomeRailItem
@@ -153,5 +155,24 @@ private fun com.vitran.shop.feature.home.data.remote.dto.HomeBannerActionDto?.to
 private fun HomeShopItemDto.toDomain(): HomeRailItem.Shop? {
     val shopId = id ?: return null
     val label = title?.takeIf { it.isNotBlank() } ?: name?.takeIf { it.isNotBlank() } ?: return null
-    return HomeRailItem.Shop(id = shopId, title = label)
+    return HomeRailItem.Shop(
+        id = shopId,
+        title = label,
+        avatarUrl = avatarUrl?.takeIf { it.isNotBlank() },
+        ratingAvg = ratingAvg,
+        ratingCount = ratingCount,
+        products = products.mapNotNull { it.toDomain() }.take(3),
+    )
+}
+
+private fun HomeShopProductDto.toDomain(): HomeShopProduct? {
+    val productId = id ?: return null
+    val image = mainImage?.url?.takeIf { it.isNotBlank() } ?: imageUrl?.takeIf { it.isNotBlank() } ?: return null
+    val label = title?.takeIf { it.isNotBlank() } ?: return null
+    return HomeShopProduct(
+        id = productId,
+        title = label,
+        priceAmount = price,
+        imageUrl = image,
+    )
 }

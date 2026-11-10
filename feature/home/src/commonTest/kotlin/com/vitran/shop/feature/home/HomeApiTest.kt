@@ -357,6 +357,74 @@ class HomeApiTest {
         assertEquals("bt-4-2", product.categorySlug)
     }
 
+    @Test
+    fun shopRail_readsAvatarRatingAndOnlyRealProductImages() {
+        val section = createNetworkJson()
+            .decodeFromString(HomeSectionDataDto.serializer(), shopSection)
+            .section
+            .toDomain()
+
+        val rated = section.items.results[0] as HomeRailItem.Shop
+        assertEquals(105L, rated.id)
+        assertEquals("فروشگاه سامان مهر", rated.title)
+        assertEquals("https://cdn.example/shops/105.jpg", rated.avatarUrl)
+        assertEquals(4.5, rated.ratingAvg)
+        assertEquals(3, rated.ratingCount)
+        assertEquals("تی‌شرت نخی", rated.products.single().title)
+        assertEquals(189000L, rated.products.single().priceAmount)
+        assertEquals("https://cdn.example/p/shirt.jpg", rated.products.single().imageUrl)
+
+        val unrated = section.items.results[1] as HomeRailItem.Shop
+        assertEquals(0.0, unrated.ratingAvg)
+        assertEquals(0, unrated.ratingCount)
+        assertEquals("https://cdn.example/shops/7.jpg", unrated.avatarUrl)
+        assertTrue(unrated.products.isEmpty())
+    }
+
+    private val shopSection = """
+        {
+          "section": {
+            "id": 8,
+            "key": "latest-shops",
+            "type": "shops",
+            "layout": "horizontal_rail",
+            "title": "فروشگاه‌ها",
+            "requires_auth": false,
+            "hide_when_empty": true,
+            "empty": false,
+            "items": {
+              "per_page": 12,
+              "has_more": false,
+              "results": [
+                {
+                  "id": 105,
+                  "title": "فروشگاه سامان مهر",
+                  "avatar_url": "https://cdn.example/shops/105.jpg",
+                  "rating_avg": 4.5,
+                  "rating_count": 3,
+                  "products": [
+                    {
+                      "id": 993,
+                      "title": "تی‌شرت نخی",
+                      "price": 189000,
+                      "main_image": { "url": "https://cdn.example/p/shirt.jpg" }
+                    },
+                    { "id": 994, "title": "بدون تصویر", "price": 1000 }
+                  ]
+                },
+                {
+                  "id": 7,
+                  "title": "فروشگاه نیکان نوین",
+                  "avatar_url": "https://cdn.example/shops/7.jpg",
+                  "rating_avg": 0,
+                  "rating_count": 0
+                }
+              ]
+            }
+          }
+        }
+    """.trimIndent()
+
     private val babyToddlerSection = """
         {
           "section": {

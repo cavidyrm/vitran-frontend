@@ -1,6 +1,5 @@
 package com.vitran.shop.ui.sections.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -26,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -56,6 +56,7 @@ import com.vitran.shop.ui.sections.reference.formatMarketplacePrice
 import com.vitran.shop.ui.shell.LocalDesktopLayout
 import com.vitran.shop.ui.theme.VitranRadius
 import com.vitran.shop.ui.theme.VitranSpacing
+import com.vitran.shop.ui.util.toPersianDigits
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -157,7 +158,7 @@ private fun HomeRailBlock(
                 else -> Unit
             }
             HomeRailType.Banners -> BannerHero(rail, onBannerAction)
-            HomeRailType.Shops -> ShopRail(rail, onShopOpen)
+            HomeRailType.Shops -> ShopRail(rail, onShopOpen, onProductOpen, onLoadMore)
             HomeRailType.Unknown -> Unit
         }
         if (rail.canLoadMore() && rail.type == HomeRailType.Products) {
@@ -287,32 +288,58 @@ private fun BannerHero(
 }
 
 @Composable
-private fun ShopRail(rail: HomeRail, onShopOpen: (shopId: String) -> Unit) {
-    val shops = rail.items.results.filterIsInstance<HomeRailItem.Shop>()
-    val isDesktop = LocalDesktopLayout.current
-    val horizontalPad = if (isDesktop) VitranSpacing.xxxl + VitranSpacing.lg else VitranSpacing.lg
-    Column(verticalArrangement = Arrangement.spacedBy(VitranSpacing.md)) {
-        RailHeading(rail, horizontalPad)
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = horizontalPad),
-            horizontalArrangement = Arrangement.spacedBy(VitranSpacing.sm),
-        ) {
-            items(shops, key = { it.stableId }) { shop ->
-                Text(
-                    text = shop.title,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(VitranRadius.xl))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .clickable(role = Role.Button) { onShopOpen(shop.id.toString()) }
-                        .padding(horizontal = VitranSpacing.lg, vertical = VitranSpacing.md),
-                )
-            }
-        }
+private fun ShopRail(
+    rail: HomeRail,
+    onShopOpen: (shopId: String) -> Unit,
+    onProductOpen: (id: String, title: String, imageUrl: String, priceLabel: String) -> Unit,
+    onLoadMore: () -> Unit,
+) {
+    val shops = rail.items.results.mapNotNull { item ->
+        val shop = item as? HomeRailItem.Shop ?: return@mapNotNull null
+        shop.toSpotlightCard()
     }
+    HomeCategoryShopsRow(
+        section = HomeCategoryShopSection(
+            id = rail.key,
+            title = rail.title.orEmpty(),
+            shops = shops,
+        ),
+        onCategoryClick = { if (rail.canLoadMore()) onLoadMore() },
+        onShopClick = { shop -> onShopOpen(shop.id) },
+        onProductClick = { _, peek ->
+            onProductOpen(peek.id, peek.title, peek.imageUrl, peek.priceLabel)
+        },
+    )
+}
+
+private fun HomeRailItem.Shop.toSpotlightCard(): HomeShopCard =
+    HomeShopCard(
+        id = id.toString(),
+        name = title,
+        ratingLabel = formatShopRating(ratingAvg, ratingCount),
+        coverUrl = avatarUrl.orEmpty(),
+        logoUrl = "",
+        brandColor = ShopCoverFallback,
+        useLightText = false,
+        products = products.map { product ->
+            HomeShopProductPeek(
+                id = product.id.toString(),
+                imageUrl = product.imageUrl,
+                title = product.title,
+                priceLabel = product.priceAmount?.let(::formatMarketplacePrice).orEmpty(),
+            )
+        },
+    )
+
+private val ShopCoverFallback = Color(0xFFE7E5E4)
+
+private fun formatShopRating(average: Double?, count: Int?): String {
+    if (average == null || count == null || count <= 0 || average <= 0.0) return ""
+    val tenths = kotlin.math.round(average * 10).toInt()
+    val whole = tenths / 10
+    val fraction = kotlin.math.abs(tenths % 10)
+    val label = if (fraction == 0) whole.toString() else "$whole.$fraction"
+    return "${toPersianDigits(label).replace('.', '٫')} (${toPersianDigits(count.toString())})"
 }
 
 @Composable

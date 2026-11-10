@@ -40,11 +40,7 @@ data class HomeShopCard(
     val brandColor: Color,
     val useLightText: Boolean,
     val products: List<HomeShopProductPeek>,
-) {
-    init {
-        require(products.size == 3) { "Merchant spotlight expects exactly 3 product peeks" }
-    }
-}
+)
 
 /**
  * One Home category section: header title + horizontal merchant carousel.
